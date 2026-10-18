@@ -1,0 +1,44 @@
+name: Native local drafts
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  native-ui:
+    runs-on: macos-15
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Select Xcode
+        run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+      - name: Record toolchain
+        run: |
+          mkdir -p .build/native-evidence
+          xcodebuild -version | tee .build/native-evidence/xcode.txt
+          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') .build/native-evidence/xcode.txt
+          sw_vers | tee .build/native-evidence/macos.txt
+          swift --version | tee .build/native-evidence/swift.txt
+          xcrun simctl list runtimes | tee .build/native-evidence/runtimes.txt
+      - name: Test native editor model
+        run: |
+          set -o pipefail
+          swift test --package-path Packages/PlannerUI 2>&1 | tee .build/native-evidence/model-tests.txt
+      - name: Build unsigned simulator app
+        run: |
+          set -o pipefail
+          xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/native CODE_SIGNING_ALLOWED=NO build 2>&1 | tee .build/native-evidence/build.txt
+      - name: Launch on iPhone and iPad simulators
+        run: |
+          set -o pipefail
+          python3 App/scripts/simulator-smoke.py 2>&1 | tee .build/native-evidence/launch.txt
+      - name: Retain native evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-local-drafts-evidence
+          path: .build/native-evidence
+          retention-days: 14
