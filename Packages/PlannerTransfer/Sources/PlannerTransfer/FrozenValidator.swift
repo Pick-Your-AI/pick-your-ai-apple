@@ -26,6 +26,11 @@ struct FrozenValidator: Sendable {
         guard let schema = schemas["catalog-snapshot.schema.json"] else { throw TransferError.unavailableSchema }
         try check(value, schema: schema, document: "catalog-snapshot.schema.json")
     }
+    func validateQualityEvaluationRun(_ value: JSONValue) throws {
+        guard value.object?["schema_version"] == .string("1.0.0") else { throw TransferError.unsupportedVersion }
+        guard let schema = schemas["quality-evaluation-run.schema.json"] else { throw TransferError.unavailableSchema }
+        try check(value, schema: schema, document: "quality-evaluation-run.schema.json")
+    }
     func check(_ value: JSONValue, schema: JSONValue, document: String) throws {
         guard let s = schema.object else { throw TransferError.unavailableSchema }
         if let ref = s["$ref"]?.string {

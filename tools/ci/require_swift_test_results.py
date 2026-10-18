@@ -96,6 +96,42 @@ PROFILES = {
     }),
 }
 
+# Preserve the catalog/editor profile as historical evidence. This composition
+# adds the nine independently reviewed comparison-preparation cases while
+# retaining every required case and class from that receiving source.
+PROFILES["comparison-catalog-editor-ui"] = (96, {
+    **PROFILES["catalog-editor-ui"][1],
+    "PlannerUITests.ImportedBuildLibraryTests": (
+        *PROFILES["catalog-editor-ui"][1]["PlannerUITests.ImportedBuildLibraryTests"],
+        "testComparisonPreparationLeavesMainActorResponsiveAndPreservesInputs",
+        "testNewSelectionComparisonFinishesBeforeCancelledOlderResultOrError",
+        "testCancelledOlderComparisonCannotClearPendingNewerWork",
+        "testReplacingBaselineRejectsLateComparisonAndRetainsNewQualification",
+        "testClearedBaselineRejectsLateComparisonAndError",
+        "testCancelledComparisonRejectsLateResultAndErrorWithoutClearingPin",
+        "testInvalidatedQueuedComparisonNeverEntersWorker",
+        "testCommittedBaselineDeletionCancelsPendingComparisonAndPreservesSelection",
+        "testRejectedBaselineDeletionPreservesPinAndPendingComparison",
+    ),
+})
+
+# The accepted quality boundary adds nine cases to the receiving Transfer tree.
+# Keep the earlier 48-case profile scoped to its own source and results.
+PROFILES["quality-catalog-editor-transfer"] = (57, {
+    **PROFILES["catalog-editor-transfer"][1],
+    "PlannerTransferTests.QualityEvaluationRunTests": (
+        "testCanonicalRecordRetainsIdentityAndEverySupportedField",
+        "testSharedCanonicalQualityConformanceVectorsUseRawNumericTokens",
+        "testOptionalAbsenceRemainsDistinctFromEmptyArraysAndStrings",
+        "testRecordedLabelsChronologyDuplicatesAndPrivateTextAreNotReinterpreted",
+        "testNumericViewsRemainExactWithoutNarrowingOrRounding",
+        "testDuplicateRootAndMeasurementKeysIncludingEscapedAliasesFail",
+        "testByteDepthAndAggregateNodeLimitsApplyBeforeSchemaAcceptance",
+        "testUnsupportedAndMalformedInputReturnsPayloadFreeErrors",
+        "testNormalizedOutputCannotExceedTheDecoderLimitOrChangeTheValue",
+    ),
+})
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

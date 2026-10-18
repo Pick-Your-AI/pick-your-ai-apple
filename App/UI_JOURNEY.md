@@ -231,6 +231,20 @@ deletion. The [integration receipt](../docs/validation/editor-integration.md) re
 the independently verified archive and decoded payload hashes. This failed run is
 retained evidence; the corrected source still requires both complete journeys.
 
+### Completed canonical Notes correction
+
+The exact `8e76d0ee` source subsequently passed
+[run 39124384850 / job 117666403863](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124384850/job/117666403863)
+at checkout `1626e530`, tree `d6117678`, which matches the reviewed source.
+All 71 model cases passed. The complete Notes journey passed on the pinned
+iPhone in 279.590 seconds and iPad in 244.912 seconds, each with one passing
+test, zero failures/skips and successful deletion of the run-owned simulator.
+The [complete receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution)
+records the full identities, artifact and summary hashes, and retained shutdown
+diagnostics. The separate scope-cleanup failure remains recorded. This successful
+editor run does not execute the later 96-model/57-transfer composition or its
+catalog journey; those full current-source gates remain required.
+
 A try/finally scope protects every verified creation, including later evidence-writing
 or test failures. Cleanup shuts down and deletes only the verified ID created by this
 invocation, retaining both command outcomes; it never uses blanket shutdown, erase or
@@ -295,14 +309,16 @@ focus handling; the complete notes journey retains its normal keyboard dismissal
 exact post-dismissal title/notes assertions and the observed paste-education
 correction. All source-specific results above remain historical. The current
 combined source must execute both exact complete journeys on each pinned device,
-plus its full 87-model and 48-transfer gates, before delivery.
+plus its full 96-model and 57-transfer gates, before delivery. The strict profiles
+require all 47 UI and 21 Transfer class-qualified mandatory identities. Historical
+87/48 profiles remain available only for their recorded sources.
 
-The [actual #240 native result and observed switch correction](../docs/validation/catalog-editor-receiving.md#actual-stacked-native-result-and-switch-correction)
-record the subsequent 68-model pass and failed device gate. Both kind sheets
-opened, but a normal switch tap targeted the row center and left the trailing
-switch off. The switch now has its own intrinsic frame and retained accessible
-kind label, alongside separately rendered kind text. The actual journey asserts
-the label, off/on transition and restored-on state before continuing every
-existing count and detail assertion. The iPad notes recording shows the exact
-education body already handled by the preserved canonical tutorial supplement.
-Neither correction is accepted as working until the current device journeys pass.
+The [actual #240 native results and selector correction](../docs/validation/catalog-editor-receiving.md#actual-87-model-and-48-transfer-receiving-result)
+retain both failed catalog transitions. The intrinsic-size change still exposed
+the whole row as the identified Switch, whose normal tap missed the trailing
+native control. The current journey requires exactly one narrower Switch
+descendant inside that row, taps it normally and requires both its value and the
+identified row value to change from off to on. The exact label, restored-on state
+and every count, detail, pagination and empty-state assertion remain. The
+contained-control query is a source-reviewed candidate; both complete catalog
+journeys must pass before it qualifies for delivery.

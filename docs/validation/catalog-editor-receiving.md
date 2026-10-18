@@ -11,7 +11,44 @@ below. Its catalog journey remains failed. The contained-switch selector and
 canonical query-label/fixture-lifetime carry are follow-up source changes that
 require fresh complete execution.
 
-## Source inputs
+## Current comparison and contract receiving source
+
+The expanded receiving source preserves canonical candidate
+`c8fa65c79b7f02a39f5a03e85a69a81d4d4d2694`, tree
+`99ab352371ff44028ad15851b01e33df66ca7022`, including its contained-switch
+selector, richer Notes helpers, exact query-label correction and foreground Git
+fixture maintenance. It adds the four exact independently reviewed comparison
+worker source/test blobs from `183b07399f1331eaba2d19f0560e657039cf2f40` and
+retains accepted signed main `9a3b0fe48890507ec0e8d80994da53c626e2ca86`.
+Main's quality-record boundary, bounded cache reads, raw Core JSON admission and
+accepted #32 conformance record remain intact. Both snapshot and quality schema
+entry points and all nine frozen source pins are preserved.
+
+This combined source requires **96 PlannerUI cases** and **57 PlannerTransfer
+cases**, with respectively **47** and **21** mandatory class-qualified identities.
+The `comparison-catalog-editor-ui` and `quality-catalog-editor-transfer` profiles
+enforce those exact inventories. The prior 87/38 and 48/12 profiles remain
+unchanged for their historical inputs; the original source tables and execution
+receipts below retain that scope. The [comparison preparation record](comparison-preparation.md)
+lists the nine added worker cases, both cancellation completion orders and the
+current-main quality-profile reconciliation.
+
+All ten portable guard tests passed, including padded historical totals and
+wrong-class negatives. The combined reference verifier passed nine hashes, 129
+build/selection, 1,635 item, 77 snapshot and 202 quality vectors. An independent
+reviewer also executed all 20 raw-Core vectors with the original exact
+jsonschema 4.25.1 requirements; the separate 4.26.0 environment was correctly
+rejected before those cases and is not counted as execution. No dependency pin
+or native gate was changed to obtain those results.
+
+The canonical editor's later [71-model and two-destination Notes pass](editor-integration.md#completed-corrected-editor-execution)
+is actual evidence for `8e76d0ee`, not this expanded source. Its separate failed
+scope job remains recorded. Fresh complete 96/57 package execution, both exact
+Notes/catalog journeys on each pinned destination, all retained native and scope
+checks, successful owned cleanup and ordinary signed receiving review remain
+required. No current combined Swift or device pass is claimed here.
+
+## Original source inputs
 
 | Input | Exact source | Preserved behavior |
 | --- | --- | --- |
@@ -50,7 +87,7 @@ controlled history test uses the existing internal `autosaveWait: nil` initializ
 so the test's unsaved-input assertions do not race the production debounce. The
 public initializer still waits 750 ms, and the actual UI journey uses that timer.
 
-## Required executed evidence
+## Original receiving inventory
 
 The first details/editor union declared 84 UI-model and 44 transfer cases. The
 subsequent accepted-main carry adds three history-recovery and four comparison
@@ -256,11 +293,10 @@ reproduced; strict cleanup, every scope assertion and conservative native
 allocation remain intact. The accepted-main conformance and mutation-guard
 changes in the canonical ancestry are preserved.
 
-These changes retain this stack's 87/48 declarations and strict profiles.
-Later current-main quality-boundary contributions and the separately preserved
-comparison-worker checkpoint have their own expanded inventories. They must be
-composed and reviewed with new exact profiles before final main delivery;
-their tests are not removed or represented by this historical 87/48 result.
+The published `c8fa65c7` stack retains those 87/48 declarations and strict profiles.
+The current-main quality-boundary and comparison-worker carry above expands the
+required inventories to 96/57 with new exact profiles. Its cases are preserved
+and are not represented by this historical 87/48 result.
 
 ## Remaining delivery gates
 

@@ -22,13 +22,20 @@ validated discard recovery; and catalog filters, pagination, relaunch and exact
 typed details. It contains no signing secrets. The launch-only smoke script remains a
 separate check; see the [UI journey evidence and limits](UI_JOURNEY.md).
 
+The exact canonical editor `8e76d0ee` has an actual 71-model pass and complete
+Notes journey passes on both pinned simulators, with successful owned cleanup;
+see the [completed editor receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution).
+Its separate scope-cleanup failure remains recorded. The expanded comparison,
+catalog and contract source still requires its own full 96/57 package inventories
+and both complete journeys on each destination before delivery.
+
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
 | #26 pinned clean checkout; #30 native CI | Checked-in app/UI-test targets and shared scheme, local packages, explicit Xcode pin, actual CLI missing-pin regression and isolated-cache workflow | Exact-head hosted evidence and receiving review; #30 untrusted-PR and release-secret gates remain separate |
-| #28 restore correct draft | SceneStorage selection, explicit dirty-discard guard, background save attempt; UI test reopens an acknowledged revision after process termination | Hosted UI run pending; cold-link routing, interrupted unacknowledged edits and physical lifecycle qualification |
+| #28 restore correct draft | SceneStorage selection, explicit dirty-discard guard, background save attempt; UI test reopens an acknowledged revision after process termination | Current expanded-source native execution; cold-link routing, interrupted unacknowledged edits and physical lifecycle qualification |
 | #80 local library operations | Notes CRUD and UI save/reopen/discard/delete; imported-build local labels, fresh-fork duplication, confirmed deletion, revision/qualification display and bounded corrupt-wrapper recovery | Exact-head native CRUD/recovery and UI execution, UI duplicate/cross-client journey and receiving review |
 | #87 offline editing | All operations use local storage; unknown compatibility/pricing always explicit | Governed catalog cache and downstream evaluation integration |
-| #105 accessibility | System controls, visible labels, Dynamic Type, editor/action identifiers; bounded XCUITest local-draft journey | Hosted UI run pending; wider complete journeys, VoiceOver, large text and physical device audits |
+| #105 accessibility | System controls, visible labels, Dynamic Type, editor/action identifiers; bounded XCUITest local-draft journey | Current expanded-source native execution; wider complete journeys, VoiceOver, large text and physical device audits |
 
 Save is acknowledged only after storage commits. Failed saves preserve the in-memory
 input and display a retry notice; revision conflicts never overwrite newer revisions.
@@ -249,6 +256,16 @@ Boolean presentation state.
 
 ## Local configuration comparison
 
+Comparison preparation runs through the existing off-main worker boundary. The
+button captures both immutable snapshots and their synthetic/unknown labels before
+queueing; changing the selected entry or replacing/clearing its pinned baseline
+invalidates the result. A newer comparison may finish while cancelled older work
+is still unwinding. The screen shows progress and a Cancel comparison control;
+leaving the library cancels pending work while opening completed details retains
+their immutable result. Committed deletion of the pinned entry clears its baseline;
+a rejected deletion preserves it. See the [comparison preparation record](../docs/validation/comparison-preparation.md)
+for the nine controlled regressions and required native execution.
+
 Open an imported build, choose **Use selected build as baseline**, open another
 imported build, and explicitly compare. The baseline is an immutable snapshot held
 in memory until replaced or cleared. Preparing a comparison captures both build
@@ -281,3 +298,11 @@ the complete visible comparison journey, large text, VoiceOver and physical-devi
 acceptance still require their own observed evidence.
 
 The [typed component details receipt](../docs/validation/issue-61-catalog-details.md) records exact catalog/item pins, retained source declarations and bounded read-only inspection. The [combined receiving receipt](../docs/validation/catalog-editor-receiving.md) separates this current source from earlier candidate counts and native results.
+
+The separate [comparison-worker composition](../docs/validation/comparison-preparation.md)
+retains that catalog/editor source and adds nine model cases. Its own native profile
+requires 96 UI cases and all 47 named identities. Its current-main carry retains
+the accepted quality boundary, so the Transfer profile requires 57 cases and all
+21 named identities. The catalog/editor receipt preserves its recorded 87/48
+source and historical executions alongside these expanded receiving gates;
+those earlier results do not execute this follow-up.

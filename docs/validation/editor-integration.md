@@ -243,3 +243,41 @@ signed candidate's tree and parent before main integration. Link final receipts 
 the PR. Physical-device, accessibility, unacknowledged process termination, complete
 builder/Files-provider flows, real-data rights, release and broader issue acceptance
 remain separately evidenced requirements.
+
+## Completed corrected editor execution
+
+The exact query-label correction at
+`8e76d0ee3db9659df4b7c96bef0eb0c70909ea52` completed
+[run 39124384850 / job 117666403863](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124384850/job/117666403863).
+The actual checkout was `1626e530da7577cab88f9c7718896c3a48319564`, with ordered
+parents `a86b0bf88abdb8f9c2177fd54ea4d5f22bb5ddf7` and that source head. Git Data
+independently confirms tree `d61176786e1886e16bced6788c8052126a9aeb7e` equals the
+reviewed source. The gate verified Xcode 16.4/16F6 and Swift 6.1.2 before execution.
+
+All **71 model cases passed with zero failures** in 28.281 seconds. The unsigned
+app build and both launch checks passed. The complete production-autosave,
+durable undo/redo, rejected-amendment, discard and deletion journey passed on
+iPhone SE (3rd generation), iOS 18.5, in **279.590 seconds**, and on iPad
+(10th generation), iOS 18.5, in **244.912 seconds**. Each actual result summary
+contains exactly one passing test, zero failures, zero expected failures and zero
+skips. Both runner receipts identify devices created by that run and record
+successful cleanup. Both deletions exited zero; both shutdown commands retained
+exit 149 with the explicit already-Shutdown diagnostic.
+
+Artifact [12136704709](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124384850/artifacts/12136704709)
+was independently downloaded and rehashed: 5,556,775 bytes, SHA-256
+`6382cf178df4ed916bc4a8016a646138f497f69ab7b275f505167bba5cbde548`.
+The exact iPhone and iPad summary hashes are
+`c6fa6588a9f688c184e15a956daf037a7f0f35b4971ededf3c4d83473184198f`
+and `65956fe0bf5681e6a8e75c733bb35daa1d81470b7f0ecad19a47c268a9facaaf`.
+Core, Storage, Catalog and macOS Transfer native jobs also passed on that head.
+
+The separate Transfer documentation-scope job still failed with the recorded
+disposable-fixture cleanup error. The [foreground-maintenance correction](native-scope.md#disposable-git-fixture-lifetime)
+at `10cd075c` is preserved for receiving execution; this successful UI result
+does not erase that failed gate or prove the fixture diagnosis. The later
+[comparison/catalog/current-contract union](comparison-preparation.md) requires
+its own 96-case UI and 57-case Transfer execution, both complete Notes and catalog
+journeys on each pinned destination, normal signing and receiving review. None
+of those expanded-source results, physical-device or release acceptance is
+inferred from this successful 71-case source run. All earlier failures above remain.
