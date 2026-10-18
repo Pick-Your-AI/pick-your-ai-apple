@@ -82,7 +82,7 @@ data, infers compatibility, or turns a synthetic fixture into real product facts
 It installs at most 10,000 bounded entries atomically, rejects duplicate `(id, version)` keys and
 changed bytes under the currently installed identity, and sorts deterministically
 by folded title, kind, ID and version. Distinct versions of one item remain separate, preserving the frozen selection pin fields `catalog_item_id` and `catalog_item_version`. Kind is a filter and display field, not an extra namespace for a duplicate pin. The durable cache remains responsible for historical
-immutable-version enforcement. Query/filter/page-size-bound opaque tokens are valid
+immutable-version enforcement. Query/filter/page-size/sort-bound opaque tokens are valid
 only for the issuing index and exact installed generation. Refresh during paging
 throws `stalePage`; callers must discard the old displayed page collection and
 restart, never concatenate different revisions. A failed install preserves the old
@@ -95,3 +95,27 @@ bounds. Existing hosted catalog CI must execute these tests and compile iOS for 
 exact final head. This is partial #45/#59 behavior; no actual API cursor contract,
 live staging handoff, full canonical catalog decoder, UI, source inspection or
 physical-device acceptance is claimed.
+
+### Explicit local sort selection
+
+`CatalogSearchSort.title` keeps the existing folded-title, kind, ID and version
+order. Callers can instead request `.kind`, which orders by exact kind, folded
+title, ID and version. Both are ascending display orders with deterministic
+identity/version ties; neither sorts by compatibility, evidence, price or a
+semantic interpretation of version strings. Missing specification values are
+not evaluated by this display projection.
+
+Sort is part of each opaque page token. Reusing a token after changing sort throws
+`mismatchedPage`; restarting without a token produces the requested order from
+the same immutable snapshot. An omitted sort means `.title`, so callers continuing
+a kind-sorted page must pass `.kind` again. Query and kind filters retain their
+existing normalization and exact-match behavior, and counts cover all matching
+entries before pagination. The index has no access to drafts or selections.
+
+Three additional regressions cover deterministic duplicate-label/version ties,
+identical reinstall during pagination, both directions of sort mismatch, a clean
+restart, and combined normalized query/kind filters with an empty result. Native
+execution remains required on the exact candidate. This advances the local sorting portion of
+[Apple #59](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/59). It does not
+provide the catalog screen, saved filters, unknown-spec sorting policy, network
+page failure/retry, accessibility journey or whole-issue receiving acceptance.
