@@ -17,8 +17,23 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - name: Select Xcode
-        run: sudo xcode-select -s /Applications/Xcode_16.4.app/Contents/Developer
+      - name: Verify unavailable and exact Xcode pins
+        run: |
+          set -o pipefail
+          mkdir -p .build/native-evidence
+          python3 -m unittest discover -s App/scripts/tests -p 'test_toolchain.py' -v 2>&1 | tee .build/native-evidence/pin-tests.txt
+          python3 App/scripts/toolchain.py --github-env "$GITHUB_ENV" 2>&1 | tee .build/native-evidence/pin-selection.txt
+      - name: Verify fresh dependency and build caches
+        run: |
+          set -o pipefail
+          python3 - <<'PY' | tee .build/native-evidence/empty-caches.txt
+          from pathlib import Path
+          for name in ("native-package-cache", "native-swift-tests", "native-source-packages", "native"):
+              path = Path(".build") / name
+              if path.exists():
+                  raise SystemExit(f"Expected an empty clean-checkout cache at {path}; use a fresh checkout without restored caches.")
+              print(f"Verified absent before dependency resolution/build: {path}")
+          PY
       - name: Record toolchain
         run: |
           mkdir -p .build/native-evidence
@@ -30,11 +45,11 @@ jobs:
       - name: Test native editor model
         run: |
           set -o pipefail
-          swift test --package-path Packages/PlannerUI 2>&1 | tee .build/native-evidence/model-tests.txt
+          swift test --package-path Packages/PlannerUI --cache-path "$PWD/.build/native-package-cache" --scratch-path "$PWD/.build/native-swift-tests" 2>&1 | tee .build/native-evidence/model-tests.txt
       - name: Build unsigned simulator app
         run: |
           set -o pipefail
-          xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/native CODE_SIGNING_ALLOWED=NO build 2>&1 | tee .build/native-evidence/build.txt
+          xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/native -clonedSourcePackagesDirPath .build/native-source-packages CODE_SIGNING_ALLOWED=NO build 2>&1 | tee .build/native-evidence/build.txt
       - name: Launch on iPhone and iPad simulators
         run: |
           set -o pipefail
