@@ -9,7 +9,12 @@ public struct BuildSnapshot: Sendable, Equatable {
     public var locks: JSONValue { value.object!["locks"]! }
     public func encoded() throws -> Data {
         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
-        return try encoder.encode(value)
+        let data = try encoder.encode(value)
+        // Normalization can expand compact input beyond the reopening bounds.
+        // Local serialization preserves private fields; it is not a sharing API.
+        var parser = try JSONParser(data)
+        guard try parser.parse() == value else { throw TransferError.unsupportedNumber }
+        return data
     }
 }
 

@@ -10,13 +10,7 @@ implemented in PlannerData for this executable slice. This advances the proposed
 [#22 ADR](../docs/decisions/issue-22-platform.md); its previous Core Data recommendation
 is superseded for this local store only. Product receiving acceptance stays separate.
 
-On macOS with Xcode 16.4 selected:
-
-```sh
-swift test --package-path Packages/PlannerUI
-xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/native CODE_SIGNING_ALLOWED=NO build
-python3 App/scripts/simulator-smoke.py
-```
+On macOS, use the [pinned toolchain setup and commands](#pinned-toolchain) below.
 
 The workflow records the actual compiler/SDK/runtime and runs model tests, an unsigned
 simulator build, and iPhone/iPad launch smoke checks. It contains no signing secrets.
@@ -24,7 +18,7 @@ The smoke script is not an accessibility or complete journey test.
 
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
-| #26 fresh checkout scaffold; #30 CI | Checked-in Xcode project/scheme, local packages and pinned Xcode selection | Hosted run needed; no release configuration or signed archive |
+| #26 pinned clean checkout; #30 native CI | Checked-in project/local packages, explicit Xcode pin, actual CLI missing-pin regression and isolated-cache workflow | Exact-head hosted evidence and receiving review; #30 untrusted-PR and release-secret gates remain separate |
 | #28 restore correct draft | SceneStorage selection, explicit dirty-discard guard, background save attempt | Cold-link routing, process-kill replay and physical lifecycle qualification |
 | #80 local library operations | Create, title edit, duplicate, confirmed delete; real-store model tests including reopen | Complete build metadata/organization and receiving review |
 | #87 offline editing | All operations use local storage; unknown compatibility/pricing always explicit | Governed catalog cache and downstream evaluation integration |
@@ -60,3 +54,47 @@ Primary Apple references checked 2026-10-18: [scene phase](https://developer.app
 [file protection](https://developer.apple.com/documentation/foundation/fileprotectiontype/completeuntilfirstuserauthentication).
 Local Linux inspection cannot establish SwiftUI/Xcode correctness. See the PR checks
 for observed hosted results, distinct from device, store or production acceptance.
+
+## Pinned toolchain
+
+[toolchain.json](toolchain.json) pins the full Xcode bundle to version 16.4, build
+16F6, at /Applications/Xcode_16.4.app/Contents/Developer. Install that exact release
+from [Apple Developer downloads](https://developer.apple.com/download/all/) and open
+it once to finish component and license setup. The command-line-tools-only package
+does not contain the app's iOS SDK. Simulator runtimes are recorded separately in
+each native artifact; launch smoke checks do not qualify physical devices.
+
+Run commands from a fresh repository checkout through the verifier:
+
+```sh
+python3 App/scripts/toolchain.py -- swift test --package-path Packages/PlannerUI
+python3 App/scripts/toolchain.py -- xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/native -clonedSourcePackagesDirPath .build/native-source-packages CODE_SIGNING_ALLOWED=NO build
+python3 App/scripts/toolchain.py -- python3 App/scripts/simulator-smoke.py
+```
+
+The verifier checks the selected directory and exact version/build before executing
+the command with that bundle's DEVELOPER_DIR. It reports installation/setup
+instructions and exits with status 2 for unavailable, malformed, mismatched or
+unresponsive pins. It propagates the native command's exit status. The native
+workflow publishes the verified directory to later steps only after validation.
+
+All five checked-in Swift packages currently use repository-local package paths or
+system SDK libraries. Their source revision is the checkout commit; there is no
+remote Swift package version to resolve to a replacement. The native workflow
+asserts that its explicit SwiftPM cache/scratch, Xcode package and derived-data paths
+are absent, then builds using those paths without a cache restore. See
+[toolchain validation](../docs/validation/toolchain-pin.md) for the actual CLI
+negative case and the required hosted failure/recovery and clean-build evidence.
+
+Apple's [command-line tools configuration](https://developer.apple.com/documentation/xcode/configuring-command-line-tools-settings)
+documents the command-scoped DEVELOPER_DIR override; [TN2339](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)
+describes the full Xcode command-line tools and build commands.
+
+## Submission SDK compatibility
+
+The separate [unsigned submission SDK lane](../docs/validation/submission-sdk.md)
+selects Xcode 26.3 / 17C529 and verifies device and simulator SDK 26.2 before
+testing all five packages and building both unsigned Release products. The
+existing 16.4 development pin remains a regression baseline. Consult the dated
+[#113 policy matrix](../docs/validation/issue-113-policy.md) for current Apple
+requirements and the signed-artifact, privacy and channel evidence still needed.

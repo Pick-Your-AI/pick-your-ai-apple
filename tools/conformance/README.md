@@ -55,8 +55,21 @@ payloads against the pinned schemas and compare its result for every ID. Do not
 normalize decimal strings into binary floating point. The output is generated,
 not committed; retain it with the producing Apple commit in review/CI evidence.
 A zero exit status requires all baseline checks and all three mutations to pass.
-Any failure exits nonzero and does not write a new report; do not treat an old
-output file as evidence of a new run.
+The output must be outside the frozen contract and conformance tool directories,
+with an existing directory parent. An existing destination must be a regular file
+with one hardlink; symbolic links, directories and other file types are rejected
+without changing them or their targets. Parent-directory aliases are resolved
+before checking these boundaries. Use a separate output path for each concurrent
+run.
+
+After accepting the destination, the runner removes any previous receipt before
+checking source bytes or dependencies. A conformance failure exits nonzero with
+no success report at that path. Success JSON is fully serialized and written to
+a temporary sibling before atomic publication; write or publication failures also
+exit nonzero and remove the temporary file. Import, argument and destination
+preflight failures occur before invalidation and leave existing files unchanged.
+Harness regressions exercise an actual successful CLI run, source rejection and
+recovery, plus protected paths, dependency rejection and partial-write failures.
 
 ## Shared report vectors and native regression detection
 
@@ -85,11 +98,35 @@ The decoder's documented number/depth/timestamp exclusions remain client limits.
 `swift_mutations.py --package Packages/PlannerCore --output-dir /tmp/swift-mutations`
 first runs the unmodified Swift suite, then changes required-field handling,
 decimal ordering and request-generation acceptance in separate disposable copies.
-Each mutation must trigger its named regression assertion and normal failed test
-completion. Compile errors, crashes, timeouts and changed anchors do not qualify.
+The baseline must contain complete, uniquely identified XCTest cases, zero failures
+or skips, a matching nonzero suite total, and passes from all three exact named
+regressions. Compile-only output and the separate Swift Testing zero-test footer
+cannot qualify. Each mutation must execute only its exact selected regression,
+trigger that test's expected assertion, and complete with a matching failed
+XCTest suite summary. A class or method that only contains the expected name
+does not qualify. Duplicate results, unexpected failures, truncated output,
+compile errors, crashes, timeouts and changed anchors do not qualify.
 The source package is never changed. CI retains the logs and success receipt.
 This supplements the existing deliberate XCTest failure probe and Python reference
 mutations for #30/#104; it does not prove branch protection is enforced.
+
+The exact-identity regression was reproduced against accepted main `8ca109963`:
+renaming the reported required-field test to a method with an `Extra` suffix still
+qualified under the former substring check. The corrected guard rejects it.
+Portable tests exercise Linux and macOS XCTest spellings, unrelated similarly
+named methods/classes, assertion identity, missing/duplicate/skipped results,
+summary mismatches, empty successful baselines and stale-receipt removal.
+The corrected parser also accepts the actual 67-case baseline and all three
+deliberate failures retained in [core run 39108049392](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39108049392),
+artifact `12129239361`, verified SHA-256
+`df5b91c70d2ba2dd193e8f84d69eb47b3bfc12f0daac11176d176567996093e2`.
+That replay verifies compatibility with historical log bytes; it is not a fresh
+Swift execution. A subsequent fresh local run using Swift 6.1.2 on Linux executed
+all 67 unchanged baseline cases successfully, then detected all three actual
+semantic mutations through their expected XCTest assertions. The run used
+task-scoped caches and required no change to application or test sources.
+The changed runner must still complete its actual hosted macOS core workflow on
+the reviewed candidate before delivery; Linux execution is separate evidence.
 
 Supported historical migration, rollback, approved executable policy, actual
 service parity, simulator execution, device results and receiving acceptance are
