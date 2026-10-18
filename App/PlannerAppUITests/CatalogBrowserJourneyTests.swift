@@ -61,6 +61,8 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         let candidate = app.buttons["catalogItem-cat.accelerator.fixture-2026.10-demo"]
         reveal(candidate, in: app, towardTop: false)
         tap(candidate)
+        XCTAssertTrue(app.staticTexts["catalogDetailReady"].waitForExistence(timeout: 10))
+        XCTAssertEqual(app.staticTexts["catalogDetailReady"].label, "Specifications: 8 · Source records: 1")
         let identifier = app.staticTexts["cat.accelerator.fixture"]
         reveal(identifier, in: app, towardTop: false, containerID: "catalogDetailsForm")
         XCTAssertTrue(identifier.exists)
@@ -72,6 +74,32 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         reveal(source, in: app, towardTop: false, containerID: "catalogDetailsForm")
         XCTAssertTrue(source.exists)
         retainScreenshot(app, name: "Exact fictional component and pinned catalog details")
+        let hash = app.staticTexts["catalogDetailHash"]
+        reveal(hash, in: app, towardTop: false, containerID: "catalogDetailsForm")
+        XCTAssertEqual(hash.label, "2e9120db823faef3e1e330a7d2e8067b3ab064328e2faed699d15cf41880fbf8")
+
+        // Read the actual schema-derived values and absent optional field. The
+        // app supplies its bundled fixture normally; no test source is injected.
+        let memory = app.staticTexts["catalogDetailSpecValue-vram_gb"]
+        reveal(memory, in: app, towardTop: false, containerID: "catalogDetailsForm")
+        XCTAssertEqual(memory.label, "24")
+        let missingPower = app.staticTexts["catalogDetailSpecState-rated_power_w"]
+        reveal(missingPower, in: app, towardTop: true, containerID: "catalogDetailsForm")
+        XCTAssertEqual(missingPower.label, "Not recorded")
+        retainScreenshot(app, name: "Typed accelerator values and an explicit specification gap")
+        let declaredStatus = app.staticTexts["catalogDetailSourceStatus-0"]
+        reveal(declaredStatus, in: app, towardTop: false, containerID: "catalogDetailsForm")
+        XCTAssertEqual(declaredStatus.label, "user_supplied")
+        let checked = app.staticTexts["catalogDetailSourceDate-0"]
+        reveal(checked, in: app, towardTop: false, containerID: "catalogDetailsForm")
+        XCTAssertEqual(checked.label, "2026-10-16T09:00:00Z")
+        let missingSource = app.staticTexts["catalogDetailSourceMissing-0"]
+        reveal(missingSource, in: app, towardTop: false, containerID: "catalogDetailsForm")
+        XCTAssertEqual(missingSource.label, "Source URL not recorded")
+        let sourceNotes = app.staticTexts["catalogDetailSourceNotes-0"]
+        reveal(sourceNotes, in: app, towardTop: false, containerID: "catalogDetailsForm")
+        XCTAssertEqual(sourceNotes.label, "FICTIONAL TEST FIXTURE. Not vendor specification or commercial pricing.")
+        retainScreenshot(app, name: "Retained source declaration, date, missing URL and fictional qualification")
         tap(app.buttons["Done"])
 
         // Clear-all restores the first bounded page. Loading the continuation

@@ -51,6 +51,11 @@ Accelerator kind and kind ordering, then terminates and relaunches the process.
 The recreated browser must restore those preferences and return the exact
 `cat.accelerator.fixture` item at `2026.10-demo`. Its detail must identify the
 pinned `catalog.fixture.1` source and explicitly unknown assessment.
+The detail consumer also requires the exact source SHA-256, all eight accelerator
+specification fields in its loaded summary, recorded `vram_gb` of 24, an explicit
+missing `rated_power_w`, and the retained source's `user_supplied` declaration,
+check date, missing URL and fictional qualification. These assertions read normal
+detail controls after its visible loaded summary; no alternate source is injected.
 
 Clear filters restores the first bounded page; Load more components must reach
 29-of-29. A unique unmatched query must show a successful zero count and an empty
