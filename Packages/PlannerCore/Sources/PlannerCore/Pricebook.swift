@@ -150,6 +150,8 @@ public struct Pricebook: Encodable, Equatable, Sendable {
     /// These and the byte bound are client limits, not changes to frozen v1.
     public static func decode(_ data: Data) throws -> Pricebook {
         guard data.count <= maximumPayloadBytes else { throw BoundaryError.payloadTooLarge }
+        let text = try ContractJSONPreflight.textView(data)
+        try ContractJSONPreflight.validate(text)
         return try Pricebook(JSONDecoder().decode(PricebookWire.self, from: data))
     }
 }

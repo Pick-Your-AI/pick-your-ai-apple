@@ -1,10 +1,12 @@
-# Frozen-v1 catalog, snapshot and transfer boundaries
+# Frozen-v1 catalog, resource, quality-record, snapshot and transfer boundaries
 
 This portable Swift 6 package implements part of Apple [#32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32), [#33](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/33), [#49](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/49), [#82](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/82) and [#102](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/102). It has no storage, network, credential or UI authority. A successful parse establishes schema validity only, never compatibility, ownership, deployment readiness or source-use rights.
 
 ## API and integration
 
 - `CatalogItem.decode(_:)` validates a single frozen-v1 catalog item, preserves its exact `CatalogKind` identity and every supported field, and returns an immutable value. Kind-specific specs and their required tier are checked against the unchanged canonical schema. No missing optional fact is filled in and no catalog item becomes a user selection.
+- `QualityEvaluationRun.decode(_:)` validates a frozen-v1 quality record and retains the supplied build/suite identities, timestamps, recorded status and measurements. Typed views preserve exact supported decimals, optional absence and array order. This structural boundary performs no evaluation, evidence authentication or current-build binding.
+- `ResourceEstimate.decode(_:)` validates a frozen-v1 resource estimate artifact while preserving its exact decimal strings, ordered declarations and optional source absence. Parsing performs no capacity evaluation, dimensional qualification or current-build binding.
 - `BuildTransfer.snapshot(fromDraftJSON:)` validates a complete frozen-v1 BuildSnapshot and returns an immutable value. Missing fields and fewer than two selections fail; no defaults, locks or synthetic values are inserted. Keep editor drafts in PlannerData even when this transition fails.
 - `BuildTransfer.preview(_:)` accepts a bare snapshot or the existing web `pickyour.ai/build-export` version-1 envelope. Envelope provenance is untrusted metadata, not a verified catalog activation. `usesSyntheticData` is nil for bare imports; do not interpret that as production evidence.
 - `ImportPreview.fork(localOwner:timestamp:)` explicitly creates a new UUID-based build identity, revision 1 and draft lifecycle. Source owner is replaced by the caller's local identity. Every lock, selection and link is retained. This API cannot overwrite an existing record; the integration must insert the returned value as a new draft only after user confirmation.
@@ -25,11 +27,11 @@ round-trip regression; only actual hosted results establish Swift execution.
 
 The transfer gate rejects secret references and credential-like property names. It also rejects account references, encryption-key references, approval tickets, index names and endpoint/artifact URLs because they can disclose private infrastructure, signed links or credentials. This is a conservative client transfer subset; it does not redefine the frozen schema. Notes/extensions on import are rejected rather than silently accepted. Export strips them before applying the transfer gate. A schema-valid snapshot containing these fields can remain local but cannot be transferred through this package. This is not arbitrary free-text secret detection: names, aliases and other allowed text require preview and deliberate user review. It provides no remote share capability or server authorization.
 
-Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. Duplicate keys (including escaped aliases), invalid UTF-8, trailing input, wrong types/enums and unknown schema fields fail with payload-free error codes. JSON numeric tokens are restricted to at most 15 numeric digits, magnitude at most 9,007,199,254,740,991, and nonzero magnitude at least 10^-12; larger/smaller values fail explicitly rather than rounding. Money remains the exact schema-constrained decimal string. Leap-second timestamps are unsupported and rejected. URI checking implements an ASCII RFC3986 subset and rejects malformed percent escapes and all IP-literal (IPv6/IPvFuture) hosts; full general-purpose JSON Schema/URI conformance is not claimed.
+Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. Duplicate keys (including escaped aliases), invalid UTF-8, trailing input, wrong types/enums and unknown schema fields fail with payload-free error codes. JSON numeric tokens are restricted to at most 15 significant coefficient digits, 128 token bytes, exponent -64 through 64, magnitude at most 9,007,199,254,740,991, and nonzero magnitude at least 10^-12; larger/smaller values fail explicitly rather than rounding. Money remains the exact schema-constrained decimal string. Leap-second timestamps are unsupported and rejected. URI checking implements an ASCII RFC3986 subset and rejects malformed percent escapes and all IP-literal (IPv6/IPvFuture) hosts; full general-purpose JSON Schema/URI conformance is not claimed.
 
 ## Pinned inputs and validation
 
-`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/resource-estimate schemas and synthetic build/catalog/resource-estimate fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared build corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. The additional CatalogItem and ResourceEstimate corpora are described below. Swift and Python Draft202012Validator with FormatChecker replay the same concrete payloads. Synthetic fixtures are not real catalog or installed-application evidence.
+`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/quality-evaluation-run/resource-estimate schemas and synthetic build/catalog/quality/resource-estimate fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared build corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. The additional CatalogItem, QualityEvaluationRun and ResourceEstimate corpora are described below. Swift and Python Draft202012Validator with FormatChecker replay the same concrete payloads. Synthetic fixtures are not real catalog or installed-application evidence.
 
 Run:
 
@@ -82,15 +84,95 @@ schema failure. This is a bounded schema-driven item decoder, not whole JSON Sch
 conformance, generated per-field DTOs, a catalog-snapshot validator, approved real
 catalog activation or an Apple UI integration.
 
-Observed local evidence for this slice: Python 3.12/jsonschema 4.26.0 verified all six
-source hashes, the existing 129 cases and the 1,635 catalog cases. Swift/Xcode are
-absent in the implementation workspace, so the six new Swift tests have not run
-locally. The existing transfer workflow will execute them and the reference verifier
-on the exact PR head; native compilation, review and acceptance remain pending.
+Original preparation evidence for this slice: Python 3.12/jsonschema 4.26.0 verified
+all six source hashes, the existing 129 cases and the 1,635 catalog cases. Swift/Xcode
+were absent in that implementation workspace. Subsequent actual hosted source and
+receiving runs are recorded below; the earlier lack of local Apple tooling is not
+the current native-validation disposition.
+
+## #32 receiving conformance record
+
+Reviewed output: [Apple #32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32),
+the hash-pinned Swift boundary model/validator conformance report, refreshed on
+2026-10-18. This record reconciles the three live acceptance criteria against the
+delivered catalog, build and selection boundaries. Its publishing PR supplies the
+independent receiving disposition for this exact documentation and model strategy;
+issue closure follows reviewed signed-main delivery of the record.
+
+### Delivered model strategy
+
+The engineering choice is a single immutable `JSONValue: Encodable` representation,
+bounded `JSONParser` decoding, the exhaustive 29-case `CatalogKind` discriminator,
+and schema validation before a
+`CatalogItem` or `BuildSnapshot` can be constructed. `FrozenValidator` reads the
+unchanged frozen per-kind field definitions and conditional selection settings.
+It validates fields that generated Codable containers alone would otherwise need
+to duplicate, including unknown properties, enum values, kind/tier pairing and
+required settings. Public construction retains the bounded raw parser so duplicate
+keys cannot disappear before validation. Encoding rechecks the exact output's
+reopening limits and value preservation.
+
+This delivers the requested all-kind Swift decode/validation behavior through the
+already independently reviewed model architecture. No generated per-field Swift
+DTOs are claimed. Adding such convenience types is a separate ergonomics choice,
+not missing kind or spec validation. The issue's title and implementation checklist
+are reconciled explicitly with this accepted schema-driven implementation rather
+than asserting that a code generator ran.
+
+### Exact source, native execution and delivery
+
+| Stage | Immutable identity and observed result |
+| --- | --- |
+| Frozen inputs | Contract `1.0.0`, research revision `7acbefbf4e4e700231e88be272bc89e3a73dde15`. [source-manifest.json](source-manifest.json) records the six SHA-256 values for build, selection, common and catalog-item schemas plus the two synthetic examples. Bundled resources are byte-identical to the canonical import; no schema identifier is used as a network endpoint. |
+| Reviewed source | [#216](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/216), source `8f60ad0c458f4fbf5f48182c7655be55f94471bd`, tree `7572b62c1a30fd0574a100e30758a15eccbf8ea9`. Independent in-session full source review covered the discriminator, parser/validator, generator, verifier, tests, manifest and documentation. Normal squash produced verified signed `1aaf515526bfa347c3f1176771c4b4dbe78a4d08` with the same tree. |
+| Actual source execution | [Run 39105885010 / job 117611605590](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39105885010/job/117611605590) checked out prepared merge `441675ff394c38256d0ac67ba5de0299407875b7`, tree `7572b62c1a30fd0574a100e30758a15eccbf8ea9`, with ordered parents `7952f0cbedc8b19c03b6491197cf1160054c3cd7` and reviewed source `8f60ad0c458f4fbf5f48182c7655be55f94471bd`. It passed all 32 XCTest cases, six source hashes, 129 build/selection cases and 1,635 catalog cases, followed by unsigned iOS Simulator SDK compilation. Xcode 16.4 / build 16F6, Apple Swift 6.1.2. |
+| Actual receiving execution | [#227 run 39112613078 / job 117631807159](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39112613078/job/117631807159) checked out `7de9b112fa1fe7744d30a3b0c2851eaf04f33b5d`, tree `b0f809e6bb831665e4829fc87a33396d754aeb60`. It independently passed the same six hash checks, 129 and 1,635 vectors, all 32 XCTest cases with zero failures/skips, and unsigned iOS Simulator compilation under Xcode 16.4 / 16F6 and Swift 6.1.2. This is macOS XCTest plus SDK compilation, not an iPhone/iPad UI or physical-device claim. |
+| Accepted main | Normal reviewed #227 squash delivered verified signed `0ece6114ae2d639992346e8c1bb3ae239dbb1999`, tree `491624da29fd8b5b48af7e9087845fa861ee3b57`. [Review 5562335593](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/227#pullrequestreview-5562335593) and [delivery receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/227#issuecomment-6248229756) preserve the actual receiving checkout and subsequent documentation-only main advance. |
+| Current-main preservation | At signed `8ca109963bfca3a707b1af8b80aabcd9dd28fd8a`, the catalog/build/selection parser, validators, models, fixtures, vectors and verifier remain byte-identical to the reviewed source. The only subsequent changes within this package are its README and the separately reviewed configuration comparison source/tests. Current-main code comparison is source-preservation evidence, not a claim that the older native run executed the later tree. |
+
+### Criterion results and failure recovery
+
+| Live #32 criterion | Evidence and disposition |
+| --- | --- |
+| Swift accepts valid fixtures and rejects incompatible contract payloads. | `CatalogItemTests.testAll29CanonicalKindsDecodeWithoutLosingFieldsOrIdentity` decodes all 29 canonical items, checks the exact kind set and metadata, compares every parsed field, and round-trips each immutable result. The shared catalog test replays every supported positive and malformed negative through the public decoder. Build/selection validation additionally covers all 29 conditional settings. These methods actually passed in both hosted runs above. |
+| Decode all 29 kinds and wrong enums/types, missing required fields and non-decimal money; compare canonical validation results and reject incompatible versions. | The 1,635 catalog vectors include 588 cases accepted by both consumers, 1,041 rejected by both and six explicitly declared client subsets. They cover every required common/spec field, unknown enums/properties, wrong types including Boolean/number distinctions, supported enum choices and incompatible `schema_version`. The identical 129-case build/selection bundle includes 122 selection vectors and seven build vectors; `numericMoney` rejects a numeric `monthly_budget_amount`, while the valid decimal string stays exact. The canonical catalog defines no money field, so the catalog tests also reject invented price/rate/budget fields rather than importing rates into facts. Python Draft202012Validator/FormatChecker independently determines canonical outcomes; Swift checks its declared client outcomes and preserves every successful value. |
+| The hash-pinned Swift boundary model/validator conformance report is linked with criterion results, exact versions, limitations and receiving-review disposition. | This section, its unchanged manifest and the linked source/receiving jobs provide the requested reproducible record. Source review and signed delivery are already complete. The record's publishing PR records independent delegated engineering/contract receiving review of the exact criterion mapping and schema-driven model choice. That review is an in-session technical disposition, not a fabricated human, service, product-data or release approval. |
+
+Malformed inputs throw payload-free errors before returning a validated value.
+Duplicate/escaped-key, byte/depth/node and unsupported-version tests exercise this
+failure boundary. Every accepted mutation is encoded and reopened unchanged. The
+slash-expansion regression rejects an output that exceeds its own reopening bound,
+then decodes the untouched original input again. These are concrete decode and
+serialization recovery results; this package has no persistence or network side
+effect to roll back. Run the unchanged commands under [Pinned inputs and
+validation](#pinned-inputs-and-validation) to reproduce the reference and Swift work.
+
+### Limits and remaining separate outcomes
+
+The six canonical/client differences are deliberately rejected large and tiny JSON
+numbers, IP-literal URIs, and terminal-newline ID/currency/extension-key patterns.
+The existing 512 KiB, 48-level, 16,384-node, 15-digit/numeric-magnitude and leap-second
+limits also remain in force. Acceptance covers this disclosed client subset; it
+does not assert acceptance of every theoretically valid JSON Schema payload.
+Money remains a decimal string, and optional absence, explicit unknowns and
+unverified provenance never become invented values or approval.
+
+The previous remaining-work sentence grouped generated per-field DTOs, every other
+top-level artifact, migration and device evidence under #32. Those are not extra
+live acceptance criteria. This record replaces that broad closure condition with
+the actual all-kind boundary criteria and the explicitly reviewed implementation
+choice. Existing envelope, ruleset, graph, resource, cost and quality work retains
+its own reviewed source and integration lanes. No pending PR is counted as delivered
+by this record. Placement/CPU/unified-memory semantics and unsupported tuples remain
+#35; evidence presentation is #36; cross-client and migration acceptance is #37;
+catalog publication and real-data qualification are #40–43; live adapters and UI,
+physical-device and release gates remain in their own work packages. The accepted
+#22 framework/module decision supplies #32's prerequisite; broader downstream
+completion is not inferred.
 
 ## Remaining acceptance
 
-Independent code review and hosted macOS/iOS compilation are required before integration. A cross-package SQLite integration test now saves an empty draft, rejects snapshot export and malicious import, reopens the store, and verifies identical payload, locks, revision and history. PlannerData is a test-only dependency; the library remains independent. macOS 14 is the package testing floor; iOS 17 remains the product floor. #32 still needs generated per-field model coverage, other top-level contracts, supported migration dispositions, native conformance evidence and receiving contract review. The bounded catalog-item slice covers all 29 kind identities/spec validation alongside build and selection settings; it does not close the full work package. #33’s exact draft/snapshot boundary criteria are satisfied by the linked [criterion-specific receipt](../../docs/acceptance/issue-33-draft-snapshot-boundary.md), subject to its recorded receiving disposition; the earlier UI-integration gap is reconciled there. Actual UI autosave/termination remains #69 and Files workflows remain #82. #82 still needs actual Files/share-sheet flows, cross-client UI round trips and approved privacy/source-use review. #102 still needs server cross-user access, capability guessing and Universal Link/device tests against the real service and signed app. These are partial issue deliverables, not issue-closure evidence. No hardware, signing, release or production claims are made.
+Independent code review and hosted macOS/iOS compilation remain required for new code. A cross-package SQLite integration test now saves an empty draft, rejects snapshot export and malicious import, reopens the store, and verifies identical payload, locks, revision and history. PlannerData is a test-only dependency; the library remains independent. macOS 14 is the package testing floor; iOS 17 remains the product floor. #32's delivered all-kind boundary and explicit model/representation limits are reconciled in the [receiving conformance record](#32-receiving-conformance-record); its exact record review and signed publication govern closure. #33’s exact draft/snapshot boundary criteria are satisfied by the linked [criterion-specific receipt](../../docs/acceptance/issue-33-draft-snapshot-boundary.md), subject to its recorded receiving disposition; the earlier UI-integration gap is reconciled there. Actual UI autosave/termination remains #69 and Files workflows remain #82. #82 still needs actual Files/share-sheet flows, cross-client UI round trips and approved privacy/source-use review. #102 still needs server cross-user access, capability guessing and Universal Link/device tests against the real service and signed app. No broader hardware, release or production claims are made.
 
 
 ## Local configuration comparison
@@ -147,6 +229,65 @@ input can expand during JSON normalization; output beyond the same decoder bound
 is rejected rather than returned as bytes that cannot be reopened. A near-limit
 slash-expansion regression covers this boundary; native execution remains required.
 
+## Quality-record conformance slice (#32 / #49)
+
+`QualityEvaluationRun` adds the remaining quality-record decode boundary using the
+existing bounded parser and the existing frozen-schema evaluator. Its schema and
+synthetic example are copied byte-for-byte from research revision
+`7acbefbf4e4e700231e88be272bc89e3a73dde15` and match that revision's import manifest:
+
+| Resource | SHA-256 |
+| --- | --- |
+| `schemas/quality-evaluation-run.schema.json` | `ed6b3f60805428e3788ce27fa224fb3d5008998f0637f24723bf65eea546a959` |
+| `examples/quality-evaluation-run.json` | `bc0abc0b33e2b6bf77fc4609ac88a73981068eac6fabf604c255f58fec954a6d` |
+
+Only `decode(_:)` can construct the immutable run. Typed views expose recorded
+status, comparator and measurement values while `value` retains every supported
+field. Build revision and sample size remain integral `Decimal` values rather than
+being narrowed to a machine integer. The frozen schema permits arbitrary positive
+JSON integers and arbitrary measurement numbers; this client retains the explicit
+numeric subset described above and rejects unsupported inputs without rounding.
+This does not claim whole-schema numeric interoperability with other clients.
+
+Optional notes remain absent, empty or populated as supplied; a measurement unit
+can be absent or an empty string. Required artifacts may be empty. Measurement
+order, duplicate metric names, duplicate artifact URIs and private text survive
+round trips. Artifact URIs remain inert strings, including supported non-HTTP
+schemes. `encoded()` is local serialization retaining private content, with exact
+semantic value comparison and the decoder's bounds applied to its returned bytes.
+It is not a sanitizing export, evidence upload or source-use approval.
+
+The frozen schema does not enforce timestamp order, measurement/comparator/pass
+consistency, aggregate status consistency, unit semantics or current build/suite
+resolution. Decoding preserves those reported facts without computing a score,
+turning an `incomplete` label into failure, or assigning a quality/compatibility
+verdict. A schema-valid synthetic score remains synthetic and unverified.
+
+`Tools/quality_vectors.py` deterministically generates 202 compact mutations shared
+by Python and Swift. They cover all required fields, null/type/enum/additional-field
+failures, identifier/date/URI checks, optional distinctions, reported labels and
+numeric boundaries. The 18 deliberate client differences are three terminal-newline
+identifiers, two unbounded positive integers, twelve measurement numeric cases and
+one IP-literal URI. Swift inserts the raw replacement JSON before decoding so its
+test helper cannot round a numeric token through `Double` or Foundation bridging.
+
+Original local reference validation on 2026-10-18 passed eight source hashes, the existing
+129 transfer and 1,635 catalog cases, and all 202 quality cases using Python 3.12.14
+with `jsonschema[format]==4.26.0`, including active URI and date-time format checking.
+Nine new Swift tests are declared for typed preservation, shared vectors, absence,
+uninterpreted labels, exact numbers, duplicate keys, resource bounds, sanitized
+errors and normalized-output rejection. Swift/Xcode execution was unavailable in
+that preparation environment; subsequent actual hosted macOS Swift and unsigned
+iOS SDK results retain their own exact-commit receipts.
+
+This advances #32 transport coverage and #49 quality-record preparation. It does
+not establish qualified evaluation execution, exact-current-workload evidence,
+resource-estimate binding, live service/fault handling, UI delivery or receiving
+acceptance. The existing #49 prerequisites (Apple #44, Apple #34 and Android #79)
+and its remaining criteria remain open. The separate #32 all-kind boundary
+disposition is recorded above. Frozen contracts, service ownership and other active
+artifact-boundary implementations are unchanged.
+
 ## External resource estimate artifact boundary
 
 `ResourceEstimate.decode(_:)` validates the complete frozen-v1 resource-estimate
@@ -186,7 +327,7 @@ Eight Swift tests replay that shared corpus and separately check complete fixtur
 round trips, arbitrary integer-length decimal strings with twelve fractional digits,
 source absence, preserved foreign/partial/repeated declarations, escaped duplicate
 keys and selection aliases, aggregate bounds, output expansion and payload-free
-rejection. The normal transfer workflow verifies all eight pinned inputs and Python
+rejection. The normal transfer workflow verifies all ten pinned inputs and Python
 expectations before actual macOS tests and the unsigned iOS SDK build. Local Linux
 execution and hosted Apple results require their own exact-commit receipts.
 
@@ -197,4 +338,5 @@ independent receiving receipt. Build/revision and selection references are prese
 without checking the current model/runtime/context/concurrency tuple or freshness.
 This API computes neither capacity nor measured quality, accepts no source rights,
 and sends no requests. #49's service, exact-tuple rejection, UI and receiving
-conformance requirements remain open, alongside broader #32 contract adoption.
+conformance requirements remain open. The separate #32 all-kind boundary
+disposition is recorded above.
