@@ -1,0 +1,63 @@
+{
+  "format": "git-bundle-incremental-checkpoint-1",
+  "sourceCommit": "4f4021839f268294ae7d132efdc1be7dc0bc5bd0",
+  "sourceTree": "b79f9a53a0c5a99de95fb228c7677fe8e5a61aad",
+  "sourceParent": "d53ba455dd2ab7169c938408758807904b78d0ad",
+  "containedRef": "refs/heads/preparation/apple-37-reviewed-b79-local-29a3",
+  "sourceLeaves": 202,
+  "baseArchive": {
+    "containerCommit": "78cb2675356e7d00167b645cc7c993d2425fd2fa",
+    "containerTree": "b37348542be960a426acf2e4ec9307954643be0f",
+    "directory": "../apple-37-reviewed-08e",
+    "sourceCommit": "6eec8878e1456d2e7cad78399702a33461093ce8",
+    "sourceTree": "08e54247b998d005ed831bfaeabad7731f3e7a8a",
+    "containedRef": "refs/heads/preparation/apple-37-local-29a3",
+    "bundleBytes": 97763,
+    "bundleSHA256": "a9783ffd55b34327f5ccaf98f493e327c62a651279e88e82585c50a5fa8431e4"
+  },
+  "publicBaselines": [
+    {
+      "commit": "71db949333d94958d7d7909a1dd16c51c2421e2e",
+      "role": "Accepted main used by this historical receiving composition; fetch its complete public history."
+    },
+    {
+      "commit": "7d9724b16136546b686d87f29acf9bd95ca9c2eb",
+      "role": "Public reviewed prerequisite source for the original archive; not an accepted-main delivery."
+    }
+  ],
+  "bundlePrerequisites": [
+    "13e67df89309289b42fd9302c5908041739d9d11",
+    "bcf4c771641e62b30812e67bff86cf6b221c92cb",
+    "6eec8878e1456d2e7cad78399702a33461093ce8",
+    "7d9724b16136546b686d87f29acf9bd95ca9c2eb",
+    "71db949333d94958d7d7909a1dd16c51c2421e2e"
+  ],
+  "bundleBytes": 71057,
+  "bundleSHA256": "ec29cbde71d09b385fddfaf585747fefa011ffcceea218fb2f10c51f5e8a6952",
+  "parts": [
+    {
+      "path": "apple37-reviewed-b79-incremental.bundle.part-01",
+      "bytes": 50000,
+      "sha256": "5373c665130b03a8f9c00a794c2b0531907f437cda09c9bdc11268e0e1e80ecc",
+      "gitBlob": "c6caad61f250dbe40542b639909a4361f1c6f684",
+      "base64Bytes": 66668
+    },
+    {
+      "path": "apple37-reviewed-b79-incremental.bundle.part-02",
+      "bytes": 21057,
+      "sha256": "8687266cc8bd6f34b11a38c891f8b9a40d33d2e46ccc356c3fe5728a1a2aa531",
+      "gitBlob": "471781001a42cea5dd8279f43b93ad8c8ca46c4a",
+      "base64Bytes": 28076
+    }
+  ],
+  "wireFixture": {
+    "path": "Packages/PlannerConformance/Tests/PlannerConformanceTests/Fixtures/cross-client-v1.json",
+    "bytes": 1273770,
+    "sha256": "499fd9a01780ac42fa9bf2ab8cf9e1195db27321fec36040451b553a8b9ea5f9",
+    "gitBlob": "69718936a83b83e91aca7a492e48720fd2fe6cce",
+    "cases": 223,
+    "accepted": 141,
+    "rejected": 82
+  },
+  "status": "Recoverable exact reviewed historical source archive only. No intended source branch, accepted-main delivery, native readiness, new behavior execution or issue completion is established by this packaging."
+}
