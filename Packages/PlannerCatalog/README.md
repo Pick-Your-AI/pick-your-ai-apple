@@ -36,6 +36,26 @@ and [path attributes describe a symlink itself](https://developer.apple.com/docu
 
 ## Validation and remaining acceptance
 
+### Package privacy manifest
+
+The target explicitly bundles [PrivacyInfo.xcprivacy](Sources/PlannerCatalog/PrivacyInfo.xcprivacy).
+The bounded reader uses `fstat` to check the opened cache object's regular-file
+type. Apple lists `fstat` in the file-timestamp API category even when the caller
+uses another field in that metadata structure. Reason `C617.1` covers metadata
+access inside the app's own container. Keep the cache in that container; the
+manifest does not justify inspecting arbitrary external paths. This component
+uses the metadata locally and does not include it in transport requests.
+
+`PrivacyManifestTests.testPackagedManifestDeclaresOnlyAppContainerFileMetadataReason`
+loads the manifest from the built SwiftPM resource bundle and verifies its exact
+category and reason. The package record does not determine the integrating app's
+tracking, collection or store answers. The [#101 source inventory and release
+reconciliation record](../../docs/validation/issue-101-privacy.md) retains the
+required app-level checks and primary Apple references. Reassess the manifest
+when API use, cache location or SDK composition changes.
+
+### Package execution
+
 Run `swift test` from this directory on macOS. The dedicated `macos-catalog-cache` workflow uses Xcode 16.4 / Swift 6, records the toolchain, exercises CryptoKit and compiles for iOS Simulator without signing. Linux can compile and run non-hashing guards, but hashing returns `unsupportedHashPlatform`; hash-dependent tests explicitly skip, not pass. Initial Linux Swift 6.0.3 check: 17 tests discovered, 5 executed successfully, 12 skipped, zero failures. Hosted Apple-platform results must be attached to the PR before merge.
 
 | Live criterion | Implemented evidence | Remaining acceptance |

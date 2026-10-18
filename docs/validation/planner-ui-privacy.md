@@ -20,6 +20,17 @@ establish execution of this 111-case privacy composition or the current UI
 corrections. The running `5af50d4e` candidate remains unchanged by this separate
 local preparation.
 
+The receiving composition also preserves the five accepted Catalog privacy
+files from signed main
+[`bcf4c771641e62b30812e67bff86cf6b221c92cb`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/bcf4c771641e62b30812e67bff86cf6b221c92cb),
+the normal delivery of [PR #284](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/284).
+Those complete blobs are unchanged. Each package keeps its own production
+resource bundle and exact required-reason regression; the UI 111/62 and Transfer
+65/29 execution profiles remain unchanged. The composed Catalog source declares
+45 tests. Earlier 44-case Catalog and 332-case submission-SDK receipts for
+`5af50d4e` retain their own tree and do not establish this later composition's
+execution.
+
 ## API use and reason
 
 The app opens [`CatalogBrowserView`](../../Packages/PlannerUI/Sources/PlannerUI/CatalogBrowserView.swift)
@@ -68,12 +79,11 @@ submission-SDK lane remain required.
 
 ## Remaining integration and acceptance
 
-This follow-up leaves the independently reviewed PlannerCatalog file-metadata
-manifest in [PR #284](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/284)
-with its canonical owner and exact evidence. Its historical package inventory
-does not establish the integrated app's inventory. Both resource contributions
-must be preserved in their receiving composition and inspected in the resulting
-app/archive privacy report.
+This composition retains the independently reviewed and delivered PlannerCatalog
+file-metadata manifest alongside the PlannerUI preference declaration. The
+[Catalog source inventory](issue-101-privacy.md) keeps its historical inspection
+boundary and does not establish the integrated app's inventory. Both production
+resource bundles must be inspected in the resulting app/archive privacy report.
 
 No Swift compilation, built-resource execution, simulator result or release
 privacy report is claimed for this new source by this document. Package source
