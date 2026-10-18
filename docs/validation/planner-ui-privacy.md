@@ -6,6 +6,20 @@ The inspected input is the editor/catalog integration at
 [`a113480a595ceb89727a7718fd6ee4d92ecc239a`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/a113480a595ceb89727a7718fd6ee4d92ecc239a).
 Its existing native run and historical receipts retain that source identity.
 
+The current receiving preparation carries that unchanged privacy source onto
+[`5af50d4eadac56a19a46191e6b5d82e056441349`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/5af50d4eadac56a19a46191e6b5d82e056441349),
+the independently source-reviewed editor/catalog correction with accepted
+ResourceEstimate input from signed main
+[`51952c75f2280d57891491903e495fb822b83bfd`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/51952c75f2280d57891491903e495fb822b83bfd).
+It preserves both narrow catalog hit-target/source-action corrections, every
+existing model and journey assertion, and the complete 65-case Transfer profile
+with 29 required identities. The 110-case model pass and two catalog journey
+failures recorded for `a113480a` remain historical evidence in the
+[catalog/editor receiving record](catalog-editor-receiving.md). They do not
+establish execution of this 111-case privacy composition or the current UI
+corrections. The running `5af50d4e` candidate remains unchanged by this separate
+local preparation.
+
 ## API use and reason
 
 The app opens [`CatalogBrowserView`](../../Packages/PlannerUI/Sources/PlannerUI/CatalogBrowserView.swift)

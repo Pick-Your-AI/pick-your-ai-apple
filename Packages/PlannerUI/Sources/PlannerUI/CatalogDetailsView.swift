@@ -143,6 +143,8 @@ struct CatalogPreviewDetails: View {
             }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+        // Keep the source actions independent within this Form row.
+        .buttonStyle(.borderless)
     }
 
     @ViewBuilder

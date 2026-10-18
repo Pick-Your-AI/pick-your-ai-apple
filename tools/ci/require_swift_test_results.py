@@ -166,6 +166,22 @@ PROFILES["comparison-catalog-source-ui"] = (110, {
         PROFILES["catalog-source-ui"][1]["PlannerUITests.CatalogSourceReviewModelTests"],
 })
 
+# The current-main resource boundary adds eight cases to the complete reviewed
+# snapshot/editor/quality transfer source; old profiles retain their own totals.
+PROFILES["resource-quality-catalog-editor-transfer"] = (65, {
+    **PROFILES["quality-catalog-editor-transfer"][1],
+    "PlannerTransferTests.ResourceEstimateTests": (
+        "testCanonicalArtifactPreservesBuildEstimatorSelectionIdentityAndRoundTrip",
+        "testSharedCanonicalResourceVectorsAndExplicitClientSubsets",
+        "testDecimalSpellingAndSourceAbsenceRemainExactWithoutBinaryConversion",
+        "testForeignPartialRepeatedDeclarationsStayUnevaluatedAndInOrder",
+        "testDuplicateKeysEscapedAliasesAndDuplicateSelectionsAreRejected",
+        "testAggregateBoundsPrecedeSchemaAdmissionAndCoverTheWholeArtifact",
+        "testEncodingExpansionFailsWithoutChangingTheValidatedEstimate",
+        "testLateInvalidEntriesVersionsAndSchemaAvailabilityFailWithoutPartialResults",
+    ),
+})
+
 # The package privacy declaration requires an actual production-bundle read.
 # Retain the earlier 110-case profile for its own source and execution receipts.
 PROFILES["comparison-catalog-source-privacy-ui"] = (111, {
