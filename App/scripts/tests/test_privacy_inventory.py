@@ -246,6 +246,69 @@ class PrivacyInventoryTests(unittest.TestCase):
         self.assertEqual(self.invoke()[0], 2)
         self.assertEqual(retained.read_text(), "KEEP_EXTERNAL_RECEIPT")
 
+    def test_real_cli_parent_aliases_cannot_hide_a_product_escape_destination(self):
+        # Reproduce system-ancestor aliases such as /var -> /private/var on
+        # every host, without mocking pathlib or changing the existing test.
+        parent_alias = self.root / "parent-alias"
+        parent_alias.symlink_to(self.root.resolve(), target_is_directory=True)
+        selected_alias = self.root / "Alias.app"
+        selected_alias.symlink_to(self.app, target_is_directory=True)
+        outside = self.root / "outside"
+        outside.mkdir()
+        retained = outside / "retained.json"
+        (self.app / "escape").symlink_to(outside, target_is_directory=True)
+        output = parent_alias / "Planner.app" / "escape" / "retained.json"
+        manifest = self.app / next(iter(inventory.EXPECTED))
+        original = manifest.read_bytes()
+        for selected in [self.app.resolve(), parent_alias / "Alias.app"]:
+            for existing in [True, False]:
+                with self.subTest(selected=selected.name, existing=existing):
+                    if existing:
+                        retained.write_text("KEEP_EXTERNAL_RECEIPT")
+                    else:
+                        retained.unlink(missing_ok=True)
+                    result = subprocess.run(
+                        [sys.executable, str(SCRIPT), "--app", str(selected), "--output", str(output)],
+                        capture_output=True, text=True, timeout=10,
+                    )
+                    self.assertEqual(result.returncode, 2, result.stderr)
+                    self.assertEqual(result.stdout, "")
+                    self.assertEqual(retained.exists(), existing)
+                    if existing:
+                        self.assertEqual(retained.read_text(), "KEEP_EXTERNAL_RECEIPT")
+                    self.assertIn("evidence must be outside the inspected product", result.stderr)
+                    self.assertNotIn("Traceback", result.stderr)
+                    self.assertEqual(manifest.read_bytes(), original)
+                    self.assertTrue((self.app / "escape").is_symlink())
+                    self.assertTrue(selected_alias.is_symlink())
+
+    def test_real_cli_outside_evidence_under_a_parent_alias_can_publish_and_retry(self):
+        parent_alias = self.root / "parent-alias"
+        parent_alias.symlink_to(self.root.resolve(), target_is_directory=True)
+        output = parent_alias / "evidence" / "privacy.json"
+        retained = self.root / "unrelated.json"
+        retained.write_text("KEEP_UNRELATED_RECEIPT")
+        command = [sys.executable, str(SCRIPT), "--app", str(parent_alias / "Planner.app"),
+                   "--output", str(output)]
+        good = subprocess.run(command, capture_output=True, text=True, timeout=10)
+        self.assertEqual((good.returncode, good.stderr), (0, ""))
+        self.assertEqual(json.loads(output.read_text())["manifestCount"], 2)
+        self.assertEqual(json.loads(good.stdout), json.loads(output.read_text()))
+        manifest = self.app / next(iter(inventory.EXPECTED))
+        original = manifest.read_bytes()
+        manifest.unlink()
+        failed = subprocess.run(command, capture_output=True, text=True, timeout=10)
+        self.assertEqual(failed.returncode, 2, failed.stderr)
+        self.assertEqual(failed.stdout, "")
+        self.assertIn("missing", failed.stderr)
+        self.assertFalse(output.exists())
+        self.assertEqual(retained.read_text(), "KEEP_UNRELATED_RECEIPT")
+        manifest.write_bytes(original)
+        recovered = subprocess.run(command, capture_output=True, text=True, timeout=10)
+        self.assertEqual((recovered.returncode, recovered.stderr), (0, ""))
+        self.assertEqual(json.loads(output.read_text())["manifestCount"], 2)
+        self.assertEqual(list(output.parent.glob(".privacy-inventory-*")), [])
+
 
 if __name__ == "__main__":
     unittest.main()

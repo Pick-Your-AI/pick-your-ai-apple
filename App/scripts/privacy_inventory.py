@@ -121,6 +121,9 @@ def prepare_output(path, app):
     if info is not None and not stat.S_ISREG(info.st_mode):
         raise InventoryError("evidence destination must be a regular file")
     output_locations = {lexical_output, path.resolve()}
+    # An ancestor alias can enter the product before a later link escapes it.
+    # Check each supplied parent before allowing any existing receipt removal.
+    output_locations.update(parent.resolve() for parent in path.absolute().parents)
     app_locations = {lexical_app}
     app_loop = False
     try:

@@ -124,14 +124,60 @@ safety, so their failure cannot retain an older success receipt. Both the
 `RuntimeError` and `ELOOP` forms are covered, while product-contained and linked
 receipt targets remain preserved and rejected.
 
-The eleven filesystem regression methods use temporary synthetic product folders
+The thirteen filesystem regression methods use temporary synthetic product folders
 containing the actual reviewed source bytes. They exercise missing/swapped/extra
 manifests, source-pin changes, links, FIFOs, byte/traversal bounds, stale evidence,
-publication failure, actual CLI loop/missing-app retries and recovery. They do
-not build or execute an Apple app.
+publication failure, actual CLI loop/missing-app retries, ancestor aliases and
+recovery. They do not build or execute an Apple app.
 The inventory also does not inspect Mach-O API use, measure requests, enumerate
 system-framework behavior, determine collection/tracking answers, reconcile
 consent or certify an archive/submission. Those remaining #101 gates still apply.
+
+### Observed ancestor-alias preservation failure
+
+The original [submission-SDK job 117751884950](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39153511912/job/117751884950)
+for source `2eb2093ca861cdb9a8ea11bebbfe83b422311a7f`, prepared checkout
+`bbc5e8296525c60d55eea5a342fa59ea18f5e46d` / tree
+`d51cb8084145ae4122e7fc9fdac3462d07c10458`, failed before selecting the SDK or
+executing any Swift package/build step. On macOS with Python 3.14.7, its complete
+48-method portable suite had one error: the final retained-file assertion in
+`test_product_or_linked_evidence_destinations_are_preserved_and_rejected`
+reported `FileNotFoundError`. The protected synthetic outside receipt had been
+removed. The complete decoded job log is 27,465 UTF-8 bytes, SHA-256
+`4219aa2d589a26517af4e48a687869b8a125e107dde3f704508ce6bdcea0dd0c`.
+The earlier successful Linux scope run and prior 11/48-method local receipts do
+not erase this actual failure or establish SDK/built-product acceptance.
+
+The endpoint-only check compared lexical and fully resolved app/output paths.
+With an ancestor directory alias, the supplied output can enter the actual app
+and then follow its `escape` link to an outside file; neither endpoint retains
+the intervening product identity. This was reproduced on Linux with real
+directory symlinks, using both a canonical selected app and an app alias. The
+unchanged original failing test also reproduced its same final assertion error
+when its temporary parent was supplied through a real directory alias. No
+`Path.resolve` mock or macOS execution is claimed for these local replays.
+
+The correction adds the resolved identities of each supplied output parent to
+the existing containment check, before any receipt removal. It keeps final-file
+link rejection, lexical and resolved containment, stale-success invalidation,
+app-loop handling and atomic publication intact. The complete original eleven
+test methods remain unchanged. Two additional methods use the actual CLI:
+unsafe traversal must preserve both existing and absent receipts for canonical
+and aliased app inputs, while a genuinely outside output under an ancestor
+alias must still publish, invalidate after a failed app read, and recover.
+
+At test-only tree `17160d9e5f4995d98dd152b88e8642e115d1083f`, unchanged production
+fails all four new unsafe-path subcases, including both actual receipt-deletion
+assertions; the twelve other methods pass. At corrected source/test tree
+`432fc00274d17a9aa7f696efad711c09891e04cb`, all 13 privacy methods pass in
+0.505 seconds and all 50 App script methods pass in 0.678 seconds, with zero
+failures or skips. The unchanged original method also passes under the same
+aliased temporary-parent replay. This receiving documentation is the only later
+change to those executed source/test bytes. These are Python 3.12 Linux
+filesystem and runner controls. Fresh macOS guards, all 335 current package
+cases, both unsigned products and both exact built-product manifest inventories
+remain required; this correction changes no Swift, journey, workflow or native
+acceptance assertion.
 
 ## Remaining integration and acceptance
 
