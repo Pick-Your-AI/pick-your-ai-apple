@@ -18,7 +18,3 @@ Use the [platform program prompt](https://github.com/Pick-Your-AI/pick-your-ai-r
 Planning issues now live in `Pick-Your-AI/pick-your-ai-apple`. Refresh live assignees, native parents, prerequisites, Project fields, active work and linked PRs before execution. Do not create duplicate tracking or controllers. Repository creation does not launch a campaign or satisfy a delivery acceptance criterion.
 
 The issue migration preserves the original history and native relationships. Existing Android acceptance-record locations remain in the website repository pending an explicit placement-record change; Apple filenames remain subject to its ADR.
-# Delivery status
-
-The [per-issue acceptance ledger](docs/delivery/README.md) tracks all 129 open
-issues without treating partial implementation or package CI as full acceptance.
