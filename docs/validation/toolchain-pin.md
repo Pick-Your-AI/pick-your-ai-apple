@@ -55,9 +55,20 @@ statement describes implementation intake; it is not a current native-evidence g
 The following receipt was independently checked against the raw hosted job log,
 artifact metadata and Git objects on 2026-10-18. It covers the issue's pinned
 configuration, fresh-cache build and unavailable-pin negative/recovery case.
-Receiving review of this exact record and its signed-main publication remains
-required. The additional validation gaps below also remain unresolved; this
-receipt alone does not justify issue closure or change any checkbox.
+Independent receiving review of this exact record and its signed-main publication
+completed through [PR #210](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/210).
+[Review 5561703728](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/210#pullrequestreview-5561703728)
+accepted the bounded receipt while retaining the additional validation gaps below.
+This receipt alone does not justify issue closure or change any checkbox.
+
+The accepted record, blob `b23a2664055457acc40721c8a502cab1d4504a9f`, reached
+verified signed main
+[`0ec644af3e3516fd4d000c0fbe92cf0e51696779`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/0ec644af3e3516fd4d000c0fbe92cf0e51696779),
+tree `5775e48a4f1c0492b2d5217a35c785dc0a64919c`, preserving the concurrent
+accepted main. The [issue publication receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/26#issuecomment-6246453594)
+records that delivery and explicitly retains the open app-lifecycle and environment
+checks. This publication result does not recast the historical native execution
+below as a new or current-main run.
 
 ### Execution and artifact identity
 
@@ -92,7 +103,7 @@ push-triggered run has already passed.
 | --- | --- | --- |
 | Fresh macOS checkout builds supported targets reproducibly. | The retained job checked out the exact merge above, verified the explicit Xcode pin, passed all 17 native model tests, built the unsigned simulator app for both architectures, and completed iPhone/iPad launch smoke. The configuration and native inputs are preserved in signed main. | The selected iPhone/iPad application build boundary is demonstrated. The issue's additional backgrounding/cancellation validation and full OS/device qualification are not established by this run. |
 | Build from a fresh macOS checkout with an empty dependency cache; unavailable pins must fail with actionable setup instructions rather than resolve a different dependency silently. | All four named SwiftPM/Xcode cache and output paths were verified absent before resolution/build. All eight pin regressions passed. The actual missing-pin CLI returned status 2 with exact version/build/path setup instructions, preserved the existing environment file, and prevented its downstream sentinel command. The next production CLI invocation selected and verified the real pinned Xcode; model tests and the clean build then succeeded. Five committed Swift package manifests use local paths and the SDK system library, with no remote package release to substitute. | Both the intended failure and successful recovery were executed. Portable or injected-probe results alone are not used as the clean native build evidence. Future remote dependencies require their own version pins and unavailable-pin case. |
-| The pinned Xcode/package configuration and clean-build log is linked with criterion results, exact versions, limitations and receiving-review disposition. | The pin, verifier, configuration and reproduction commands above lead to this exact run/artifact and its identity table. [Source/execution review on #176](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/176#pullrequestreview-5561501356) and [final integration/execution review on #195](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/195#pullrequestreview-5561607454) accepted the source and observed native gate; both explicitly reserved this issue-specific receipt. | Independent acceptance of this updated criterion record and its publication remains required. Link that review and the final signed artifact from #26, and resolve the additional validation gaps before whole-issue closure. |
+| The pinned Xcode/package configuration and clean-build log is linked with criterion results, exact versions, limitations and receiving-review disposition. | The pin, verifier, configuration and reproduction commands above lead to this exact run/artifact and its identity table. [Source/execution review on #176](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/176#pullrequestreview-5561501356) and [final integration/execution review on #195](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/195#pullrequestreview-5561607454) accepted the source and observed native gate; both explicitly reserved this issue-specific receipt. | [Independent receiving review on #210](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/210#pullrequestreview-5561703728), its verified signed main publication `0ec644af` and the [linked issue receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/26#issuecomment-6246453594) complete the record's review/publication step. Resolve the additional app validation gaps before whole-issue closure. |
 
 ### Additional issue validation remains explicit
 

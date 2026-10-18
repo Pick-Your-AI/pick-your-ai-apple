@@ -43,6 +43,11 @@ downloads were independently hashed and their embedded package names and version
 matched to the corresponding release before this lock was prepared. Foreign
 platform wheels were inspected without loading or executing them.
 
+The initial hosted scan in #280 reported a conflicting license expression for
+the exact typing-extensions wheel. The [bounded source proof](../../docs/validation/typing-extensions-license-proof.md)
+records the complete artifact/license comparison, observed failure and required
+guard conditions. It preserves the generic license policy and separate receiving gates.
+
 The sources are PyPI's public release JSON and its referenced
 `files.pythonhosted.org` artifacts. PyPI documents the
 [release metadata and file digests](https://docs.pypi.org/api/json/); pip documents
