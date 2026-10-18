@@ -45,10 +45,58 @@ pins and their own unavailable-pin regression.
 
 ## Acceptance disposition
 
-Source and test preparation is complete in the linked PR. Local execution was
-unavailable because the session executor was offline. The exact-head hosted
-unavailable-pin test, successful pinned recovery, empty-cache build, artifact
-identity and independent receiving review must be recorded before full #26 closure.
-A parsed script or a mocked version probe is not the hosted clean-build result.
-Simulator compilation and launches do not establish signing, physical-device,
-TestFlight or App Store acceptance.
+The implementation reached signed main in
+[PR #195](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/195) at
+[`acb0b578cbca098867abcd10f7137a81f98fe483`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/acb0b578cbca098867abcd10f7137a81f98fe483).
+GitHub's commit readback reports a valid verified signature and full tree
+`ea1ce16bd2d29b00f3d8179074cc3d126f88f816`. The earlier unavailable-executor
+statement describes implementation intake; it is not a current native-evidence gap.
+
+The following receipt was independently checked against the raw hosted job log,
+artifact metadata and Git objects on 2026-10-18. It covers the issue's pinned
+configuration, fresh-cache build and unavailable-pin negative/recovery case.
+Issue closure still requires the receiving reviewer to accept this exact
+criterion record and its signed-main publication; no checkbox is changed here.
+
+### Execution and artifact identity
+
+| Field | Verified value |
+| --- | --- |
+| Native run and job | [39098950754 / 117591076018](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39098950754/job/117591076018), completed successfully |
+| Tested checkout | `37067364226f3849dac4873a269bcc8eb129b351`, test merge with ordered parents `1a5954b268834b1199b12982d20abc9ff387e9f5` and `b29cf778a38d4d93cf94242a125892d558b8e694` |
+| Tested full tree | `4333fb38bca664d6377a0cd5bcfad862b200fc62` |
+| Host | macOS 15.7.9, build 24G830; workflow runner label `macos-15` |
+| Compiler and SDK | Xcode 16.4, build 16F6, explicit `/Applications/Xcode_16.4.app/Contents/Developer`; Apple Swift 6.1.2; iPhoneSimulator 18.5 SDK |
+| Build targets | Unsigned `Planner` simulator application, arm64 and x86_64, iOS 17.0 deployment floor |
+| Observed launch destinations | iPhone 17 Pro and iPad Pro 13-inch (M5), both iOS 26.2 simulator runtime |
+| Retained artifact | [native-local-drafts-evidence, ID 12126840445](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39098950754/artifacts/12126840445), 13,002 bytes |
+| Artifact SHA-256 | `1df5edfbdf0b3642ddce74ac5401af10fa88fed3fddf8829eb54e215bbcf17c9` |
+| Artifact availability readback | Not expired when inspected; advertised expiry 2026-11-01 05:33:25 UTC |
+
+The observed simulator runtime is distinct from the compiled SDK and deployment
+floor. This run does not prove execution on the minimum iOS 17 runtime or every
+supported OS/device combination. The hosted image label is mutable; the host,
+compiler and actual runtime above identify this execution.
+
+The tested checkout and delivered main have identical `App/`, `Packages/` and
+`.github/workflows/native-ui.yml` contents. The only full-tree differences at
+delivery are the four separately reviewed obsolete-PR maintenance files listed in
+[the final receiving review](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/195#pullrequestreview-5561607454).
+This is evidence for the delivered native build inputs, not a claim that a later
+push-triggered run has already passed.
+
+### Exact criterion receipt
+
+| Criterion from Apple #26 | Observed implementation and failure/recovery result | Receiving boundary |
+| --- | --- | --- |
+| Fresh macOS checkout builds supported targets reproducibly. | The retained job checked out the exact merge above, verified the explicit Xcode pin, passed all 17 native model tests, built the unsigned simulator app for both architectures, and completed iPhone/iPad launch smoke. The configuration and native inputs are preserved in signed main. | The selected iPhone/iPad application build boundary is demonstrated. Full OS/device, backgrounding and lifecycle qualification remains in the corresponding application validation tasks. |
+| Build from a fresh macOS checkout with an empty dependency cache; unavailable pins must fail with actionable setup instructions rather than resolve a different dependency silently. | All four named SwiftPM/Xcode cache and output paths were verified absent before resolution/build. All eight pin regressions passed. The actual missing-pin CLI returned status 2 with exact version/build/path setup instructions, preserved the existing environment file, and prevented its downstream sentinel command. The next production CLI invocation selected and verified the real pinned Xcode; model tests and the clean build then succeeded. Five committed Swift package manifests use local paths and the SDK system library, with no remote package release to substitute. | Both the intended failure and successful recovery were executed. Portable or injected-probe results alone are not used as the clean native build evidence. Future remote dependencies require their own version pins and unavailable-pin case. |
+| The pinned Xcode/package configuration and clean-build log is linked with criterion results, exact versions, limitations and receiving-review disposition. | The pin, verifier, configuration and reproduction commands above lead to this exact run/artifact and its identity table. [Source/execution review on #176](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/176#pullrequestreview-5561501356) and [final integration/execution review on #195](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/195#pullrequestreview-5561607454) accepted the source and observed native gate; both explicitly reserved this issue-specific receipt. | Independent acceptance of this updated criterion record and its publication is the remaining receiving step. Link that review and the final signed artifact from #26 before closing the issue. |
+
+The architecture prerequisite is the accepted
+[#22 decision receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/22#issuecomment-6244062120).
+The #26 evidence does not establish all #30 branch-protection/untrusted-PR
+requirements, physical-device or assistive-technology behavior, actual Files
+provider journeys, signed installation, TestFlight, App Store or release readiness.
+Those acceptance requirements and any later combined editor workflow results remain
+separate. No owner assignment, Project field or unrelated criterion is changed.
