@@ -1,6 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import PlannerData
+import PlannerTransfer
 
 private struct ExportBuildDocument: FileDocument {
     static var readableContentTypes: [UTType] { [.json] }
@@ -13,12 +14,22 @@ private struct ExportBuildDocument: FileDocument {
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper { FileWrapper(regularFileWithContents: data) }
 }
 
+private struct PreparedBuildComparison {
+    let result: BuildComparison
+    let beforeSynthetic: Bool
+    let afterSynthetic: Bool
+}
+
 public struct ImportedBuildLibraryView: View {
     @StateObject private var model: ImportedBuildLibraryModel
     @State private var importing = false
     @State private var exporting = false
     @State private var alias = ""
     @State private var reviewed = false
+    @State private var comparisonBaseline: BuildSnapshot?
+    @State private var baselineSynthetic = false
+    @State private var comparison: PreparedBuildComparison?
+    @State private var comparisonNotice: String?
     public init(store: DraftStore) { _model = StateObject(wrappedValue: ImportedBuildLibraryModel(store: store)) }
     public var body: some View {
         NavigationStack {
@@ -59,6 +70,38 @@ public struct ImportedBuildLibraryView: View {
                         Text("Compatibility: unknown. Pricing: unknown. Imported analysis is not current.")
                         Text(snapshot.id).font(.caption).textSelection(.enabled)
                     }
+                    Section("Compare configurations") {
+                        Button("Use selected build as baseline") {
+                            comparisonBaseline = snapshot; baselineSynthetic = model.markedSynthetic
+                            comparison = nil; comparisonNotice = nil
+                        }.accessibilityIdentifier("pinComparisonBaseline")
+                        if let baseline = comparisonBaseline {
+                            Text("Baseline: " + baseline.name)
+                            Text(baseline.id).font(.caption).textSelection(.enabled)
+                            Text("Choose another imported build above, then compare. The baseline stays pinned until you replace or clear it.")
+                            Button("Compare baseline with selected build") {
+                                comparison = nil; comparisonNotice = nil
+                                do {
+                                    comparison = PreparedBuildComparison(
+                                        result: try BuildComparison.compare(baseline, snapshot),
+                                        beforeSynthetic: baselineSynthetic, afterSynthetic: model.markedSynthetic)
+                                }
+                                catch {
+                                    comparisonNotice = "These builds could not be compared completely. Their identities may be ambiguous or conflicting, or the number of differences exceeds the supported limit. Both builds were preserved."
+                                }
+                            }.accessibilityIdentifier("compareSelectedBuilds")
+                            Button("Clear comparison baseline", role: .cancel) {
+                                comparisonBaseline = nil; comparison = nil; comparisonNotice = nil
+                            }.accessibilityIdentifier("clearComparisonBaseline")
+                        }
+                        if let comparisonNotice { Text(comparisonNotice).fixedSize(horizontal: false, vertical: true) }
+                        if let comparison {
+                            NavigationLink("View configuration differences (\(comparison.result.differences.count))") {
+                                BuildComparisonView(comparison: comparison.result, beforeSynthetic: comparison.beforeSynthetic,
+                                                    afterSynthetic: comparison.afterSynthetic)
+                            }.accessibilityIdentifier("viewBuildComparison")
+                        }
+                    }
                     Section("Prepare export") {
                         TextField("Public owner alias", text: $alias)
                             .accessibilityIdentifier("publicExportAlias")
@@ -80,6 +123,7 @@ public struct ImportedBuildLibraryView: View {
             .task { await model.refresh() }
             .onChange(of: alias) { _, _ in reviewed = false; model.clearExport() }
             .onChange(of: model.selected?.id) { _, _ in alias = ""; reviewed = false }
+            .onChange(of: model.snapshot) { _, _ in comparison = nil; comparisonNotice = nil }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.json], allowsMultipleSelection: false) { result in
                 switch result {
                 case .success(let urls): if let url = urls.first { Task { await model.previewFile(url) } }
