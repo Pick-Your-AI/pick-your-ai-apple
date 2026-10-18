@@ -1,6 +1,6 @@
 # #21: Release inclusion and configuration proposal
 
-Status: proposed, awaiting product/release receiving review. [Baseline and #20 journey reference](README.md). No scope disposition here closes a work package or removes its acceptance criteria.
+Status: release proposal awaiting product/release receiving review; **bounded engineering implementation scope selected** under the user's explicit decision mandate. [Current disposition](foundation-disposition.md) selects guest-first local planning, available/synthetic input boundaries, core T6 guidance and disabled optional capabilities for continued implementation and the SwiftUI scaffold. This does not approve a production tuple, replace public sharing with local export, close a work package or remove acceptance criteria. [Baseline and #20 journey reference](README.md).
 
 Recommend a guest-first planning release: discover → build → evaluate → estimate → save locally → compare → preview/export/share. The client device is not the inference target. Retain T0–T2 assembly plus core T6 guardrail/evaluation and proposed deployment-readiness guidance. T3–T5 breadth is deferred; disabling a tier never hides required evidence/cost gaps. Local fork/import is independent of optional account continuity. Public remote sharing remains part of the intended core journey, gated by authorized canonical services; a local export cannot silently satisfy public-link acceptance.
 
