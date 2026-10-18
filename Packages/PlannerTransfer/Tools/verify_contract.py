@@ -49,3 +49,12 @@ for case in snapshot_cases:
     payload = apply_vector(catalog, case)
     assert validator.is_valid(payload) == case['canonicalValid'], case['name']
 print(f'Verified {len(snapshot_cases)} canonical catalog snapshot cases; whole-document limits remain explicit.')
+
+from ruleset_vectors import encoded_vectors as encoded_ruleset_vectors
+ruleset_cases_path = FIXTURES / 'ruleset-conformance.json'
+assert ruleset_cases_path.read_text() == encoded_ruleset_vectors(), 'Stale ruleset vectors'
+ruleset_cases = json.loads(ruleset_cases_path.read_text())
+validator = Draft202012Validator(schemas['ruleset.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in ruleset_cases:
+    assert validator.is_valid(json.loads(case['json'])) == case['canonicalValid'], case['name']
+print(f'Verified {len(ruleset_cases)} canonical ruleset syntax cases; no rule evaluation is performed.')

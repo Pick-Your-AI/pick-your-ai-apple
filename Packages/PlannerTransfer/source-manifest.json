@@ -9,6 +9,8 @@
     "examples/build.json": "26762208769a8cf1012b4f33b1c1608556d275187ce21117d0b9632cdf951864",
     "schemas/catalog-item.schema.json": "81c960c6e7dfe046634062e3f9ce5a1089b1d88adbd9fd45d9a67dcfc0339a25",
     "examples/catalog.json": "2e9120db823faef3e1e330a7d2e8067b3ab064328e2faed699d15cf41880fbf8",
-    "schemas/catalog-snapshot.schema.json": "a5af428386768b698d280a18bf99c0e52364ee397a2075685213b3d0762693a4"
+    "schemas/catalog-snapshot.schema.json": "a5af428386768b698d280a18bf99c0e52364ee397a2075685213b3d0762693a4",
+    "schemas/ruleset.schema.json": "b251e49774d7e6a34522555adefd40f56f5e647a8a2b4a69a0be0a4618b1a8d3",
+    "examples/ruleset.json": "05474568204fdbfd407cb4e4cfc9334e22fdf24e75111bed8990868926fab418"
   }
 }

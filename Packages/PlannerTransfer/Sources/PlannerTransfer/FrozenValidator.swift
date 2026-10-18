@@ -26,6 +26,11 @@ struct FrozenValidator: Sendable {
         guard let schema = schemas["catalog-snapshot.schema.json"] else { throw TransferError.unavailableSchema }
         try check(value, schema: schema, document: "catalog-snapshot.schema.json")
     }
+    func validateRuleset(_ value: JSONValue) throws {
+        guard value.object?["schema_version"] == .string("1.0.0") else { throw TransferError.unsupportedVersion }
+        guard let schema = schemas["ruleset.schema.json"] else { throw TransferError.unavailableSchema }
+        try check(value, schema: schema, document: "ruleset.schema.json")
+    }
     func check(_ value: JSONValue, schema: JSONValue, document: String) throws {
         guard let s = schema.object else { throw TransferError.unavailableSchema }
         if let ref = s["$ref"]?.string {
@@ -94,6 +99,16 @@ struct FrozenValidator: Sendable {
             if let max = s["maximum"]?.number, n > max { throw TransferError.schemaViolation }
         }
         for child in s["allOf"]?.array ?? [] { try check(value, schema: child, document: document) }
+        if let alternatives = s["oneOf"]?.array {
+            var matches = 0
+            for child in alternatives {
+                do { try check(value, schema: child, document: document); matches += 1 }
+                catch TransferError.schemaViolation { }
+                // Missing schemas and representation failures are not an
+                // alternative mismatch; never hide them behind another branch.
+            }
+            guard matches == 1 else { throw TransferError.schemaViolation }
+        }
         if let condition = s["if"], let then = s["then"] {
             if (try? check(value, schema: condition, document: document)) != nil { try check(value, schema: then, document: document) }
         }

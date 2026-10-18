@@ -6,6 +6,7 @@ This portable Swift 6 package implements part of Apple [#32](https://github.com/
 
 - `CatalogItem.decode(_:)` validates a single frozen-v1 catalog item, preserves its exact `CatalogKind` identity and every supported field, and returns an immutable value. Kind-specific specs and their required tier are checked against the unchanged canonical schema. No missing optional fact is filled in and no catalog item becomes a user selection.
 - `CatalogSnapshot.decode(_:)` validates a complete frozen-v1 catalog envelope and every item before returning an immutable snapshot. It preserves catalog identity, exact revision, capture timestamp and item order. A malformed envelope or item rejects the entire document; this boundary cannot activate a cache or publish a partial catalog.
+- `Ruleset.decode(_:)` validates a whole frozen-v1 rules artifact, including every recursive expression and operand alternative. It preserves all declarations and literals without evaluating compatibility or accepting a policy.
 - `BuildTransfer.snapshot(fromDraftJSON:)` validates a complete frozen-v1 BuildSnapshot and returns an immutable value. Missing fields and fewer than two selections fail; no defaults, locks or synthetic values are inserted. Keep editor drafts in PlannerData even when this transition fails.
 - `BuildTransfer.preview(_:)` accepts a bare snapshot or the existing web `pickyour.ai/build-export` version-1 envelope. Envelope provenance is untrusted metadata, not a verified catalog activation. `usesSyntheticData` is nil for bare imports; do not interpret that as production evidence.
 - `ImportPreview.fork(localOwner:timestamp:)` explicitly creates a new UUID-based build identity, revision 1 and draft lifecycle. Source owner is replaced by the caller's local identity. Every lock, selection and link is retained. This API cannot overwrite an existing record; the integration must insert the returned value as a new draft only after user confirmation.
@@ -21,7 +22,7 @@ Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. D
 
 ## Pinned inputs and validation
 
-`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/catalog-snapshot schemas and synthetic build/catalog fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. Swift and Python Draft202012Validator with FormatChecker replay exactly the same JSON corpus. Synthetic fixtures are not real catalog or installed-application evidence.
+`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/catalog-snapshot/ruleset schemas and synthetic build/catalog/ruleset fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. Swift and Python Draft202012Validator with FormatChecker replay exactly the same JSON corpus. Synthetic fixtures are not real catalog or installed-application evidence.
 
 Run:
 
@@ -125,6 +126,45 @@ the Python reference verifier. Swift/Xcode are absent in this workspace; the six
 new Swift tests require the hosted transfer workflow before integration. This
 remains partial #32 work, with the broader model, migration and receiving-review
 requirements listed below unchanged.
+
+## Frozen ruleset syntax boundary (#32)
+
+The ruleset schema and 45-rule synthetic example are copied byte-for-byte from
+the same pinned research revision `7acbefbf4e4e700231e88be272bc89e3a73dde15`.
+Their SHA-256 identities are
+`b251e49774d7e6a34522555adefd40f56f5e647a8a2b4a69a0be0a4618b1a8d3`
+and `05474568204fdbfd407cb4e4cfc9334e22fdf24e75111bed8990868926fab418`;
+both are included in the nine-file source manifest. No frozen schema, policy
+declaration, canonical fixture or earlier conformance vector is changed.
+
+`Ruleset` retains the complete bounded `JSONValue`, ordered rule array, ID, version
+and publication timestamp. Nested expression and operand objects must match exactly
+one canonical `oneOf` branch; zero and multiple matches reject. A missing referenced
+schema propagates as an unavailable resource even if another branch would match.
+The existing whole-document byte/depth/node/numeric and duplicate-key limits apply
+before validation. Normalized encoding reparses its exact bytes and requires equal
+values within the same bounds. Optional owner absence, literal null/false and
+on-unknown declarations remain distinct; no default, result or policy is inferred.
+
+The deterministic `Tools/ruleset_vectors.py` generates 321 shared JSON-text cases
+for the Python reference and Swift decoder. They cover all 15 expression operators,
+three operand forms, seven metric names, three reference scopes, all 29 affected
+kinds, required/unknown fields, malformed recursion, version/date/identity bounds,
+and rule order/repeated identities. Most cases use one unchanged canonical rule
+to bound replay work; the whole 45-rule source has its own case. Three canonical
+positives explicitly exceed the established client numeric or strict terminal-newline
+subset. Frozen version syntax rejects SemVer build metadata; the client does not
+extend that rule. Eight Swift regressions add exact `oneOf` behavior, resource failure,
+all-source preservation, duplicate keys and aggregate/encoding limits.
+
+This is a schema-driven parsing boundary, not a rules evaluator or generated
+per-field model set. A receiving graph/evaluator must apply accepted identity and
+policy semantics; schema validity alone does not establish that repeated rule IDs
+are usable. There is no cache activation, compatibility result, source-use acceptance,
+network request or app UI change. Swift/Xcode are unavailable locally; the eight
+new cases and unchanged existing suites require actual hosted execution and independent
+receiving review. Catalog #179/#182 signed-main integration remains a prerequisite
+for this stacked preparation. The broader #32 acceptance below remains open.
 
 ## Remaining acceptance
 
