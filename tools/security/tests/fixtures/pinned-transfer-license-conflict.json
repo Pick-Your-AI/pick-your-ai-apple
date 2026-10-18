@@ -1,0 +1,162 @@
+{
+  "source": {
+    "repository": "Pick-Your-AI/pick-your-ai-apple",
+    "pull_request": 266,
+    "head": "4b455d1efa8edf135bdba393089cca7ab32886ec",
+    "base": "1601ec4a1333fe2cea8871e32888e30c0b368aed",
+    "run_id": 39140834572,
+    "job_id": 117714734437
+  },
+  "changes": [
+    {
+      "change_type": "added",
+      "manifest": ".github/workflows/dependency-review.yml",
+      "ecosystem": "actions",
+      "name": "actions/checkout",
+      "version": "11bd71901bbe5b1630ceea73d27597364c9af683",
+      "package_url": "pkg:githubactions/actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+      "license": null,
+      "source_repository_url": "https://github.com/actions/checkout",
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": ".github/workflows/dependency-review.yml",
+      "ecosystem": "actions",
+      "name": "actions/dependency-review-action",
+      "version": "907a6e9569212033966bc0b69d32473b046dd66b",
+      "package_url": "pkg:githubactions/actions/dependency-review-action@907a6e9569212033966bc0b69d32473b046dd66b",
+      "license": null,
+      "source_repository_url": "https://github.com/actions/dependency-review-action",
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "Packages/PlannerTransfer/Tools/requirements.txt",
+      "ecosystem": "pip",
+      "name": "attrs",
+      "version": "26.1.0",
+      "package_url": "pkg:pypi/attrs@26.1.0",
+      "license": "MIT",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "Packages/PlannerTransfer/Tools/requirements.txt",
+      "ecosystem": "pip",
+      "name": "jsonschema",
+      "version": "4.26.0",
+      "package_url": "pkg:pypi/jsonschema@4.26.0",
+      "license": "MIT",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "Packages/PlannerTransfer/Tools/requirements.txt",
+      "ecosystem": "pip",
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "package_url": "pkg:pypi/jsonschema-specifications@2025.9.1",
+      "license": "MIT",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "Packages/PlannerTransfer/Tools/requirements.txt",
+      "ecosystem": "pip",
+      "name": "referencing",
+      "version": "0.37.0",
+      "package_url": "pkg:pypi/referencing@0.37.0",
+      "license": "MIT",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "Packages/PlannerTransfer/Tools/requirements.txt",
+      "ecosystem": "pip",
+      "name": "rfc3339-validator",
+      "version": "0.1.4",
+      "package_url": "pkg:pypi/rfc3339-validator@0.1.4",
+      "license": "MIT",
+      "source_repository_url": "https://github.com/naimetti/rfc3339-validator",
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "Packages/PlannerTransfer/Tools/requirements.txt",
+      "ecosystem": "pip",
+      "name": "rfc3986-validator",
+      "version": "0.1.1",
+      "package_url": "pkg:pypi/rfc3986-validator@0.1.1",
+      "license": "MIT",
+      "source_repository_url": "https://github.com/naimetti/rfc3986-validator",
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "Packages/PlannerTransfer/Tools/requirements.txt",
+      "ecosystem": "pip",
+      "name": "rpds-py",
+      "version": "2026.9.1",
+      "package_url": "pkg:pypi/rpds-py@2026.9.1",
+      "license": "MIT",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "Packages/PlannerTransfer/Tools/requirements.txt",
+      "ecosystem": "pip",
+      "name": "six",
+      "version": "1.17.0",
+      "package_url": "pkg:pypi/six@1.17.0",
+      "license": "MIT",
+      "source_repository_url": "https://github.com/benjaminp/six",
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "Packages/PlannerTransfer/Tools/requirements.txt",
+      "ecosystem": "pip",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "package_url": "pkg:pypi/typing-extensions@4.16.0",
+      "license": "Python-2.0 AND GPL-1.0-or-later AND Python-2.0 AND BSD-3-Clause AND Python-2.0 AND BSD-3-Clause AND 0BSD",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    }
+  ],
+  "invalid_licenses": {
+    "unlicensed": [],
+    "unresolved": [],
+    "forbidden": [
+      {
+        "change_type": "added",
+        "manifest": "Packages/PlannerTransfer/Tools/requirements.txt",
+        "ecosystem": "pip",
+        "name": "typing-extensions",
+        "version": "4.16.0",
+        "package_url": "pkg:pypi/typing-extensions@4.16.0",
+        "license": "Python-2.0 AND GPL-1.0-or-later AND Python-2.0 AND BSD-3-Clause AND Python-2.0 AND BSD-3-Clause AND 0BSD",
+        "source_repository_url": null,
+        "scope": "runtime",
+        "vulnerabilities": []
+      }
+    ]
+  }
+}

@@ -10,8 +10,10 @@ their own inventories and gates.
 
 ## Selected format providers
 
-The six frozen schema/fixture source hashes and both vector files remain unchanged.
-The bundled schemas declare only `date-time` and `uri` formats. The validator stays
+The current receiving tree retains all ten accepted frozen schema/fixture source
+hashes and all four conformance vector files: BuildSnapshot, CatalogItem,
+QualityEvaluationRun and ResourceEstimate. The bundled schemas declare only
+`date-time` and `uri` formats. The validator stays
 at `jsonschema==4.26.0`; its inspected wheel's `jsonschema/_format.py` registers
 `rfc3339-validator` for timestamps and explicitly supports `rfc3986-validator`
 for URI checking when `rfc3987` is absent.
@@ -69,6 +71,12 @@ The requirements file enables [pip hash-checking mode and binary-only installati
 and fixes the index to PyPI. The workflow also passes the security flags explicitly,
 uses pip's isolated configuration mode, keeps dependency resolution enabled, and
 runs `pip check`. No `--no-deps` shortcut can hide a missing transitive pin.
+The workflow allocates a new directory under `RUNNER_TEMP` for every invocation,
+matching the fresh-directory reproduction below. Recreating a virtual environment
+at an existing path preserves installed distributions; hash-checking pip can then
+accept a matching installed version without checking its wheel bytes. A unique
+directory prevents that reuse while preserving the selected Python interpreter,
+pip flags, complete lock and reference-checker arguments.
 Release hashes lock inspected bytes; they do not establish absence of
 vulnerabilities or independently verify publisher attestations. The declared
 licenses are reviewed package metadata, not an audit of every bundled source or
@@ -87,9 +95,10 @@ python3 -m venv "$transfer_validation_dir"
 "$transfer_validation_dir/bin/python" Packages/PlannerTransfer/Tools/verify_contract.py
 ```
 
-The reference checker must report all six source hashes, 129 shared cases, all
-29 catalog kinds and 1,635 catalog cases. It requires both format registrations
-before running the corpus. Network access is needed for installation; validation
+The current reference checker must report ten source hashes, 129 shared build
+cases, all 29 catalog kinds and 1,635 catalog cases, 202 quality cases and
+223 resource estimate cases. It requires both format registrations before running
+all four corpora. Network access is needed for installation; validation
 itself resolves only the pinned local resources. The workflow records its existing
 `python3` interpreter; selecting or freezing a different Python/host image is
 outside this dependency lock. Xcode 16.4/16F6, all Swift tests and unsigned simulator
@@ -130,6 +139,16 @@ PY
 ```
 
 ## Actual rejection and recovery evidence
+
+An additional controlled path-reuse check on Python 3.12.14 executed the old and
+corrected workflow shell steps with an owned temporary path, offline inert wheel
+and lock, and marker inspection in place of the reference checker. The repeated
+old `venv` command retained different installed bytes at the same package version;
+the required-hash install exited zero with `Requirement already satisfied`. The
+corrected step created a new environment, installed the reviewed fixture and
+passed `pip check`, while leaving the prior environment unchanged. This checks
+environment allocation and installation behavior; it does not execute the real
+Transfer dependencies, contract corpus, Swift package or hosted native gates.
 
 On 2026-10-18, a new Python 3.12.14 virtual environment with pip 25.0.1 installed
 all nine applicable distributions from the exact required hashes. `pip check`,
