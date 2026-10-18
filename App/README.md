@@ -10,25 +10,21 @@ implemented in PlannerData for this executable slice. This advances the proposed
 [#22 ADR](../docs/decisions/issue-22-platform.md); its previous Core Data recommendation
 is superseded for this local store only. Product receiving acceptance stays separate.
 
-On macOS with Xcode 16.4 selected:
-
-```sh
-swift test --package-path Packages/PlannerUI
-xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/native CODE_SIGNING_ALLOWED=NO build
-python3 App/scripts/simulator-smoke.py
-```
+On macOS, use the [pinned toolchain setup and commands](#pinned-toolchain) below.
 
 The workflow records the actual compiler/SDK/runtime and runs model tests, an unsigned
-simulator build, and iPhone/iPad launch smoke checks. It contains no signing secrets.
-The smoke script is not an accessibility or complete journey test.
+simulator build, iPhone/iPad launch smoke checks, and a separate XCUITest local-draft
+journey with the actual production autosave, durable undo/redo reads and validated
+discard recovery. It contains no signing secrets. The launch-only smoke script remains a
+separate check; see the [UI journey evidence and limits](UI_JOURNEY.md).
 
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
-| #26 fresh checkout scaffold; #30 CI | Checked-in Xcode project/scheme, local packages and pinned Xcode selection | Hosted run needed; no release configuration or signed archive |
-| #28 restore correct draft | SceneStorage selection, explicit dirty-discard guard, background save attempt | Cold-link routing, process-kill replay and physical lifecycle qualification |
-| #80 local library operations | Notes CRUD plus imported-build local labels, fresh-fork duplication, confirmed deletion, revision/qualification display and bounded corrupt-wrapper recovery | Exact-head native CRUD/recovery execution, cross-client journey and receiving review |
+| #26 pinned clean checkout; #30 native CI | Checked-in app/UI-test targets and shared scheme, local packages, explicit Xcode pin, actual CLI missing-pin regression and isolated-cache workflow | Exact-head hosted evidence and receiving review; #30 untrusted-PR and release-secret gates remain separate |
+| #28 restore correct draft | SceneStorage selection, explicit dirty-discard guard, background save attempt; UI test reopens an acknowledged revision after process termination | Hosted UI run pending; cold-link routing, interrupted unacknowledged edits and physical lifecycle qualification |
+| #80 local library operations | Notes CRUD and UI save/reopen/discard/delete; imported-build local labels, fresh-fork duplication, confirmed deletion, revision/qualification display and bounded corrupt-wrapper recovery | Exact-head native CRUD/recovery and UI execution, UI duplicate/cross-client journey and receiving review |
 | #87 offline editing | All operations use local storage; unknown compatibility/pricing always explicit | Governed catalog cache and downstream evaluation integration |
-| #105 accessibility | System controls, visible labels, Dynamic Type, editor/action identifiers | Automated complete journeys, VoiceOver, large text and physical device audits |
+| #105 accessibility | System controls, visible labels, Dynamic Type, editor/action identifiers; bounded XCUITest local-draft journey | Hosted UI run pending; wider complete journeys, VoiceOver, large text and physical device audits |
 
 Save is acknowledged only after storage commits. Failed saves preserve the in-memory
 input and display a retry notice; revision conflicts never overwrite newer revisions.
@@ -48,9 +44,17 @@ Seven additional model regressions cover restore/reopen/history retention, dirty
 concurrent edit guards, binding updates during restore, bounded history, unsupported
 history, and background saves during paused history/restore operations. These are
 controlled actor-boundary tests, not simulated OS termination or end-to-end UI taps.
-Undo/redo, timed autosave, process-kill during UI autosave and physical lifecycle
-qualification remain work under #69. Hosted exact-head compilation and model tests
-are required before this slice is accepted.
+The subsequent [undo and autosave implementation](../docs/validation/editor-autosave.md)
+adds bounded session undo/redo and a 750 ms typing debounce through the same queued
+save path. Input remains editable while saving, and delayed timers/opens cannot
+overwrite another draft or newer input. Actual process-kill during UI autosave,
+full builder journeys and physical lifecycle qualification remain work under #69.
+Hosted exact-head compilation and model tests are required before acceptance.
+The [combined editor integration record](../docs/validation/editor-integration.md)
+tracks the stronger delayed-open generation guard, retained lifecycle-save regressions,
+separate library/editor failure notices and the updated real-timer journey. Previously
+passed source runs are historical evidence; the combined source still requires its
+own native package execution and both pinned UI destinations.
 
 Storage opens in Application Support under a directory protected until first unlock.
 A failure shows an unavailable screen and never resets the database. Locked-device
@@ -61,6 +65,42 @@ Primary Apple references checked 2026-10-18: [scene phase](https://developer.app
 Local Linux inspection cannot establish SwiftUI/Xcode correctness. See the PR checks
 for observed hosted results, distinct from device, store or production acceptance.
 
+## Pinned toolchain
+
+[toolchain.json](toolchain.json) pins the full Xcode bundle to version 16.4, build
+16F6, at /Applications/Xcode_16.4.app/Contents/Developer. Install that exact release
+from [Apple Developer downloads](https://developer.apple.com/download/all/) and open
+it once to finish component and license setup. The command-line-tools-only package
+does not contain the app's iOS SDK. Simulator runtimes are recorded separately in
+each native artifact; launch smoke checks do not qualify physical devices.
+
+Run commands from a fresh repository checkout through the verifier:
+
+```sh
+python3 App/scripts/toolchain.py -- swift test --package-path Packages/PlannerUI
+python3 App/scripts/toolchain.py -- xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/native -clonedSourcePackagesDirPath .build/native-source-packages CODE_SIGNING_ALLOWED=NO build
+python3 App/scripts/toolchain.py -- python3 App/scripts/simulator-smoke.py
+python3 -m unittest discover -s App/scripts/tests -v
+python3 App/scripts/toolchain.py -- python3 App/scripts/ui-journey.py
+```
+
+The verifier checks the selected directory and exact version/build before executing
+the command with that bundle's DEVELOPER_DIR. It reports installation/setup
+instructions and exits with status 2 for unavailable, malformed, mismatched or
+unresponsive pins. It propagates the native command's exit status. The native
+workflow publishes the verified directory to later steps only after validation.
+
+All five checked-in Swift packages currently use repository-local package paths or
+system SDK libraries. Their source revision is the checkout commit; there is no
+remote Swift package version to resolve to a replacement. The native workflow
+asserts that its explicit SwiftPM cache/scratch, Xcode package and derived-data paths
+are absent, then builds using those paths without a cache restore. See
+[toolchain validation](../docs/validation/toolchain-pin.md) for the actual CLI
+negative case and the required hosted failure/recovery and clean-build evidence.
+
+Apple's [command-line tools configuration](https://developer.apple.com/documentation/xcode/configuring-command-line-tools-settings)
+documents the command-scoped DEVELOPER_DIR override; [TN2339](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)
+describes the full Xcode command-line tools and build commands.
 
 ## Asynchronous local startup
 
@@ -83,7 +123,9 @@ Separate windows own separate startup lifetimes and use the existing SQLite
 transaction/revision guards when accessing the same files.
 
 `LocalLibraryStartupTests` bounds the controlled opener wait to five seconds and
-checks an editor binding action on the main actor while opening is blocked. It also
+checks an editor binding action on a real selected synthetic draft while opening is
+blocked. Its injected nil autosave clock isolates that startup scheduling assertion;
+the public app initializer and separate UI journey retain the production timer. It also
 checks off-main directory preparation/opening, cancellation between database opens,
 superseded results, explicit failure/retry, retained ready state and directory errors.
 The timeout is a test deadlock guard, not a responsiveness budget or performance

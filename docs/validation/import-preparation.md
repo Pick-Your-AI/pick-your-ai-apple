@@ -71,7 +71,11 @@ all six new names to report a pass in the full PlannerUI suite.
 Source preparation occurs in an isolated checkout; it does not modify the active #193
 branch or the reviewed editor/UI integration [#198](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/198).
 Preserve both canonical sources and newer accepted main work when integrating this
-delta. The final combined candidate requires independent review, exact hosted native
+delta. The [receiving union](editor-integration.md#receiving-union-with-comparison-and-import-preparation)
+retains signed CRUD `7deb8ddff5fb58efbceb74d89d0fe8404a3db4c1`, the corrected
+`6d3501cc90aeb98f872f7289c8c9b4946b84f9f7` editor/UI source and this follow-up's
+`16e5e364e2236eb044a6307f498619a562d873f8` source without changing their model/test bytes.
+The final combined candidate requires independent review, exact hosted native
 execution, normal signing and receiving main checks. Swift/Xcode are unavailable in
 the local preparation workspace, so no native pass is claimed here.
 

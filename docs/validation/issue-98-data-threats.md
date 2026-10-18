@@ -6,6 +6,38 @@ source boundaries was supplied on that date with no blocking finding. Device and
 service qualification remain unresolved. The record does not establish service
 authorization, secure erasure or production release.
 
+## Subsequent receiving acceptance
+
+The project controller supplied [final receiving acceptance on 2026-10-18](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/98#issuecomment-6246833758)
+under the user's explicit delegation of project engineering decisions and reviews.
+This is agent security/privacy receiving review of the complete thirteen-threat
+assessment, including T12/T13, with independent source review by the Apple project
+agent. The controller also read the complete assessment and the original
+[#185](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/185#pullrequestreview-5561425632)
+and [#186](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/186#pullrequestreview-5561431032)
+receiving reviews. No named-human approval, affected-service execution or
+physical-device qualification is inferred.
+
+The accepted record is the exact document at signed commit
+[`bc58882afe0a6e31b844dd0206a4406c095629f2`](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/bc58882afe0a6e31b844dd0206a4406c095629f2/docs/validation/issue-98-data-threats.md),
+SHA-256 `3af3782e95bd963cf6dbdb2e96856021e28bd9545f2a838ac3147fcecfedeec4`,
+unchanged through receiving-review main `429514f426bc784e11f80338842e941cc0c0e84d`
+and this update's baseline `7952f0cbedc8b19c03b6491197cf1160054c3cd7`.
+The independent receiving check recomputed that hash and the two E6 source hashes
+below, inspected the named negative/recovery regressions, and verified that the
+entire `Packages/PlannerCore` tree is unchanged from E6's tested input through the
+update baseline. All relative file links resolve. These checks add source and
+receipt verification; they are not a new native test run.
+
+All three #98 criteria are accepted for the named inventory, threat model and
+mitigation register, as reconciled below. This disposition resolves the earlier
+pending-receiver wording. The original inspected scope, E1–E6 execution limits and
+every open finding remain intact. Actual provider/device/backup/erasure and
+affected-service verification remain in the named implementation work packages;
+retest each finding before closing that finding. #198's complete native journey
+gate and #86's signed-main startup acceptance are unaffected. Link the reviewed
+publication from #98 and verify its issue state when completing closure.
+
 ## Exact reviewed scope
 
 | Source | Included behavior | Delivery and execution boundary |
@@ -28,6 +60,7 @@ to a future integration describe requirements, not an invented deployed service.
 | Build settings, objectives and public alias | Schema-supported free text and typed values; explicit alias before export | An allowed field can still contain private workload information or a secret typed as ordinary text. The exact projected export is shown for review. There is no general secret detector. |
 | Prepared export and exported file | Projection strips original owner references, notes and extensions, validates again, then substitutes the supplied alias | Prepared bytes remain in memory until cleared. The system file exporter writes only after the disclosure review action. A destination/provider or subsequent recipient controls its resulting copy; local deletion cannot revoke that copy. |
 | Catalog/pricebook and provenance | Separate bounded public-artifact transport and synthetic-only atomic cache | Cache is independent of private draft storage and is not connected to the current main app. Digests establish byte consistency, not publisher authenticity, source rights or production promotion. |
+| Analysis identities, evidence and source-use decisions | Validated domain callers supply exact build/revision/locks, per-attempt results and per-source/use rights/promotion receipts | `AnalysisStore` and immutable Core values are in memory. Rights decisions and response identities require trusted adapters; caller-supplied fields do not authenticate a publisher or establish server authority. No actual rights retrieval or evaluator service is wired into the assessed app. |
 | Diagnostics | Typed storage, transfer, runtime and transport errors; visible generic UI notices | Errors omit raw workload, SQL, filesystem paths, response bodies and transport descriptions at the inspected boundaries. This does not establish what OS crash reports, external providers or future SDKs collect. Never attach user databases/imports to public issues. |
 | Tokens and account identity | No active account/sign-in/private service path | No token storage or Keychain lifecycle has been implemented for an active account flow. This is an absent capability, not evidence that token revocation/deletion has passed. |
 
@@ -110,6 +143,8 @@ remains open where the stated device/service/flow evidence is absent.
 | T09 — Public download redirects private context or accepts partial content | [PublicArtifactClient](../../Packages/PlannerCatalog/Sources/PlannerCatalog/PublicArtifactClient.swift) uses HTTPS exact host/port, no userinfo/query/fragment, refuses every redirect, bounds actual bytes, disables shared cookies/credentials/cache and returns redacted errors. Eight Apple URLSession regressions pass; E5. | [#44](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/44)/#99/[#106](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/106), transport/service reviewer: use only a configured authorized public origin, validate TLS/staging and OS cancellation. Exact origin matching is not an IP/SSRF sandbox, publisher authentication or private API authorization. |
 | T10 — Crafted link, expired share or another identity mutates/discloses private state | No Universal Links handler, associated-domain entitlement, private API, share revocation or account UI is active in the assessed app. Read-only package values confer no server authority. | [#48](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/48)/[#50](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/50)/[#83](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/83)/[#85](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/85)/#102, canonical service and Apple routing/privacy reviewers: obtain the accepted origin/authorization contract, enforce revocation/private reads server-side, and replay crafted/expired/revoked routes with an unsaved local draft. Absent features are not successful adversarial tests. |
 | T11 — Build/test artifacts or future SDKs disclose private data or credentials | Inspected workflows run synthetic fixtures, read-only contents permission, checkout without persisted credentials and no signing secrets. Native evidence artifact retention is fourteen days. | [#30](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/30)/#101/[#103](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/103)/[#110](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/110), CI/privacy/release reviewer: continue synthetic-only public artifacts, inspect untrusted-PR behavior and signed release dependency/network/privacy inventory. No production binary or credential-rotation drill is claimed. |
+| T12 — A source-rights denial/revocation is ignored or a display permission authorizes another use | [SourceUsePolicy](../../Packages/PlannerCore/Sources/PlannerCore/SourceUsePolicy.swift) matches the exact source/claim/version/snapshot/hash/operation/scope and rights row; unknown, denied, revoked and conflicting inputs fail closed. Revocations cannot be overridden by array order; changed rights rows require new exact promotion. `testDisplayNeverGrantsOfflineExportOrAutomatedRetrieval`, `testUnknownDeniedAndRevokedExcludeEvenWithPromotion`, `testChangedRightsRowRequiresNewExactPromotionAndRecovery` and conflict/revocation tests pass; E6. | [#38](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/38)/#40/[#42](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/42), data/privacy and service reviewers: supply authentic, complete, current rights/promotion decisions and durable revocation propagation. This synchronous local policy neither fetches/verifies a receipt nor revokes previously exported copies. Synthetic or merged research is not reuse permission. |
+| T13 — A foreign or superseded result appears current, or incomplete cost coverage becomes a budget pass | [AnalysisStore](../../Packages/PlannerCore/Sources/PlannerCore/AnalysisStore.swift) binds results to exact build/revision/locks and a store-issued per-attempt token. Foreign-store tokens, mismatched responses, cancelled attempts and superseded retries reject; [CostCoverage](../../Packages/PlannerCore/Sources/PlannerCore/CostCoverage.swift) retains typed unknown/partial states. Mismatched-response, foreign-store, cancellation/retry and missing-most-expensive-rate regressions pass; E6. | [#47](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/47)/[#70](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/70)/[#75](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/75)/[#77](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/77)/[#78](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/78), domain/UI and service reviewers: derive response identity from validated actual response fields, never copy it from the request. Replay real service retries and native qualified rendering. Domain guards alone establish neither response authenticity nor physical UI, pricing-service or release acceptance. |
 
 ## Execution receipts and reproduction
 
@@ -124,6 +159,7 @@ No Swift/Xcode execution occurred in the Linux document-review workspace.
 | E3 — Delivered notes model | Main `63b4475106b9125c0c9109ece9e648a9ff83000b`; [run 39094864284 / job 117579091301](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39094864284/job/117579091301). Seventeen actual SQLite-backed model tests, zero failures; unsigned app build and iPhone 17 Pro/iPad Pro 13-inch (M5) launch smoke on iOS 26.2 succeeded with Xcode 16.4/16F6 and Swift 6.1.2. | Launch smoke does not exercise UI taps, accessibility, termination during a save or physical-device behavior. |
 | E4 — Candidate Files/startup models | #166 head `605a23581da87c10055f5364bc360cc17d55676e`; [run 39092564697 / job 117572205908](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39092564697/job/117572205908). Twenty-five tests: ten older notes tests, seven imported-build tests, six startup tests, two independent-corrupt-store tests; zero failures. Xcode 16.4/16F6, Swift 6.1.2, unsigned app build and iPhone 17 Pro/iPad Pro 13-inch (M5), iOS 26.2 launch smoke succeeded. Artifact `12124900177`. | Candidate execution only; final main integration must preserve E3 behavior and satisfy its checks. Security-scoped third-party provider journeys and imported-build deletion are not covered. |
 | E5 — Public cache/transport | Main `63b4475106b9125c0c9109ece9e648a9ff83000b`; [run 39094864303 / job 117579091194](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39094864303/job/117579091194). Xcode 16.4/16F6, Swift 6.1.2; seventeen cache, eight search and eight public-transport tests, all 33 passed; unsigned iOS Simulator SDK build succeeded. | Controlled URLProtocol transport and synthetic cache data, not staging/TLS, device traffic or accepted production content. |
+| E6 — Source-use revocation, analysis identity and truthful cost coverage | Main `a5d38cd253589e2d69448eeb73d5a4ac482e2ea6`; [run 39091022319 / job 117567609270](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39091022319/job/117567609270). Raw log independently inspected on 2026-10-18: Xcode 16.4/16F6, Swift 6.1.2, macOS 15.7.9; 67 tests pass in normal host runs and on each pinned iPhone SE (3rd generation)/iPad (10th generation), iOS 18.5; both TEST SUCCEEDED. Intentional failing assertion rejects as expected. Artifact `12123852807`. Entire `Packages/PlannerCore` source/tests are unchanged through integration baseline `b56bf5712b4a76a6c88ee4e4dfcb0adfc6dd24c4` (`git diff` empty). | Synthetic domain/intake fixtures and prior actual post-merge execution, not a new local run, authentic rights retrieval, real server revocation, evaluator response authentication or native cost/analysis journey. |
 
 Reproduce the package boundaries on the pinned macOS/Xcode toolchain:
 
@@ -133,21 +169,28 @@ swift test --package-path Packages/PlannerData --scratch-path .build-storage -Xs
 python3 tools/storage/crash_replay.py .build-storage/debug/DraftCrashProbe
 swift test --package-path Packages/PlannerUI
 swift test --package-path Packages/PlannerCatalog
+swift test --package-path Packages/PlannerCore
 ```
 
 The transfer [reference verifier](../../Packages/PlannerTransfer/Tools/verify_contract.py)
 requires `jsonschema[format]==4.26.0`. The exact repository workflows retain toolchain
 checks and SDK builds; running package tests alone does not reproduce those builds.
 Use the candidate ref for E4 and the listed delivered refs for the other receipts.
+E6's critical source SHA-256 values were independently recomputed at its immutable
+input: `SourceUsePolicy.swift` is `451fbbca5c1a87392d92e65e3bb7b4eb303642e7366dd8be49472cb24a5022d4`
+and `AnalysisStore.swift` is `1b9f6773ffe3ad5e8f6edce8058fba9d2acdbc8f1ecd5ef6fef6105d58e11306`.
+These files are under `Packages/PlannerCore/Sources/PlannerCore/`. E6 adds two
+previously unmapped local controls to the existing register without extending
+E1–E5's review or crediting any unmerged app/service behavior.
 Do not attach private workload files or actual user database snapshots as fixtures.
 
 ## Receiving disposition and completion boundary
 
 | Exact #98 criterion | Result supplied by this record | Remaining disposition |
 | --- | --- | --- |
-| Reviewed threat model maps risks to concrete verification tasks. | Independent security/privacy engineering review supplied on 2026-10-18 with no blocking finding. Eleven scoped threats map inspected controls to executable remediation/retest tasks and existing work packages. | Affected service review remains necessary when that service boundary exists. Device/provider/service qualification is not supplied by the engineering review. |
-| Trace sensitive workload text through import, storage, diagnostics, sharing and deletion; identify trust boundaries, mitigation evidence and unowned residual risks. | Asset/retention inventory and six-step trace cover delivered local paths and identify candidate Files paths explicitly. T05 is a concrete deletion gap; T06/T07/T10 record unqualified device/erasure/service boundaries and unfilled receiving roles. | Retest actual provider/device/service scenarios as their implementations become available. Unexecuted scenarios remain unverified and open findings stay open. |
-| The data inventory, threat model and mitigation register is linked with criterion results, exact versions, limitations and receiving-review disposition. | This named output, E1–E5 immutable inputs/results, reproduction commands and per-criterion disposition are supplied. | Link the reviewed merged record from #98; retain final commit/review identity. Publication alone does not close #98 or its dependent security/device/service issues. |
+| Reviewed threat model maps risks to concrete verification tasks. | Accepted by the [final receiving review](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/98#issuecomment-6246833758). T01–T13 map each scoped threat to inspected controls, concrete verification tasks, existing work packages and required review roles. The complete register and T12/T13 supplement received anchored independent review with no blocking assessment finding. | Affected service review remains necessary when that service boundary exists. Device/provider/service qualification is not supplied by the engineering review. |
+| Trace sensitive workload text through import, storage, diagnostics, sharing and deletion; identify trust boundaries, mitigation evidence and unowned residual risks. | Accepted. The asset/retention inventory and six-step trace cover delivered local paths and identify candidate Files paths explicitly. T05 remains a deletion finding at the assessed candidate; T06/T07/T10 retain unqualified device/erasure/service boundaries and unfilled receiving roles. | Retest actual provider/device/service scenarios as their implementations become available. Unexecuted scenarios remain unverified and open findings stay open. |
+| The data inventory, threat model and mitigation register is linked with criterion results, exact versions, limitations and receiving-review disposition. | Accepted. This named output, E1–E6 immutable inputs/results, reproduction commands, per-criterion results and [exact receiving disposition](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/98#issuecomment-6246833758) are linked from #98. | Retain the final reviewed publication and issue-state readback. Closing this assessment does not close its dependent security/device/service issues or any open finding. |
 
 Update this record when a trust boundary changes, a finding is remediated, or the
 main app gains a previously separate adapter. Close a finding only after a test

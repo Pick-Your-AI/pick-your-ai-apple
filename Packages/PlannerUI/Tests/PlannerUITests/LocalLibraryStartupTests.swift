@@ -78,7 +78,9 @@ final class LocalLibraryStartupTests: XCTestCase {
         let directory = try directory()
         defer { try? FileManager.default.removeItem(at: directory) }
         let editorStore = try DraftStore(url: directory.appendingPathComponent("editor.sqlite"))
-        let editor = DraftLibraryModel(store: editorStore)
+        let editor = DraftLibraryModel(store: editorStore, autosaveWait: nil)
+        await editor.create()
+        XCTAssertNotNil(editor.selected, "The binding action must target a real local draft")
         let probe = BlockingOpenProbe()
         defer { probe.release() }
         let startup = LocalLibraryStartup {
