@@ -98,6 +98,85 @@ final class EditorAutosaveTests: XCTestCase {
         XCTAssertEqual(history.records.map(\.revision), [2, 1])
         XCTAssertFalse(try XCTUnwrap(model.selected).analysisIsCurrent)
     }
+    func testDiscardDecisionFreezesCancelledTimerAndLifecycleSaveUntilConfirmed() async throws {
+        let (store, folder) = try store()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let clock = ManualEditorClock()
+        let model = DraftLibraryModel(store: store, autosaveWait: { try await clock.sleep() })
+        await model.create()
+        let original = try XCTUnwrap(model.selected)
+        model.notes = "Do not persist this amendment"
+        let timer = try XCTUnwrap(model.pendingAutosave)
+        await clock.waitForSleeps(1)
+        model.requestClose()
+        XCTAssertTrue(model.awaitingDiscardDecision)
+        XCTAssertFalse(model.canEdit)
+        XCTAssertFalse(model.canUndo)
+        await clock.releaseAll(); await timer.value
+        await model.save() // A lifecycle callback while the dialog is visible.
+        XCTAssertTrue(model.dirty)
+        XCTAssertNil(model.pendingAutosave)
+        XCTAssertEqual(model.selected, original)
+        let pending = try await store.read(id: original.id)
+        XCTAssertEqual(pending, original)
+        model.discardChangesAndClose()
+        XCTAssertNil(model.selected)
+        XCTAssertFalse(model.awaitingDiscardDecision)
+        let reopened = try DraftStore(url: folder.appendingPathComponent("drafts.sqlite"))
+        let durable = try await reopened.read(id: original.id)
+        XCTAssertEqual(durable, original)
+        let history = try await reopened.history(id: original.id)
+        XCTAssertEqual(history.records.count, 1)
+    }
+
+    func testCancellingDiscardDecisionRestartsProductionSavePathForLatestInput() async throws {
+        let (store, folder) = try store()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let clock = ManualEditorClock()
+        let model = DraftLibraryModel(store: store, autosaveWait: { try await clock.sleep() })
+        await model.create()
+        let id = try XCTUnwrap(model.selected?.id)
+        model.notes = "Keep editing this amendment"
+        let cancelled = try XCTUnwrap(model.pendingAutosave)
+        await clock.waitForSleeps(1)
+        model.requestClose()
+        await clock.releaseAll(); await cancelled.value
+        model.cancelDiscardDecision()
+        XCTAssertFalse(model.awaitingDiscardDecision)
+        XCTAssertTrue(model.canEdit)
+        let resumed = try XCTUnwrap(model.pendingAutosave)
+        await clock.waitForSleeps(2)
+        await clock.releaseAll(); await resumed.value
+        XCTAssertFalse(model.dirty)
+        XCTAssertEqual(model.selected?.revision, 2)
+        let durable = try await store.read(id: id)
+        XCTAssertEqual(try JSONDecoder().decode(EditorPayload.self, from: durable.payload).notes,
+                       "Keep editing this amendment")
+    }
+
+    func testDialogBindingDismissalBeforeDiscardActionCannotRearmAWrite() async throws {
+        let (store, folder) = try store()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let clock = ManualEditorClock()
+        let model = DraftLibraryModel(store: store, autosaveWait: { try await clock.sleep() })
+        await model.create()
+        let original = try XCTUnwrap(model.selected)
+        model.notes = "Discard after dismissal"
+        let old = try XCTUnwrap(model.pendingAutosave)
+        await clock.waitForSleeps(1)
+        model.requestClose()
+        await clock.releaseAll(); await old.value
+        model.cancelDiscardDecision() // SwiftUI binding can dismiss first.
+        let rearmed = try XCTUnwrap(model.pendingAutosave)
+        model.discardChangesAndClose() // Same synchronous main-actor turn.
+        await clock.waitForSleeps(2)
+        await clock.releaseAll(); await rearmed.value
+        XCTAssertNil(model.selected)
+        XCTAssertNil(model.pendingAutosave)
+        let durable = try await store.read(id: original.id)
+        XCTAssertEqual(durable, original)
+    }
+
     func testCancelledDraftTimerCannotSaveAnotherDraft() async throws {
         let (store, folder) = try store()
         defer { try? FileManager.default.removeItem(at: folder) }

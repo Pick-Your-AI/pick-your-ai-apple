@@ -7,7 +7,6 @@ public struct DraftLibraryView: View {
     @SceneStorage("localDraftSelection") private var restoredID = ""
     @State private var pendingDelete: DraftRecord?
     @State private var pendingRestore: DraftRecord?
-    @State private var confirmDiscard = false
     public init(store: DraftStore) { _model = StateObject(wrappedValue: DraftLibraryModel(store: store)) }
     public var body: some View {
         NavigationStack {
@@ -128,7 +127,7 @@ public struct DraftLibraryView: View {
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") {
-                        if model.dirty { confirmDiscard = true } else { model.close(); restoredID = "" }
+                        model.requestClose()
                     }.disabled(model.busy)
                 }
                 ToolbarItem(placement: .confirmationAction) {
@@ -143,8 +142,11 @@ public struct DraftLibraryView: View {
                 }
             }
             .interactiveDismissDisabled(model.dirty || model.busy)
-            .confirmationDialog("Discard unsaved changes?", isPresented: $confirmDiscard) {
-                Button("Discard changes", role: .destructive) { model.close(); restoredID = "" }
+            .confirmationDialog("Discard unsaved changes?", isPresented: Binding(
+                get: { model.awaitingDiscardDecision },
+                set: { if !$0 { model.cancelDiscardDecision() } }
+            )) {
+                Button("Discard changes", role: .destructive) { model.discardChangesAndClose(); restoredID = "" }
             }
         }
     }

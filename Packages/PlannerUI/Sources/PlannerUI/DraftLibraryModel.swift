@@ -31,6 +31,7 @@ public final class DraftLibraryModel: ObservableObject {
     @Published private var titleValue = ""
     @Published private var notesValue = ""
     @Published private var editHistory = EditorUndoHistory()
+    @Published public private(set) var awaitingDiscardDecision = false
     public var title: String {
         get { titleValue }
         set { edit(EditorContents(title: newValue, notes: notesValue)) }
@@ -60,9 +61,9 @@ public final class DraftLibraryModel: ObservableObject {
     // Internal handle lets controlled-clock consumers await the exact scheduled operation.
     private(set) var pendingAutosave: Task<Void, Never>?
     public var dirty: Bool { title != savedTitle || notes != savedNotes }
-    public var canEdit: Bool { selected != nil && !deleting }
-    public var canUndo: Bool { !busy && selected != nil && editHistory.canUndo(contents) }
-    public var canRedo: Bool { !busy && selected != nil && editHistory.canRedo(contents) }
+    public var canEdit: Bool { selected != nil && !deleting && !awaitingDiscardDecision }
+    public var canUndo: Bool { !busy && !awaitingDiscardDecision && selected != nil && editHistory.canUndo(contents) }
+    public var canRedo: Bool { !busy && !awaitingDiscardDecision && selected != nil && editHistory.canRedo(contents) }
     private var contents: EditorContents { EditorContents(title: titleValue, notes: notesValue) }
     public convenience init(store: any DraftLibraryStorage) {
         self.init(store: store, autosaveWait: { try await Task.sleep(for: .milliseconds(750)) })
@@ -97,7 +98,7 @@ public final class DraftLibraryModel: ObservableObject {
     }
     private func scheduleAutosave() {
         cancelAutosave()
-        guard dirty, let id = selected?.id, let autosaveWait else { return }
+        guard !awaitingDiscardDecision, dirty, let id = selected?.id, let autosaveWait else { return }
         let generation = UUID()
         autosaveGeneration = generation
         pendingAutosave = Task { @MainActor [weak self] in
@@ -207,8 +208,27 @@ public final class DraftLibraryModel: ObservableObject {
         } catch { status = "Not restored"; report(error) }
         await finishOperation()
     }
+    /// Freeze unsaved input before offering a discard decision. No write is in
+    /// flight when this succeeds, and timer/lifecycle saves remain suspended.
+    public func requestClose() {
+        guard !busy, selected != nil else { return }
+        guard dirty else { close(); return }
+        awaitingDiscardDecision = true
+        cancelAutosave(); saveRequested = false
+    }
+    public func cancelDiscardDecision() {
+        guard awaitingDiscardDecision else { return }
+        awaitingDiscardDecision = false
+        scheduleAutosave()
+    }
+    public func discardChangesAndClose() {
+        // SwiftUI may dismiss the dialog binding before invoking its action.
+        // close() cancels any timer rearmed by that synchronous dismissal.
+        close()
+    }
     public func close() {
         guard !busy else { return }
+        awaitingDiscardDecision = false
         clearHistory(); cancelAutosave(); editHistory = EditorUndoHistory(); inputGeneration = UUID()
         saveRequested = false; selected = nil; titleValue = ""; notesValue = ""; savedTitle = ""; savedNotes = ""
     }
@@ -220,6 +240,7 @@ public final class DraftLibraryModel: ObservableObject {
         }
     }
     public func save() async {
+        guard !awaitingDiscardDecision else { return }
         cancelAutosave()
         guard let selected, dirty else { return }
         if busy { saveRequested = true; return }
