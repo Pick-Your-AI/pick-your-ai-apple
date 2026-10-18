@@ -53,3 +53,14 @@ for case in quality_cases:
     payload = apply_quality_vector(quality, case)
     assert validator.is_valid(payload) == case['canonicalValid'], case['name']
 print(f'Verified {len(quality_cases)} canonical quality cases; recorded labels and client subsets remain explicit.')
+
+# Graph mutations exercise the same public decoding inputs on Python and Swift.
+from dependency_graph_vectors import encoded_vectors as encoded_graph_vectors
+graph_cases_path = FIXTURES / 'dependency-graph-conformance.json'
+assert graph_cases_path.read_text() == encoded_graph_vectors(), 'Stale dependency graph vectors'
+graph_cases = json.loads(graph_cases_path.read_text())
+graph = json.loads((FIXTURES / 'dependency-graph.json').read_text())
+validator = Draft202012Validator(schemas['dependency-graph.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in graph_cases:
+    assert validator.is_valid(apply_vector(graph, case)) == case['canonicalValid'], case['name']
+print(f'Verified {len(graph_cases)} canonical dependency graph cases; no executable graph policy is inferred.')
