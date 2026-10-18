@@ -293,6 +293,44 @@ reference corpora contained 129 + 1,635 + 202 + 77 cases, and the package declar
 42-case run does not establish execution of the 51-case composition. Current
 receiving and signed-main checks retain their own artifact identities and results.
 
+### Resource and envelope composition (2026-10-18)
+
+The immutable ResourceEstimate parser was delivered through
+[#276](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/276) on verified signed
+main `51952c75f2280d57891491903e495fb822b83bfd`. This composition preserves that
+accepted parser alongside the complete reviewed catalog envelope from signed
+`5ff0c6c55695afac9b28d44e436715a60069c7e9`. Both validation entries and both complete
+reference replay blocks remain unchanged. The manifest contains their eleven
+nonconflicting canonical pins; none of the schemas, fixtures or Swift tests changes.
+
+Actual local verification of source tree
+`f50d61f6c6bccd93e98f51eb2c041e078905195c` used Python 3.12.14 with
+`jsonschema[format]==4.26.0`: all eleven hashes and **2,266** cases passed
+(129 build/selection, 1,635 item, 202 quality, 223 resource, 77 envelope).
+Swift 6.1.2 for `x86_64-unknown-linux-gnu` then executed **59 distinct XCTest
+methods**, with matching starts/passes and zero failures or skips: 16 comparison,
+13 build, six item, six envelope, one durable-transfer, nine quality and eight
+resource tests. Test execution took 13.56 seconds; the successful incremental
+build took 4.67 seconds. The 17,431-byte log has SHA-256
+`5072bb1c752293a6cd20d36f56dd55ffb3409fb5c8dbba6390206d569fdd4b9a`.
+The separate Swift Testing zero-test footer is not included in that count.
+
+The first setup attempt compiled the sources but failed before test execution
+because the extracted SQLite development package's library symlink had no runtime
+target. The successful attempt used the existing local SQLite runtime link with
+the same private headers and retained the package-config warnings; both logs are
+preserved separately. No repository source changed between these attempts.
+
+These are portable composition results. The earlier completed #285 Apple jobs
+retain their actual `4444994c` / `66182949` checkout, including 51 Transfer tests,
+228 submission-SDK package tests and 23 UI model tests with two simulator launch
+smokes. They do not establish execution of this later Resource/envelope union.
+Its expected submission-SDK inventory is 236 package methods until an actual
+receiving run proves otherwise. Current Apple receiving and signed-main gates
+remain; #214 continues to require actual envelope delivery. No catalog activation,
+current-tuple qualification, service authority or broader work-package acceptance
+is inferred from either set of results.
+
 ## Remaining acceptance
 
 Independent code review and hosted macOS/iOS compilation remain required for new code. A cross-package SQLite integration test now saves an empty draft, rejects snapshot export and malicious import, reopens the store, and verifies identical payload, locks, revision and history. PlannerData is a test-only dependency; the library remains independent. macOS 14 is the package testing floor; iOS 17 remains the product floor. #32's accepted all-kind boundary and explicit model/representation limits are reconciled in the [receiving conformance record](#32-receiving-conformance-record) and its completed signed-delivery receipt. #33’s exact draft/snapshot boundary criteria are satisfied by the linked [criterion-specific receipt](../../docs/acceptance/issue-33-draft-snapshot-boundary.md), subject to its recorded receiving disposition; the earlier UI-integration gap is reconciled there. Actual UI autosave/termination remains #69 and Files workflows remain #82. #82 still needs actual Files/share-sheet flows, cross-client UI round trips and approved privacy/source-use review. #102 still needs server cross-user access, capability guessing and Universal Link/device tests against the real service and signed app. No broader hardware, release or production claims are made.
