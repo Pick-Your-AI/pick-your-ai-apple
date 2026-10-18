@@ -113,7 +113,7 @@ public final class DraftLibraryModel: ObservableObject {
     }
 
     public func refresh() async {
-        guard !busy else { return }
+        guard !busy, !awaitingDiscardDecision else { return }
         busy = true
         do { try await load() } catch { report(error) }
         await finishOperation()
@@ -169,7 +169,7 @@ public final class DraftLibraryModel: ObservableObject {
     }
     /// Pages replace each other; payload-bearing history never grows without bound.
     public func loadHistory(offset: Int = 0) async {
-        guard let selected, !busy, offset >= 0 else { return }
+        guard let selected, !busy, !awaitingDiscardDecision, offset >= 0 else { return }
         busy = true
         do {
             let page = try await store.history(id: selected.id, limit: Self.pageSize, offset: offset)

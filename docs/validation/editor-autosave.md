@@ -25,6 +25,14 @@ replace input that arrived in the original editor while its read was suspended.
 Restoration tracks edits to each field, so typing away from and back to an earlier
 value during the restore cannot be mistaken for an untouched field.
 
+Close freezes pending input while its discard confirmation is visible. The model
+cancels the timer and queued save intent, suspends lifecycle saves, and rejects
+queued library/history reads that could otherwise block the destructive action.
+Cancelling the decision resumes debounce; confirming it closes without committing
+the amendment. A write already awaiting acknowledgement must finish before a
+discard decision can start. Dismissing the dialog binding before its destructive
+action cannot leave a rearmed timer able to save the discarded draft.
+
 Undo and redo track title/notes binding changes and successful restoration changes
 within the current editing session. They retain at most 100 states and 4 MiB of
 combined UTF-8 text across both directions. Oldest states are discarded at those
@@ -47,7 +55,7 @@ Run on the selected macOS/Xcode toolchain:
 swift test --package-path Packages/PlannerUI
 ```
 
-Nine new model tests use a manually released clock and actual SQLite persistence.
+Thirteen new model tests use a manually released clock and actual SQLite persistence.
 The clock intentionally ignores cancellation so tests independently exercise the
 generation/cancellation checks, without timing sleeps. A delayed storage adapter
 exposes actor suspension points. Two additional pure history tests check entry and
@@ -58,6 +66,10 @@ app initializer always enables the 750 ms debounce.
 | Case | Required observed behavior |
 | --- | --- |
 | Two edits before the clock fires | Only the latest input creates revision 2; a fresh connection reopens exactly those acknowledged bytes |
+| Discard confirmation remains visible | Cancelled timers and lifecycle callbacks cannot commit the pending amendment; a fresh connection retains the original revision after discard |
+| Cancel the discard decision | The resumed debounce saves the retained input through the normal storage path |
+| Dialog binding dismisses before its destructive action | Closing cancels the rearmed timer before it can save |
+| A library/history command was queued before the discard decision | It performs no new storage read, cannot make Close busy, and cannot cause the amendment to be saved |
 | Close a dirty draft, then open another | The old cancelled timer changes neither draft; the new draft saves only through its own timer |
 | Second autosave while the first write is suspended | Later typing stays editable and is drained as the next revision |
 | Input returns to the old baseline during a suspended write | The acknowledged write starts a new debounce; the final reverted input becomes the next durable revision |
@@ -73,6 +85,11 @@ This workspace has no Swift/Xcode toolchain; the exact published candidate must 
 the existing hosted native model tests, unsigned app build, and iPhone/iPad simulator
 checks before integration. Independent review and those receipts must be linked
 from the PR.
+
+The app journey introduced by [PR #188](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/188) predates the production debounce and waits
+for a manually enabled Save button. Its save/discard timing assumptions must be
+reconciled with this behavior on integration and verified on both native simulator
+destinations. The model tests do not replace that production-timer UI evidence.
 
 ## Remaining issue acceptance
 

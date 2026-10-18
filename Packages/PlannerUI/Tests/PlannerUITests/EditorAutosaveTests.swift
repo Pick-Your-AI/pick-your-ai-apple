@@ -28,6 +28,7 @@ private actor ManualEditorClock {
 
 private actor PausedEditorStorage: DraftLibraryStorage {
     let store: DraftStore
+    private(set) var readOperations = 0
     private var nextSave = false
     private var nextRead = false
     private var nextRestore = false
@@ -49,9 +50,13 @@ private actor PausedEditorStorage: DraftLibraryStorage {
         if nextRead { nextRead = false; await suspend() }
         return try await store.read(id: id)
     }
-    func list(limit: Int, offset: Int) async throws -> DraftPage { try await store.list(limit: limit, offset: offset) }
+    func list(limit: Int, offset: Int) async throws -> DraftPage {
+        readOperations += 1
+        return try await store.list(limit: limit, offset: offset)
+    }
     func history(id: UUID, limit: Int, offset: Int) async throws -> DraftPage {
-        try await store.history(id: id, limit: limit, offset: offset)
+        readOperations += 1
+        return try await store.history(id: id, limit: limit, offset: offset)
     }
     func restore(id: UUID, revision: Int, expectedRevision: Int) async throws -> DraftRecord {
         if nextRestore { nextRestore = false; await suspend() }
@@ -177,6 +182,39 @@ final class EditorAutosaveTests: XCTestCase {
         XCTAssertEqual(durable, original)
     }
 
+    func testQueuedReadsCannotEnterStorageOrBlockDiscardDecision() async throws {
+        for readHistory in [false, true] {
+            let (store, folder) = try store()
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let clock = ManualEditorClock(), controlled = PausedEditorStorage(store)
+            let model = DraftLibraryModel(store: controlled, autosaveWait: { try await clock.sleep() })
+            await model.create()
+            let original = try XCTUnwrap(model.selected)
+            let readsBefore = await controlled.readOperations
+            model.notes = "Discard despite an earlier queued read command"
+            let timer = try XCTUnwrap(model.pendingAutosave)
+            await clock.waitForSleeps(1)
+            // The view queues these commands in Tasks. Enter the decision on the
+            // same main-actor turn, before that queued command gets to start.
+            let queuedRead = Task {
+                if readHistory { await model.loadHistory() }
+                else { await model.refresh() }
+            }
+            model.requestClose()
+            await queuedRead.value
+            let readsAfter = await controlled.readOperations
+            XCTAssertEqual(readsAfter, readsBefore, "A pending discard decision must not admit a queued read")
+            XCTAssertTrue(model.awaitingDiscardDecision)
+            XCTAssertFalse(model.busy)
+            XCTAssertNil(model.pendingAutosave)
+            model.discardChangesAndClose()
+            await clock.releaseAll(); await timer.value
+            XCTAssertNil(model.selected)
+            let durable = try await store.read(id: original.id)
+            XCTAssertEqual(durable, original)
+        }
+    }
+
     func testCancelledDraftTimerCannotSaveAnotherDraft() async throws {
         let (store, folder) = try store()
         defer { try? FileManager.default.removeItem(at: folder) }
@@ -214,6 +252,8 @@ final class EditorAutosaveTests: XCTestCase {
         let first = try XCTUnwrap(model.pendingAutosave)
         await clock.waitForSleeps(1); await clock.releaseFirst(); await controlled.waitForPause()
         XCTAssertTrue(model.canEdit)
+        model.requestClose()
+        XCTAssertFalse(model.awaitingDiscardDecision, "An outstanding write must finish before a discard decision")
         model.notes = "Typed while saving"
         let second = try XCTUnwrap(model.pendingAutosave)
         await clock.waitForSleeps(2); await clock.releaseFirst(); await second.value
