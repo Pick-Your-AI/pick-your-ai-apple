@@ -11,7 +11,7 @@ permissions:
 jobs:
   macos-core:
     runs-on: macos-15
-    timeout-minutes: 20
+    timeout-minutes: 40
     env:
       DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
     defaults:
@@ -39,6 +39,44 @@ jobs:
         run: |
           set -euo pipefail
           xcodebuild -scheme PlannerCore -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/planner-core-derived CODE_SIGNING_ALLOWED=NO build 2>&1 | tee simulator-build.log
+      - name: Inventory exact iPhone and iPad simulator destinations
+        run: |
+          set -euo pipefail
+          xcrun simctl list --json > simulator-inventory.json
+          xcodebuild -scheme PlannerCore -showdestinations > simulator-destinations.log 2>&1
+          python3 - <<'PYTHON'
+          import json
+          from pathlib import Path
+          inventory = json.loads(Path("simulator-inventory.json").read_text())
+          runtime = "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
+          if not any(r["identifier"] == runtime and r.get("isAvailable") for r in inventory["runtimes"]):
+              raise SystemExit("Required installed iOS 18.5 runtime unavailable; do not substitute or download")
+          targets = [("iphone", "iPhone SE (3rd generation)"), ("ipad", "iPad (10th generation)")]
+          destinations = []
+          for label, name in targets:
+              matches = [d for d in inventory["devices"].get(runtime, []) if d["name"] == name and d.get("isAvailable")]
+              if len(matches) != 1:
+                  raise SystemExit(f"Expected exactly one available {name} on iOS 18.5; found {len(matches)}")
+              destinations.append(f"{label}\t{matches[0]['udid']}")
+              print(f"{label}: {name}, iOS 18.5, {matches[0]['udid']}")
+          Path("simulator-selection.tsv").write_text("\n".join(destinations) + "\n")
+          PYTHON
+      - name: Execute package XCTest on compact iPhone and iPad simulators
+        run: |
+          set -euo pipefail
+          while IFS=$'\t' read -r label udid; do
+            xcodebuild test -scheme PlannerCore \
+              -destination "platform=iOS Simulator,id=$udid" \
+              -destination-timeout 120 \
+              -parallel-testing-enabled NO \
+              -derivedDataPath /tmp/planner-core-simulator-tests \
+              -resultBundlePath "$PWD/simulator-$label.xcresult" \
+              CODE_SIGNING_ALLOWED=NO \
+              2>&1 | tee "simulator-$label-test.log"
+            # A successful compilation or empty test action cannot pass this gate.
+            grep -E 'Test Case .*ContractDecimalTests.*testExactAdditionCarriesAcrossIntegerAndFraction.* passed' "simulator-$label-test.log"
+            grep -E 'Executed [1-9][0-9]* tests?, with 0 failures' "simulator-$label-test.log"
+          done < simulator-selection.tsv
       - name: Prove a failing Swift test returns failure
         run: |
           set -euo pipefail
@@ -67,5 +105,8 @@ jobs:
           path: |
             Packages/PlannerCore/*-version.txt
             Packages/PlannerCore/*.log
+            Packages/PlannerCore/simulator-inventory.json
+            Packages/PlannerCore/simulator-selection.tsv
+            Packages/PlannerCore/simulator-*.xcresult
           if-no-files-found: warn
           retention-days: 14
