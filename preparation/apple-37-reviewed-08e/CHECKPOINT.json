@@ -1,0 +1,31 @@
+{
+  "format": "git-bundle-checkpoint-1",
+  "sourceCommit": "6eec8878e1456d2e7cad78399702a33461093ce8",
+  "sourceTree": "08e54247b998d005ed831bfaeabad7731f3e7a8a",
+  "prerequisiteCommit": "7d9724b16136546b686d87f29acf9bd95ca9c2eb",
+  "containedRef": "refs/heads/preparation/apple-37-local-29a3",
+  "bundleBytes": 97763,
+  "bundleSHA256": "a9783ffd55b34327f5ccaf98f493e327c62a651279e88e82585c50a5fa8431e4",
+  "parts": [
+    {
+      "path": "apple37-reviewed-preparation.bundle.part-01",
+      "bytes": 50000,
+      "sha256": "fc4bcb6a2130a88a75de35bfd0f554d6f85804017dc2d4b923b05735533e821f",
+      "gitBlob": "67547f9962ea0498c2efce73c2021835ec858d99",
+      "base64Bytes": 66668
+    },
+    {
+      "path": "apple37-reviewed-preparation.bundle.part-02",
+      "bytes": 47763,
+      "sha256": "48cfac499ef7a47c0b46545db29e936cbad89b063ad58b56c0ae4583c7ffb32e",
+      "gitBlob": "b93c97ed3c88e9e8d134628ea17f8f00d92bb301",
+      "base64Bytes": 63684
+    }
+  ],
+  "wireFixture": {
+    "path": "Packages/PlannerConformance/Tests/PlannerConformanceTests/Fixtures/cross-client-v1.json",
+    "bytes": 1273770,
+    "sha256": "499fd9a01780ac42fa9bf2ab8cf9e1195db27321fec36040451b553a8b9ea5f9"
+  },
+  "status": "Recoverable exact source archive only. Not the intended source branch, an accepted implementation, native qualification, or signed delivery."
+}
