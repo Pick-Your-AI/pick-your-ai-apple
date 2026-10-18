@@ -7,6 +7,8 @@ public struct DraftLibraryView: View {
     @SceneStorage("localDraftSelection") private var restoredID = ""
     @State private var pendingDelete: DraftRecord?
     @State private var pendingRestore: DraftRecord?
+    @FocusState private var focusedEditorField: EditorField?
+    private enum EditorField: Hashable { case title, notes }
     public init(store: DraftStore) { _model = StateObject(wrappedValue: DraftLibraryModel(store: store)) }
     public var body: some View {
         NavigationStack {
@@ -72,11 +74,15 @@ public struct DraftLibraryView: View {
             Form {
                 Section("Draft name") {
                     TextField("Draft name", text: $model.title).accessibilityIdentifier("draftTitle")
+                        .focused($focusedEditorField, equals: .title)
+                        .submitLabel(.done)
+                        .onSubmit { focusedEditorField = nil }
                         .disabled(!model.canEdit)
                 }
                 Section("Planning notes") {
                     TextEditor(text: $model.notes).frame(minHeight: 160)
                         .accessibilityLabel("Planning notes").accessibilityIdentifier("draftNotes")
+                        .focused($focusedEditorField, equals: .notes)
                         .disabled(!model.canEdit)
                 }
                 Section("Edit history") {
@@ -127,6 +133,7 @@ public struct DraftLibraryView: View {
                 }
             }
             .accessibilityIdentifier("draftEditorForm")
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Edit local draft")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
@@ -137,6 +144,13 @@ public struct DraftLibraryView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { Task { await model.save() } }
                         .disabled(!model.dirty || model.busy).accessibilityIdentifier("saveDraft")
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    if focusedEditorField != nil {
+                        Spacer()
+                        Button("Done editing") { focusedEditorField = nil }
+                            .accessibilityIdentifier("finishDraftEditing")
+                    }
                 }
             }
             .confirmationDialog("Restore this saved revision as a new local revision?", isPresented: Binding(get: { pendingRestore != nil }, set: { if !$0 { pendingRestore = nil } })) {

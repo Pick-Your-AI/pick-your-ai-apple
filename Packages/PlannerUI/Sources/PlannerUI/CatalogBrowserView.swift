@@ -47,6 +47,9 @@ public struct CatalogBrowserView: View {
                         Label(model.filters.kinds.isEmpty ? "All component kinds" : "Kinds: \(model.filters.kinds.count) selected",
                               systemImage: "line.3.horizontal.decrease")
                     }
+                    // Keep the menu's own activation target. The automatic List
+                    // row wrapper can expose a larger, inactive button to AX.
+                    .buttonStyle(.borderless)
                     .accessibilityIdentifier("catalogKinds")
                     if !model.filters.kinds.isEmpty {
                         Text(model.filters.kinds.sorted().map(Self.kindTitle).joined(separator: ", "))

@@ -50,6 +50,9 @@ final class LocalDraftJourneyTests: XCTestCase {
         XCTAssertEqual(renamedTitle.utf8.count, title.utf8.count + 1)
         XCTAssertEqual(renamedTitle.replacingOccurrences(of: "!", with: ""), title)
         awaitAutosaveAcknowledgement(app)
+        dismissEditorKeyboard(app)
+        XCTAssertEqual(titleField.value as? String, renamedTitle)
+        XCTAssertEqual(app.textViews["draftNotes"].value as? String, revisedNotes)
         let renamedRevision = newestSavedRevision(app, title: renamedTitle)
 
         reveal(app.buttons["undoDraftEdit"], in: app, towardTop: true)
@@ -224,6 +227,7 @@ final class LocalDraftJourneyTests: XCTestCase {
 
     @MainActor
     private func reveal(_ element: XCUIElement, in app: XCUIApplication, towardTop: Bool) {
+        dismissEditorKeyboard(app)
         // The library List remains in the hierarchy behind the editor sheet.
         // Scroll only this editor Form, never the first hittable collection.
         let container = app.descendants(matching: .any).matching(identifier: "draftEditorForm").firstMatch
@@ -233,7 +237,18 @@ final class LocalDraftJourneyTests: XCTestCase {
             guard container.isHittable else { XCTFail("The editor Form must be hittable"); return }
             if towardTop { container.swipeDown() } else { container.swipeUp() }
         }
-        XCTAssertTrue(element.exists && element.isHittable, "Could not reveal the control in the editor Form")
+        XCTAssertTrue(element.exists && element.isHittable,
+                      "Could not reveal \(element.identifier) in the editor Form")
+    }
+
+    @MainActor
+    private func dismissEditorKeyboard(_ app: XCUIApplication) {
+        guard app.keyboards.firstMatch.exists else { return }
+        // On the compact iPhone, the Form's synthesized swipe began inside the
+        // keyboard. Use the app's visible focus control before normal scrolling.
+        // This does not submit, save, discard, close or replace any draft state.
+        tap(app.buttons["finishDraftEditing"])
+        wait(app.keyboards.firstMatch, matching: "exists == false")
     }
 
     @MainActor

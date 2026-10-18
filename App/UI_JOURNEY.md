@@ -100,6 +100,41 @@ so that container selection is ambiguous. The editor Form now has the exact
 All persistence, revision, dirty-discard and destination assertions remain mandatory.
 This correction requires a fresh successful run on both destinations.
 
+### Control failures observed in the catalog candidate
+
+Candidate `e964f566874ab5f26f7d7499f753316ec97c75c8` in
+[native run 39104693228](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39104693228/job/117608134115)
+compiled and passed all 60 editor/browser model tests, the unsigned simulator build
+and both smoke launches. Its full journeys failed: the iPhone ran both tests and
+failed both; the iPad passed the complete notes journey and failed catalog entry.
+Those results do not qualify either destination's complete two-journey gate.
+
+The retained [native evidence artifact 12129922478](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39104693228/artifacts/12129922478)
+has SHA-256 `41fffea1d09afcb676e34b3cd1b803b8a0888eea0f246007c87628d466a01866`.
+Its actual `xcresult` activity records, accessibility trees and screen recordings
+identify three distinct controls, despite the browser failures sharing one helper
+line number:
+
+| Observed failure | Evidence and scoped correction |
+| --- | --- |
+| iPad: `app.tabBars.buttons["Demo catalog"]` never exists. | The retained hierarchy exposes the visible top navigation as nested Buttons under Other, with no TabBar. The test now finds the exact visible navigation label among buttons on both layouts and still performs a normal hittable/enabled tap. The Notes return uses the same query. |
+| iPhone: the kind menu never opens before waiting for `catalogKind-accelerator`. | The outer List button covers `(16,369,343,44)` while the actual inner menu button covers `(32,381,199,20.5)`. XCTest's retained tap was `(50.3,373.4)`, outside that inner control, and the recording shows no open menu. The Menu now requests the borderless button style, following the existing editor's use of that style for independent controls; the test must still open the menu and select the real Accelerator action. |
+| iPhone: six Form swipes never reveal `loadRevisions`. | Each retained swipe starts at `(187.5,453.5)` while the visible keyboard starts at y=407. The recording shows an unchanged editor and keyboard throughout. Title and notes now share explicit focus state and a visible Done editing keyboard action. The test uses that action and requires the keyboard to disappear before its unchanged identified-Form scrolling. After the first dismissal it also reasserts the exact amended title and complete notes before reading durable history. |
+
+The focus action only ends text entry; it does not save, discard or close the draft.
+The title's Done submission also ends focus, and interactive scroll dismissal is
+available to a user who begins a gesture above the keyboard. The real production
+autosave, exact revision increments, invalid-title rejection, discard, independent
+control and cold deletion assertions are unchanged. No extra swipes, arbitrary
+coordinate taps, storage injection, skipped test or destination fallback were added.
+Failure messages identify the requested control rather than only a shared helper.
+
+These source corrections still require a fresh native run of both exact journeys
+on both pinned devices. The separately reviewed finite-window-geometry correction
+and the canonical editor candidate's additional model/Home/Files tests are distinct
+work and must be preserved when the branches are reconciled; this receipt does not
+claim they have been applied or executed here.
+
 A try/finally scope protects every verified creation, including later evidence-writing
 or test failures. Cleanup shuts down and deletes only the verified ID created by this
 invocation, retaining both command outcomes; it never uses blanket shutdown, erase or
@@ -147,3 +182,7 @@ Primary Apple references checked 2026-10-18:
 [the general pasteboard](https://developer.apple.com/documentation/uikit/uipasteboard/general),
 [running tests and result bundles](https://developer.apple.com/documentation/xcode/running-tests-and-interpreting-results),
 and [Xcode 16.3 xcresulttool commands](https://developer.apple.com/documentation/xcode-release-notes/xcode-16_3-release-notes).
+The control correction also uses Apple's documented
+[focus state](https://developer.apple.com/documentation/swiftui/focusstate),
+[keyboard toolbar placement](https://developer.apple.com/documentation/swiftui/toolbaritemplacement/keyboard),
+and [borderless button style](https://developer.apple.com/documentation/swiftui/borderlessbuttonstyle).

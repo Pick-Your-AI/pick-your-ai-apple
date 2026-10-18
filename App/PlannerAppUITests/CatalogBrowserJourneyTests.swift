@@ -88,15 +88,22 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         reveal(clear, in: app, towardTop: true)
         tap(clear)
         assertCount(app, "Showing 25 of 29 results")
-        tap(app.tabBars.buttons["Notes"])
+        tapNavigation("Notes", in: app)
         XCTAssertTrue(app.buttons["newDraft"].waitForExistence(timeout: 10))
         // No note or imported build was created, edited, selected or deleted.
     }
 
     @MainActor
     private func openCatalog(_ app: XCUIApplication) {
-        tap(app.tabBars.buttons["Demo catalog"])
+        tapNavigation("Demo catalog", in: app)
         XCTAssertTrue(app.textFields["catalogSearch"].waitForExistence(timeout: 10))
+    }
+
+    @MainActor
+    private func tapNavigation(_ title: String, in app: XCUIApplication) {
+        // iOS 18 exposes adaptive iPad tabs as buttons outside a TabBar. Both
+        // layouts expose this same visible navigation label; use normal taps.
+        tap(app.buttons.matching(NSPredicate(format: "label == %@", title)).firstMatch)
     }
 
     @MainActor
@@ -124,7 +131,8 @@ final class CatalogBrowserJourneyTests: XCTestCase {
 
     @MainActor
     private func tap(_ element: XCUIElement) {
-        XCTAssertTrue(element.waitForExistence(timeout: 10))
+        XCTAssertTrue(element.waitForExistence(timeout: 10),
+                      "The requested control did not appear: \(element)")
         wait(element, matching: "hittable == true AND enabled == true")
         element.tap()
     }
