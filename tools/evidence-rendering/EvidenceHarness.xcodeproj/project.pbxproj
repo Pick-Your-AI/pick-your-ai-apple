@@ -63,6 +63,7 @@
                 MACOSX_DEPLOYMENT_TARGET = 14.0;
                 SWIFT_VERSION = 6.0;
                 SWIFT_OPTIMIZATION_LEVEL = "-Onone";
+                ONLY_ACTIVE_ARCH = YES;
                 SWIFT_TREAT_WARNINGS_AS_ERRORS = YES;
                 CODE_SIGNING_ALLOWED = NO;
             };

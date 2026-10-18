@@ -57,6 +57,22 @@ boundary. Current-source native execution remains pending until the configured
 jobs actually finish. Syntax parsing, source review and synthetic receipt tests
 do not qualify its native behavior.
 
+The subsequent [Core run 39141330983 / job 117716271583](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39141330983/job/117716271583)
+at source `04f7b8bbe44115ec4d25bb62da40bf3ad6836ec2` and prepared checkout
+`46ab56ae1153ddd009f82b424ca4a3224db5540c` reached the new iPhone harness
+build, then failed before executing a rendering method. Xcode 16.4 / 16F6
+compiled the harness for `x86_64-apple-ios-simulator` while its local
+`PlannerCore` dependency supplied `arm64-apple-ios-simulator`. The harness
+project now sets `ONLY_ACTIVE_ARCH = YES` for Debug, which the shared test
+scheme selects. This aligns the application and UI-test targets with the
+architecture of the selected destination without choosing an architecture by
+name. Apple's [build settings reference](https://developer.apple.com/documentation/xcode/build-settings-reference)
+documents this setting; checked 2026-10-18. Release configuration, production
+App configuration, all four rendering methods and their exact-text/negative
+assertions remain unchanged. Fresh native execution on the selected macOS,
+iPhone and iPad destinations is still required; the failed build supplies no
+rendering pass or later mutation result.
+
 Local correction preparation used Swift 6.1.2 syntax parsing for both new Swift
 files; it did not compile an Apple SDK. The exact `jsonschema[format]` 4.25.1
 reference environment passed all 30 conformance methods in 28.833 seconds, including both
