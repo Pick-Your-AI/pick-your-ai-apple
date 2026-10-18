@@ -16,3 +16,5 @@ xcuserdata/
 __pycache__/
 *.pyc
 .venv/
+.build/
+.swiftpm/

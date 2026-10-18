@@ -2,7 +2,7 @@
 
 The Apple/iOS planning client for discovering, configuring, checking, costing, comparing and sharing AI stacks. The mobile device is not automatically the inference target.
 
-This repository contains delivery proposals and a [frozen-v1 contract preparation harness](tools/conformance/README.md). No native application, Xcode toolchain, backend or release is included. The Python reference checks do not establish Swift, simulator or device acceptance.
+This repository contains a [Swift client core](Packages/PlannerCore/README.md), delivery proposals and a [frozen-v1 contract preparation harness](tools/conformance/README.md). No application UI, backend or release is included. Swift package tests, iOS SDK compilation, simulator execution and physical-device acceptance are separate evidence stages.
 
 Review the [foundation decision proposals](docs/decisions/README.md), [guest journey proposal](docs/proposals/issue-20-journey-map.md), and [acceptance/ownership intake](docs/proposals/issue-25-acceptance-intake.md) before dependent implementation. These records preserve unresolved receiving decisions; publishing them does not close the delivery issues.
 
