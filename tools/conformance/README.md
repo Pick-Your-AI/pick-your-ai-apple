@@ -112,8 +112,14 @@ Existing outputs must be regular files with one hard link; symlinks, shared
 hardlinks, directories and other file types reject the invocation before any
 previous output is removed. The supplied output directory may use an outside
 directory alias, but may not traverse the source package even if a later alias
-resolves outside it. A valid rerun clears all five previous outputs, then creates
-new logs and the final success receipt exclusively. Files appearing after
+resolves outside it. This includes each intermediate absolute or relative link
+target and traversal before `..`; links are inspected component by component.
+Existing directory identity also protects case aliases on filesystems that treat
+them as the same package. Link loops and non-directory or missing prefixes before
+`..` fail before directory creation or cleanup. Resolution permits at most 64
+directory-link expansions per invocation; longer chains fail during preflight.
+A valid rerun clears all five previous outputs, then creates new logs and the
+final success receipt exclusively. Files appearing after
 preflight cannot be followed or overwritten. Use a separate evidence directory
 per concurrent invocation; concurrent replacement of parent directories is not
 supported. CI retains the logs and success receipt.
@@ -130,8 +136,14 @@ Output regressions reproduce a real child-process invocation against a synthetic
 package, exercise every destination with symbolic/hard links and nonregular
 files, and verify rejected paths preserve source bytes and prior receipts.
 Separate cases cover a source-traversing directory alias, safe outside aliases,
-failed-baseline cleanup and retry, and files introduced after preflight. These
-portable I/O and synthetic-transcript checks are not a Swift execution receipt.
+intermediate link chains and loops, failed-baseline cleanup and retry, and files
+introduced after preflight. A filesystem-conditioned case test distinguishes an
+actual package alias from a separately existing case variant; its case-insensitive
+branch requires execution on such a filesystem. The core workflow runs this
+stdlib-only suite normally and with `-O` in its existing macOS job before Swift
+builds; both retained logs identify the case branch actually exercised.
+These portable I/O and
+synthetic-transcript checks are not a Swift execution receipt.
 The corrected parser also accepts the actual 67-case baseline and all three
 deliberate failures retained in [core run 39108049392](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39108049392),
 artifact `12129239361`, verified SHA-256

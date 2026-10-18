@@ -139,13 +139,59 @@ def invoke(package, swift, arguments, log, timeout):
 
 def prepare_output(package, output):
     """Validate every destination before removing any previous execution output."""
-    supplied = output.absolute()
-    # Retain each supplied ancestor: resolving only the endpoint can conceal a
-    # route through the protected package that escapes through a directory link.
-    for ancestor in (supplied, *supplied.parents):
-        if ancestor.resolve().is_relative_to(package):
+    package_stat = package.stat()
+    active_links = set()
+    link_expansions = 0
+
+    def directory_route(path):
+        nonlocal link_expansions
+        # Inspect every component introduced by readlink before following it;
+        # resolving an endpoint would erase protected prefixes and '..' routes.
+        directory = Path(path.anchor)
+        anchor_stat = directory.stat()
+        if (directory.is_relative_to(package)
+                or (anchor_stat.st_dev, anchor_stat.st_ino)
+                == (package_stat.st_dev, package_stat.st_ino)):
             raise ValueError('Evidence output must be outside the source package')
-    output = supplied.resolve()
+        for part in path.parts[1:]:
+            if part == '..':
+                if not directory.is_dir():
+                    raise ValueError('Evidence output must have directory ancestors')
+                directory = directory.parent
+                continue
+            candidate = directory / part
+            if candidate.is_relative_to(package):
+                raise ValueError('Evidence output must be outside the source package')
+            try:
+                entry = candidate.lstat()
+            except FileNotFoundError:
+                directory = candidate
+                continue
+            if stat.S_ISLNK(entry.st_mode):
+                parent = directory.stat()
+                identity = (entry.st_dev, entry.st_ino, parent.st_dev, parent.st_ino)
+                if identity in active_links:
+                    raise ValueError('Evidence output contains a directory-link loop')
+                if link_expansions >= 64:
+                    raise ValueError('Evidence output exceeds 64 directory-link expansions')
+                target = candidate.readlink()
+                link_expansions += 1
+                active_links.add(identity)
+                try:
+                    directory = directory_route(target if target.is_absolute()
+                                                else directory / target)
+                finally:
+                    active_links.remove(identity)
+            elif not stat.S_ISDIR(entry.st_mode):
+                raise ValueError('Evidence output must have directory ancestors')
+            else:
+                if (entry.st_dev, entry.st_ino) == (package_stat.st_dev, package_stat.st_ino):
+                    raise ValueError('Evidence output must be outside the source package')
+                directory = candidate
+
+        return directory
+
+    output = directory_route(output.absolute())
     output.mkdir(parents=True, exist_ok=True)
     destinations = [output / 'swift-mutations.json', output / 'baseline.log',
                     *(output / (mutation['name'] + '.log') for mutation in MUTATIONS)]

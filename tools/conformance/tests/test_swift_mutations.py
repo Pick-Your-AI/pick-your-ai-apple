@@ -244,6 +244,147 @@ class SwiftMutationTests(unittest.TestCase):
             self.assertFalse((outside / 'evidence').exists())
             self.assertTrue((package / 'escape').is_symlink())
 
+    def test_output_rejects_intermediate_link_targets_before_cleanup(self):
+        for target_kind in ['absolute', 'relative', 'chained', 'dotdot']:
+            with self.subTest(target_kind=target_kind), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                package = self.make_package(root)
+                outside = root / 'outside'; outside.mkdir()
+                output = outside / 'evidence'; output.mkdir()
+                (package / 'escape').symlink_to(outside, target_is_directory=True)
+                alias = root / 'entry'
+                if target_kind == 'absolute':
+                    alias.symlink_to(package / 'escape', target_is_directory=True)
+                elif target_kind == 'relative':
+                    alias.symlink_to('package/escape', target_is_directory=True)
+                elif target_kind == 'dotdot':
+                    alias.symlink_to('package/../outside', target_is_directory=True)
+                else:
+                    (root / 'middle').symlink_to('package/escape', target_is_directory=True)
+                    alias.symlink_to('middle', target_is_directory=True)
+                names = ['swift-mutations.json', 'baseline.log',
+                         *(m['name'] + '.log' for m in runner.MUTATIONS)]
+                for name in names: (output / name).write_text('retained prior output')
+                with patch.object(Path, 'unlink', autospec=True) as cleanup, \
+                     patch.object(Path, 'mkdir', autospec=True) as mkdir:
+                    with self.assertRaisesRegex(ValueError, 'outside the source'):
+                        runner.prepare_output(package.resolve(), alias / 'evidence')
+                    cleanup.assert_not_called()
+                    mkdir.assert_not_called()
+                for name in names:
+                    self.assertEqual((output / name).read_text(), 'retained prior output')
+
+    def test_output_rejects_loops_and_invalid_prefixes_before_cleanup(self):
+        for target_kind in ['self-loop', 'chained-loop', 'file-dotdot', 'missing-dotdot']:
+            with self.subTest(target_kind=target_kind), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                package = self.make_package(root)
+                outside = root / 'outside'; outside.mkdir()
+                receipt = outside / 'swift-mutations.json'; receipt.write_text('retained receipt')
+                alias = root / 'entry'
+                if target_kind == 'self-loop':
+                    alias.symlink_to('entry', target_is_directory=True)
+                elif target_kind == 'chained-loop':
+                    alias.symlink_to('middle', target_is_directory=True)
+                    (root / 'middle').symlink_to('entry', target_is_directory=True)
+                elif target_kind == 'file-dotdot':
+                    (root / 'file').write_text('retained non-directory')
+                    alias.symlink_to('file/../outside', target_is_directory=True)
+                else:
+                    alias.symlink_to('missing/../outside', target_is_directory=True)
+                with patch.object(Path, 'unlink', autospec=True) as cleanup, \
+                     patch.object(Path, 'mkdir', autospec=True) as mkdir:
+                    with self.assertRaises(ValueError):
+                        runner.prepare_output(package.resolve(), alias)
+                    cleanup.assert_not_called()
+                    mkdir.assert_not_called()
+                self.assertEqual(receipt.read_text(), 'retained receipt')
+                self.assertEqual((package / 'Package.swift').read_text(), '// fixture only\n')
+
+    def test_safe_chained_output_alias_retains_parent_resolution_and_new_directories(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = self.make_package(root)
+            outside = root / 'outside'; outside.mkdir()
+            (outside / 'nested').mkdir()
+            (root / 'middle').symlink_to('outside/nested', target_is_directory=True)
+            alias = root / 'entry'; alias.symlink_to('middle/..', target_is_directory=True)
+            output = outside / 'new' / 'evidence'
+            self.assertEqual(runner.prepare_output(package.resolve(), alias / 'new' / 'evidence'),
+                             output.resolve())
+            self.assertTrue(output.is_dir())
+            self.assertEqual((package / 'Package.swift').read_text(), '// fixture only\n')
+            self.assertTrue(alias.is_symlink())
+
+    def test_output_bounds_link_expansion_before_cleanup(self):
+        for length in [8, 66]:
+            with self.subTest(length=length), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                package = self.make_package(root)
+                outside = root / 'outside'; outside.mkdir()
+                for index in range(length):
+                    target = f'link-{index + 1}' if index + 1 < length else 'outside'
+                    (root / f'link-{index}').symlink_to(target, target_is_directory=True)
+                alias = root / 'link-0' / 'new-evidence'
+                if length == 8:
+                    self.assertEqual(runner.prepare_output(package.resolve(), alias),
+                                     (outside / 'new-evidence').resolve())
+                    self.assertTrue((outside / 'new-evidence').is_dir())
+                else:
+                    with patch.object(Path, 'unlink', autospec=True) as cleanup, \
+                         patch.object(Path, 'mkdir', autospec=True) as mkdir:
+                        with self.assertRaisesRegex(ValueError, '64 directory-link expansions'):
+                            runner.prepare_output(package.resolve(), alias)
+                        cleanup.assert_not_called()
+                        mkdir.assert_not_called()
+                    self.assertFalse((outside / 'new-evidence').exists())
+                self.assertEqual((package / 'Package.swift').read_text(), '// fixture only\n')
+
+    def test_output_checks_physical_package_identity_without_rejecting_distinct_case(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = self.make_package(root)
+            outside = root / 'outside'; outside.mkdir()
+            (package / 'escape').symlink_to(outside, target_is_directory=True)
+            variant = root / 'PACKAGE'
+            same_package = variant.exists() and variant.samefile(package)
+            print(f'Filesystem case control: same_package={same_package}; '
+                  f'{"reject package alias" if same_package else "allow distinct directory"}',
+                  flush=True)
+            if not same_package:
+                variant.mkdir()
+                (variant / 'escape').symlink_to(outside, target_is_directory=True)
+            alias = root / 'entry'
+            alias.symlink_to(variant / 'escape', target_is_directory=True)
+            receipt = outside / 'swift-mutations.json'; receipt.write_text('retained receipt')
+            if same_package:
+                with patch.object(Path, 'unlink', autospec=True) as cleanup, \
+                     patch.object(Path, 'mkdir', autospec=True) as mkdir:
+                    with self.assertRaisesRegex(ValueError, 'outside the source'):
+                        runner.prepare_output(package.resolve(), alias)
+                    cleanup.assert_not_called()
+                    mkdir.assert_not_called()
+                self.assertEqual(receipt.read_text(), 'retained receipt')
+            else:
+                self.assertEqual(runner.prepare_output(package.resolve(), alias), outside.resolve())
+                self.assertFalse(receipt.exists())
+            self.assertEqual((package / 'Package.swift').read_text(), '// fixture only\n')
+
+    def test_output_checks_physical_anchor_identity_before_cleanup(self):
+        package, output = Path('/'), Path('//')
+        same_directory = output.samefile(package)
+        with patch.object(Path, 'mkdir', autospec=True) as mkdir, \
+             patch.object(Path, 'unlink', autospec=True) as cleanup, \
+             patch.object(Path, 'lstat', side_effect=FileNotFoundError):
+            if same_directory:
+                with self.assertRaisesRegex(ValueError, 'outside the source'):
+                    runner.prepare_output(package, output)
+                mkdir.assert_not_called()
+                cleanup.assert_not_called()
+            else:
+                self.assertEqual(runner.prepare_output(package, output), output)
+                mkdir.assert_called_once()
+
     def test_safe_output_alias_retries_clear_receipt_and_all_prior_logs(self):
         with tempfile.TemporaryDirectory() as tmp:
             root = Path(tmp)
