@@ -163,4 +163,3 @@ receiving review and this changed workflow's actual hosted transfer result remai
 delivery gates. The separate introduced-vulnerable/unacceptable-license dependency
 PR drill, broader baseline and bundled-dependency audit, credential-custodian
 rotation, service/device checks and final release inventory remain open under #103.
-

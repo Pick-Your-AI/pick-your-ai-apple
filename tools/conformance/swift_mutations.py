@@ -36,16 +36,91 @@ def apply_mutation(package, mutation):
     path.write_text(original.replace(mutation['before'], mutation['after'], 1))
 
 
-def detected(returncode, output, mutation):
-    """Require assertion, named test failure and normal selected-suite completion."""
-    classname, method = mutation['test'].split('.')
+def test_identity(name):
+    """Normalize the observed Linux/macOS XCTest spellings, with exact names."""
+    identifier = r'[A-Za-z_][A-Za-z0-9_]*'
+    linux = re.fullmatch(rf'(?:PlannerCoreTests\.)?({identifier})\.({identifier})', name)
+    macos = re.fullmatch(rf'-\[PlannerCoreTests\.({identifier}) ({identifier})\]', name)
+    match = linux or macos
+    return '.'.join(match.groups()) if match else None
+
+
+def suite_results(output, suite, outcome):
+    """Require one complete XCTest session and its matching nonempty summary.
+
+    The unrelated Swift Testing zero-test footer is not an XCTest result. Unknown,
+    duplicate, skipped or truncated case output cannot supply a passing receipt.
+    """
     lines = output.splitlines()
-    assertion = any(mutation['assertion'] in line and 'failed' in line
-                    and classname in line and method in line for line in lines)
-    test_failed = any('Test Case ' in line and classname in line and method in line
-                      and re.search(r'\bfailed\b', line) for line in lines)
-    suite_failed = any("Test Suite 'Selected tests' failed" in line for line in lines)
-    return returncode == 1 and assertion and test_failed and suite_failed
+    events = []
+    for index, line in enumerate(lines):
+        if not line.startswith(f"Test Suite '{suite}'"):
+            continue
+        event = re.fullmatch(rf"Test Suite '{re.escape(suite)}' (started|passed|failed|skipped) at .+", line)
+        if not event:
+            return None
+        events.append((index, event[1]))
+    if len(events) != 2 or [event[1] for event in events] != ['started', outcome]:
+        return None
+    start, end = events[0][0], events[1][0]
+    if end + 1 >= len(lines):
+        return None
+    duration = r'[0-9]+(?:\.[0-9]+)?'
+    summary = re.fullmatch(
+        r'\s*Executed ([0-9]+) tests?, with ([0-9]+) failures? '
+        rf'\(([0-9]+) unexpected\) in {duration} \({duration}\) seconds', lines[end + 1])
+    if not summary:
+        return None
+    count, failures, unexpected = map(int, summary.groups())
+    started, finished = set(), {}
+    for index, line in enumerate(lines):
+        if not line.startswith('Test Case '):
+            continue
+        beginning = re.fullmatch(r"Test Case '([^']+)' started(?:\.| at .+)", line)
+        completion = re.fullmatch(
+            rf"Test Case '([^']+)' (passed|failed|skipped) \({duration} seconds\)\.?", line)
+        if not (beginning or completion) or not start < index < end:
+            return None
+        name = test_identity((beginning or completion)[1])
+        if name is None:
+            return None
+        if beginning:
+            if name in started:
+                return None
+            started.add(name)
+        else:
+            if name not in started or name in finished:
+                return None
+            finished[name] = completion[2]
+    if not finished or started != finished.keys() or count != len(finished):
+        return None
+    return finished, failures, unexpected, lines[start + 1:end]
+
+
+def baseline_passed(returncode, output):
+    """Prove the unchanged suite actually ran all named mutation regressions."""
+    result = suite_results(output, 'All tests', 'passed')
+    if returncode != 0 or result is None:
+        return False
+    cases, failures, unexpected, _ = result
+    return (failures == unexpected == 0 and all(status == 'passed' for status in cases.values())
+            and all(mutation['test'] in cases for mutation in MUTATIONS))
+
+
+def detected(returncode, output, mutation):
+    """Require the exact selected regression and its actual assertion failure."""
+    result = suite_results(output, 'Selected tests', 'failed')
+    if returncode != 1 or result is None:
+        return False
+    cases, failures, unexpected, lines = result
+    if cases != {mutation['test']: 'failed'} or failures < 1 or unexpected != 0:
+        return False
+    for line in lines:
+        assertion = re.match(r'^.+:[0-9]+(?::[0-9]+)?: error: (.+?) : ([A-Za-z0-9_]+) failed\b', line)
+        if (assertion and test_identity(assertion[1]) == mutation['test']
+                and assertion[2] == mutation['assertion']):
+            return True
+    return False
 
 
 def invoke(package, swift, arguments, log, timeout):
@@ -78,9 +153,9 @@ def run(package, output, swift, timeout):
             source = baseline / 'Sources/PlannerCore' / mutation['file']
             if source.read_text().count(mutation['before']) != 1:
                 raise ValueError(f"Expected exactly one source anchor: {mutation['name']}")
-        code, _ = invoke(baseline, swift, [], output / 'baseline.log', timeout)
-        if code != 0:
-            raise ValueError('Unmodified Swift suite must pass; see baseline.log')
+        code, log = invoke(baseline, swift, [], output / 'baseline.log', timeout)
+        if not baseline_passed(code, log):
+            raise ValueError('Unmodified Swift suite must execute and pass every named regression; see baseline.log')
         for mutation in MUTATIONS:
             isolated = Path(tmp) / mutation['name']
             shutil.copytree(baseline, isolated, ignore=shutil.ignore_patterns('.build', '.swiftpm', '*.xcresult', '*.log'))
