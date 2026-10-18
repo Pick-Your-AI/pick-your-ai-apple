@@ -28,7 +28,7 @@
     "Packages/PlannerTransfer/Package.swift": [
       "100644",
       "blob",
-      "2f31c824fa3cac1961274abd0357049b84110c85"
+      "702d6f7bdd2b9e1ccabe185702c67bb90a1c4763"
     ],
     "Packages/PlannerUI/Package.swift": [
       "100644",
@@ -48,33 +48,43 @@
       "Packages/PlannerCore": [
         "040000",
         "tree",
-        "0537885631a8f6761790363540dae3fff682c905"
+        "fc954521e1f3378f45c134ff50531c9ad78a954c"
       ]
     },
     "macos-storage": {
       "Packages/PlannerData": [
         "040000",
         "tree",
-        "33c3234880ec0763bec9e7116b119706f5907eb5"
+        "666417124a7b21b2a2779c9f281950b90cdfa033"
       ]
     },
     "macos-transfer": {
+      "Packages/PlannerCatalog": [
+        "040000",
+        "tree",
+        "95d4ca5098801a2e8dc35bcf83e25923267b8b5c"
+      ],
+      "Packages/PlannerCore": [
+        "040000",
+        "tree",
+        "fc954521e1f3378f45c134ff50531c9ad78a954c"
+      ],
       "Packages/PlannerData": [
         "040000",
         "tree",
-        "33c3234880ec0763bec9e7116b119706f5907eb5"
+        "666417124a7b21b2a2779c9f281950b90cdfa033"
       ],
       "Packages/PlannerTransfer": [
         "040000",
         "tree",
-        "d1a70b72785b7ec629e6ee3ec11bbb294919cb03"
+        "494b756c1dc90cfafc79e8cd4943cfddf6741476"
       ]
     },
     "native-ui": {
       "Packages/PlannerData": [
         "040000",
         "tree",
-        "33c3234880ec0763bec9e7116b119706f5907eb5"
+        "666417124a7b21b2a2779c9f281950b90cdfa033"
       ],
       "Packages/PlannerUI": [
         "040000",
@@ -112,7 +122,7 @@
     ".github/workflows/dependency-review.yml": [
       "100644",
       "blob",
-      "3044312862c8f27cb7d1285c5fe662c8f1f062a7"
+      "20d631ec140ce1f560989e60745c41cedcf55377"
     ],
     ".github/workflows/native-ui.yml": [
       "100644",
@@ -137,7 +147,7 @@
     ".github/workflows/swift-storage.yml": [
       "100644",
       "blob",
-      "7e983b09f12050bf30481c07dc85cb5c4746fa6e"
+      "96f4a2d5d44d836258ddcf92103bf37b99779d92"
     ],
     ".github/workflows/swift-transfer.yml": [
       "100644",
@@ -172,12 +182,12 @@
     "App/scripts/submission_sdk.py": [
       "100644",
       "blob",
-      "b41cfa081d6ab1c617f0a14cf53a8d869ca60e96"
+      "426adc98a5243a47a360237b242fc15dda3e0e34"
     ],
     "App/scripts/tests/test_submission_sdk.py": [
       "100644",
       "blob",
-      "4e7d1e931a6d2c7851537da6dd2c87098f182ce7"
+      "2fcef20fffb6777b6055ec2500e45cc780c5060e"
     ],
     "App/scripts/tests/test_toolchain.py": [
       "100644",
@@ -237,12 +247,17 @@
     "docs/validation/dependency-review.md": [
       "100644",
       "blob",
-      "ccceb6189ba5cd80b583c04924f9447ce18099a7"
+      "0d8412aaad49b851df4b4de95fd472f7f6891619"
     ],
     "docs/validation/issue-101-privacy.md": [
       "100644",
       "blob",
       "512d8a8884239e106812aaed8ab9a2ec9c02ba26"
+    ],
+    "docs/validation/issue-31-fixture-inventory.md": [
+      "100644",
+      "blob",
+      "36162512ee44d8e00c6cb7f5cbf945d4756ee7de"
     ],
     "tools/acceptance/check_map.py": [
       "100644",
@@ -252,7 +267,7 @@
     "tools/ci/native_scope.py": [
       "100644",
       "blob",
-      "571d4ab16e8d4f3588426a77efad84472bf158cd"
+      "b7f2b125e0b67091d6704b07e0f2fa6c078e8495"
     ],
     "tools/ci/retire_obsolete_pr_runs.py": [
       "100644",
@@ -262,7 +277,7 @@
     "tools/ci/tests/test_native_scope.py": [
       "100644",
       "blob",
-      "42caeec12ea91ebfa6388a7d2fe08369f3d5bd5b"
+      "6f83b1f2fd46cb82d2bd14c63eea8994eac05d9d"
     ],
     "tools/ci/tests/test_obsolete_workflow.py": [
       "100644",
@@ -327,7 +342,7 @@
     "tools/security/check_dependency_review.py": [
       "100644",
       "blob",
-      "41c609480d06c988cf52981a9dffe976da1cceca"
+      "83044a966403c9a8d2a01bb9eeaf7c18ae0bee97"
     ],
     "tools/security/check_dependency_snapshots.py": [
       "100644",
@@ -337,7 +352,7 @@
     "tools/security/rehearse_dependency_review.py": [
       "100644",
       "blob",
-      "3f1f0700d116338b1076e094ffac6beccfb2e452"
+      "de382772981a46aa769966c21802c38a898dd1bc"
     ],
     "tools/security/tests/fixtures/dependency-review-action.LICENSE": [
       "100644",
@@ -354,10 +369,20 @@
       "blob",
       "54bfaf72578b6986a08b0598750e9cadc1f652b6"
     ],
+    "tools/security/tests/fixtures/pinned-transfer-license-conflict.json": [
+      "100644",
+      "blob",
+      "f48fa5dd63fe3ad7619a9022074b6de3962ca49b"
+    ],
+    "tools/security/tests/fixtures/pinned-transfer-requirements.fixture": [
+      "100644",
+      "blob",
+      "938c69ecb43b8eda36bee6066e1802f103190ece"
+    ],
     "tools/security/tests/test_dependency_review.py": [
       "100644",
       "blob",
-      "847352010f5204af7b38991c2193d3f96402cdfd"
+      "0f9ccefdff42f3b5dc3dd70ec962890161058153"
     ],
     "tools/security/tests/test_dependency_snapshots.py": [
       "100644",
@@ -367,14 +392,24 @@
     "tools/security/tests/test_pinned_dependency_license.py": [
       "100644",
       "blob",
-      "ef9669bcf26a00fe69b41c3858d43c722f08c006"
+      "9fe9aa34c226ecb64e9ea13c26958b56cebd1f3d"
+    ],
+    "tools/security/tests/test_pinned_transfer_license.py": [
+      "100644",
+      "blob",
+      "826b8da970d47fc8c1a53bf2868c5164be353c46"
     ],
     "tools/storage/crash_replay.py": [
       "100644",
       "blob",
-      "961c45d1b8dd61f33abb86f255e79a43021c0646"
+      "c031a586a65cda9663241864e92ea823fa5e76aa"
+    ],
+    "tools/storage/tests/test_crash_replay.py": [
+      "100644",
+      "blob",
+      "74266da589ad213dfffc268cee020e093c0b3762"
     ]
   },
-  "source_revision": "71db949333d94958d7d7909a1dd16c51c2421e2e",
+  "source_revision": "cd098e8e19f5e4a1d90112379bc8ca089d81ec93",
   "version": 1
 }

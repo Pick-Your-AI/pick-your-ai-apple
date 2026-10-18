@@ -18,12 +18,13 @@ MAX_AUDIT_BYTES = 64 * 1024
 AUDIT_PATH = "tools/ci/native-inputs.json"
 PACKAGE_ROOTS = frozenset(f"Packages/Planner{name}" for name in
                           ("Core", "Data", "Transfer", "Catalog", "UI"))
-# Include test dependencies, not just the product's imports. Transfer and UI
-# both execute tests linked to PlannerData; the app also embeds UI and Data.
+# Include test dependencies, not just the product's imports. Transfer tests
+# link Core, Catalog and Data; UI tests and the app also depend on Data.
 JOB_INPUTS = {
     "macos-core": {"Packages/PlannerCore"},
     "macos-storage": {"Packages/PlannerData"},
-    "macos-transfer": {"Packages/PlannerTransfer", "Packages/PlannerData"},
+    "macos-transfer": {"Packages/PlannerTransfer", "Packages/PlannerData",
+                       "Packages/PlannerCore", "Packages/PlannerCatalog"},
     "macos-catalog-cache": {"Packages/PlannerCatalog"},
     "native-ui": {"Packages/PlannerUI", "Packages/PlannerData"},
 }

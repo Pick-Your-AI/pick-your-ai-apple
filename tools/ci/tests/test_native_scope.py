@@ -164,10 +164,10 @@ class AuditedPackageScopeTests(unittest.TestCase):
     packages = ("PlannerCore", "PlannerData", "PlannerTransfer", "PlannerCatalog", "PlannerUI")
     # The independent expected dependency matrix includes test targets.
     affected = {
-        "PlannerCore": {"macos-core"},
+        "PlannerCore": {"macos-core", "macos-transfer"},
         "PlannerData": {"macos-storage", "macos-transfer", "native-ui"},
         "PlannerTransfer": {"macos-transfer"},
-        "PlannerCatalog": {"macos-catalog-cache"},
+        "PlannerCatalog": {"macos-catalog-cache", "macos-transfer"},
         "PlannerUI": {"native-ui"},
     }
 
@@ -233,6 +233,37 @@ class AuditedPackageScopeTests(unittest.TestCase):
                     result = self.decide(job)
                     self.assertEqual(result.native_required, job in affected)
                     self.assertEqual(result.changed_files, 1)
+
+    def test_legacy_transfer_test_closure_with_refreshed_pins_is_rejected(self):
+        # The accepted Transfer target now links Core and Catalog. A refresh
+        # that pins the current manifests but retains the old two-tree closure
+        # must not allow their changes to skip the Transfer test job.
+        original = json.dumps(self.audit)
+        for package in ("PlannerCore", "PlannerCatalog"):
+            with self.subTest(package=package):
+                self.command("reset", "--hard", self.initial)
+                self.audit = json.loads(original)
+                self.audit["jobs"]["macos-transfer"].pop("Packages/PlannerCore")
+                self.audit["jobs"]["macos-transfer"].pop("Packages/PlannerCatalog")
+                self.save_audit()
+                refreshed = self.commit()
+                self.change_package(package)
+                self.assertTrue(self.decide("macos-transfer", refreshed).native_required)
+
+    def test_transfer_test_dependencies_include_added_and_deleted_resources(self):
+        for package in ("PlannerCore", "PlannerCatalog"):
+            for action in ("add", "delete"):
+                with self.subTest(package=package, action=action):
+                    self.command("reset", "--hard", self.initial)
+                    if action == "add":
+                        self.write(f"Packages/{package}/Tests/Fixtures/extra.md",
+                                   "Synthetic test resource\n")
+                    else:
+                        (self.repo / f"Packages/{package}/Tests/Fixtures/value.json").unlink()
+                    self.commit()
+                    self.assertTrue(self.decide("macos-transfer").native_required)
+                    self.assertFalse(self.decide("macos-storage").native_required)
+                    self.assertFalse(self.decide("native-ui").native_required)
 
     def test_added_test_resource_is_part_of_entire_package_tree(self):
         self.write("Packages/PlannerCore/Tests/NewTests/extra.md", "Synthetic executable test input\n")

@@ -14,6 +14,16 @@ This portable Swift 6 package implements part of Apple [#32](https://github.com/
 
 The package deliberately uses immutable schema-validated `JSONValue` with a typed `CatalogKind` discriminator instead of claiming generated per-field Codable DTO coverage for every catalog kind. Catalog decoding reuses the existing parser and validator without introducing a second schema engine or changing PlannerCore dependencies. `CatalogItem.encoded()` retains all supported fields for local serialization; it does not sanitize content or grant redistribution rights. `BuildSnapshot.encoded()` is an internal/private persistence serialization, **not** a sanitized sharing API; use `BuildTransfer.export` for Files/share sheets.
 
+## Placement and relationship conformance (#35)
+
+The [placement/relationship mapping and unsupported-tuple vectors](PLACEMENT_RELATIONSHIPS.md)
+record this client's frozen-v1 preservation boundary. The 98 shared Swift/reference
+cases retain roles, directed links, hybrid labels and separate memory/context facts,
+while rejecting undocumented fields and preserving unresolved binding, allocation
+and route-budget semantics. The record pins exact inputs, typed negative/recovery
+cases and the receiving disposition; structural acceptance does not establish
+runtime compatibility or pooled memory.
+
 ## Privacy and input limits
 
 `BuildSnapshot.encoded()` reparses its exact normalized output and verifies the
