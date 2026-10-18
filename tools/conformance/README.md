@@ -20,11 +20,17 @@ apply: reference rules are proposals, not accepted vendor facts or deployment po
 
 Use Python 3.12 and a checkout of research at the pinned revision. The runner
 requires the exact dependency versions in `requirements.txt` and records the
-actual Python version. From this repository:
+actual Python version. Install their reviewed wheel hashes from
+`requirements-lock.txt`; [the environment record](environment-lock.md) lists
+its platform coverage, primary artifact provenance and remaining limits. The
+version manifest and existing runtime check are unchanged. From this repository:
 
 ```sh
 python3.12 -m venv /tmp/apple-conformance-venv
-/tmp/apple-conformance-venv/bin/pip install -r tools/conformance/requirements.txt
+/tmp/apple-conformance-venv/bin/python -m pip --isolated install \
+  --index-url https://pypi.org/simple --require-hashes --only-binary=:all: \
+  -r tools/conformance/requirements-lock.txt
+/tmp/apple-conformance-venv/bin/python -m pip check
 export CONTRACT_ROOT=/path/to/pick-your-ai-research/contracts/v1
 /tmp/apple-conformance-venv/bin/python tools/conformance/run.py \
   --contract-root "$CONTRACT_ROOT" --output /tmp/apple-conformance.json
