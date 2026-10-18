@@ -1,0 +1,1346 @@
+[
+  {
+    "name": "canonical-complete-fixture",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]},{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic per-device peak VRAM fixture, not a measured estimate.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "one-estimate-with-absent-source",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "missing-root-schema_version",
+    "json": "{\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-root-schema_version",
+    "json": "{\"schema_version\":null,\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-root-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-root-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":null,\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-root-build_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-root-build_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":null,\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-root-build_revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-root-build_revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":null,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-root-generated_at",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-root-generated_at",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":null,\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-root-estimates",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\"}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-root-estimates",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":null}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-entry-metric",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-entry-metric",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":null,\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-entry-value",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-entry-value",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":null,\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-entry-unit",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-entry-unit",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":null,\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-entry-estimator_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-entry-estimator_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":null,\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-entry-estimator_version",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-entry-estimator_version",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":null,\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-entry-confidence",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-entry-confidence",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":null,\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-entry-assumptions",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-entry-assumptions",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":null,\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-entry-selection_ids",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-entry-selection_ids",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":null}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "wrong-root-type-array",
+    "json": "[]",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "wrong-root-type-null",
+    "json": "null",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "wrong-root-type-boolean",
+    "json": "true",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "wrong-root-type-string",
+    "json": "\"unknown\"",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "unknown-root-property",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}],\"unknown\":true}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "unknown-entry-property",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"unknown\":true}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "unsupported-schema-version",
+    "json": "{\"schema_version\":\"2.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "schema-version-number",
+    "json": "{\"schema_version\":1,\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-gb-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-gb-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-gb-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-gb-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-tokens_per_second-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-tokens_per_second-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-tokens_per_second-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-tokens_per_second-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-watt-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-watt-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-watt-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-watt-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-gpu_hour-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-gpu_hour-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-gpu_hour-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_required_vram_gb-gpu_hour-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-gb-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-gb-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-gb-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-gb-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-tokens_per_second-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-tokens_per_second-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-tokens_per_second-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-tokens_per_second-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-watt-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-watt-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-watt-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-watt-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-gpu_hour-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-gpu_hour-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-gpu_hour-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_peak_per_device_vram_gb-gpu_hour-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_peak_per_device_vram_gb\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-gb-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-gb-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-gb-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-gb-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-tokens_per_second-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-tokens_per_second-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-tokens_per_second-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-tokens_per_second-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-watt-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-watt-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-watt-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-watt-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-gpu_hour-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-gpu_hour-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-gpu_hour-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-inference.estimated_tokens_per_second-gpu_hour-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-gb-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-gb-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-gb-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-gb-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-tokens_per_second-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-tokens_per_second-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-tokens_per_second-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-tokens_per_second-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-watt-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-watt-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-watt-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-watt-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-gpu_hour-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-gpu_hour-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-gpu_hour-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-compute.estimated_gpu_power_w-gpu_hour-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"compute.estimated_gpu_power_w\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-gb-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-gb-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-gb-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-gb-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-tokens_per_second-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-tokens_per_second-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-tokens_per_second-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-tokens_per_second-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"tokens_per_second\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-watt-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-watt-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-watt-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-watt-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"watt\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-gpu_hour-verified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"verified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-gpu_hour-calibrated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"calibrated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-gpu_hour-estimated",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-training.estimated_gpu_hours-gpu_hour-unverified",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"training.estimated_gpu_hours\",\"value\":\"20.0\",\"unit\":\"gpu_hour\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unverified\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "invalid-metric-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"quality.accuracy\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-metric-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.measured_tokens_per_second\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-metric-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"unknown\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-metric-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":1,\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-unit-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"GB\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-unit-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"unknown\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-unit-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":1,\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-confidence-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"approved\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-confidence-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"unknown\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-confidence-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":1,\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-estimator_id-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-estimator_id-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":1,\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-estimator_version-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-estimator_version-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":1,\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "opaque-estimator-identity-is-not-trust",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\" \",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "opaque-estimator-version-is-not-semver",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"unknown\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "exact-decimal-string-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "exact-decimal-string-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"0.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "exact-decimal-string-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.000\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "exact-decimal-string-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"0.000000000001\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "exact-decimal-string-4",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"9007199254740993.123456789012\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "exact-decimal-string-5",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999999.000000000001\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "invalid-decimal-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":true,\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":false,\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":null,\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":{},\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-4",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":[],\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-5",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":0,\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-6",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":1.25,\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-7",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":-1.25,\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-8",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"-1\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-9",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"1e3\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-10",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"01\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-11",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"1.\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-12",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"+1\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-13",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\".5\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-14",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"NaN\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-15",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"Infinity\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-16",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"1.0000000000001\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-17",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\" 1\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-decimal-18",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"1 \",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "decimal-terminal-newline-subset",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"1\\n\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": false,
+    "clientLimit": "Strict end-of-input excludes the canonical pattern dollar-anchor newline exception."
+  },
+  {
+    "name": "invalid-id-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"x\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-id-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"Wrong.id\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-id-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-id-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"bad id\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-id-4",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":1,\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "maximum-length-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "terminal-newline-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"valid.id\\n\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": false,
+    "clientLimit": "Strict end-of-input excludes the canonical pattern dollar-anchor newline exception."
+  },
+  {
+    "name": "invalid-build_id-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"x\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-build_id-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"Wrong.id\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-build_id-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-build_id-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"bad id\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-build_id-4",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":1,\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "maximum-length-build_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "terminal-newline-build_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"valid.id\\n\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": false,
+    "clientLimit": "Strict end-of-input excludes the canonical pattern dollar-anchor newline exception."
+  },
+  {
+    "name": "invalid-revision-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":0,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-revision-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":-1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-revision-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1.5,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-revision-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":true,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-revision-4",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":\"1\",\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "large-supported-revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1000000000000000,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "revision-numeric-subset",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":9007199254740993,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": false,
+    "clientLimit": "JSON numbers must fit the existing exact client representation limits."
+  },
+  {
+    "name": "valid-timestamp-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2024-02-29T23:59:59Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "valid-timestamp-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-18t03:20:01.123456z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "valid-timestamp-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-18T03:20:01+23:59\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "invalid-timestamp-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-02-29T00:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-timestamp-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-02-30T00:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-timestamp-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-18\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-timestamp-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-18T24:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-timestamp-4",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-18T00:60:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-timestamp-5",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-18T00:00:00+24:00\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-selection-ids-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-selection-ids-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_model\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-selection-ids-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[1]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-selection-ids-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"bad.id\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-selection-ids-4",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"UPPER\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-selection-ids-5",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"ab\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-selection-ids-6",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-selection-ids-7",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":\"sel_model\"}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "distinct-selection-order",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_z\",\"sel_a\",\"sel_m\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "selection-id-terminal-newline-subset",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\\n\"]}]}",
+    "canonicalValid": true,
+    "clientValid": false,
+    "clientLimit": "Strict end-of-input excludes the canonical pattern dollar-anchor newline exception."
+  },
+  {
+    "name": "assumptions-preserved-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "assumptions-preserved-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "assumptions-preserved-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"same\",\"same\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "assumptions-preserved-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"unknown\",\"condition-specific\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "invalid-assumptions-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[1],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-assumptions-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[null],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-assumptions-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[{}],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-assumptions-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[[]],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-assumptions-4",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":\"unknown\",\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "source-uri-syntax-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"source_uri\":\"https://example.invalid/estimate?version=1#conditions\"}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "source-uri-syntax-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"source_uri\":\"urn:example:synthetic-estimate\"}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "source-uri-syntax-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"source_uri\":\"mailto:test@example.invalid\"}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "source-uri-syntax-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"source_uri\":\"https://example.invalid/a%20b\"}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "invalid-source-uri-0",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"source_uri\":\"\"}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-source-uri-1",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"source_uri\":\"/relative\"}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-source-uri-2",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"source_uri\":\"https://example.invalid/a b\"}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-source-uri-3",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"source_uri\":\"https://example.invalid/%zz\"}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-source-uri-4",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"source_uri\":null}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-source-uri-5",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"source_uri\":1}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "source-ip-literal-subset",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"],\"source_uri\":\"https://[::1]/estimate\"}]}",
+    "canonicalValid": true,
+    "clientValid": false,
+    "clientLimit": "The existing URI boundary excludes IP-literal hosts; URI shape grants no source trust."
+  },
+  {
+    "name": "empty-estimates-rejected",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "repeated-estimates-preserved",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]},{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "invalid-later-estimate-rejects-entire-artifact",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"resources.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"generated_at\":\"2026-10-16T09:00:00Z\",\"estimates\":[{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":\"20.0\",\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]},{\"metric\":\"inference.estimated_required_vram_gb\",\"value\":20,\"unit\":\"gb\",\"estimator_id\":\"fixture.estimator\",\"estimator_version\":\"0.0-fixture\",\"confidence\":\"estimated\",\"assumptions\":[\"Synthetic figure only. Includes fictitious model weights, KV cache and serving overhead at the selected context/concurrency.\"],\"selection_ids\":[\"sel_model\",\"sel_context_policy\",\"sel_inference_engine\",\"sel_accelerator\"]}]}",
+    "canonicalValid": false,
+    "clientValid": false
+  }
+]
