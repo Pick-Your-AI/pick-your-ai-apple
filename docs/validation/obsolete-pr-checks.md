@@ -44,7 +44,7 @@ push, manual, rerun, completed, foreign, unknown and ambiguous runs.
 
 GitHub's [workflow-run response](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2026-03-10)
 also documents ref-qualified paths such as `.github/workflows/build.yml@main`.
-The allowlist accepts the six exact local paths either unqualified or followed by
+The allowlist accepts the listed exact local paths either unqualified or followed by
 one bounded, syntactically checked ASCII Git ref. It rejects unknown workflow
 paths and malformed qualifiers. The qualifier supplies no repository or PR
 authority, and the complete original path must remain identical at the final
