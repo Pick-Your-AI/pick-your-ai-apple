@@ -7,10 +7,13 @@ public struct CatalogBrowserView: View {
     @StateObject private var model: CatalogBrowserModel
     @State private var inspected: CatalogBrowserRow?
     @FocusState private var searchFocused: Bool
+    private let detailSource: any CatalogDetailSource
 
     public init() {
+        let source = BundledCatalogPreviewSource()
+        detailSource = source
         _model = StateObject(wrappedValue: CatalogBrowserModel(
-            source: BundledCatalogPreviewSource(), availableKinds: BundledCatalogPreviewSource.availableKinds,
+            source: source, availableKinds: BundledCatalogPreviewSource.availableKinds,
             preferences: CatalogFilterPreferences()))
     }
 
@@ -116,44 +119,13 @@ public struct CatalogBrowserView: View {
                     .accessibilityIdentifier("catalogReload")
             }
             .task { model.loadIfNeeded() }
-            .sheet(item: $inspected) { row in CatalogPreviewDetails(row: row) }
+            .sheet(item: $inspected) { row in
+                CatalogPreviewDetails(row: row, source: detailSource).id(CatalogDetailsIdentity(row))
+            }
         }
     }
 
     static func kindTitle(_ kind: String) -> String {
         kind.replacingOccurrences(of: "_", with: " ").capitalized
-    }
-}
-
-private struct CatalogPreviewDetails: View {
-    let row: CatalogBrowserRow
-    @Environment(\.dismiss) private var dismiss
-    var body: some View {
-        NavigationStack {
-            Form {
-                Section {
-                    Text("Fictional sample component").font(.headline)
-                    Text("Use this catalog to explore component types. Build selection is not available in this preview.")
-                }
-                Section("Component") {
-                    LabeledContent("Name", value: row.item.title)
-                    LabeledContent("Kind", value: CatalogBrowserView.kindTitle(row.item.kind))
-                    LabeledContent("Version", value: row.item.version)
-                    LabeledContent("Identifier", value: row.item.id)
-                }
-                Section("Assessment") {
-                    LabeledContent("Compatibility", value: "Unknown")
-                    LabeledContent("Price estimate", value: "Unknown")
-                }
-                Section("Pinned sample source") {
-                    LabeledContent("Catalog", value: row.snapshot.id)
-                    LabeledContent("Revision", value: String(row.snapshot.revision))
-                    LabeledContent("Captured", value: row.snapshot.capturedAt)
-                }
-            }
-            .accessibilityIdentifier("catalogDetailsForm")
-            .navigationTitle("Component details")
-            .toolbar { Button("Done") { dismiss() } }
-        }
     }
 }
