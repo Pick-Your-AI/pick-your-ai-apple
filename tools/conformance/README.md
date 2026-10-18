@@ -55,8 +55,21 @@ payloads against the pinned schemas and compare its result for every ID. Do not
 normalize decimal strings into binary floating point. The output is generated,
 not committed; retain it with the producing Apple commit in review/CI evidence.
 A zero exit status requires all baseline checks and all three mutations to pass.
-Any failure exits nonzero and does not write a new report; do not treat an old
-output file as evidence of a new run.
+The output must be outside the frozen contract and conformance tool directories,
+with an existing directory parent. An existing destination must be a regular file
+with one hardlink; symbolic links, directories and other file types are rejected
+without changing them or their targets. Parent-directory aliases are resolved
+before checking these boundaries. Use a separate output path for each concurrent
+run.
+
+After accepting the destination, the runner removes any previous receipt before
+checking source bytes or dependencies. A conformance failure exits nonzero with
+no success report at that path. Success JSON is fully serialized and written to
+a temporary sibling before atomic publication; write or publication failures also
+exit nonzero and remove the temporary file. Import, argument and destination
+preflight failures occur before invalidation and leave existing files unchanged.
+Harness regressions exercise an actual successful CLI run, source rejection and
+recovery, plus protected paths, dependency rejection and partial-write failures.
 
 ## Shared report vectors and native regression detection
 
