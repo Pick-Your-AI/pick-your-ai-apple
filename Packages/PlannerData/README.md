@@ -79,7 +79,7 @@ from running a UI, simulator lifecycle tests or physical-device qualification.
 
 | Issue | Executed library behavior | Remaining issue-specific work |
 | --- | --- | --- |
-| #33 | Empty draft saves and reopens; exact payload/lock bytes survive | Governed valid BuildSnapshot transition, rejection/export and cross-client golden payloads |
+| #33 | Empty draft saves and reopens; exact payload/lock bytes survive; PlannerTransfer validates the immutable snapshot transition | [Criterion-specific transition receipt](../../docs/acceptance/issue-33-draft-snapshot-boundary.md) reconciles the completed boundary; timed UI autosave and Files journeys remain separate issues |
 | #69 | CAS, appended restoration, stale undo rejection; real crash recovery | Editor autosave wiring, process termination during actual UI edits, analysis-state integration |
 | #80 | Rename/duplicate/delete, paginated large library, corrupt-record isolation and restart | Native library UI, evidence state display, cross-client build round-trip and private projection |
 | #86 | Schema 1/2→3, interrupted upgrade, actual capacity error, rollback/retry, corrupt DB retention | App integration, supported device/OS upgrade matrix and protected-data tests |
