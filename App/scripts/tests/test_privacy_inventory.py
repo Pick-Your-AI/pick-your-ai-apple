@@ -391,7 +391,7 @@ class PrivacyInventoryTests(unittest.TestCase):
                 self.assertEqual((good.returncode, good.stderr), (0, ""))
                 self.assertEqual(json.loads(output.read_text()), json.loads(good.stdout))
                 self.assertEqual(json.loads(good.stdout)["manifestCount"], 2)
-                self.assertEqual(output.resolve(), destination / output.name)
+                self.assertEqual(output.resolve(), destination.resolve() / output.name)
                 manifest.unlink()
                 failed = subprocess.run(command, capture_output=True, text=True, timeout=10)
                 self.assertEqual(failed.returncode, 2, failed.stderr)
@@ -463,6 +463,79 @@ class PrivacyInventoryTests(unittest.TestCase):
                         self.assertEqual(path.read_bytes(), before)
                     for name, target in targets.items():
                         self.assertEqual((outside / name).readlink(), target)
+
+    def test_controlled_directory_identity_cannot_remove_an_outside_receipt(self):
+        # Model two spellings with one directory identity while retaining real
+        # path traversal and receipt files. This is not a native case-fold result.
+        alias = self.root / "controlled-product-alias"
+        alias.mkdir()
+        outside = self.root / "outside"
+        outside.mkdir()
+        escape = alias / "escape"
+        escape.symlink_to(outside, target_is_directory=True)
+        indirect = self.root / "indirect"
+        indirect.symlink_to(escape, target_is_directory=True)
+        retained = outside / "retained.json"
+        sentinel = b"OWNED_SYNTHETIC_RECEIPT\n"
+        alias_spellings = {alias, alias.resolve()}
+        product_identity = self.app.stat()
+        original_lstat = Path.lstat
+
+        def observed_lstat(path, *args, **kwargs):
+            observed = original_lstat(path, *args, **kwargs)
+            return product_identity if path in alias_spellings else observed
+
+        for parent in (escape, indirect):
+            with self.subTest(parent=parent.name):
+                retained.write_bytes(sentinel)
+                rejection = None
+                with mock.patch.object(Path, "lstat", new=observed_lstat):
+                    try:
+                        inventory.prepare_output(parent / retained.name, self.app)
+                    except inventory.InventoryError as error:
+                        rejection = str(error)
+                self.assertTrue(retained.exists(), "a protected directory identity lost its outside receipt")
+                self.assertEqual(retained.read_bytes(), sentinel)
+                self.assertEqual(rejection, "evidence must be outside the inspected product")
+                self.assertEqual(escape.readlink(), outside)
+                self.assertEqual(indirect.readlink(), escape)
+
+    def test_real_filesystem_case_aliases_or_distinct_directories(self):
+        alternate = self.root / self.app.name.swapcase()
+        if alternate.exists():
+            self.assertTrue(alternate.samefile(self.app))
+            outside = self.root / "outside"
+            outside.mkdir()
+            escape = self.app / "escape"
+            escape.symlink_to(outside, target_is_directory=True)
+            indirect = self.root / "indirect"
+            indirect.symlink_to(alternate / escape.name, target_is_directory=True)
+            retained = outside / "retained.json"
+            for parent in (alternate / escape.name, indirect):
+                with self.subTest(parent=parent):
+                    retained.write_bytes(b"OWNED_SYNTHETIC_RECEIPT\n")
+                    result = subprocess.run(
+                        [sys.executable, str(SCRIPT), "--app", str(self.app),
+                         "--output", str(parent / retained.name)],
+                        capture_output=True, text=True, timeout=10,
+                    )
+                    self.assertEqual(result.returncode, 2, result.stderr)
+                    self.assertEqual(result.stdout, "")
+                    self.assertIn("evidence must be outside the inspected product", result.stderr)
+                    self.assertEqual(retained.read_bytes(), b"OWNED_SYNTHETIC_RECEIPT\n")
+                    self.assertEqual(escape.readlink(), outside)
+                    self.assertEqual(indirect.readlink(), alternate / escape.name)
+        else:
+            alternate.mkdir()
+            self.assertFalse(alternate.samefile(self.app))
+            output = alternate / "privacy.json"
+            result = subprocess.run(
+                [sys.executable, str(SCRIPT), "--app", str(self.app), "--output", str(output)],
+                capture_output=True, text=True, timeout=10,
+            )
+            self.assertEqual((result.returncode, result.stderr), (0, ""))
+            self.assertEqual(json.loads(output.read_text()), json.loads(result.stdout))
+            self.assertEqual(json.loads(result.stdout)["manifestCount"], 2)
 
 
 if __name__ == "__main__":

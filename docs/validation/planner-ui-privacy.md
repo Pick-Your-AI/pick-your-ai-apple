@@ -294,6 +294,61 @@ requires the actual receiving SDK and UI built-product gates before main
 delivery. The running f4 source and its original native receipts retain their
 own identity.
 
+## Receiving filesystem-identity and temporary-alias correction
+
+An additional source review follows the separate SDK receipt correction in
+[#313](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/313).
+Its filesystem-identity source `2cef1096da823656d718aea43c76652c60de6be6`
+retains the preceding target-ancestry correction `95c79b4477ea810ebc0467b1e4f688f199196049`;
+the selected successor `f319f4b847ca119e2d488d8e91a342f10db18bbb` normalizes
+only the expected temporary parent in its safe-output assertion. Those source
+reviews and SDK executions are separate from this privacy continuation.
+
+[Apple volumes can treat different letter cases as the same entry](https://developer.apple.com/library/archive/documentation/Security/Conceptual/SecureCodingGuide/Articles/RaceConditions.html).
+The privacy helper now compares the selected product's existing device/inode
+identities with each retained output location before removing an earlier receipt,
+using the same identity relation documented for
+[Python file comparisons](https://docs.python.org/3.12/library/os.path.html#os.path.samestat).
+The candidate lookup uses `lstat`; lexical checks still cover missing paths and
+the final-file link rejection remains intact. An unsafe physical product alias
+preserves the receipt even when a later directory link escapes to an outside file.
+Valid outside aliases retain publication, stale-success invalidation and recovery.
+The earlier selected-app loop handling is preserved when no product identity can
+be resolved. This remains stable-path validation.
+
+The two-route causal fixture models one directory's observed `lstat` identity
+while using real directory traversal, links and owned receipt files. Against the
+unchanged preceding helper, both direct and hidden aliases deleted their synthetic
+outside receipt. The corrected helper preserves both. This controlled identity
+fixture is not a native case-insensitive filesystem result. A second actual-CLI
+method observes the real temporary filesystem: it rejects direct and hidden
+case aliases when supported, or accepts a truly distinct differently cased
+directory. The Linux execution exercised the distinct-directory branch; the
+case-insensitive branch requires the actual receiving macOS run.
+
+The existing six-route safe-alias test also failed all six destination comparisons
+when its temporary root was supplied through a real directory symlink, after
+the CLI and JSON checks had succeeded. Resolving the expected parent before
+appending the unchanged final filename fixes that assertion and preserves exact
+destination equality. The same actual six-route replay then passed, including
+receipt invalidation and recovery. No `Path.resolve` or receipt-unlink mock is
+used in that replay.
+
+All sixteen preceding privacy method identities remain: fifteen bodies are
+unchanged and the safe-alias method changes only that one expected-parent
+expression. Two methods are added. Actual Python 3.12.14 execution passes all
+**61 App script methods** and all **18 privacy methods** under optimized Python,
+with zero failures or skips. The controlled two-route and actual six-route
+replays also pass. Original failed logs remain retained separately.
+
+This three-file layer extends immutable receiving preparation
+[`986ac82a13edd7bc6541082c1a62c59eba57a6c3`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/986ac82a13edd7bc6541082c1a62c59eba57a6c3),
+tree `d432f15cf7b9afaa7c2bf8fdd269b75835dc0528`. Its complete 373-method Swift
+inventory, manifest bytes, frozen inputs and native workflows/profiles remain
+unchanged. The new helper and filesystem-conditioned branch require their own
+configured native receiving results and both built-product privacy inventories.
+Original f4 and separate SDK results establish no execution of this new source.
+
 ## Remaining integration and acceptance
 
 This composition retains the independently reviewed and delivered PlannerCatalog

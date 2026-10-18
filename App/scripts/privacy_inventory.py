@@ -163,6 +163,23 @@ def prepare_output(path, app):
     if any(product == output or product in output.parents
            for product in app_locations for output in output_locations):
         raise InventoryError("evidence must be outside the inspected product")
+    # Different path spellings can identify the same directory on native volumes.
+    # Preserve the existing app-loop retry behavior when no identity is readable.
+    if not app_loop:
+        identities = set()
+        for product in app_locations:
+            try:
+                metadata = product.stat()
+            except FileNotFoundError:
+                continue
+            identities.add((metadata.st_dev, metadata.st_ino))
+        for output in output_locations:
+            try:
+                metadata = output.lstat()
+            except FileNotFoundError:
+                continue
+            if not stat.S_ISLNK(metadata.st_mode) and (metadata.st_dev, metadata.st_ino) in identities:
+                raise InventoryError("evidence must be outside the inspected product")
     if info is not None:
         path.unlink()
     if app_loop:
