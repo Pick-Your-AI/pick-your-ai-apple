@@ -72,18 +72,37 @@ and labels, round trips, duplicate/escaped keys, byte/depth/aggregate-node limit
 preserved repeated/cyclic/self edges and serialization expansion. They do not
 replace service, device, UI or graph-policy tests.
 
-Local preparation on 2026-10-18 passed all eight pinned source hashes, the existing
-129 build/selection and 1,635 catalog cases, all 150 new graph cases, deterministic
-regeneration and whitespace checks. Swift and Xcode are unavailable in this local
-workspace; native execution and independent receiving review remain required
-before ordinary signed-main integration. A source review or Python pass is not
-a Swift runtime receipt.
+Original local preparation on 2026-10-18 passed all eight pinned source hashes,
+129 build/selection and 1,635 catalog cases, all 150 graph cases, deterministic
+regeneration and whitespace checks. Swift and Xcode were unavailable in that
+implementation workspace. The later actual hosted execution below supersedes
+that tooling gap; the earlier Python result remains separately attributed.
+
+### Actual receiving execution (2026-10-18)
+
+The [#246 Transfer run 39120275091 / job 117654328957](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39120275091/job/117654328957)
+checked out `c6dd87ca76b2d956d1224da55beed44f57fdc91d`, tree
+`de006e023bdbb5fcd9429b71b01a6110923c8275`, with ordered parents accepted main
+`8ca109963bfca3a707b1af8b80aabcd9dd28fd8a` and verified signed graph source
+`1b120031636574c43e34949787fd1bd335820478`. Xcode 16.4 / build 16F6 and Swift 6.1.2
+passed all eight source hashes, the 129 + 1,635 + 150 shared reference cases, all
+42 XCTest cases with zero failures or skips, and unsigned iOS Simulator SDK
+compilation. The actual inventory includes all six graph methods and the four
+accepted-main comparison-ID regressions in addition to the earlier source suite.
+
+Independent source and receiving reviews are linked in [#239](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/239)
+and [#246](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/246).
+The recorded execution belongs to that exact older receiving tree. Later main
+compositions must preserve accepted changes, receive independent review and meet
+their applicable current checks before normal signed-main delivery. This record
+does not relabel the earlier run as execution of a later tree or infer graph
+policy, application journeys, physical-device behavior or production activation.
 
 ## Issue-specific limits
 
 | Required output | Implemented boundary | Remaining acceptance |
 | --- | --- | --- |
-| #32 accepts valid frozen payloads and rejects incompatible ones | Graph schema/identity/edge validation, typed labels and shared reference vectors | Actual native execution, other top-level/model/migration requirements and receiving contract review |
+| #32 accepts valid frozen payloads and rejects incompatible ones | Graph schema/identity/edge validation, typed labels and shared reference vectors extend the accepted all-kind boundary | The [accepted #32 conformance record](README.md#32-receiving-conformance-record) governs its three literal criteria and immutable model strategy; this graph is a separate artifact boundary, not an added issue-closure requirement |
 | #35 preserves canonical relationships and exposes representation gaps | Existing kind-level edges round-trip without invented placement fields; `placement`, `component_role`, `memory_pool` and `hybrid` activation mutations reject | Accepted per-selection hybrid/role/memory-pool representation, versioned migration and Apple integration |
 | #71 rechecks affected components after changes | Exact directed graph is available to an eventual governed consumer | Activation policy, dirty-state propagation, evaluator binding, stale-result handling and real UI/service integration |
 
@@ -91,5 +110,14 @@ Frozen v1's kind-level dependency graph cannot encode the full hybrid placement,
 component-role or memory-pool tuple requested by #35. Those gaps remain
 unsupported and route to research [#40](https://github.com/Pick-Your-AI/pick-your-ai-research/issues/40)
 for a versioned contract decision. No undocumented field or inferred default is
-added here. All three issues remain open until their complete criteria and
-receiving evidence are satisfied.
+added here. #35 and #71 remain open until their complete criteria and receiving
+evidence are satisfied.
+
+[#32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32) was completed
+through the independently reviewed [#252 conformance record](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/252),
+delivered on verified signed main `971e8ea6500c52a5be0493c7686ffc7dc7792cb4`.
+Its accepted immutable model strategy and all-kind criterion mapping supersede
+earlier preparation statements that grouped generated per-field DTOs, other
+top-level artifacts and migration into additional #32 closure requirements.
+The graph's separate integration neither reopens those criteria nor completes
+#35's placement representation or #71's governed evaluation and UI work.

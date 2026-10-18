@@ -284,5 +284,7 @@ This advances #32 transport coverage and #49 quality-record preparation. It does
 not establish qualified evaluation execution, exact-current-workload evidence,
 resource-estimate binding, live service/fault handling, UI delivery or receiving
 acceptance. The existing #49 prerequisites (Apple #44, Apple #34 and Android #79)
-and the remaining #32/#49 criteria remain open. Frozen contracts, service ownership
-and other active artifact-boundary implementations are unchanged.
+and the remaining #49 criteria remain open. The [accepted #32 conformance record](#32-receiving-conformance-record)
+already governs its completed criteria; this separate quality artifact adds no new
+#32 closure requirement. Frozen contracts, service ownership and other active
+artifact-boundary implementations are unchanged.
