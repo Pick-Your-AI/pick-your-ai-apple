@@ -8,9 +8,15 @@ import tempfile
 
 probe = str(pathlib.Path(sys.argv[1]).resolve())
 
+def require(condition, message):
+    if not condition:
+        raise SystemExit(message)
+
 def run(mode, path, expected=0):
     result = subprocess.run([probe, mode, str(path)], capture_output=True, text=True)
-    assert result.returncode == expected, (mode, result.returncode, result.stdout, result.stderr)
+    require(result.returncode == expected,
+            f"{mode}: expected exit {expected}, observed {result.returncode}; "
+            f"stdout={result.stdout!r}; stderr={result.stderr!r}")
 
 with tempfile.TemporaryDirectory() as root:
     path = pathlib.Path(root) / "drafts.sqlite"
@@ -19,7 +25,8 @@ with tempfile.TemporaryDirectory() as root:
         run(mode, path, 73)
         run("verify", path)
         with sqlite3.connect(path) as db:
-            assert db.execute("PRAGMA integrity_check").fetchone() == ("ok",)
+            require(db.execute("PRAGMA integrity_check").fetchone() == ("ok",),
+                    f"{mode}: database integrity check failed")
     legacy = pathlib.Path(root) / "legacy.sqlite"
     with sqlite3.connect(legacy) as db:
         db.executescript("""
@@ -32,7 +39,9 @@ with tempfile.TemporaryDirectory() as root:
         """)
     run("crash-migration", legacy, 73)
     with sqlite3.connect(legacy) as db:
-        assert db.execute("PRAGMA user_version").fetchone() == (1,)
-        assert "restored_from" not in [r[1] for r in db.execute("PRAGMA table_info(revisions)")]
+        require(db.execute("PRAGMA user_version").fetchone() == (1,),
+                "crash-migration: schema version changed before commit")
+        require("restored_from" not in [r[1] for r in db.execute("PRAGMA table_info(revisions)")],
+                "crash-migration: restoration column survived interrupted migration")
     run("verify", legacy)
 print("PASS: abrupt exits after history write, before commit and during migration preserve durable revision")
