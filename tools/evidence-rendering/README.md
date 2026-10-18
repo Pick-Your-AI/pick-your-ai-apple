@@ -40,6 +40,16 @@ bounded scan fails. The app uses its
 normal SwiftUI window/scene lifecycle. There is no private accessibility activation,
 view reflection or host-computed expected text.
 
+On macOS, a foreground process with no own-app windows is prepared through its
+standard **File > New Window** command. The existing English launch settings
+identify that native menu. The command must exist and be enabled; it is used
+only when the window query is empty, before the original error and case-marker
+checks. An existing window with missing or wrong content receives no retry or
+replacement window. A second window query just before selecting the command
+dismisses the menu without creating another window if a window has appeared.
+This fixture setup retains the normal `WindowGroup`, four
+separate process launches, exact scenario/position checks and bounded waits.
+
 ## Actual failed predecessor and current qualification
 
 At source `7d9724b16136546b686d87f29acf9bd95ca9c2eb`, prepared checkout
@@ -109,6 +119,30 @@ not an Apple SDK compilation. All 30 existing pinned conformance methods passed
 in 10.102 seconds, including both strict rendering-receipt methods and the
 unchanged shared-vector checks. All 15 native-scope methods passed in 1.139
 seconds. These results do not qualify corrected native rendering.
+
+At source `d73ef71d64c13262211ef3872eac2ca0ea9c48c0`, prepared checkout
+`a228a01d1c58cff68fd63b6726a6a709da15541b` / tree
+`d48dc497be7e0536855b489c185143b5dc53337e`, the next
+[macOS run 39160744445 / job 117773371470](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39160744445/job/117773371470)
+passed all 23 editor-model methods and the seven-scenario claims method. The
+remaining three rendering methods failed at the initial case-marker existence
+assertion; the foreground assertion passed. Their complete captured app trees
+contain menus and a Touch Bar, with no window or harness element. **File > New
+Window** is present and enabled in each tree. The
+[original archive receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/277#issuecomment-6254852976)
+and [independent diagnostic readback](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/277#issuecomment-6254868328)
+retain the exact artifact, decoded descriptions and hashes. No restoration
+dialog or underlying OS restoration cause was established; the three failures
+remain failures, and later build/launch stages in that job were skipped.
+
+The bounded setup correction uses that observed native command to acquire the
+fixture window. Apple's [menu-bar guide](https://developer.apple.com/documentation/swiftui/building-and-customizing-the-menu-bar-with-swiftui)
+documents the standard `WindowGroup` command; checked 2026-10-18. It changes no
+host, scenario loader, production view, fixture, assertion expectation, scan
+bound, Xcode project or workflow. The macOS 14 deployment target and iOS launch
+path remain unchanged. Current-source execution must still pass all four
+rendering methods on macOS, iPhone and iPad. This setup does not qualify default
+launch restoration or any production application lifecycle.
 
 The earlier local native-host preparation used Swift 6.1.2 syntax parsing for both new Swift
 files; it did not compile an Apple SDK. The exact `jsonschema[format]` 4.25.1

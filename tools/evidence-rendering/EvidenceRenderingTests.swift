@@ -35,6 +35,24 @@ final class EvidenceRenderingTests: XCTestCase {
         app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US", "--evidence-group", group]
         app.launch()
         XCTAssertTrue(app.wait(for: .runningForeground, timeout: 15), "The actual native host must run in the foreground.")
+        #if os(macOS)
+        // WindowGroup can launch with only its menu bar. Acquire a real window
+        // through its standard command before inspecting the selected fixture.
+        if app.windows.count == 0 {
+            let fileMenu = app.menuBars.menuBarItems["File"]
+            XCTAssertTrue(fileMenu.exists, "The native host must expose its File menu.")
+            XCTAssertTrue(fileMenu.isEnabled, "The native host must allow opening its File menu.")
+            fileMenu.click()
+            let newWindow = fileMenu.menus.menuItems["New Window"]
+            XCTAssertTrue(newWindow.exists, "The native host must expose New Window.")
+            XCTAssertTrue(newWindow.isEnabled, "The native host must allow a new fixture window.")
+            if app.windows.count == 0 {
+                newWindow.click()
+            } else {
+                app.typeKey(.escape, modifierFlags: [])
+            }
+        }
+        #endif
         XCTAssertFalse(app.staticTexts["evidence-harness-error"].exists)
         XCTAssertTrue(app.staticTexts["evidence-harness-case"].waitForExistence(timeout: 10))
         return app
