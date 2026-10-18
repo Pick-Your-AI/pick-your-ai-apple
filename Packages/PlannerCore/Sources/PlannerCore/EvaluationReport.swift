@@ -267,7 +267,12 @@ extension EvaluationReport {
     /// This representation limit is a client constraint, not a wire-schema change.
     public static func decode(_ data: Data) throws -> EvaluationReport {
         guard data.count <= maximumPayloadBytes else { throw EvaluationBoundaryError.payloadTooLarge }
-        guard let text = String(data: data, encoding: .utf8) else { throw EvaluationBoundaryError.invalidUTF8 }
+        // Raw NUL is invalid JSON and can hide UTF-16/32 tokens from the UTF-8
+        // numeric scan while Foundation detects a different encoding. Escaped
+        // \u0000 remains valid; scan and decode must see the same numeric text.
+        guard !data.contains(0), let text = String(data: data, encoding: .utf8)
+        else { throw EvaluationBoundaryError.invalidUTF8 }
+        try ContractJSONPreflight.validate(text)
         // Match strings first so digit sequences in IDs/messages are not numbers.
         let tokens = try NSRegularExpression(pattern: #""(?:[^"\\]|\\.)*"|(-?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)"#)
         let ns = text as NSString
