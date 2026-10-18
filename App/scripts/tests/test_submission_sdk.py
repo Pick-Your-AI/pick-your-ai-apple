@@ -518,7 +518,7 @@ class SubmissionSDKTests(unittest.TestCase):
                 first = self.run_cli(*arguments)
                 self.assertEqual(first.returncode, 0, first.stderr)
                 self.assertEqual(json.loads(receipt.read_text()), json.loads(first.stdout))
-                self.assertEqual(receipt.resolve(), destination / receipt.name)
+                self.assertEqual(receipt.resolve(), destination.resolve() / receipt.name)
                 self.write_product({**valid, "DTSDKName": "iphoneos18.5"})
                 failed = self.run_cli(*arguments)
                 self.assertEqual(failed.returncode, 2, failed.stdout + failed.stderr)
