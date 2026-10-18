@@ -41,6 +41,8 @@ jobs:
           --output contract-preparation.json
       - name: Replay shared Swift pricebook vectors against the pinned schema
         run: python tools/conformance/pricebook_vectors.py --contract-root .canonical-research/contracts/v1
+      - name: Replay raw JSON without collapsing repeated keys
+        run: python tools/conformance/raw_core_vectors.py --contract-root .canonical-research/contracts/v1
       - name: Test preparation harness failure and recovery
         env:
           CONTRACT_ROOT: .canonical-research/contracts/v1
