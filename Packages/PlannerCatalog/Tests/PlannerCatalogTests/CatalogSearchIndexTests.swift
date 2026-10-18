@@ -102,4 +102,70 @@ final class CatalogSearchIndexTests: XCTestCase {
         do { _ = try await index.search(query: String(repeating: "x", count: 1_025)); XCTFail("Oversized query accepted") }
         catch { XCTAssertEqual(error as? CatalogSearchError, .invalidQuery) }
     }
+
+    func testKindSortKeepsStableIdentityAndVersionTiesAcrossPages() async throws {
+        let index = CatalogSearchIndex()
+        let older = CatalogSearchEntry(id: "same", version: "1", kind: "model", title: "Alpha")
+        let newer = CatalogSearchEntry(id: "same", version: "2", kind: "model", title: "ALPHA")
+        let device = entry("device", "Zeta", kind: "device")
+        let other = entry("other", "Alpha")
+        let values = [newer, device, older, other]
+        try await index.install(identity: identity(), entries: values)
+
+        let defaultPage = try await index.search()
+        let titlePage = try await index.search(sort: .title)
+        XCTAssertEqual(defaultPage.entries, titlePage.entries)
+        XCTAssertEqual(defaultPage.entries, [other, older, newer, device])
+        let first = try await index.search(limit: 2, sort: .kind)
+        XCTAssertEqual(first.entries, [device, other])
+        XCTAssertEqual(first.totalCount, 4)
+
+        // Reordering the same immutable input must not invalidate either order's token.
+        try await index.install(identity: identity(), entries: Array(values.reversed()))
+        let second = try await index.search(limit: 2, sort: .kind, after: XCTUnwrap(first.next))
+        XCTAssertEqual(second.entries, [older, newer])
+        XCTAssertEqual(second.identity, first.identity)
+        XCTAssertEqual(second.totalCount, first.totalCount)
+        XCTAssertNil(second.next)
+    }
+
+    func testChangingSortRejectsOldPageAndRestartUsesRequestedOrder() async throws {
+        let index = CatalogSearchIndex()
+        let model = entry("model", "Alpha")
+        let device = entry("device", "Zeta", kind: "device")
+        try await index.install(identity: identity(), entries: [model, device])
+        let titlePage = try await index.search(limit: 1)
+        do {
+            _ = try await index.search(limit: 1, sort: .kind, after: XCTUnwrap(titlePage.next))
+            XCTFail("Previous order's page was accepted")
+        } catch { XCTAssertEqual(error as? CatalogSearchError, .mismatchedPage) }
+
+        let kindPage = try await index.search(limit: 1, sort: .kind)
+        XCTAssertEqual(kindPage.entries, [device])
+        do {
+            _ = try await index.search(limit: 1, after: XCTUnwrap(kindPage.next))
+            XCTFail("Omitting the sort accepted a kind-order page")
+        } catch { XCTAssertEqual(error as? CatalogSearchError, .mismatchedPage) }
+        let continued = try await index.search(limit: 1, sort: .kind, after: XCTUnwrap(kindPage.next))
+        XCTAssertEqual(continued.entries, [model])
+        XCTAssertNil(continued.next)
+    }
+
+    func testKindSortCombinesQueryAndFiltersWithoutInventingMissingRows() async throws {
+        let index = CatalogSearchIndex()
+        let model = entry("model", "Café Model")
+        let device = entry("device", "Cafe Device", kind: "device")
+        try await index.install(identity: identity(), entries: [model, entry("other", "Other"), device])
+        let first = try await index.search(query: " CAFE ", kinds: ["model", "device"], limit: 1, sort: .kind)
+        XCTAssertEqual(first.entries, [device])
+        XCTAssertEqual(first.totalCount, 2)
+        let second = try await index.search(query: "cafe", kinds: ["device", "model"], limit: 1,
+                                            sort: .kind, after: XCTUnwrap(first.next))
+        XCTAssertEqual(second.entries, [model])
+        XCTAssertEqual(second.totalCount, 2)
+        let empty = try await index.search(query: "cafe", kinds: ["unavailable-kind"], sort: .kind)
+        XCTAssertTrue(empty.entries.isEmpty)
+        XCTAssertEqual(empty.totalCount, 0)
+        XCTAssertNil(empty.next)
+    }
 }
