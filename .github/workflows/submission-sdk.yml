@@ -1,0 +1,117 @@
+name: Unsigned submission SDK compatibility
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  scope:
+    name: submission-sdk documentation scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      native_required: ${{ steps.scope.outputs.native_required }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Test conservative scope selection
+        run: python3 -m unittest discover -s tools/ci/tests -p 'test_native_scope.py' -v
+      - name: Test SDK selection and built-product rejection
+        run: python3 -m unittest discover -s App/scripts/tests -p 'test_*sdk.py' -v
+      - name: Inspect complete exact Git comparison
+        id: scope
+        env:
+          APPLE_CI_EVENT: ${{ github.event_name }}
+          APPLE_CI_HEAD: ${{ github.sha }}
+          APPLE_CI_BASE: ${{ github.event.pull_request.base.sha }}
+          APPLE_CI_BEFORE: ${{ github.event.before }}
+        run: python3 tools/ci/native_scope.py
+
+  submission-sdk:
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
+    runs-on: macos-15
+    timeout-minutes: 40
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Verify exact Xcode and actual device and simulator SDKs
+        run: |
+          set -euo pipefail
+          mkdir -p .build/submission-evidence
+          python3 -m unittest discover -s App/scripts/tests -v 2>&1 | tee .build/submission-evidence/pin-tests.txt
+          python3 App/scripts/submission_sdk.py verify --github-env "$GITHUB_ENV" --output .build/submission-evidence/sdk-selection.json
+      - name: Record checkout, compiler and runner identity
+        run: |
+          set -euo pipefail
+          git show -s --format='commit %H%ntree %T%nparents %P' HEAD | tee .build/submission-evidence/checkout.txt
+          /usr/bin/xcodebuild -version | tee .build/submission-evidence/xcode.txt
+          /usr/bin/xcrun swift --version | tee .build/submission-evidence/swift.txt
+          sw_vers | tee .build/submission-evidence/macos.txt
+          printf 'ImageOS=%s\nImageVersion=%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" | tee .build/submission-evidence/runner-image.txt
+      - name: Require fresh isolated caches
+        run: |
+          python3 - <<'PY'
+          from pathlib import Path
+          for name in ("submission-package-cache", "submission-tests", "submission-source-packages",
+                       "submission-simulator", "submission-device"):
+              path = Path(".build") / name
+              if path.exists():
+                  raise SystemExit(f"Expected a fresh submission cache at {path}; no restored caches or alternative path is allowed.")
+              print(f"Verified absent: {path}")
+          PY
+      - name: Execute all five Swift package test suites with Xcode 26.3
+        run: |
+          set -euo pipefail
+          for package in PlannerCore PlannerData PlannerTransfer PlannerCatalog PlannerUI; do
+            /usr/bin/xcrun swift test --package-path "Packages/$package" \
+              --cache-path "$PWD/.build/submission-package-cache" \
+              --scratch-path "$PWD/.build/submission-tests/$package" \
+              2>&1 | tee ".build/submission-evidence/$package-tests.txt"
+            grep -E 'Executed [1-9][0-9]* tests?, with 0 failures' ".build/submission-evidence/$package-tests.txt"
+          done
+      - name: Build unsigned Release simulator product
+        run: |
+          set -euo pipefail
+          /usr/bin/xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Release \
+            -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' \
+            -derivedDataPath .build/submission-simulator \
+            -clonedSourcePackagesDirPath .build/submission-source-packages \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee .build/submission-evidence/simulator-build.txt
+          python3 App/scripts/submission_sdk.py inspect --sdk iphonesimulator \
+            --app .build/submission-simulator/Build/Products/Release-iphonesimulator/Planner.app \
+            --output .build/submission-evidence/simulator-product.json
+      - name: Build unsigned Release device product
+        run: |
+          set -euo pipefail
+          /usr/bin/xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Release \
+            -sdk iphoneos -destination 'generic/platform=iOS' \
+            -derivedDataPath .build/submission-device \
+            -clonedSourcePackagesDirPath .build/submission-source-packages \
+            CODE_SIGNING_ALLOWED=NO build 2>&1 | tee .build/submission-evidence/device-build.txt
+          python3 App/scripts/submission_sdk.py inspect --sdk iphoneos \
+            --app .build/submission-device/Build/Products/Release-iphoneos/Planner.app \
+            --output .build/submission-evidence/device-product.json
+      - name: Retain SDK compatibility evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: unsigned-submission-sdk-evidence
+          path: .build/submission-evidence
+          if-no-files-found: warn
+          retention-days: 14

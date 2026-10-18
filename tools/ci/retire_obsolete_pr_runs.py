@@ -21,7 +21,7 @@ WORKFLOWS = frozenset(
     f".github/workflows/{name}.yml"
     for name in (
         "catalog-cache", "contract-preparation", "native-ui",
-        "swift-core", "swift-storage", "swift-transfer",
+        "swift-core", "swift-storage", "swift-transfer", "submission-sdk",
     )
 )
 ACTIVE = frozenset(("queued", "in_progress"))
