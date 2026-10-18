@@ -60,10 +60,11 @@ the workflow contains no per-package or advisory exemption.
 
 GitHub's action documents that an undetected license is reported without failing.
 The supplementary [output guard](../../tools/security/check_dependency_review.py)
-closes that specific gap: every entry in the pinned action's `forbidden` or
-`unresolved` categories fails, and an `unlicensed` entry requires verified license
-evidence. Only the exact observed metadata gap described below has a supported
-source-verification path; every other `unlicensed` entry fails. All three arrays must be
+closes that specific gap: every `unresolved` entry fails, and an `unlicensed` entry
+requires verified license evidence. The exact Action metadata gap and the
+[exact Transfer wheel classification](#exact-transfer-wheel-license-recovery)
+below have separate source-verification paths. Every other `unlicensed` or
+`forbidden` entry fails. All three arrays must be
 present in their enclosing object; an absent category, wrong type or an unexpected
 category fails. The raw dependency list can retain a null license even when the
 action resolves and checks that license through GitHub's license API, so the
@@ -104,6 +105,15 @@ fetch an alternative advisory feed, install a proposed dependency or infer that 
 diff audited existing dependencies. Unsupported ecosystem coverage and unresolved
 transitives remain review gaps. The check's existence does not prove it is a
 branch-protection requirement.
+
+The mandatory final guard also requires the original action outcome and a
+successful exact-commit snapshot step. `continue-on-error` on the action allows
+that guard to evaluate an observed failure; it does not accept the failure.
+Absent, skipped, cancelled or unsupported outcomes fail. A failed action with
+apparently clean or empty output also fails. The only supported failed-action
+recovery is the exact Transfer proof below; the existing Action metadata-gap
+recovery still requires the action to have succeeded. The final step runs with
+`always()` so a skipped review cannot disappear from the acceptance decision.
 
 ## Exact pinned Action license recovery
 
@@ -161,6 +171,84 @@ snapshot-completeness guard is unchanged. Existing bundled/transitive inventory,
 release notices and the separate unacceptable-dependency/urgent-patch drill remain
 required; this proves the inspected Action source license only.
 
+## Exact Transfer wheel license recovery
+
+[PR #266](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/266) at
+`4b455d1efa8edf135bdba393089cca7ab32886ec` failed
+[run 39140834572, job 117714734437](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39140834572/job/117714734437).
+The dependency-comparison event base was
+`1601ec4a1333fe2cea8871e32888e30c0b368aed`, with the PR head above. The actual
+workflow checkout was `62d61aa6180dc4d3b22022c1b1afbb45a8e9f17d`, merging that head
+into accepted main `17e03aa65c6f2b6e0465b4bab48787901fdf0523`. These are distinct
+comparison and execution identities in the original log. The snapshot step
+accepted all eleven compared rows without warnings and there were zero reported
+vulnerabilities. The action rejected one `typing-extensions==4.16.0` addition in
+`Packages/PlannerTransfer/Tools/requirements.txt`, with the composite expression
+preserved in the [observed-input fixture](../../tools/security/tests/fixtures/pinned-transfer-license-conflict.json).
+The original guard reproduced exit 1, one disallowed license and zero source
+resolutions. An unmatched-manifest control also failed. These actual failures
+remain part of the record.
+
+The fixed [PyPI release](https://pypi.org/project/typing-extensions/4.16.0/) declares
+`PSF-2.0`, which is already in the unchanged repository policy. Independent
+inspection retrieved the complete wheel, read its `METADATA` declaration and
+compared its embedded license byte for byte with the
+[upstream LICENSE](https://github.com/python/typing_extensions/blob/f29cd28d8ed7642cafb1d18daf5aa41be6a5c0aa/LICENSE)
+at the release's signed source commit. GitHub verified that commit's signature;
+PyPI's trusted-publishing provenance identifies the same source commit. The
+complete retrieved wheel was never installed or executed.
+
+| Reviewed input | Exact bound |
+| --- | --- |
+| Transfer installer | 1,969 bytes; SHA-256 `49d2158183e44a47f0f66fd7ce6cb146ca52281015cfcd2e9dd2670724eb0344`. An [inert test fixture](../../tools/security/tests/fixtures/pinned-transfer-requirements.fixture) preserves the proposed installer bytes without adding its active manifest or feature to main. |
+| Immutable wheel | `typing_extensions-4.16.0-py3-none-any.whl`, 45,571 bytes; SHA-256 `481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8`. The guard uses one fixed HTTPS artifact URL from that release. |
+| Wheel metadata | `Name: typing_extensions`, `Version: 4.16.0`, `License-Expression: PSF-2.0`; 3,310 bytes with SHA-256 `b05084ca1d50879865178d9fff9fabeab61bdfb1f361bfbde95421ffc8f9be46`. |
+| Embedded and upstream license | Both 13,936 bytes; SHA-256 `3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf`. |
+| Signed source | Commit `f29cd28d8ed7642cafb1d18daf5aa41be6a5c0aa`, tree `9381f93c022005ef0f043b22c06be4e5205ecb9e`. |
+
+The guard performs no installer or network lookup unless the original action
+failed, snapshots succeeded, there are zero vulnerable additions, the existing
+policy still includes `PSF-2.0`, and the single complete observed row matches in
+both raw and forbidden outputs. All other license categories must be empty.
+Missing, duplicate or conflicting raw records cannot borrow the proof. Another
+manifest, version, scope, identity or classification remains rejected, including
+the separately owned conformance lock proposal in
+[PR #280](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/280).
+
+For that exact case, the installer must be a regular, singly linked file of the
+fixed size and digest. Nonblocking/no-follow file access rejects a missing file,
+symlink, FIFO, directory, hardlink or changed bytes before network access. The
+reviewed installer requires hashes and binary wheels and admits only the fixed
+typing-extensions wheel hash for Python versions below 3.13. The fixed artifact
+request carries no repository token, refuses redirects, uses at most 16 KiB per
+read and accepts no more than the expected wheel length plus one overflow byte.
+A ten-second socket timeout and a deadline checked before and after reads bound
+retrieval; the existing two-minute final-step bound also remains. HTTP/transport,
+length or digest failures retain rejection without printing payloads or tokens.
+Only the complete reviewed bytes clear the one forbidden result and increment
+`pinned_license_resolutions`; raw dependency/snapshot evidence is never rewritten.
+
+The portable security suite passes all 43 methods: the original 31 plus twelve
+Transfer cases. Transport unit tests use conspicuous controlled bytes with their
+actual digest; they are not claims about the real wheel. Separately, the actual
+unpatched CLI and immutable wheel recovered the captured eleven-row failure
+with exit 0 and exactly one resolution. Four actual process controls retained
+exit 1: an unmatched manifest, a `GPL-3.0-only` replacement classification, a
+different added dependency with a low-severity vulnerability, and unexplained
+upstream failure with clean output. Main without the qualifying change performs
+no artifact lookup; the qualifying row with an absent or mismatched installer
+fails. Byte bounds, transport/deadline errors, other categories and skipped or
+missing outcomes are also covered by the portable suite.
+
+This repair is prepared independently on main
+`17e03aa65c6f2b6e0465b4bab48787901fdf0523`; it does not include the held Transfer
+lock or native feature. Its source and hosted receiving checks still require
+independent review. The #266 owner must receive this repair and obtain a fresh
+successful exact-head dependency check before that failure is resolved. The
+separate #280 proof must be composed and reviewed without broadening either
+manifest's bound. No full dependency inventory, advisory baseline, native result
+or complete #103 acceptance follows from this single artifact proof.
+
 ## Observed local rejection and recovery
 
 The portable implementation uses Python's standard library only. On Python 3.12.14
@@ -183,9 +271,10 @@ unresolved and unlicensed results. They are source-derived protocol cases, not
 fabricated hosted advisory scan receipts.
 
 The [retained six-case rehearsal](dependency-review-rehearsal.json) from that source invokes the
-actual guard in separate processes with only its two synthetic input variables.
+actual guard in separate processes with its synthetic input variables.
 It preserves that historical guard's SHA-256 and Python version. Replaying the
-corrected guard retains all six required outcomes and additionally reports zero
+corrected guard supplies explicit synthetic action/snapshot outcomes, retains all
+six required exits and additionally reports zero
 `pinned_license_resolutions` for these unrelated synthetic cases. The vulnerable and unapproved
 packages are inert JSON descriptions with conspicuous synthetic identities; they
 are never downloaded, resolved or executed.

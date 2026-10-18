@@ -43,7 +43,13 @@ def main() -> int:
     for name, changes, licenses, expected in cases:
         # The synthetic replay needs no network, repository token or inherited
         # credentials. No package represented in the fixture is installed.
-        env = {"PYTHONUTF8": "1", "DEPENDENCY_CHANGES": json.dumps(changes)}
+        env = {
+            "PYTHONUTF8": "1", "DEPENDENCY_CHANGES": json.dumps(changes),
+            "DEPENDENCY_REVIEW_OUTCOME": "failure" if name in {
+                "vulnerable-development-dependency", "unapproved-license"
+            } else "success",
+            "DEPENDENCY_SNAPSHOT_OUTCOME": "success",
+        }
         if licenses is not None:
             env["INVALID_LICENSE_CHANGES"] = json.dumps(licenses)
         run = subprocess.run(
@@ -65,6 +71,7 @@ def main() -> int:
             "Uses supplied synthetic review output; does not query an advisory database.",
             "Does not install a vulnerable package, change credentials or test a release binary.",
             "SPDX classifications are fixture inputs; hosted action classification remains a separate gate.",
+            "Action and snapshot outcomes are explicit synthetic inputs, not hosted check receipts.",
         ],
         "passed": all(result["passed"] for result in results),
         "cases": results,
