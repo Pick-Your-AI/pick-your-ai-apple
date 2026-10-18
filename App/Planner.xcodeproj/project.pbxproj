@@ -2,10 +2,10 @@
 {
  archiveVersion = 1; classes = {}; objectVersion = 60;
  objects = {
-  A00000000000000000000001 = {isa = PBXProject; attributes = {LastUpgradeCheck = 1600;}; buildConfigurationList = A00000000000000000000002; compatibilityVersion = "Xcode 15.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = A00000000000000000000003; productRefGroup = A00000000000000000000004; projectDirPath = ""; projectRoot = ""; targets = (A00000000000000000000005); packageReferences = (A00000000000000000000016, A00000000000000000000017);};
+  A00000000000000000000001 = {isa = PBXProject; attributes = {LastUpgradeCheck = 1600; TargetAttributes = {B00000000000000000000001 = {CreatedOnToolsVersion = 16.4; TestTargetID = A00000000000000000000005;};};}; buildConfigurationList = A00000000000000000000002; compatibilityVersion = "Xcode 15.0"; developmentRegion = en; hasScannedForEncodings = 0; knownRegions = (en, Base); mainGroup = A00000000000000000000003; productRefGroup = A00000000000000000000004; projectDirPath = ""; projectRoot = ""; targets = (A00000000000000000000005, B00000000000000000000001); packageReferences = (A00000000000000000000016, A00000000000000000000017);};
   A00000000000000000000002 = {isa = XCConfigurationList; buildConfigurations = (A00000000000000000000006, A00000000000000000000007); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
-  A00000000000000000000003 = {isa = PBXGroup; children = (A00000000000000000000008, A00000000000000000000004); sourceTree = "<group>";};
-  A00000000000000000000004 = {isa = PBXGroup; children = (A00000000000000000000009); name = Products; sourceTree = "<group>";};
+  A00000000000000000000003 = {isa = PBXGroup; children = (A00000000000000000000008, B00000000000000000000002, A00000000000000000000004); sourceTree = "<group>";};
+  A00000000000000000000004 = {isa = PBXGroup; children = (A00000000000000000000009, B00000000000000000000003); name = Products; sourceTree = "<group>";};
   A00000000000000000000005 = {isa = PBXNativeTarget; buildConfigurationList = A00000000000000000000010; buildPhases = (A00000000000000000000011, A00000000000000000000012); buildRules = (); dependencies = (); name = Planner; packageProductDependencies = (A00000000000000000000018, A00000000000000000000019); productName = Planner; productReference = A00000000000000000000009; productType = "com.apple.product-type.application";};
   A00000000000000000000006 = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SWIFT_VERSION = 6.0;}; name = Debug;};
   A00000000000000000000007 = {isa = XCBuildConfiguration; buildSettings = {ALWAYS_SEARCH_USER_PATHS = NO; SDKROOT = iphoneos; IPHONEOS_DEPLOYMENT_TARGET = 17.0; SWIFT_VERSION = 6.0;}; name = Release;};
@@ -23,5 +23,19 @@
   A00000000000000000000019 = {isa = XCSwiftPackageProductDependency; package = A00000000000000000000017; productName = PlannerData;};
   A00000000000000000000020 = {isa = PBXBuildFile; productRef = A00000000000000000000018;};
   A00000000000000000000021 = {isa = PBXBuildFile; productRef = A00000000000000000000019;};
+  B00000000000000000000001 = {isa = PBXNativeTarget; buildConfigurationList = B00000000000000000000004; buildPhases = (B00000000000000000000005, B00000000000000000000006); buildRules = (); dependencies = (B00000000000000000000007); name = PlannerAppUITests; productName = PlannerAppUITests; productReference = B00000000000000000000003; productType = "com.apple.product-type.bundle.ui-testing";};
+  B00000000000000000000002 = {isa = PBXGroup; children = (B00000000000000000000008, B00000000000000000000013); path = PlannerAppUITests; sourceTree = "<group>";};
+  B00000000000000000000003 = {isa = PBXFileReference; explicitFileType = wrapper.cfbundle; includeInIndex = 0; path = PlannerAppUITests.xctest; sourceTree = BUILT_PRODUCTS_DIR;};
+  B00000000000000000000004 = {isa = XCConfigurationList; buildConfigurations = (B00000000000000000000009, B00000000000000000000010); defaultConfigurationIsVisible = 0; defaultConfigurationName = Release;};
+  B00000000000000000000005 = {isa = PBXSourcesBuildPhase; buildActionMask = 2147483647; files = (B00000000000000000000011, B00000000000000000000014); runOnlyForDeploymentPostprocessing = 0;};
+  B00000000000000000000006 = {isa = PBXFrameworksBuildPhase; buildActionMask = 2147483647; files = (); runOnlyForDeploymentPostprocessing = 0;};
+  B00000000000000000000007 = {isa = PBXTargetDependency; target = A00000000000000000000005; targetProxy = B00000000000000000000012;};
+  B00000000000000000000008 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = LocalDraftJourneyTests.swift; sourceTree = "<group>";};
+  B00000000000000000000009 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGNING_ALLOWED = NO; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = "invalid.pickyourai.localpreview.uitests"; PRODUCT_NAME = "$(TARGET_NAME)"; TARGETED_DEVICE_FAMILY = "1,2"; SUPPORTS_MACCATALYST = NO; SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO; SWIFT_OPTIMIZATION_LEVEL = "-Onone"; TEST_TARGET_NAME = Planner;}; name = Debug;};
+  B00000000000000000000010 = {isa = XCBuildConfiguration; buildSettings = {CODE_SIGNING_ALLOWED = NO; GENERATE_INFOPLIST_FILE = YES; PRODUCT_BUNDLE_IDENTIFIER = "invalid.pickyourai.localpreview.uitests"; PRODUCT_NAME = "$(TARGET_NAME)"; TARGETED_DEVICE_FAMILY = "1,2"; SUPPORTS_MACCATALYST = NO; SUPPORTS_MAC_DESIGNED_FOR_IPHONE_IPAD = NO; TEST_TARGET_NAME = Planner;}; name = Release;};
+  B00000000000000000000011 = {isa = PBXBuildFile; fileRef = B00000000000000000000008;};
+  B00000000000000000000013 = {isa = PBXFileReference; lastKnownFileType = sourcecode.swift; path = CatalogBrowserJourneyTests.swift; sourceTree = "<group>";};
+  B00000000000000000000014 = {isa = PBXBuildFile; fileRef = B00000000000000000000013;};
+  B00000000000000000000012 = {isa = PBXContainerItemProxy; containerPortal = A00000000000000000000001; proxyType = 1; remoteGlobalIDString = A00000000000000000000005; remoteInfo = Planner;};
  }; rootObject = A00000000000000000000001;
 }

@@ -23,6 +23,8 @@ jobs:
           fetch-depth: 0
       - name: Test conservative scope selection
         run: python3 -m unittest discover -s tools/ci/tests -p 'test_native_scope.py' -v
+      - name: Test Swift execution evidence guards
+        run: python3 -m unittest discover -s tools/ci/tests -p 'test_swift_test_results.py' -v
       - name: Inspect complete exact Git comparison
         id: scope
         env:
@@ -35,7 +37,7 @@ jobs:
     needs: scope
     if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
     runs-on: macos-15
-    timeout-minutes: 20
+    timeout-minutes: 40
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -65,10 +67,46 @@ jobs:
           sw_vers | tee .build/native-evidence/macos.txt
           swift --version | tee .build/native-evidence/swift.txt
           xcrun simctl list runtimes | tee .build/native-evidence/runtimes.txt
+      - name: Test UI journey runner guards
+        run: python3 -m unittest discover -s App/scripts/tests -v
       - name: Test native editor model
         run: |
-          set -o pipefail
+          set -euo pipefail
           swift test --package-path Packages/PlannerUI --cache-path "$PWD/.build/native-package-cache" --scratch-path "$PWD/.build/native-swift-tests" 2>&1 | tee .build/native-evidence/model-tests.txt
+          for name in \
+            testLocalRenamePreservesSnapshotAndHistoryAcrossRestart \
+            testDuplicateCreatesFreshForkAndRetainsSyntheticQualificationAndLocks \
+            testStaleRenameDuplicateAndDeleteCannotMutateNewerRevision \
+            testConfirmedDeleteTargetsCapturedEntryAndPreservesDifferentSelection \
+            testLargeLibraryRetainsCorruptWrapperAndUnrelatedMetadataAfterRenameDeleteAndRestart \
+            testEntireUnreadablePageStillReachesLaterValidBuild \
+            testMalformedQualificationCannotBeOpenedMutatedOrSilentlyDropped \
+            testPreviewPreparationLeavesMainActorResponsive \
+            testCancelledPreviewPreparationCannotPublishOrWrite \
+            testExportPreparationLeavesMainActorResponsiveAndPreservesQualification \
+            testClearedExportRejectsLateBytesAndErrorsAndRetryUsesNewAlias \
+            testInvalidatedQueuedExportNeverEntersPreparation \
+            testCancelledExportPreparationCannotPublishOrWrite \
+            testComparisonPreparationLeavesMainActorResponsiveAndPreservesInputs \
+            testNewSelectionComparisonFinishesBeforeCancelledOlderResultOrError \
+            testCancelledOlderComparisonCannotClearPendingNewerWork \
+            testReplacingBaselineRejectsLateComparisonAndRetainsNewQualification \
+            testClearedBaselineRejectsLateComparisonAndError \
+            testCancelledComparisonRejectsLateResultAndErrorWithoutClearingPin \
+            testInvalidatedQueuedComparisonNeverEntersWorker \
+            testCommittedBaselineDeletionCancelsPendingComparisonAndPreservesSelection \
+            testRejectedBaselineDeletionPreservesPinAndPendingComparison
+          do
+            grep -E "Test Case .*ImportedBuildLibraryTests.*${name}.* passed" .build/native-evidence/model-tests.txt
+          done
+          for name in \
+            testHistoryPageFailureKeepsContextAndSuccessfulRetryClearsItsNotice \
+            testHistoryRecoveryPreservesIndependentConflictNotice \
+            testHistoryRecoveryDoesNotClearOutstandingLibraryFailure
+          do
+            grep -E "Test Case .*DraftLibraryModelTests.*${name}.* passed" .build/native-evidence/model-tests.txt
+          done
+          python3 tools/ci/require_swift_test_results.py comparison-catalog-source-privacy-ui .build/native-evidence/model-tests.txt
       - name: Build unsigned simulator app
         run: |
           set -o pipefail
@@ -79,10 +117,15 @@ jobs:
         run: |
           set -o pipefail
           python3 App/scripts/simulator-smoke.py 2>&1 | tee .build/native-evidence/launch.txt
+      - name: Exercise durable notes and catalog browsing through the real app UI
+        run: |
+          set -o pipefail
+          python3 App/scripts/ui-journey.py 2>&1 | tee .build/native-evidence/ui-journey.txt
       - name: Retain native evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: native-local-drafts-evidence
           path: .build/native-evidence
+          if-no-files-found: error
           retention-days: 14

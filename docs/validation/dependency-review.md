@@ -60,10 +60,11 @@ the workflow contains no per-package or advisory exemption.
 
 GitHub's action documents that an undetected license is reported without failing.
 The supplementary [output guard](../../tools/security/check_dependency_review.py)
-closes that specific gap: every entry in the pinned action's `forbidden` or
-`unresolved` categories fails, and an `unlicensed` entry requires verified license
-evidence. Only the exact observed metadata gap described below has a supported
-source-verification path; every other `unlicensed` entry fails. All three arrays must be
+closes that specific gap: every `unresolved` entry fails, and an `unlicensed` entry
+requires verified license evidence. The exact Action metadata gap and the
+[exact Transfer wheel classification](#exact-transfer-wheel-license-recovery)
+below have separate source-verification paths. Every other `unlicensed` or
+`forbidden` entry fails. All three arrays must be
 present in their enclosing object; an absent category, wrong type or an unexpected
 category fails. The raw dependency list can retain a null license even when the
 action resolves and checks that license through GitHub's license API, so the
@@ -104,6 +105,15 @@ fetch an alternative advisory feed, install a proposed dependency or infer that 
 diff audited existing dependencies. Unsupported ecosystem coverage and unresolved
 transitives remain review gaps. The check's existence does not prove it is a
 branch-protection requirement.
+
+The mandatory final guard also requires the original action outcome and a
+successful exact-commit snapshot step. `continue-on-error` on the action allows
+that guard to evaluate an observed failure; it does not accept the failure.
+Absent, skipped, cancelled or unsupported outcomes fail. A failed action with
+apparently clean or empty output also fails. The only supported failed-action
+recovery is the exact Transfer proof below; the existing Action metadata-gap
+recovery still requires the action to have succeeded. The final step runs with
+`always()` so a skipped review cannot disappear from the acceptance decision.
 
 ## Exact pinned Action license recovery
 
@@ -161,6 +171,84 @@ snapshot-completeness guard is unchanged. Existing bundled/transitive inventory,
 release notices and the separate unacceptable-dependency/urgent-patch drill remain
 required; this proves the inspected Action source license only.
 
+## Exact Transfer wheel license recovery
+
+[PR #266](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/266) at
+`4b455d1efa8edf135bdba393089cca7ab32886ec` failed
+[run 39140834572, job 117714734437](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39140834572/job/117714734437).
+The dependency-comparison event base was
+`1601ec4a1333fe2cea8871e32888e30c0b368aed`, with the PR head above. The actual
+workflow checkout was `62d61aa6180dc4d3b22022c1b1afbb45a8e9f17d`, merging that head
+into accepted main `17e03aa65c6f2b6e0465b4bab48787901fdf0523`. These are distinct
+comparison and execution identities in the original log. The snapshot step
+accepted all eleven compared rows without warnings and there were zero reported
+vulnerabilities. The action rejected one `typing-extensions==4.16.0` addition in
+`Packages/PlannerTransfer/Tools/requirements.txt`, with the composite expression
+preserved in the [observed-input fixture](../../tools/security/tests/fixtures/pinned-transfer-license-conflict.json).
+The original guard reproduced exit 1, one disallowed license and zero source
+resolutions. An unmatched-manifest control also failed. These actual failures
+remain part of the record.
+
+The fixed [PyPI release](https://pypi.org/project/typing-extensions/4.16.0/) declares
+`PSF-2.0`, which is already in the unchanged repository policy. Independent
+inspection retrieved the complete wheel, read its `METADATA` declaration and
+compared its embedded license byte for byte with the
+[upstream LICENSE](https://github.com/python/typing_extensions/blob/f29cd28d8ed7642cafb1d18daf5aa41be6a5c0aa/LICENSE)
+at the release's signed source commit. GitHub verified that commit's signature;
+PyPI's trusted-publishing provenance identifies the same source commit. The
+complete retrieved wheel was never installed or executed.
+
+| Reviewed input | Exact bound |
+| --- | --- |
+| Transfer installer | 1,969 bytes; SHA-256 `49d2158183e44a47f0f66fd7ce6cb146ca52281015cfcd2e9dd2670724eb0344`. An [inert test fixture](../../tools/security/tests/fixtures/pinned-transfer-requirements.fixture) preserves the proposed installer bytes without adding its active manifest or feature to main. |
+| Immutable wheel | `typing_extensions-4.16.0-py3-none-any.whl`, 45,571 bytes; SHA-256 `481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8`. The guard uses one fixed HTTPS artifact URL from that release. |
+| Wheel metadata | `Name: typing_extensions`, `Version: 4.16.0`, `License-Expression: PSF-2.0`; 3,310 bytes with SHA-256 `b05084ca1d50879865178d9fff9fabeab61bdfb1f361bfbde95421ffc8f9be46`. |
+| Embedded and upstream license | Both 13,936 bytes; SHA-256 `3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf`. |
+| Signed source | Commit `f29cd28d8ed7642cafb1d18daf5aa41be6a5c0aa`, tree `9381f93c022005ef0f043b22c06be4e5205ecb9e`. |
+
+The guard performs no installer or network lookup unless the original action
+failed, snapshots succeeded, there are zero vulnerable additions, the existing
+policy still includes `PSF-2.0`, and the single complete observed row matches in
+both raw and forbidden outputs. All other license categories must be empty.
+Missing, duplicate or conflicting raw records cannot borrow the proof. Another
+manifest, version, scope, identity or classification remains rejected, including
+the separately owned conformance lock proposal in
+[PR #280](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/280).
+
+For that exact case, the installer must be a regular, singly linked file of the
+fixed size and digest. Nonblocking/no-follow file access rejects a missing file,
+symlink, FIFO, directory, hardlink or changed bytes before network access. The
+reviewed installer requires hashes and binary wheels and admits only the fixed
+typing-extensions wheel hash for Python versions below 3.13. The fixed artifact
+request carries no repository token, refuses redirects, uses at most 16 KiB per
+read and accepts no more than the expected wheel length plus one overflow byte.
+A ten-second socket timeout and a deadline checked before and after reads bound
+retrieval; the existing two-minute final-step bound also remains. HTTP/transport,
+length or digest failures retain rejection without printing payloads or tokens.
+Only the complete reviewed bytes clear the one forbidden result and increment
+`pinned_license_resolutions`; raw dependency/snapshot evidence is never rewritten.
+
+The portable security suite passes all 43 methods: the original 31 plus twelve
+Transfer cases. Transport unit tests use conspicuous controlled bytes with their
+actual digest; they are not claims about the real wheel. Separately, the actual
+unpatched CLI and immutable wheel recovered the captured eleven-row failure
+with exit 0 and exactly one resolution. Four actual process controls retained
+exit 1: an unmatched manifest, a `GPL-3.0-only` replacement classification, a
+different added dependency with a low-severity vulnerability, and unexplained
+upstream failure with clean output. Main without the qualifying change performs
+no artifact lookup; the qualifying row with an absent or mismatched installer
+fails. Byte bounds, transport/deadline errors, other categories and skipped or
+missing outcomes are also covered by the portable suite.
+
+This repair is prepared independently on main
+`17e03aa65c6f2b6e0465b4bab48787901fdf0523`; it does not include the held Transfer
+lock or native feature. Its source and hosted receiving checks still require
+independent review. The #266 owner must receive this repair and obtain a fresh
+successful exact-head dependency check before that failure is resolved. The
+separate #280 proof must be composed and reviewed without broadening either
+manifest's bound. No full dependency inventory, advisory baseline, native result
+or complete #103 acceptance follows from this single artifact proof.
+
 ## Observed local rejection and recovery
 
 The portable implementation uses Python's standard library only. On Python 3.12.14
@@ -183,9 +271,10 @@ unresolved and unlicensed results. They are source-derived protocol cases, not
 fabricated hosted advisory scan receipts.
 
 The [retained six-case rehearsal](dependency-review-rehearsal.json) from that source invokes the
-actual guard in separate processes with only its two synthetic input variables.
+actual guard in separate processes with its synthetic input variables.
 It preserves that historical guard's SHA-256 and Python version. Replaying the
-corrected guard retains all six required outcomes and additionally reports zero
+corrected guard supplies explicit synthetic action/snapshot outcomes, retains all
+six required exits and additionally reports zero
 `pinned_license_resolutions` for these unrelated synthetic cases. The vulnerable and unapproved
 packages are inert JSON descriptions with conspicuous synthetic identities; they
 are never downloaded, resolved or executed.
@@ -207,15 +296,70 @@ python3 tools/security/rehearse_dependency_review.py
 git diff --check
 ```
 
-This is an observed local review-output drill. Actual GitHub dependency discovery,
-advisory lookup, license classification, permission behavior and a rejected PR
-followed by a fixed PR have not been executed by this receipt. Before final
-acceptance, use a disposable draft PR to submit an inert manifest change with a
-known advisory or unapproved license, record the action/API failure, then remove
-or patch it and record the successful exact-head recovery. Do not merge that
-negative fixture or run/install its vulnerable dependency. Preserve both run
-identities and the action's manifest/ecosystem coverage. Do not treat a scan error
-or an unsupported manifest as a successful negative test.
+This historical local review-output receipt does not itself establish GitHub
+dependency discovery, advisory lookup or license classification. The subsequent
+hosted exercise below supplies an actual unacceptable-license rejection and
+correction for one supported inert manifest. It does not turn the synthetic
+vulnerability inputs above into an observed advisory finding.
+
+## Observed hosted license rejection and correction
+
+The [structured hosted receipt](dependency-review-hosted-drill.json) records
+[never-merge draft #259](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/259),
+closed without merge at **2026-10-18 11:44:57 UTC**. Its isolated test base
+`e2c3998c93ef6a672eb3789d7f6bce0f20e0c181`, tree
+`e91780c2d64888f1195cb40166a1bdc34fe932d8`, combines the exact reviewed policy
+source `c939aaec31afa55efe9c594495ba7a6831711d6f` and locked reference source
+`3cfa7c523c95d5ebcb3518414ba157cd83cc8ec2`. The receipt pins their real ordered
+parents, all eight inspected workflows and both literal installer inputs.
+This test composition is separate from the product signing/main routes
+[#230/#257](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/257) and
+[#251](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/251).
+
+The original head `36082b8bf2bbddefbf03788c54af34fabd3147e4` introduced only the
+five-line inert `tools/security/drills/requirements.txt`. In
+[run 39123830465, job 117664719345](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39123830465/job/117664719345),
+all 31 security tests passed, the exact base/head snapshot matched one row with
+no warnings, and GitHub classified `rfc3987@1.3.8` as `GPL-3.0-or-later`.
+The pinned Action rejected that license; the final guard recorded
+`accepted=false`, one disallowed license, zero other rejection categories and
+exit status 1. A scan/transport error was not substituted for the required result.
+
+After that observed failure was retained, a guarded branch advance published
+`13c8f5f42db5f63632bc33346b07c018eb02cc57` with the failure head as its sole
+parent. Only the inert manifest changed; its unacceptable declaration was removed
+completely and all 146 other leaves remained identical. The replacement
+`six==1.17.0` is an MIT metadata control, not a functional RFC-parser replacement.
+In [run 39124371655, job 117666294093](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124371655/job/117666294093),
+all 31 tests passed again, the exact corrected snapshot matched one MIT row
+without warnings, and the guard returned `accepted=true` with every rejection
+count zero. Both actual checkout merges, source trees, full result objects,
+job identities and decoded-log SHA-256 values are retained in the structured
+receipt. Its [independent source/control review](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/259#pullrequestreview-5562767217)
+covers the manifest strings and no-install boundary; receiving review of this
+completed record belongs to its delivering PR.
+
+Neither declaration was an installer input, and the draft was closed without
+merging its failure head, correction head or test base into product history.
+All ten unrelated drill-native runs were read back as cancelled; they supply no
+passed product gate. No unsafe package was installed or executed by this exercise.
+
+The isolated base also uses the [reviewed locked validator environment](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/3cfa7c523c95d5ebcb3518414ba157cd83cc8ec2/Packages/PlannerTransfer/Tools/reference-environment.md),
+whose [provenance record](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/3cfa7c523c95d5ebcb3518414ba157cd83cc8ec2/Packages/PlannerTransfer/Tools/requirements-provenance.json)
+pins nine conditional package declarations and 17 compatible wheel hashes.
+[Actual transfer run 39121450000, job 117658223143](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39121450000/job/117658223143)
+installed eight applicable packages with required hashes on Python 3.14.7;
+`typing-extensions` was correctly excluded by its Python-below-3.13 marker.
+The installed closure passed `pip check`, all six frozen hashes, 129 shared
+cases, 29 kinds/1,635 catalog cases, 36 Swift tests and the unsigned simulator SDK
+build on Xcode 16.4 / 16F6. This is exact-source transfer evidence, not all final
+product gates, an installed release or a baseline vulnerability audit.
+
+This exercise establishes the bounded review/removal/recovery path. It does not
+perform a live credential rotation or establish shipped dependency versions,
+system-library advisories, bundled Action dependency coverage, device/service
+security acceptance or release approval. The responsibilities and remaining
+criteria below continue to apply.
 
 ## Response responsibilities and patch procedure
 
@@ -252,9 +396,9 @@ is claimed by the synthetic dependency-update rehearsal.
 
 | Exact #103 criterion | Supplied evidence | Remaining acceptance |
 | --- | --- | --- |
-| Release dependencies and response path have reviewed evidence. | Source inventory at the exact main commit; pinned PR review action; explicit unresolved-license guard; response and receiving responsibilities. | Independent candidate review, current baseline/transitive vulnerability/license inventory, hosted PR scan, final signed release inventory and affected operator/service review where applicable. |
-| Introduce a vulnerable or unacceptable-license dependency in review and rehearse an urgent patch; document triage/rotation responsibilities without storing credentials. | 23 local regressions and six actual CLI synthetic review-output cases include rejection, removal, patched-version recovery, exact snapshot matching and fail-closed pagination. Responsibilities and credential-free rotation receipt requirements are documented. | Actual dependency discovery/advisory/classification in a disposable PR, exact failed/patched hosted receipts and the applicable real custodian rotation drill. Synthetic supplied metadata is not that external evidence. |
-| The dependency inventory and vulnerability-response drill is linked with criterion results, exact versions, limitations and receiving-review disposition. | This record, manifest hashes, executable reproduction, source-hashed rehearsal and explicit criteria/limits. | Link the reviewed signed delivery and hosted drill from #103, record independent receiving disposition and close only criteria actually supported by those receipts. |
+| Release dependencies and response path have reviewed evidence. | Historical source inventory at the exact main commit; independently reviewed PR policy and locked validator source; actual hosted license drill and exact-source transfer gate; response and receiving responsibilities. | Current baseline/transitive vulnerability/license inventory, actual signed product/destination evidence, final signed release inventory and affected operator/service review where applicable. A clean changed-manifest scan does not audit the baseline. |
+| Introduce a vulnerable or unacceptable-license dependency in review and rehearse an urgent patch; document triage/rotation responsibilities without storing credentials. | The historical local regressions and six synthetic cases remain distinct. Closed, unmerged #259 now supplies actual unacceptable-license discovery, exact-snapshot rejection, declaration removal and corrected success, with 31 security tests passing on each head. Responsibilities and credential-free rotation receipt requirements are documented. | Receiving review of the complete hosted record and the applicable real custodian rotation drill. This observed license exercise is not an observed vulnerability/advisory or installed-release patch. |
+| The dependency inventory and vulnerability-response drill is linked with criterion results, exact versions, limitations and receiving-review disposition. | This historical inventory, immutable locked-environment provenance, source-hashed local rehearsal, structured hosted failure/recovery receipt and explicit criteria/limits. | Link the independently reviewed signed product and record deliveries from #103, retain affected receiving dispositions, and close only criteria actually supported by those receipts. |
 
 The repository guard and local drill advance #103; they do not close the full work
 package or the separate device, service, signing, release or security findings.

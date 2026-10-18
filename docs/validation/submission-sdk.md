@@ -46,6 +46,17 @@ unresponsive versions fail before the directory is written to `GITHUB_ENV`.
 Only explicit build identity fields enter JSON receipts; inherited environment
 values are not serialized.
 
+Each invocation invalidates an earlier regular receipt at the requested
+`--output` path before loading pins or inspecting an app. A rejected pin,
+unavailable toolchain, mismatched product or failed CI environment write leaves
+no earlier success at that path. Successful receipts are installed with an
+atomic file replacement after verification and any requested environment write;
+a failed publication removes its temporary file and emits no success JSON.
+Output must be separate from `App/`, the selected pin files, the inspected app
+bundle and `GITHUB_ENV`. Linked, shared or directory outputs are rejected without
+removing their targets. Use an ordinary file beneath `.build/submission-evidence`
+and a separate path for each operation, as the workflow does.
+
 The native job then:
 
 1. Records the actual checkout commit, tree and ordered parents, Xcode build,
@@ -84,6 +95,14 @@ weakened pins; a missing exact Xcode through the actual CLI; and built-product
 SDK, platform, Xcode or deployment mismatches. They also prove a rejected second
 SDK publishes neither a CI environment entry nor a receipt after the first
 probes succeed. These controlled tests do not simulate a real native build.
+
+The actual portable CLI regressions also run a successful product inspection,
+replace its metadata with an invalid SDK, rerun the same command/output, and
+verify the old success disappears. A subsequent valid retry must publish a
+fresh complete receipt. Both device and simulator cases run; malformed pins,
+failed environment writes, failed atomic publication and protected/linked output
+paths have separate negative checks. The product plists in these tests are
+synthetic inputs, not Xcode-built products or Apple submission evidence.
 
 On a Mac with the selected bundle installed and its component/license setup
 complete, first run:
