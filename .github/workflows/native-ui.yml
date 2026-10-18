@@ -8,7 +8,7 @@ permissions:
 jobs:
   native-ui:
     runs-on: macos-15
-    timeout-minutes: 20
+    timeout-minutes: 30
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
@@ -23,6 +23,8 @@ jobs:
           sw_vers | tee .build/native-evidence/macos.txt
           swift --version | tee .build/native-evidence/swift.txt
           xcrun simctl list runtimes | tee .build/native-evidence/runtimes.txt
+      - name: Test UI journey runner guards
+        run: python3 -m unittest discover -s App/scripts/tests -v
       - name: Test native editor model
         run: |
           set -o pipefail
@@ -35,10 +37,15 @@ jobs:
         run: |
           set -o pipefail
           python3 App/scripts/simulator-smoke.py 2>&1 | tee .build/native-evidence/launch.txt
+      - name: Exercise durable notes through the real app UI
+        run: |
+          set -o pipefail
+          python3 App/scripts/ui-journey.py 2>&1 | tee .build/native-evidence/ui-journey.txt
       - name: Retain native evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: native-local-drafts-evidence
           path: .build/native-evidence
+          if-no-files-found: error
           retention-days: 14
