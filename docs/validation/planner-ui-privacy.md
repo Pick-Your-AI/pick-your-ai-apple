@@ -124,7 +124,7 @@ safety, so their failure cannot retain an older success receipt. Both the
 `RuntimeError` and `ELOOP` forms are covered, while product-contained and linked
 receipt targets remain preserved and rejected.
 
-The eleven filesystem regression methods use temporary synthetic product folders
+The twelve filesystem regression methods use temporary synthetic product folders
 containing the actual reviewed source bytes. They exercise missing/swapped/extra
 manifests, source-pin changes, links, FIFOs, byte/traversal bounds, stale evidence,
 publication failure, actual CLI loop/missing-app retries and recovery. They do
@@ -132,6 +132,38 @@ not build or execute an Apple app.
 The inventory also does not inspect Mach-O API use, measure requests, enumerate
 system-framework behavior, determine collection/tracking answers, reconcile
 consent or certify an archive/submission. Those remaining #101 gates still apply.
+
+## Aliased output-path correction
+
+The actual submission job
+[117751884950](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39153511912/job/117751884950)
+checked out `bbc5e8296525c60d55eea5a342fa59ea18f5e46d`, tree
+`d51cb8084145ae4122e7fc9fdac3462d07c10458`, for source `2eb2093c`.
+Its preliminary 48 App Python tests stopped with one error in the unsafe-output
+preservation case: the external `retained.json` sentinel was missing. This was
+before the real Xcode/SDK verification, package tests or product builds. The
+expected negative toolchain messages from other tests are separate observations.
+
+Comparing only lexical and fully resolved endpoints misses a path that enters
+the product through an aliased parent and then escapes through an internal
+directory link. A second app alias can hide the shared lexical prefix. Resolving
+the final output alone loses the fact that the path traversed the product.
+The inspector now also checks every resolved logical output ancestor before
+removing a prior receipt. This uses the distinct logical-parent and symlink
+resolution behavior documented by [Python's pathlib reference](https://docs.python.org/3.14/library/pathlib.html#pathlib.PurePath.parents).
+The existing original unsafe-output assertions remain unchanged.
+
+A new real-CLI regression constructs those three directory aliases on the local
+filesystem, reproducing the deletion on the unchanged source with Python
+3.12.14. It passes with the correction and preserves the exact external bytes
+and links. The same test then removes the in-product escape and verifies that a
+valid app and external receipt still work through the parent alias; a subsequent
+missing-app retry removes that receipt while preserving the external sentinel.
+All 49 App Python methods passed locally after the correction, with no skips.
+This is host filesystem/command evidence, not macOS, Swift or SDK execution.
+The original failed 48-test run remains failed. The corrected source still
+requires independent receiving review and the actual current-source submission
+SDK gate, both unsigned product inventories and every native journey gate.
 
 ## Remaining integration and acceptance
 

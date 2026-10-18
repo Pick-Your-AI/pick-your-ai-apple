@@ -246,6 +246,55 @@ class PrivacyInventoryTests(unittest.TestCase):
         self.assertEqual(self.invoke()[0], 2)
         self.assertEqual(retained.read_text(), "KEEP_EXTERNAL_RECEIPT")
 
+    def test_real_cli_parent_and_product_aliases_preserve_escaped_output_then_recover(self):
+        # A parent alias models /var -> /private/var without requiring macOS.
+        parent_alias = self.root / "ParentAlias"
+        parent_alias.symlink_to(self.root, target_is_directory=True)
+        product_alias = self.root / "Alias.app"
+        product_alias.symlink_to(self.app, target_is_directory=True)
+        outside = self.root / "outside"
+        outside.mkdir()
+        retained = outside / "retained.json"
+        retained.write_bytes(b"KEEP_EXTERNAL_RECEIPT")
+        escape = self.app / "escape"
+        escape.symlink_to(outside, target_is_directory=True)
+
+        selected = parent_alias / "Alias.app"
+        output = parent_alias / "Planner.app" / "escape" / "retained.json"
+        failed = subprocess.run(
+            [sys.executable, str(SCRIPT), "--app", str(selected), "--output", str(output)],
+            capture_output=True, text=True, timeout=10,
+        )
+        self.assertEqual(failed.returncode, 2, failed.stderr)
+        self.assertEqual(failed.stdout, "")
+        self.assertTrue(retained.is_file(), "rejected output removed an external receipt")
+        self.assertEqual(retained.read_bytes(), b"KEEP_EXTERNAL_RECEIPT")
+        self.assertTrue(parent_alias.is_symlink())
+        self.assertTrue(product_alias.is_symlink())
+        self.assertTrue(escape.is_symlink())
+        self.assertNotIn("Traceback", failed.stderr)
+
+        # An ordinary external evidence path through that same parent alias
+        # remains usable, and a later missing-product retry clears only it.
+        escape.unlink()
+        safe_output = parent_alias / "evidence" / "privacy.json"
+        good = subprocess.run(
+            [sys.executable, str(SCRIPT), "--app", str(parent_alias / "Planner.app"),
+             "--output", str(safe_output)],
+            capture_output=True, text=True, timeout=10,
+        )
+        self.assertEqual(good.returncode, 0, good.stderr)
+        self.assertEqual(json.loads(safe_output.read_text())["manifestCount"], 2)
+        missing = subprocess.run(
+            [sys.executable, str(SCRIPT), "--app", str(parent_alias / "Missing.app"),
+             "--output", str(safe_output)],
+            capture_output=True, text=True, timeout=10,
+        )
+        self.assertEqual(missing.returncode, 2, missing.stderr)
+        self.assertEqual(missing.stdout, "")
+        self.assertFalse(safe_output.exists())
+        self.assertEqual(retained.read_bytes(), b"KEEP_EXTERNAL_RECEIPT")
+
 
 if __name__ == "__main__":
     unittest.main()

@@ -121,6 +121,9 @@ def prepare_output(path, app):
     if info is not None and not stat.S_ISREG(info.st_mode):
         raise InventoryError("evidence destination must be a regular file")
     output_locations = {lexical_output, path.resolve()}
+    # An aliased parent and an escaping in-app link can hide the product from
+    # both endpoints. Preserve every resolved logical ancestor before cleanup.
+    output_locations.update(parent.resolve() for parent in path.parents)
     app_locations = {lexical_app}
     app_loop = False
     try:
