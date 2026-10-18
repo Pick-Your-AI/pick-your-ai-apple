@@ -95,6 +95,21 @@ parity. Require both checks for the same commit. This is partial #32/#37/#104
 coverage for evaluation reports only, not all 29 catalog kinds or service parity.
 The decoder's documented number/depth/timestamp exclusions remain client limits.
 
+`evidence_vectors.py --contract-root "$CONTRACT_ROOT" --check` adds 37 shared
+evidence inputs for the Core decoder and actual SwiftUI rendering tests. It
+re-verifies a disposable copy of the frozen inputs, checks 28 accepted and nine
+rejected cases with the canonical schema consumer, and requires exact matching
+bytes in both package resources. The [evidence state mapping](../../Packages/PlannerUI/EVIDENCE_RENDERING.md)
+records the presence, conflict, skipped-rule and claim-grade boundaries, the
+exact versions, and the separate native receiving gate. These synthetic inputs
+do not establish source verification or a compatibility policy.
+
+`qualify_evidence_rendering.py` qualifies the four selected native UI test methods
+using the existing strict XCTest parser and the explicit `PlannerUITests` module.
+The Core parser's default module and mutation criteria remain unchanged. The
+workflow first requires the actual `xcodebuild test` command to succeed, then
+rejects empty, skipped, duplicate, truncated or incorrectly named log receipts.
+
 `swift_mutations.py --package Packages/PlannerCore --output-dir /tmp/swift-mutations`
 first runs the unmodified Swift suite, then changes required-field handling,
 decimal ordering and request-generation acceptance in separate disposable copies.
