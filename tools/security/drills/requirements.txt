@@ -1,0 +1,5 @@
+# INERT DEPENDENCY-REVIEW DRILL ONLY: NEVER INSTALL OR MERGE.
+# This manifest is outside every workflow installer input.
+# The exact GPL-licensed declaration is outside the existing allowlist.
+# Apple #103 requires an observed failed review followed by a clean correction.
+rfc3987==1.3.8
