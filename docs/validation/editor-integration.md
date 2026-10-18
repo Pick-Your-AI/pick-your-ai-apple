@@ -143,6 +143,30 @@ production debounce, real validation failure, dirty discard, history and durable
 reopening assertions, runner, pins and both destination gates remain unchanged.
 The failed 8ab run is preserved; the correction requires fresh native execution.
 
+## Accepted-main history recovery
+
+The current-main composition incorporates signed history recovery
+`8ca109963bfca3a707b1af8b80aabcd9dd28fd8a` from #237 into the canonical editor,
+including the exact newline-label supplement `b9f2052fb4f083f4164334e083ec40118c488696`.
+It preserves the editor's input and per-field generations, queued-save drain,
+undo/redo, discard freeze, acknowledgement rules and production autosave. A history
+read records or clears only its own notice; action notices retain priority over
+history notices, which retain priority over library-refresh notices. Clearing the
+history context clears its corresponding notice.
+
+All 22 existing library model test methods remain unchanged. The three accepted history
+recovery methods are retained with only the existing `autosaveWait: nil` injection
+used by deterministic model tests. They cover failed-page context and successful
+retry, independent conflict guidance, and an outstanding library-refresh failure.
+The composed package contains 71 unique model cases. The native workflow requires
+the three new methods to report passed in addition to its existing 13 imported-build
+method checks. Both full pinned UI journeys and owned cleanup remain mandatory.
+
+The prior 68-case results remain attributed to their original sources. This
+composition is source preparation and requires its own successful native run;
+neither the older editor results nor #237's model/launch-smoke results establish
+acceptance of the combined editor.
+
 The original #198 source package contains 52 XCTest cases: 22 editor/library model,
 13 controlled autosave, two bounded history, seven imported-build, six startup and
 two independent-store cases. [Run 39100534357 / job 117595708300](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39100534357/job/117595708300)

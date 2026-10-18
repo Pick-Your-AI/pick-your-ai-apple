@@ -26,6 +26,23 @@ final class BuildComparisonTests: XCTestCase {
         })
         return copy
     }
+    private func renamingSelection(_ fields: [String: JSONValue], from oldID: String, to newID: String) -> [String: JSONValue] {
+        var copy = fields
+        copy["selections"] = .array(fields["selections"]!.array!.map { item in
+            var object = item.object!
+            if object["id"] == .string(oldID) { object["id"] = .string(newID) }
+            return .object(object)
+        })
+        copy["links"] = .array(fields["links"]!.array!.map { item in
+            var object = item.object!
+            for key in ["from_selection_id", "to_selection_id"] where object[key] == .string(oldID) {
+                object[key] = .string(newID)
+            }
+            return .object(object)
+        })
+        return copy
+    }
+    private let fieldLikeIDs = ["notes", "extensions", "owner_ref", "endpoint", "secret", "credentials", "api-key"]
     func testSameSnapshotHasNoConfigurationDifferences() throws {
         let value = try snapshot(fixture())
         let result = try BuildComparison.compare(value, value)
@@ -58,6 +75,91 @@ final class BuildComparisonTests: XCTestCase {
         XCTAssertEqual(setting.after, .value(.number(8192)))
         XCTAssertEqual(before.value, .object(source))
         XCTAssertEqual(after.value, .object(later))
+    }
+    func testFieldLikeSelectionIDsKeepPublicSettingChanges() throws {
+        for id in fieldLikeIDs {
+            let source = renamingSelection(try fixture(), from: "sel_context_policy", to: id)
+            let after = setting(revised(source), id: id, key: "requested_context_tokens", value: .number(8192))
+            let result = try BuildComparison.compare(snapshot(source), snapshot(after))
+            XCTAssertEqual(result.differences.count, 1, id)
+            let change = try XCTUnwrap(result.differences.first)
+            XCTAssertEqual(change.path, ["selections", id, "settings", "requested_context_tokens"], id)
+            XCTAssertEqual(change.before, .value(.number(4096)), id)
+            XCTAssertEqual(change.after, .value(.number(8192)), id)
+            XCTAssertEqual(change.selectionKind, "context_policy", id)
+            XCTAssertEqual(change.tier, "T1", id)
+        }
+    }
+    func testAddedAndRemovedFieldLikeSelectionIDsRetainPublicFields() throws {
+        let source = try fixture()
+        for id in fieldLikeIDs {
+            var after = revised(source), added = source["selections"]!.array!.last!.object!
+            added["id"] = .string(id)
+            added["enabled"] = .bool(false)
+            added["notes"] = .string("PRIVATE-ADDED-NOTES")
+            added["extensions"] = .object(["x_private": .string("PRIVATE-ADDED-EXTENSION")])
+            after["selections"] = .array(source["selections"]!.array! + [.object(added)])
+            let beforeSnapshot = try snapshot(source), afterSnapshot = try snapshot(after)
+            for (result, isAddition) in [(try BuildComparison.compare(beforeSnapshot, afterSnapshot), true),
+                                         (try BuildComparison.compare(afterSnapshot, beforeSnapshot), false)] {
+                let changes = result.differences
+                let enabled = try XCTUnwrap(changes.first { $0.path == ["selections", id, "enabled"] })
+                XCTAssertEqual(enabled.before, isAddition ? .absent : .value(.bool(false)), id)
+                XCTAssertEqual(enabled.after, isAddition ? .value(.bool(false)) : .absent, id)
+                XCTAssertTrue(changes.contains { $0.path == ["selections", id, "catalog_item_version"] }, id)
+                XCTAssertTrue(changes.contains { $0.path == ["selections", id, "role"] }, id)
+                XCTAssertFalse(changes.contains { $0.path.last == "notes" || $0.path.last == "extensions" }, id)
+                XCTAssertFalse(String(describing: result).contains("PRIVATE-ADDED"), id)
+            }
+        }
+    }
+    func testFieldLikeLinkIDsKeepChangesAdditionsAndRemovals() throws {
+        for id in fieldLikeIDs {
+            var source = try fixture(), links = source["links"]!.array!, link = links[0].object!
+            link["id"] = .string(id)
+            links[0] = .object(link); source["links"] = .array(links)
+            var after = revised(source)
+            link["required"] = .bool(false)
+            links[0] = .object(link); after["links"] = .array(links)
+            let result = try BuildComparison.compare(snapshot(source), snapshot(after))
+            XCTAssertEqual(result.differences.count, 1, id)
+            let change = try XCTUnwrap(result.differences.first)
+            XCTAssertEqual(change.path, ["links", id, "required"], id)
+            XCTAssertEqual(change.before, .absent, id)
+            XCTAssertEqual(change.after, .value(.bool(false)), id)
+
+            var removed = revised(source)
+            removed["links"] = .array(Array(source["links"]!.array!.dropFirst()))
+            let beforeSnapshot = try snapshot(source), removedSnapshot = try snapshot(removed)
+            for (comparison, isRemoval) in [(try BuildComparison.compare(beforeSnapshot, removedSnapshot), true),
+                                            (try BuildComparison.compare(removedSnapshot, beforeSnapshot), false)] {
+                let relation = try XCTUnwrap(comparison.differences.first { $0.path == ["links", id, "relation"] })
+                XCTAssertEqual(relation.before, isRemoval ? .value(.string("provided_by")) : .absent, id)
+                XCTAssertEqual(relation.after, isRemoval ? .absent : .value(.string("provided_by")), id)
+            }
+        }
+    }
+    func testFieldLikeIDsDoNotDisableNestedPrivateFieldRedaction() throws {
+        for id in fieldLikeIDs {
+            let source = renamingSelection(try fixture(), from: "sel_vector_database", to: id)
+            var after = setting(revised(source), id: id, key: "index_name", value: .string("PRIVATE-INDEX"))
+            after["selections"] = .array(after["selections"]!.array!.map { item in
+                var object = item.object!
+                if object["id"] == .string(id) {
+                    object["notes"] = .string("PRIVATE-NOTES")
+                    object["extensions"] = .object(["x_private": .string("PRIVATE-EXTENSION")])
+                }
+                return .object(object)
+            })
+            let result = try BuildComparison.compare(snapshot(source), snapshot(after))
+            XCTAssertEqual(result.differences.count, 1, id)
+            let change = try XCTUnwrap(result.differences.first)
+            XCTAssertEqual(change.path, ["selections", id, "settings", "index_name"], id)
+            XCTAssertEqual(change.before, .hidden, id)
+            XCTAssertEqual(change.after, .hidden, id)
+            XCTAssertFalse(String(describing: result).contains("PRIVATE-"), id)
+            XCTAssertFalse(String(describing: result).contains("fixture-collection"), id)
+        }
     }
     func testAbsentWorkloadIsNeverRenderedAsZero() throws {
         var source = try fixture()

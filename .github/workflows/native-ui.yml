@@ -88,6 +88,13 @@ jobs:
           do
             grep -E "Test Case .*ImportedBuildLibraryTests.*${name}.* passed" .build/native-evidence/model-tests.txt
           done
+          for name in \
+            testHistoryPageFailureKeepsContextAndSuccessfulRetryClearsItsNotice \
+            testHistoryRecoveryPreservesIndependentConflictNotice \
+            testHistoryRecoveryDoesNotClearOutstandingLibraryFailure
+          do
+            grep -E "Test Case .*DraftLibraryModelTests.*${name}.* passed" .build/native-evidence/model-tests.txt
+          done
       - name: Build unsigned simulator app
         run: |
           set -o pipefail
