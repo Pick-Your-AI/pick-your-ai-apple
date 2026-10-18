@@ -1,0 +1,45 @@
+name: Atomic catalog cache
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  macos-catalog-cache:
+    runs-on: macos-15
+    timeout-minutes: 15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+    defaults:
+      run:
+        working-directory: Packages/PlannerCatalog
+        shell: bash
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Record selected toolchain
+        run: |
+          set -euo pipefail
+          xcodebuild -version | tee xcode-version.txt
+          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') xcode-version.txt
+          swift --version
+          sw_vers
+      - name: Exercise real CryptoKit hashes, cancellation and atomic recovery
+        run: |
+          set -euo pipefail
+          swift test 2>&1 | tee catalog-cache-test.log
+      - name: Compile for iOS Simulator without signing
+        run: |
+          set -euo pipefail
+          xcodebuild -scheme PlannerCatalog -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/planner-catalog-derived CODE_SIGNING_ALLOWED=NO build 2>&1 | tee catalog-simulator-build.log
+      - name: Retain validation logs
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: catalog-cache-validation
+          path: |
+            Packages/PlannerCatalog/*.log
+            Packages/PlannerCatalog/*-version.txt
+          retention-days: 14
