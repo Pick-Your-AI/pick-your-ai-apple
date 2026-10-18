@@ -26,6 +26,11 @@ public struct ImportedBuildLibraryView: View {
     @State private var exporting = false
     @State private var alias = ""
     @State private var reviewed = false
+    @State private var pendingRename: DraftRecord?
+    @State private var renaming = false
+    @State private var localLabel = ""
+    @State private var pendingDelete: DraftRecord?
+    @State private var deleting = false
     @State private var comparisonBaseline: BuildSnapshot?
     @State private var baselineSynthetic = false
     @State private var comparison: PreparedBuildComparison?
@@ -37,6 +42,7 @@ public struct ImportedBuildLibraryView: View {
                 Section {
                     Text("Imported builds are read-only local forks. Schema validation does not establish source rights, ownership, compatibility, pricing, or current evidence.")
                     if let notice = model.notice { Text(notice).foregroundStyle(.red) }
+                    if let notice = model.libraryNotice { Text(notice).foregroundStyle(.red) }
                 }
                 if let preview = model.preview {
                     Section("Review import") {
@@ -51,21 +57,40 @@ public struct ImportedBuildLibraryView: View {
                 Section("Imported builds") {
                     Button("Choose JSON file") { importing = true }
                         .accessibilityIdentifier("chooseBuildImport")
+                    Button("Refresh builds") { Task { await model.refresh(offset: model.offset) } }
+                        .accessibilityIdentifier("refreshImportedBuilds")
                     if model.offset > 0 {
                         Button("Previous builds") { Task { await model.refresh(offset: model.offset - ImportedBuildLibraryModel.pageSize) } }
                     }
                     if model.hasNext {
                         Button("More builds") { Task { await model.refresh(offset: model.offset + ImportedBuildLibraryModel.pageSize) } }
                     }
-                    if model.records.isEmpty { Text("No imported builds on this page") }
+                    if model.records.isEmpty { Text("No readable imported builds on this page") }
                     if model.unreadableCount > 0 { Text("\(model.unreadableCount) unreadable records were preserved.") }
                     ForEach(model.records, id: \.id) { record in
-                        Button(record.title) { Task { await model.open(record) } }
+                        Button { Task { await model.open(record) } } label: {
+                            VStack(alignment: .leading) {
+                                Text(record.title)
+                                Text("Local revision \(record.revision)").font(.caption)
+                                Text("Evidence: not revalidated").font(.caption).foregroundStyle(.secondary)
+                            }
+                        }.accessibilityIdentifier("importedBuild.\(record.id.uuidString)")
                     }
                 }
                 if let snapshot = model.snapshot {
                     Section("Selected local fork") {
-                        Text(snapshot.name)
+                        if let record = model.selected {
+                            Text("Local label: " + record.title)
+                            Text("Local revision \(record.revision)")
+                            Button("Rename local label") { localLabel = record.title; pendingRename = record; renaming = true }
+                                .accessibilityIdentifier("renameImportedBuild")
+                            Button("Duplicate as new local fork") { Task { await model.duplicate(record) } }
+                                .accessibilityIdentifier("duplicateImportedBuild")
+                            Button("Delete local entry", role: .destructive) { pendingDelete = record; deleting = true }
+                                .accessibilityIdentifier("deleteImportedBuild")
+                        }
+                        Text("Pinned snapshot: " + snapshot.name)
+                        Text("Pinned snapshot revision: " + revisionText(snapshot))
                         Text(model.markedSynthetic ? "Marked synthetic fixture" : "Data qualification unknown")
                         Text("Compatibility: unknown. Pricing: unknown. Imported analysis is not current.")
                         Text(snapshot.id).font(.caption).textSelection(.enabled)
@@ -124,6 +149,24 @@ public struct ImportedBuildLibraryView: View {
             .onChange(of: alias) { _, _ in reviewed = false; model.clearExport() }
             .onChange(of: model.selected?.id) { _, _ in alias = ""; reviewed = false }
             .onChange(of: model.snapshot) { _, _ in comparison = nil; comparisonNotice = nil }
+            .alert("Rename local label", isPresented: $renaming, presenting: pendingRename) { record in
+                TextField("Local label", text: $localLabel)
+                Button("Save label") {
+                    let title = localLabel
+                    Task { await model.rename(record, to: title) }
+                }.disabled(localLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                Button("Cancel", role: .cancel) {}
+            } message: { _ in
+                Text("The label organizes this library entry separately from its pinned snapshot.")
+            }
+            .confirmationDialog("Delete this local entry and its revision history?", isPresented: $deleting, presenting: pendingDelete) { record in
+                Button("Delete local entry", role: .destructive) {
+                    Task { await model.delete(record) }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: { record in
+                Text("Delete “" + record.title + "” at local revision \(record.revision)?")
+            }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.json], allowsMultipleSelection: false) { result in
                 switch result {
                 case .success(let urls): if let url = urls.first { Task { await model.previewFile(url) } }
@@ -135,5 +178,11 @@ public struct ImportedBuildLibraryView: View {
                 reviewed = false; model.clearExport()
             }
         }
+    }
+    private func revisionText(_ snapshot: BuildSnapshot) -> String {
+        guard case .object(let fields) = snapshot.value, case .number(let revision)? = fields["revision"] else {
+            return "Unavailable"
+        }
+        return NSDecimalNumber(decimal: revision).stringValue
     }
 }

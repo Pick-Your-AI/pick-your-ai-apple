@@ -26,7 +26,7 @@ The smoke script is not an accessibility or complete journey test.
 | --- | --- | --- |
 | #26 fresh checkout scaffold; #30 CI | Checked-in Xcode project/scheme, local packages and pinned Xcode selection | Hosted run needed; no release configuration or signed archive |
 | #28 restore correct draft | SceneStorage selection, explicit dirty-discard guard, background save attempt | Cold-link routing, process-kill replay and physical lifecycle qualification |
-| #80 local library operations | Create, title edit, duplicate, confirmed delete; real-store model tests including reopen | Complete build metadata/organization and receiving review |
+| #80 local library operations | Notes CRUD plus imported-build local labels, fresh-fork duplication, confirmed deletion, revision/qualification display and bounded corrupt-wrapper recovery | Exact-head native CRUD/recovery execution, cross-client journey and receiving review |
 | #87 offline editing | All operations use local storage; unknown compatibility/pricing always explicit | Governed catalog cache and downstream evaluation integration |
 | #105 accessibility | System controls, visible labels, Dynamic Type, editor/action identifiers | Automated complete journeys, VoiceOver, large text and physical device audits |
 
@@ -81,6 +81,47 @@ remains authoritative); test projection explicitly removes private fixture setti
 Hosted exact-head compilation/tests are required. Actual Files-provider interactions,
 accessibility, complete cross-client UI round trips, process interruption and physical
 device/privacy receiving qualification remain unverified. Partial #82/#84/#102 only.
+
+## Organize the imported-build library
+
+Each entry displays its local revision and the fact that imported evidence has not
+been revalidated. The selected entry also shows its pinned wire snapshot revision,
+original snapshot name and existing synthetic/unknown qualification. A local label
+is revisioned library metadata: renaming preserves the exact stored snapshot bytes,
+locks and previous label revisions. Export continues to project the pinned snapshot.
+
+**Duplicate as new local fork** validates the selected stored revision, then uses
+the existing transfer fork boundary to create distinct wire and local identities.
+It preserves the local label, component/settings/version locks, and synthetic/source
+metadata; the original entry and its history remain intact. The duplicate starts at
+local revision 1 with no current analysis. A concurrent newer revision causes an
+explicit rejection and requires reopening the entry. Confirmed deletion carries
+the exact selected row/revision; another selected entry is preserved.
+
+Pages contain at most 20 stored rows. Stored-snapshot decoding and fork preparation
+run off the main actor. Malformed or unsupported stored wrappers are preserved and
+counted alongside unreadable database rows. Page offsets count both kinds, including
+an entirely unreadable page, so later valid entries remain reachable. The Refresh
+builds action retries reading; a successful read clears only a library-read error,
+leaving unresolved mutation errors visible until the entry is reopened or corrected.
+
+Seven additional real-store model regressions cover local rename/restart/history,
+fresh-fork duplication with retained synthetic qualification, stale CRUD rejection,
+confirmed deletion after selecting another entry, 503-entry recovery beside a
+malformed wrapper, an entirely unreadable page followed by a valid entry, and invalid
+qualification metadata. The large-library case expects 501 valid entries plus the
+preserved unreadable row after one deletion, with exact unrelated metadata/history.
+These added tests require their exact-head hosted SwiftUI test/build execution before
+acceptance; no result is inferred from source inspection. Existing PlannerData tests
+separately exercise actual malformed SQLite rows, storage exhaustion and migration.
+Actual Files-provider/cross-client journeys, unavailable/revoked remote references,
+VoiceOver and physical-device behavior retain their own unverified acceptance gates.
+
+Native confirmation data follows Apple's
+[alert presentation](https://developer.apple.com/documentation/swiftui/view/alert(_:ispresented:presenting:actions:message:)-8584l)
+and [confirmation dialog](https://developer.apple.com/documentation/swiftui/view/confirmationdialog(_:ispresented:titlevisibility:presenting:actions:message:))
+interfaces (checked 2026-10-18); the captured entry/revision stays separate from the
+Boolean presentation state.
 
 ## Local configuration comparison
 
