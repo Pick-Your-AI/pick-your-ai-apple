@@ -132,6 +132,23 @@ def prepare_receipt(path, protected_paths):
     for boundary in boundaries:
         if any(candidate.is_relative_to(boundary) for candidate in traversed):
             raise toolchain.SetupError("Receipt output must be separate from source, pin, product and CI environment inputs.")
+    # Path spelling is not filesystem identity on case-insensitive volumes.
+    # Keep lexical checks for missing paths and inspect the final component
+    # without following it, just as the receipt validity check below does.
+    identities = set()
+    for boundary in boundaries:
+        try:
+            metadata = boundary.stat()
+        except FileNotFoundError:
+            continue
+        identities.add((metadata.st_dev, metadata.st_ino))
+    for candidate in traversed:
+        try:
+            metadata = candidate.lstat()
+        except FileNotFoundError:
+            continue
+        if not stat.S_ISLNK(metadata.st_mode) and (metadata.st_dev, metadata.st_ino) in identities:
+            raise toolchain.SetupError("Receipt output must be separate from source, pin, product and CI environment inputs.")
     try:
         existing = output.lstat()
     except FileNotFoundError:

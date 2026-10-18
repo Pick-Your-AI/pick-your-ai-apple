@@ -557,6 +557,35 @@ class SubmissionSDKTests(unittest.TestCase):
                 for name, target in targets.items():
                     self.assertEqual((outside / name).readlink(), target)
 
+    def test_receipt_distinguishes_case_aliases_from_separate_directories(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        alternate = self.root / app.name.swapcase()
+        if alternate.exists():
+            # Exercise the real filesystem's case alias on native volumes.
+            self.assertTrue(alternate.samefile(app))
+            outside = self.root / "outside"
+            outside.mkdir()
+            (app / "escape").symlink_to(outside, target_is_directory=True)
+            indirect = self.root / "indirect"
+            indirect.symlink_to(alternate / "escape", target_is_directory=True)
+            retained = outside / "retained.json"
+            retained.write_bytes(b"synthetic retained bytes\n")
+            for parent in (alternate / "escape", indirect):
+                with self.subTest(parent=parent):
+                    with patch.object(Path, "unlink") as invalidate:
+                        with self.assertRaisesRegex(submission.toolchain.SetupError, "separate"):
+                            submission.prepare_receipt(parent / retained.name, (app,))
+                        invalidate.assert_not_called()
+                    self.assertEqual(retained.read_bytes(), b"synthetic retained bytes\n")
+        else:
+            # A case-sensitive volume must not reject a genuinely separate path.
+            alternate.mkdir()
+            self.assertFalse(alternate.samefile(app))
+            receipt = alternate / "receipt.json"
+            result = self.run_cli("inspect", "--sdk", "iphoneos", "--app", app, "--output", receipt)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            self.assertEqual(json.loads(receipt.read_text()), json.loads(result.stdout))
+
 
 if __name__ == "__main__":
     unittest.main()

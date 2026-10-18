@@ -61,7 +61,12 @@ bundle is rejected even if a later link or `..` escapes it. Existing parent
 components must be directories; a `..` traversal cannot discard a missing
 directory prefix. These checks and unresolvable link loops fail before any
 earlier receipt is removed. Missing tail directories and outside directory aliases
-remain usable and retain the same failure/retry behavior. Use an ordinary file
+remain usable and retain the same failure/retry behavior. Existing path components
+also match against protected device/inode identities: [Apple volumes can be case insensitive](https://developer.apple.com/documentation/technologyoverviews/files-and-directories),
+and [filesystem identity](https://docs.python.org/3.12/library/os.path.html#os.path.samestat)
+distinguishes a different spelling of an input from a separate directory. The
+filesystem-dependent regression exercises the available case behavior; Linux
+execution does not claim a macOS case-alias result. Use an ordinary file
 beneath `.build/submission-evidence` and a separate path for each operation, as the
 workflow does.
 
