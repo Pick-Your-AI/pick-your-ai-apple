@@ -38,6 +38,27 @@ final class CatalogCacheTests: XCTestCase, @unchecked Sendable {
         XCTAssertNil(value)
     }
 
+    func testMissingCacheDirectoryIsUnavailableWithoutCreatingIt() async throws {
+        let parent = try directory()
+        let missing = parent.appendingPathComponent("not-created")
+        let store = try cache(missing)
+        let value = try await store.load(mode: .syntheticPreview)
+        XCTAssertNil(value)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: missing.path))
+    }
+
+    func testDirectoryAtEnvelopePathRemainsCorruptAndPreserved() async throws {
+        let url = try directory()
+        let file = url.appendingPathComponent("active-preview-v1.json")
+        try FileManager.default.createDirectory(at: file, withIntermediateDirectories: false)
+        do {
+            _ = try await cache(url).load(mode: .syntheticPreview)
+            XCTFail("A directory was accepted as an absent or valid cache")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .corruptCache) }
+        let attributes = try FileManager.default.attributesOfItem(atPath: file.path)
+        XCTAssertEqual(attributes[.type] as? FileAttributeType, .typeDirectory)
+    }
+
     func testProductionRejectsEvenEmptyCacheAndEmptyManifest() async throws {
         let store = try cache(directory())
         do {

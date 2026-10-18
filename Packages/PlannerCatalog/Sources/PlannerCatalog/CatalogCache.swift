@@ -206,7 +206,10 @@ public actor CatalogCache {
     private func loadEnvelopeBytes() throws -> Data? {
         let handle: FileHandle
         do { handle = try FileHandle(forReadingFrom: activeURL) }
-        catch let error as CocoaError where error.code == .fileReadNoSuchFile { return nil }
+        // File-opening APIs may report absence in either Cocoa or POSIX form.
+        // Only a missing path is a cache miss; other open/read errors stay corrupt.
+        catch let error as CocoaError where error.code == .fileReadNoSuchFile || error.code == .fileNoSuchFile { return nil }
+        catch let error as POSIXError where error.code == .ENOENT { return nil }
         catch { throw CatalogCacheError.corruptCache }
         defer { try? handle.close() }
 
