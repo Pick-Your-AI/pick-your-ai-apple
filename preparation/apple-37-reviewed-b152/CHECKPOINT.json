@@ -1,0 +1,118 @@
+{
+  "format": "git-bundle-incremental-checkpoint-1",
+  "sourceCommit": "37792e22b2fbe7997e05681f6d09c4053591fd1f",
+  "sourceTree": "b152fe7fb027731b9e7847d55f7ba749bedb8cdd",
+  "sourceParents": [
+    "b240ee5db68d9213bd308e1394ef4b6a3dcf73c4",
+    "35d94b9a2e3e6213856b883092a8983452cee898"
+  ],
+  "containedRef": "refs/heads/preparation/apple-37-reviewed-b152-local-29a3",
+  "sourceLeaves": 211,
+  "baseArchive": {
+    "containerCommit": "a8084fc926bcf6eba6dc04a55e8568f36ede4c1d",
+    "containerTree": "1b8a57a75ec9a19e3782a996ae00478a40185f41",
+    "directory": "../apple-37-reviewed-b79",
+    "sourceCommit": "4f4021839f268294ae7d132efdc1be7dc0bc5bd0",
+    "sourceTree": "b79f9a53a0c5a99de95fb228c7677fe8e5a61aad",
+    "containedRef": "refs/heads/preparation/apple-37-reviewed-b79-local-29a3",
+    "bundleBytes": 71057,
+    "bundleSHA256": "ec29cbde71d09b385fddfaf585747fefa011ffcceea218fb2f10c51f5e8a6952",
+    "originalDirectory": "../apple-37-reviewed-08e",
+    "originalBundleBytes": 97763,
+    "originalBundleSHA256": "a9783ffd55b34327f5ccaf98f493e327c62a651279e88e82585c50a5fa8431e4"
+  },
+  "publicBaselines": [
+    {
+      "commit": "40ca8ed3065c04b63dc05e0e26ae0e84489083bf",
+      "role": "Accepted main at this source-composition review; complete public history supplies its prior accepted commits."
+    },
+    {
+      "commit": "35d94b9a2e3e6213856b883092a8983452cee898",
+      "role": "Canonical reviewed rendering source; complete public history supplies the original and intermediate rendering prerequisites. Native successor qualification remains pending."
+    }
+  ],
+  "bundlePrerequisites": [
+    "4f4021839f268294ae7d132efdc1be7dc0bc5bd0",
+    "791c355812bfbbf8003941b59734118011d4734a",
+    "40ca8ed3065c04b63dc05e0e26ae0e84489083bf",
+    "cd098e8e19f5e4a1d90112379bc8ca089d81ec93",
+    "35d94b9a2e3e6213856b883092a8983452cee898",
+    "013acc542acdd83b18091a881ca6e2e744174c91"
+  ],
+  "bundleBytes": 32781,
+  "bundleSHA256": "4e0ce508996d5e928de0d5c4309a4b3929ee55da8ec2ddc8b15d1c4933898ae9",
+  "parts": [
+    {
+      "path": "apple37-reviewed-b152-incremental.bundle.part-01",
+      "bytes": 32781,
+      "sha256": "4e0ce508996d5e928de0d5c4309a4b3929ee55da8ec2ddc8b15d1c4933898ae9",
+      "gitBlob": "a442bf353e192281f45d5a9be2c5c7e11eb6a47a",
+      "base64Bytes": 43708
+    }
+  ],
+  "localHistory": [
+    {
+      "commit": "567231376dbee275ac4494fd08cd5ab17fd06123",
+      "tree": "f912bae3fcffe885c3d002de53b42d5823438915",
+      "parents": [
+        "791c355812bfbbf8003941b59734118011d4734a",
+        "4f4021839f268294ae7d132efdc1be7dc0bc5bd0"
+      ],
+      "subject": "Prepare the reviewed conformance fixtures on accepted Apple main"
+    },
+    {
+      "commit": "1be65c1f108eeee395f717cf2e4df867c6b1cd10",
+      "tree": "b61b6814bf41b275c2bb51afacdb3d1dc17ab442",
+      "parents": [
+        "567231376dbee275ac4494fd08cd5ab17fd06123",
+        "013acc542acdd83b18091a881ca6e2e744174c91"
+      ],
+      "subject": "Preserve the current 791 conformance composition locally"
+    },
+    {
+      "commit": "f0a51ac21690bcbcd9893094e3f724cb4544aa87",
+      "tree": "c0c92cc98fa6537ff0b28b824f746270bcbf4e6d",
+      "parents": [
+        "cd098e8e19f5e4a1d90112379bc8ca089d81ec93",
+        "1be65c1f108eeee395f717cf2e4df867c6b1cd10"
+      ],
+      "subject": "Receive accepted storage inventory in reviewed conformance preparation"
+    },
+    {
+      "commit": "2a77c72d504e35329fe42b19d6de2dfe08807ba8",
+      "tree": "bcae86ef668a6177f58787e89f1408919ddb285d",
+      "parents": [
+        "f0a51ac21690bcbcd9893094e3f724cb4544aa87"
+      ],
+      "subject": "docs: retain exact conformance receiving and recovery evidence"
+    },
+    {
+      "commit": "b240ee5db68d9213bd308e1394ef4b6a3dcf73c4",
+      "tree": "e75a6f253ae6bc65526bf1d6f02060e399b11036",
+      "parents": [
+        "40ca8ed3065c04b63dc05e0e26ae0e84489083bf",
+        "2a77c72d504e35329fe42b19d6de2dfe08807ba8"
+      ],
+      "subject": "merge: preserve accepted placement disposition with conformance preparation"
+    },
+    {
+      "commit": "37792e22b2fbe7997e05681f6d09c4053591fd1f",
+      "tree": "b152fe7fb027731b9e7847d55f7ba749bedb8cdd",
+      "parents": [
+        "b240ee5db68d9213bd308e1394ef4b6a3dcf73c4",
+        "35d94b9a2e3e6213856b883092a8983452cee898"
+      ],
+      "subject": "merge: retain the reviewed canonical macOS report scroll correction"
+    }
+  ],
+  "wireFixture": {
+    "path": "Packages/PlannerConformance/Tests/PlannerConformanceTests/Fixtures/cross-client-v1.json",
+    "bytes": 1273770,
+    "sha256": "499fd9a01780ac42fa9bf2ab8cf9e1195db27321fec36040451b553a8b9ea5f9",
+    "gitBlob": "69718936a83b83e91aca7a492e48720fd2fe6cce",
+    "cases": 223,
+    "accepted": 141,
+    "rejected": 82
+  },
+  "status": "Recoverable exact reviewed local source archive only. No intended source branch publication, accepted-main delivery, native readiness, new behavior execution or issue completion is established by this packaging."
+}
