@@ -66,6 +66,8 @@ def execute(changes=None, classified=None, *, transport=None, policy="MIT, Apach
         "DEPENDENCY_REVIEW_TOKEN": TOKEN,
         "GITHUB_REPOSITORY": "Pick-Your-AI/pick-your-ai-apple",
         "GITHUB_EVENT_NAME": "pull_request",
+        "DEPENDENCY_REVIEW_OUTCOME": "success",
+        "DEPENDENCY_SNAPSHOT_OUTCOME": "success",
         **(extra_env or {}),
     }
     out, err = io.StringIO(), io.StringIO()

@@ -182,6 +182,21 @@ PROFILES["resource-quality-catalog-editor-transfer"] = (65, {
     ),
 })
 
+# The combined Graph/editor source retains the complete 65-case profile and
+# adds all six graph methods. Earlier profiles and Graph-only receipts retain
+# their own source identities; a padded older result cannot qualify this union.
+PROFILES["graph-resource-quality-catalog-editor-transfer"] = (71, {
+    **PROFILES["resource-quality-catalog-editor-transfer"][1],
+    "PlannerTransferTests.DependencyGraphTests": (
+        "testCanonicalGraphPreservesEveryDirectedRelationshipAndLabel",
+        "testSharedCanonicalDependencyGraphVectors",
+        "testRepeatedIdentifiersSelfEdgesAndCyclesRemainUnmodified",
+        "testDuplicateRootAndEscapedEdgeKeysAreRejected",
+        "testCompleteDocumentByteDepthAndNodeLimitsPrecedeSchemaValidation",
+        "testEncodedExpansionCannotReturnBytesThatCannotBeReopened",
+    ),
+})
+
 # The package privacy declaration requires an actual production-bundle read.
 # Retain the earlier 110-case profile for its own source and execution receipts.
 PROFILES["comparison-catalog-source-privacy-ui"] = (111, {

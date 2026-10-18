@@ -49,6 +49,10 @@ jobs:
           diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') storage-toolchain.log
           swift --version | tee -a storage-toolchain.log
           sw_vers | tee -a storage-toolchain.log
+      - name: Test crash replay exit and SQLite guards
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tools/storage/tests -p 'test_crash_replay.py' -v 2>&1 | tee storage-replay-guards.log
       - name: Run storage regression tests
         run: |
           set -euo pipefail

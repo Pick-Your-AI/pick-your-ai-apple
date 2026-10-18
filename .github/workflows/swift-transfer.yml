@@ -61,7 +61,7 @@ jobs:
         run: |
           set -euo pipefail
           swift test --package-path Packages/PlannerTransfer 2>&1 | tee transfer-tests.log
-          python3 tools/ci/require_swift_test_results.py resource-quality-catalog-editor-transfer transfer-tests.log
+          python3 tools/ci/require_swift_test_results.py graph-resource-quality-catalog-editor-transfer transfer-tests.log
       - name: Compile unsigned iOS Simulator boundary
         working-directory: Packages/PlannerTransfer
         run: xcodebuild -scheme PlannerTransfer -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/planner-transfer-derived CODE_SIGNING_ALLOWED=NO build

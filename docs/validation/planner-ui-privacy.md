@@ -179,6 +179,31 @@ cases, both unsigned products and both exact built-product manifest inventories
 remain required; this correction changes no Swift, journey, workflow or native
 acceptance assertion.
 
+## Prospective combined Graph/editor receiving inventory
+
+The 335-case source inventory and 13/50-method Linux correction receipts above
+belong to the editor/privacy preparation, including canonical checkpoint
+`6091b05306ab89a2f9831da6a51d20d32653ede0`. They do not describe execution of a
+later Graph/editor receiving union. A composition with Graph source
+`81ca8804151a1c592d00211cf03d110bf2bd9a7a` preserves those complete Swift test
+sources and adds eight exact-decimal formatter methods and six dependency-graph
+methods. Its declared package inventory is **93 Core, 29 Data, 71 Transfer,
+45 Catalog and 111 UI: 349 distinct source identities**.
+
+The additive `graph-resource-quality-catalog-editor-transfer` result profile
+requires exactly 71 passing Transfer identities, including all 29 previously
+required identities and all six graph methods across six qualified classes.
+The unchanged 65-case profile and prior 59-case Graph-only execution keep their
+own source attribution. A padded older profile or an unrelated class cannot
+supply the added graph evidence. These parser regressions use synthetic logs;
+they establish no new Swift execution.
+
+All 349 package cases, both complete Notes/Catalog journeys on the pinned iPhone
+and iPad, both unsigned products, and both exact built-product manifest
+inventories remain fresh receiving gates. The original `bbc5e829` privacy failure
+and each earlier passing package result remain separately attributed. This
+composition changes no model, journey assertion, manifest pin or store boundary.
+
 ## Remaining integration and acceptance
 
 This composition retains the independently reviewed and delivered PlannerCatalog
