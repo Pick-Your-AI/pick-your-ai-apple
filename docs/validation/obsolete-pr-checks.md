@@ -8,10 +8,24 @@ capacity. Cancellation is never evidence that a build or acceptance gate passed.
 The [workflow](../../.github/workflows/obsolete-pr-checks.yml) runs its safety tests
 on relevant PR changes with read-only permissions. The mutation job runs only in
 this repository on `main`: after maintenance-file changes, after the existing Python
-contract workflow completes, or through manual workflow dispatch on `main`.
-There is no additional timed automation. For `workflow_run`, GitHub uses the default
-branch revision; the job explicitly checks out `github.sha`, never the triggering
-PR's head, artifacts or cache. See GitHub's [event and untrusted-code guidance](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run).
+contract workflow completes, when a PR targeting `main` closes, or through manual
+workflow dispatch on `main`. Closing a superseded PR therefore does not depend on
+another contract check finishing before its obsolete queued runs can be considered.
+
+The closure hook is limited to `pull_request_target: closed` with a `main` base.
+Its job guard checks the repository, `main` ref, event action, closed payload state
+and base branch. The Python entry point repeats those guards before constructing
+the API client; action/state/base values are passed only as environment metadata.
+Both jobs explicitly check out the immutable `github.sha`; for
+this event and `workflow_run`, GitHub supplies default-branch code. Ordinary PR
+safety tests still use their merge SHA with read-only permissions. The mutator never
+checks out the triggering PR's head or consumes its artifacts, caches, body or code.
+The event only schedules a pass: the existing live run/PR/head checks still decide
+every cancellation, including preserving a PR that reopened after the event.
+See GitHub's [closure event and untrusted-code guidance](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#pull_request_target)
+and [workflow completion behavior](https://docs.github.com/en/actions/reference/workflows-and-actions/events-that-trigger-workflows#workflow_run).
+There is no additional timed automation. Closing a PR whose base is an integration
+branch is covered by the existing completion/push/manual passes, not this narrow hook.
 
 Only the mutation job requests `contents: read`, `pull-requests: read` and
 `actions: write`. The script receives the standard, ephemeral `github.token` through
@@ -60,6 +74,11 @@ The suite uses fake metadata and transport responses; it exercises preservation,
 live-state changes, closed-PR fallback, pagination/budgets, redirect refusal and
 ordinary cancellation without any real token or mutation. Running the script
 without `--apply` is a read-only preview using the same metadata checks.
+Workflow guard regressions exercise the actual job expression against allowed
+maintenance events and rejected PR, reopened, foreign-repository and non-main cases.
+They also protect immutable checkouts, the closed/main event filter, job permissions
+and the absence of PR code/artifact/cache inputs. These structural checks do not
+simulate GitHub webhook delivery; observe a real post-delivery closure run separately.
 
 An accepted `202` is a cancellation request, not a completed cancellation receipt.
 The workflow logs exact numeric run and PR identities and the selection reason;

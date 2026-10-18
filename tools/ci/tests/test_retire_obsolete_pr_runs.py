@@ -337,6 +337,39 @@ class TransportTests(unittest.TestCase):
                 self.assertEqual(cleanup.main(), 1)
                 client.assert_not_called()
 
+    def test_closed_main_target_context_enters_existing_bounded_helper(self):
+        env = {
+            "GITHUB_REPOSITORY": cleanup.REPOSITORY,
+            "GITHUB_REF": "refs/heads/main", "GITHUB_EVENT_NAME": "pull_request_target",
+            "MAINTENANCE_ACTION": "closed", "MAINTENANCE_PR_STATE": "closed", "MAINTENANCE_PR_BASE": "main",
+        }
+        with patch.dict(cleanup.os.environ, env, clear=True), \
+             patch.object(cleanup.sys, "argv", ["retire", "--apply"]), \
+             patch.object(cleanup, "GitHub") as client, patch.object(cleanup, "retire") as retire:
+            self.assertEqual(cleanup.main(), 0)
+            retire.assert_called_once_with(client.return_value, apply=True)
+
+    def test_target_context_requires_exact_closed_state_action_and_main_base_before_network(self):
+        valid = {
+            "GITHUB_REPOSITORY": cleanup.REPOSITORY,
+            "GITHUB_REF": "refs/heads/main", "GITHUB_EVENT_NAME": "pull_request_target",
+            "MAINTENANCE_ACTION": "closed", "MAINTENANCE_PR_STATE": "closed", "MAINTENANCE_PR_BASE": "main",
+        }
+        for key, rejected in (
+            ("MAINTENANCE_ACTION", "opened"), ("MAINTENANCE_ACTION", "reopened"),
+            ("MAINTENANCE_ACTION", ""), ("MAINTENANCE_PR_STATE", "open"),
+            ("MAINTENANCE_PR_STATE", ""), ("MAINTENANCE_PR_BASE", "integration/signed-candidate"),
+            ("MAINTENANCE_PR_BASE", ""), ("GITHUB_EVENT_NAME", "pull_request"),
+            ("GITHUB_REPOSITORY", "someone/fork"), ("GITHUB_REF", "refs/heads/feature"),
+        ):
+            env = dict(valid)
+            env[key] = rejected
+            with self.subTest(key=key, rejected=rejected), patch.dict(cleanup.os.environ, env, clear=True), \
+                 patch.object(cleanup.sys, "argv", ["retire", "--apply"]), \
+                 patch.object(cleanup, "GitHub") as client, contextlib.redirect_stderr(io.StringIO()):
+                self.assertEqual(cleanup.main(), 1)
+                client.assert_not_called()
+
 
 if __name__ == "__main__":
     unittest.main()
