@@ -77,6 +77,49 @@ These are declared source inventories until the native job actually executes.
 Both complete pinned iPhone/iPad journeys, other package gates and the additive
 submission-SDK lane remain required.
 
+## Built-app inventory
+
+Package resource tests and a built app have distinct boundaries. The submission
+SDK workflow runs [`privacy_inventory.py`](../../App/scripts/privacy_inventory.py)
+against each existing unsigned Release device and simulator product, after the
+separate SDK/product-metadata verification. It requires the exact reviewed
+manifest bytes inside both `PlannerCatalog_PlannerCatalog.bundle` and
+`PlannerUI_PlannerUI.bundle`, and rejects missing, moved, additional or changed
+manifests. The source files themselves must still match their reviewed SHA-256
+pins. A reviewed declaration or packaging change must update this explicit
+inventory; a source-only file cannot satisfy the product check.
+
+The selected locations follow this project's package/target names and the pinned
+build layout. The original [Catalog resource build](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39135044975/job/117697798609)
+records `CpResource`/`builtin-copy` into the named Catalog bundle. The original
+[`5af50d4e` SDK build](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39144793921/job/117726675535)
+records the named UI bundle copied into each app. These are separate historical
+observations; the complete new two-manifest app composition still requires its
+actual device and simulator product runs. No alternate location or transformed
+manifest bytes are silently accepted.
+
+The inspector opens directories and files without following links, reads only
+the two expected bounded manifest files, limits traversal, and rejects special
+entries. Its JSON records each product-relative location, exact digest, byte
+count and reviewed category/reason. The archive retains `device-privacy.json`
+and `simulator-privacy.json` beside the actual checkout/tree and SDK/product
+receipts. A failed retry removes its previous regular-file success receipt;
+successful publication replaces a temporary sibling atomically. It does not
+alter the inspected app, and rejects a symlink supplied as the receipt file.
+App-path link loops are normalized after checking the output's independent
+safety, so their failure cannot retain an older success receipt. Both the
+`RuntimeError` and `ELOOP` forms are covered, while product-contained and linked
+receipt targets remain preserved and rejected.
+
+The eleven filesystem regression methods use temporary synthetic product folders
+containing the actual reviewed source bytes. They exercise missing/swapped/extra
+manifests, source-pin changes, links, FIFOs, byte/traversal bounds, stale evidence,
+publication failure, actual CLI loop/missing-app retries and recovery. They do
+not build or execute an Apple app.
+The inventory also does not inspect Mach-O API use, measure requests, enumerate
+system-framework behavior, determine collection/tracking answers, reconcile
+consent or certify an archive/submission. Those remaining #101 gates still apply.
+
 ## Remaining integration and acceptance
 
 This composition retains the independently reviewed and delivered PlannerCatalog
