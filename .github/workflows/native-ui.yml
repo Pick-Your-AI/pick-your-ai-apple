@@ -26,6 +26,7 @@ jobs:
       - name: Inspect complete exact Git comparison
         id: scope
         env:
+          APPLE_CI_JOB: native-ui
           APPLE_CI_EVENT: ${{ github.event_name }}
           APPLE_CI_HEAD: ${{ github.sha }}
           APPLE_CI_BASE: ${{ github.event.pull_request.base.sha }}

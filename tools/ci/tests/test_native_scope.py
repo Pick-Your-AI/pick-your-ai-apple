@@ -1,6 +1,7 @@
 """Real Git regressions for the conservative native allocation boundary."""
 
 import importlib.util
+import json
 import os
 from pathlib import Path
 import subprocess
@@ -25,6 +26,8 @@ class NativeScopeTests(unittest.TestCase):
         self.command("config", "user.name", "Synthetic CI scope fixture")
         self.command("config", "user.email", "ci-fixture@example.invalid")
         self.command("config", "commit.gpgsign", "false")
+        # Finish fixture-owned maintenance before TemporaryDirectory cleanup.
+        self.command("config", "maintenance.autoDetach", "false")
         self.write("README.md", "Synthetic documentation\n")
         self.write("Sources/Value.swift", "struct Value {}\n")
         self.initial = self.commit()
@@ -150,6 +153,245 @@ class NativeScopeTests(unittest.TestCase):
         result = subprocess.run([sys.executable, str(SOURCE)], cwd=self.repo, env=env,
                                 check=True, capture_output=True, text=True)
         self.assertIn('"native_required": false', result.stdout)
+        self.assertEqual(output.read_text(), "native_required=false\n")
+
+
+class AuditedPackageScopeTests(unittest.TestCase):
+    command = NativeScopeTests.command
+    write = NativeScopeTests.write
+    commit = NativeScopeTests.commit
+    packages = ("PlannerCore", "PlannerData", "PlannerTransfer", "PlannerCatalog", "PlannerUI")
+    # The independent expected dependency matrix includes test targets.
+    affected = {
+        "PlannerCore": {"macos-core"},
+        "PlannerData": {"macos-storage", "macos-transfer", "native-ui"},
+        "PlannerTransfer": {"macos-transfer"},
+        "PlannerCatalog": {"macos-catalog-cache"},
+        "PlannerUI": {"native-ui"},
+    }
+
+    def setUp(self):
+        NativeScopeTests.setUp(self)
+        for package in self.packages:
+            self.write(f"Packages/{package}/Package.swift", "// Synthetic fixed dependencies\n")
+            self.write(f"Packages/{package}/Sources/Value.swift", "struct Value {}\n")
+            self.write(f"Packages/{package}/Tests/Fixtures/value.json", '{"synthetic": true}\n')
+        for path in ("App/Planner.xcodeproj/project.pbxproj",
+                     "App/Planner.xcodeproj/xcshareddata/xcschemes/Planner.xcscheme",
+                     ".github/workflows/native-ui.yml", "App/scripts/launch.py",
+                     "tools/storage/replay.py", "tools/conformance/mutations.py"):
+            self.write(path, "Synthetic fixed native input\n")
+        source = self.commit()
+        leaves = {}
+        for row in subprocess.check_output(["git", "ls-tree", "-r", "-z", source], cwd=self.repo).split(b"\0"):
+            if row:
+                fields, path = row.decode().split("\t", 1)
+                leaves[path] = fields.split()
+        dependencies = {f"Packages/{package}/Package.swift" for package in self.packages} | {
+            "App/Planner.xcodeproj/project.pbxproj",
+            "App/Planner.xcodeproj/xcshareddata/xcschemes/Planner.xcscheme",
+        }
+        jobs = {job: {} for job in {item for items in self.affected.values() for item in items}}
+        for package, affected in self.affected.items():
+            root = f"Packages/{package}"
+            entry = ["040000", "tree", self.command("rev-parse", source + ":" + root)]
+            for job in affected:
+                jobs[job][root] = entry
+        self.audit = {
+            "version": 1, "source_revision": source,
+            "dependencies": {path: leaves[path] for path in dependencies},
+            "repository_inputs": {path: entry for path, entry in leaves.items()
+                                  if not path.startswith("Packages/") and path != "README.md"},
+            "jobs": jobs,
+        }
+        self.save_audit()
+        self.initial = self.commit()
+
+    def save_audit(self):
+        self.write("tools/ci/native-inputs.json", json.dumps(self.audit, sort_keys=True) + "\n")
+
+    def decide(self, job="macos-storage", before=None, head=None):
+        return scope.choose(self.repo, event="push", job=job,
+                            head=head or self.command("rev-parse", "HEAD"), before=before or self.initial)
+
+    def change_package(self, package="PlannerCore"):
+        self.write(f"Packages/{package}/Sources/Value.swift", "struct ChangedValue {}\n")
+        return self.commit()
+
+    def assert_all_native(self, before=None):
+        for job in self.audit["jobs"]:
+            with self.subTest(job=job):
+                self.assertTrue(self.decide(job, before).native_required)
+
+    def test_all_twenty_five_package_dependency_combinations(self):
+        for package, affected in self.affected.items():
+            self.command("reset", "--hard", self.initial)
+            self.change_package(package)
+            for job in self.audit["jobs"]:
+                with self.subTest(package=package, job=job):
+                    result = self.decide(job)
+                    self.assertEqual(result.native_required, job in affected)
+                    self.assertEqual(result.changed_files, 1)
+
+    def test_added_test_resource_is_part_of_entire_package_tree(self):
+        self.write("Packages/PlannerCore/Tests/NewTests/extra.md", "Synthetic executable test input\n")
+        self.commit()
+        self.assertTrue(self.decide("macos-core").native_required)
+        self.assertFalse(self.decide("macos-storage").native_required)
+
+    def test_deleted_resource_and_renamed_source_are_not_lost(self):
+        (self.repo / "Packages/PlannerCore/Tests/Fixtures/value.json").unlink()
+        self.command("mv", "Packages/PlannerCore/Sources/Value.swift", "Packages/PlannerCore/Sources/New.swift")
+        self.commit()
+        result = self.decide("macos-core")
+        self.assertTrue(result.native_required)
+        self.assertEqual(result.changed_files, 3)
+        self.assertFalse(self.decide("macos-storage").native_required)
+
+    def test_mixed_known_documentation_and_package_change(self):
+        self.write("README.md", "Updated explanation\n")
+        self.change_package()
+        self.assertFalse(self.decide().native_required)
+        self.assertEqual(self.decide().changed_files, 2)
+
+    def test_changed_or_previously_drifted_manifests_run_all_jobs(self):
+        for path in self.audit["dependencies"]:
+            with self.subTest(path=path):
+                self.command("reset", "--hard", self.initial)
+                original = (self.repo / path).read_text()
+                self.write(path, "Changed dependency closure\n")
+                drifted = self.commit()
+                self.assert_all_native()
+                self.change_package()
+                self.assert_all_native(before=drifted)
+                self.command("reset", "--hard", drifted)
+                self.write(path, original)
+                self.commit()
+                self.assert_all_native(before=drifted)
+
+    def test_previously_changed_test_reader_keeps_its_job_running(self):
+        self.write("Packages/PlannerCore/Tests/Reader.swift", 'let input = "../PlannerCatalog/fixture"\n')
+        previous = self.commit()
+        self.change_package("PlannerCatalog")
+        self.assertTrue(self.decide("macos-core", previous).native_required)
+        self.assertFalse(self.decide("macos-storage", previous).native_required)
+
+    def test_restored_package_still_checks_previous_endpoint(self):
+        previous = self.change_package()
+        self.write("Packages/PlannerCore/Sources/Value.swift", "struct Value {}\n")
+        self.commit()
+        self.assertTrue(self.decide("macos-core", previous).native_required)
+        self.assertFalse(self.decide("macos-storage", previous).native_required)
+
+    def test_unknown_paths_and_package_prefix_lookalikes_run_all(self):
+        for path in ("Packages/PlannerCoreExtra/Source.swift", "Packages/New/Package.swift",
+                     "packages/PlannerCore/Source.swift", "docs/new-input.md", ".gitattributes"):
+            with self.subTest(path=path):
+                self.command("reset", "--hard", self.initial)
+                self.write(path, "Unknown input\n")
+                self.commit()
+                self.assert_all_native()
+
+    def test_prior_external_input_drift_cannot_hide_in_package_only_diff(self):
+        for path in (".gitattributes", ".github/workflows/native-ui.yml", "App/scripts/launch.py",
+                     "tools/storage/replay.py", "tools/conformance/mutations.py"):
+            with self.subTest(path=path):
+                self.command("reset", "--hard", self.initial)
+                self.write(path, "Changed surrounding input\n")
+                previous = self.commit()
+                self.change_package()
+                self.assert_all_native(before=previous)
+
+    def test_executable_newline_and_symlink_package_inputs_run_all(self):
+        self.change_package()
+        os.chmod(self.repo / "Packages/PlannerCore/Sources/Value.swift", 0o755)
+        self.commit()
+        self.assert_all_native()
+        self.command("reset", "--hard", self.initial)
+        self.write("Packages/PlannerCore/Sources/new\nline.swift", "Synthetic\n")
+        self.commit()
+        self.assert_all_native()
+        self.command("reset", "--hard", self.initial)
+        (self.repo / "Packages/PlannerCore/Sources/Indirect.swift").symlink_to("../../../README.md")
+        previous = self.commit()
+        self.change_package("PlannerCatalog")
+        self.assert_all_native(before=previous)
+
+    def test_submodule_and_source_type_change_run_all(self):
+        self.command("update-index", "--add", "--cacheinfo", f"160000,{self.initial},Packages/PlannerCore/Vendor")
+        self.command("commit", "--quiet", "-m", "Synthetic package gitlink")
+        self.assert_all_native()
+        self.command("reset", "--hard", self.initial)
+        target = self.repo / "Packages/PlannerCore/Sources/Value.swift"
+        target.unlink()
+        target.symlink_to("../../../README.md")
+        self.commit()
+        self.assert_all_native()
+
+    def test_missing_and_unknown_job_identity_keep_native(self):
+        self.change_package()
+        for job in ("", "macos", "macos-storage\n", "--help"):
+            self.assertTrue(self.decide(job).native_required)
+
+    def test_missing_audit_does_not_use_an_untracked_working_copy(self):
+        self.command("rm", "tools/ci/native-inputs.json")
+        previous = self.commit()
+        self.change_package()
+        self.save_audit()
+        self.assert_all_native(before=previous)
+
+    def test_modified_working_copy_cannot_replace_tracked_audit(self):
+        self.change_package()
+        self.write("tools/ci/native-inputs.json", "This is not the committed Git blob\n")
+        self.assertFalse(self.decide().native_required)
+
+    def test_malformed_duplicate_oversized_and_incomplete_audits_run(self):
+        invalid = ["{}", "[]", '{"version":1,"version":1}', "[" * 1000,
+                   " " * (scope.MAX_AUDIT_BYTES + 1)]
+        for raw in invalid:
+            with self.subTest(raw=raw[:40]):
+                self.command("reset", "--hard", self.initial)
+                self.write("tools/ci/native-inputs.json", raw)
+                previous = self.commit()
+                self.change_package()
+                self.assert_all_native(before=previous)
+
+    def test_corrupted_pins_and_omitted_inputs_do_not_select_a_skip(self):
+        original = json.dumps(self.audit)
+        mutations = [
+            lambda a: a.update(version=True),
+            lambda a: a.update(source_revision="f" * 40),
+            lambda a: a["jobs"]["native-ui"].pop("Packages/PlannerData"),
+            lambda a: a["dependencies"].pop("Packages/PlannerData/Package.swift"),
+            lambda a: a["repository_inputs"].pop("App/scripts/launch.py"),
+            lambda a: a["repository_inputs"]["App/scripts/launch.py"].__setitem__(2, "0" * 40),
+            lambda a: a["jobs"]["macos-storage"]["Packages/PlannerData"].__setitem__(1, "blob"),
+        ]
+        for index, mutate in enumerate(mutations):
+            with self.subTest(mutation=index):
+                self.command("reset", "--hard", self.initial)
+                self.audit = json.loads(original)
+                mutate(self.audit)
+                self.save_audit()
+                previous = self.commit()
+                self.change_package()
+                self.assert_all_native(before=previous)
+        self.audit = json.loads(original)
+
+    def test_package_only_exact_pr_merge_and_cli(self):
+        topic = self.change_package()
+        tree = self.command("rev-parse", "HEAD^{tree}")
+        merge = self.command("commit-tree", tree, "-p", self.initial, "-p", topic,
+                             input=b"Synthetic audited PR merge\n")
+        self.command("checkout", "--quiet", "--detach", merge)
+        result = scope.choose(self.repo, event="pull_request", head=merge, base=self.initial, job="macos-storage")
+        self.assertFalse(result.native_required)
+        output = self.repo / "output.txt"
+        env = dict(os.environ, APPLE_CI_EVENT="pull_request", APPLE_CI_HEAD=merge,
+                   APPLE_CI_BASE=self.initial, APPLE_CI_JOB="macos-storage", GITHUB_OUTPUT=str(output))
+        result = subprocess.run([sys.executable, str(SOURCE)], cwd=self.repo, env=env,
+                                check=True, capture_output=True, text=True)
+        self.assertFalse(json.loads(result.stdout)["native_required"])
         self.assertEqual(output.read_text(), "native_required=false\n")
 
 
