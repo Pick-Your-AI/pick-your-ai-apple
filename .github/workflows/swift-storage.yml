@@ -57,7 +57,7 @@ jobs:
           (root / "storage-simulator-selection.tsv").write_text("\n".join(rows) + "\n")
           PYTHON
           while IFS=$'\t' read -r label udid; do
-            xcodebuild test -scheme PlannerData \
+            xcodebuild test -scheme PlannerData-Package \
               -destination "platform=iOS Simulator,id=$udid" \
               -destination-timeout 120 -parallel-testing-enabled NO \
               -derivedDataPath /tmp/planner-data-simulator-tests \
