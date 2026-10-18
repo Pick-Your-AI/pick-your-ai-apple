@@ -2,6 +2,13 @@
 
 For the current criterion-level assessment after merged Swift implementation and successful macOS CI, read [foundation disposition](foundation-disposition.md). It separates authorized engineering decisions from actual external inputs. The proposal-1 intake and validation statements below are historical; they do not describe the current CI capability.
 
+The [#23 consumer delta](issue-23-services.md) now consumes the accepted canonical
+service decision delivered through Android #347 at signed `4c753bd6`. Its exact
+topology, frozen routes and operating-gate handoff are available inputs; actual
+origins, operating acceptance and Apple receiving/service validation remain
+separate. This updates the earlier proposal's hosting-decision status without
+relabeling historical preparation or other foundation decisions.
+
 Revision: proposal-1, prepared 2026-10-18 UTC against Apple main `bbf013616b67693f887b32849c55aa39a6e5b1e1`. These are concrete engineering recommendations for receiving review, not accepted product decisions, implementation evidence or release approval. They do not alter live issue criteria or assign people.
 
 - [#21 release scope](issue-21-scope.md)
