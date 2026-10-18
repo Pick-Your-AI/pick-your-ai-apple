@@ -164,10 +164,40 @@ The composed package contains 71 unique model cases. The native workflow require
 the three new methods to report passed in addition to its existing 13 imported-build
 method checks. Both full pinned UI journeys and owned cleanup remain mandatory.
 
-The prior 68-case results remain attributed to their original sources. This
-composition is source preparation and requires its own successful native run;
-neither the older editor results nor #237's model/launch-smoke results establish
-acceptance of the combined editor.
+The prior 68-case results remain attributed to their original sources. The combined
+`877f8f16447be2698ba43079ff4ef8066f85a2c4`, tree
+`1bfc17779920d4e12b41e20f58288e97d37fe30c`, subsequently executed in
+[run 39118569803 / job 117649322901](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39118569803/job/117649322901).
+The actual test checkout `d9a4f7fd6be9f61996fed5bc4b0698ed3067867e` has that same tree.
+All **71 model cases passed with zero failures** in 26.516 seconds, including all
+three accepted history regressions. The unsigned app build and both launch smokes
+passed. The complete iPhone journey passed in 216.071 seconds; iPad failed in
+149.385 seconds at `LocalDraftJourneyTests.swift:288`, waiting for
+`finishDraftEditing` to become hittable and enabled after synthetic Paste. Its
+durable undo/redo reopening had already passed. Each destination executed one test
+with zero skips; both owned deletions returned exit zero and cleanup succeeded.
+
+The complete retained artifact `12135102483` is 107,853,028 bytes. Its independently
+downloaded ZIP passes CRC checks and has SHA-256
+`c6bf8aa9696b9db3c1effe61c70892aa32008620152fe09e47104c690dbc3e4a`.
+The iPad recording at 134 and 137 seconds shows the Undo tutorial covering Done;
+at 145 seconds it has rotated to Copy and Paste. The decoded app payload
+`mtI7JpDswgc6pR8uZlVuoIZ7GMI80Qa_nk6SGQK2Ql3zYkEGkSKWnGAEGKEmfJ4uwvJzjjswTTc58ZEKqmsw7g`
+contains 17,500,648 bytes, SHA-256
+`89c2e93f94830d1fa579e167423664b855aaaac8d6c9ca7db2c97d32427d7ec3`.
+It records the raw Undo label with trailing U+000A, then the query snapshot at
+11:23:30.459750 with trailing U+0020 and no matching result from the prior list.
+The decoded runner payload
+`Mc3cSCwIIXbV7AlI2Dlm4USB478IKmjuv4Sel7qLuDuESVM08gviqnpe8YjfM4WWPGuQx_G_3Zgigo_NefP6lg`
+contains 6,889,709 bytes, SHA-256
+`763f9b9aa66a7e945dba3fb39c27af8754cc57ef0fbf12db6ea898406c84b0b0`.
+The focused follow-up retains the raw label and adds only the exact observed
+trailing-space form. Continue must still be identified through a known sentence,
+both the button and tutorial must disappear, and the complete pasted value must
+remain unchanged before the strict Done/keyboard/Form checks. Production code,
+autosave, failed validation, dirty discard, runner and destination gates are unchanged.
+The failed 877 result is preserved; the corrected source requires fresh native
+execution and both complete pinned journeys before signed delivery.
 
 The original #198 source package contains 52 XCTest cases: 22 editor/library model,
 13 controlled autosave, two bounded history, seven imported-build, six startup and

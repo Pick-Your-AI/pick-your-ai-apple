@@ -36,7 +36,20 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         XCTAssertEqual(accelerator.label, "Accelerator")
         XCTAssertEqual(accelerator.value as? String, "0")
         retainScreenshot(app, name: "Component-kind switch before selection")
-        tap(accelerator)
+        // SwiftUI exposes the whole row as a Switch and includes the visible
+        // native switch beneath it. Tap that single control, not the row center.
+        let controlTree = XCTAttachment(string: accelerator.debugDescription)
+        controlTree.name = "Identified kind row and its native switch"
+        controlTree.lifetime = .keepAlways
+        add(controlTree)
+        let nativeSwitches = accelerator.descendants(matching: .switch)
+        XCTAssertEqual(nativeSwitches.count, 1, "The kind row must contain one native switch")
+        let nativeAccelerator = nativeSwitches.element
+        XCTAssertLessThan(nativeAccelerator.frame.width, accelerator.frame.width)
+        XCTAssertTrue(accelerator.frame.contains(nativeAccelerator.frame))
+        XCTAssertEqual(nativeAccelerator.value as? String, "0")
+        tap(nativeAccelerator)
+        XCTAssertEqual(nativeAccelerator.value as? String, "1")
         XCTAssertEqual(accelerator.value as? String, "1")
         tap(app.buttons["catalogKindFiltersDone"])
         wait(accelerator, matching: "exists == false")
