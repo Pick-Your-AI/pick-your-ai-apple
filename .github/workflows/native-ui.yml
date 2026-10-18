@@ -84,7 +84,16 @@ jobs:
             testExportPreparationLeavesMainActorResponsiveAndPreservesQualification \
             testClearedExportRejectsLateBytesAndErrorsAndRetryUsesNewAlias \
             testInvalidatedQueuedExportNeverEntersPreparation \
-            testCancelledExportPreparationCannotPublishOrWrite
+            testCancelledExportPreparationCannotPublishOrWrite \
+            testComparisonPreparationLeavesMainActorResponsiveAndPreservesInputs \
+            testNewSelectionComparisonFinishesBeforeCancelledOlderResultOrError \
+            testCancelledOlderComparisonCannotClearPendingNewerWork \
+            testReplacingBaselineRejectsLateComparisonAndRetainsNewQualification \
+            testClearedBaselineRejectsLateComparisonAndError \
+            testCancelledComparisonRejectsLateResultAndErrorWithoutClearingPin \
+            testInvalidatedQueuedComparisonNeverEntersWorker \
+            testCommittedBaselineDeletionCancelsPendingComparisonAndPreservesSelection \
+            testRejectedBaselineDeletionPreservesPinAndPendingComparison
           do
             grep -E "Test Case .*ImportedBuildLibraryTests.*${name}.* passed" .build/native-evidence/model-tests.txt
           done

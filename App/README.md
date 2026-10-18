@@ -242,6 +242,16 @@ Boolean presentation state.
 
 ## Local configuration comparison
 
+Comparison preparation runs through the existing off-main worker boundary. The
+button captures both immutable snapshots and their synthetic/unknown labels before
+queueing; changing the selected entry or replacing/clearing its pinned baseline
+invalidates the result. A newer comparison may finish while cancelled older work
+is still unwinding. The screen shows progress and a Cancel comparison control;
+leaving the library cancels pending work while opening completed details retains
+their immutable result. Committed deletion of the pinned entry clears its baseline;
+a rejected deletion preserves it. See the [comparison preparation record](../docs/validation/comparison-preparation.md)
+for the nine controlled regressions and required native execution.
+
 Open an imported build, choose **Use selected build as baseline**, open another
 imported build, and explicitly compare. The baseline is an immutable snapshot held
 in memory until replaced or cleared. Preparing a comparison captures both build
