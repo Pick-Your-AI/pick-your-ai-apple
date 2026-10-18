@@ -1,0 +1,275 @@
+{
+  "dependencies": {
+    "App/Planner.xcodeproj/project.pbxproj": [
+      "100644",
+      "blob",
+      "e4f1cf4ebb612b73e36dfc5b21137d707754e61a"
+    ],
+    "App/Planner.xcodeproj/xcshareddata/xcschemes/Planner.xcscheme": [
+      "100644",
+      "blob",
+      "8d7a83f32bf1aeb4d7f3d4ac0f8d5f1ad15e7fe3"
+    ],
+    "Packages/PlannerCatalog/Package.swift": [
+      "100644",
+      "blob",
+      "3086208eb94bc1d66e1202ecb6cc3556f0d25757"
+    ],
+    "Packages/PlannerCore/Package.swift": [
+      "100644",
+      "blob",
+      "6e320aeb7b135439260ffa2360e106c3e22317ff"
+    ],
+    "Packages/PlannerData/Package.swift": [
+      "100644",
+      "blob",
+      "2483b357ba014ee573c58670299e415c9bc06016"
+    ],
+    "Packages/PlannerTransfer/Package.swift": [
+      "100644",
+      "blob",
+      "2f31c824fa3cac1961274abd0357049b84110c85"
+    ],
+    "Packages/PlannerUI/Package.swift": [
+      "100644",
+      "blob",
+      "93c82cd4483a24db7f56a28c9255ea6731b50876"
+    ]
+  },
+  "jobs": {
+    "macos-catalog-cache": {
+      "Packages/PlannerCatalog": [
+        "040000",
+        "tree",
+        "89fc0888800891a5bd2de7c06769c25d0734076e"
+      ]
+    },
+    "macos-core": {
+      "Packages/PlannerCore": [
+        "040000",
+        "tree",
+        "2e13085e86c8624d45edee52adbcf68173912fef"
+      ]
+    },
+    "macos-storage": {
+      "Packages/PlannerData": [
+        "040000",
+        "tree",
+        "1e3ab6300750957ff832abe41ee512e9746debb8"
+      ]
+    },
+    "macos-transfer": {
+      "Packages/PlannerData": [
+        "040000",
+        "tree",
+        "1e3ab6300750957ff832abe41ee512e9746debb8"
+      ],
+      "Packages/PlannerTransfer": [
+        "040000",
+        "tree",
+        "ebfd99c3008b7ebc9bb7e963e3cf7e98892068ad"
+      ]
+    },
+    "native-ui": {
+      "Packages/PlannerData": [
+        "040000",
+        "tree",
+        "1e3ab6300750957ff832abe41ee512e9746debb8"
+      ],
+      "Packages/PlannerUI": [
+        "040000",
+        "tree",
+        "799df7059dc278cc3df7522013917e4d6bb72962"
+      ]
+    }
+  },
+  "repository_inputs": {
+    ".gitattributes": [
+      "100644",
+      "blob",
+      "6313b56c57848efce05faa7aa7e901ccfc2886ea"
+    ],
+    ".github/ISSUE_TEMPLATE/config.yml": [
+      "100644",
+      "blob",
+      "6cec88feb36f9e480eb0f56022ef0d3a157353a7"
+    ],
+    ".github/PULL_REQUEST_TEMPLATE.md": [
+      "100644",
+      "blob",
+      "94173d400c79183df57145233bc45d13fa3c8083"
+    ],
+    ".github/workflows/catalog-cache.yml": [
+      "100644",
+      "blob",
+      "af4051cf5f04eb3fb1590a7a829c0535cc1091f1"
+    ],
+    ".github/workflows/contract-preparation.yml": [
+      "100644",
+      "blob",
+      "8fff2e9950c5cc578962bc04cb4753c7f7457a4d"
+    ],
+    ".github/workflows/native-ui.yml": [
+      "100644",
+      "blob",
+      "3050815705ce7df49329cabed599903dea9a2b89"
+    ],
+    ".github/workflows/obsolete-pr-checks.yml": [
+      "100644",
+      "blob",
+      "58430fc5b56239052bb3a90aa9eb6437245a5e77"
+    ],
+    ".github/workflows/swift-core.yml": [
+      "100644",
+      "blob",
+      "064e8f7fea0c03d8cad8906173377088c609e830"
+    ],
+    ".github/workflows/swift-storage.yml": [
+      "100644",
+      "blob",
+      "23c1fe6d314b2f404fe4f28e429f0d7e8ed1a39a"
+    ],
+    ".github/workflows/swift-transfer.yml": [
+      "100644",
+      "blob",
+      "25c1d9e916c428897be8e97eb1f9a32bc3860c1a"
+    ],
+    ".gitignore": [
+      "100644",
+      "blob",
+      "4ce8942e0bc49cd72a081188b02b98140c5f1470"
+    ],
+    "App/Planner.xcodeproj/project.pbxproj": [
+      "100644",
+      "blob",
+      "e4f1cf4ebb612b73e36dfc5b21137d707754e61a"
+    ],
+    "App/Planner.xcodeproj/xcshareddata/xcschemes/Planner.xcscheme": [
+      "100644",
+      "blob",
+      "8d7a83f32bf1aeb4d7f3d4ac0f8d5f1ad15e7fe3"
+    ],
+    "App/PlannerApp.swift": [
+      "100644",
+      "blob",
+      "eeabd775ccf9814ed8041b5db6840ce15b4b2922"
+    ],
+    "App/scripts/simulator-smoke.py": [
+      "100644",
+      "blob",
+      "75649e5ac29fe3564d64fdee7ad560d43b3d5ab0"
+    ],
+    "App/scripts/tests/test_toolchain.py": [
+      "100644",
+      "blob",
+      "678fbacf5812e27a310d3185cbdc6f361265236a"
+    ],
+    "App/scripts/toolchain.py": [
+      "100644",
+      "blob",
+      "e5cfc15d5a63e8d49a81b71d11e79b24caecc9a9"
+    ],
+    "App/toolchain.json": [
+      "100644",
+      "blob",
+      "35a3138089000832f917260e4cdb4aa038c0f957"
+    ],
+    "LICENSE": [
+      "100644",
+      "blob",
+      "68047eb6cfc0dce6c9cdfcf79583c6a36e6807f7"
+    ],
+    "docs/acceptance/issues.json": [
+      "100644",
+      "blob",
+      "b9eb832aea76ce7abf3db1beb02420fbf667d389"
+    ],
+    "docs/proposals/issue-20-source-manifest.json": [
+      "100644",
+      "blob",
+      "0df7318f2b539de1862de27a09fb1494c9aa6e0e"
+    ],
+    "tools/acceptance/check_map.py": [
+      "100644",
+      "blob",
+      "513db864409da8415246c17f2847de6a6eb3b9f7"
+    ],
+    "tools/ci/native_scope.py": [
+      "100644",
+      "blob",
+      "02bac4d44ca744f92ecac6d6e31c724673cdd5fc"
+    ],
+    "tools/ci/retire_obsolete_pr_runs.py": [
+      "100644",
+      "blob",
+      "21fac10cefaa3c383cb499502503331d76d21d71"
+    ],
+    "tools/ci/tests/test_native_scope.py": [
+      "100644",
+      "blob",
+      "61ebed0254f84ec158cb5cfbb3c0e47b81bb1655"
+    ],
+    "tools/ci/tests/test_obsolete_workflow.py": [
+      "100644",
+      "blob",
+      "7fc19485770fffc2dc2ce0ea0cfe2555d1e3dabf"
+    ],
+    "tools/ci/tests/test_retire_obsolete_pr_runs.py": [
+      "100644",
+      "blob",
+      "1b93c67b46dcd5aeb0ff3953314c93eb7c9605a7"
+    ],
+    "tools/conformance/contract-lock.json": [
+      "100644",
+      "blob",
+      "5bd7a6b9ef92c1e370c05cd43ce1c7bfff685ab9"
+    ],
+    "tools/conformance/export_swift_vectors.py": [
+      "100644",
+      "blob",
+      "c7a8ffcd9d02c9e3fa9f4af8c044e73db4754cf8"
+    ],
+    "tools/conformance/pricebook_vectors.py": [
+      "100644",
+      "blob",
+      "45922b56f44d38461ca23e2066fc493302245279"
+    ],
+    "tools/conformance/requirements.txt": [
+      "100644",
+      "blob",
+      "9c0434686af6b35d511e18b12bab02bc1e5336c3"
+    ],
+    "tools/conformance/run.py": [
+      "100644",
+      "blob",
+      "4f71dff04bcee5dcb263abd7c6491f1ffa054fb0"
+    ],
+    "tools/conformance/swift_mutations.py": [
+      "100644",
+      "blob",
+      "1c97acb809f16cce937d5ea2375a491095285b2c"
+    ],
+    "tools/conformance/tests/test_harness.py": [
+      "100644",
+      "blob",
+      "53d77573848d0d58b5db67e2b84e72608a0c9290"
+    ],
+    "tools/conformance/tests/test_swift_mutations.py": [
+      "100644",
+      "blob",
+      "3e1fe6395a78b963864353d3df295f42cc4b34b9"
+    ],
+    "tools/conformance/tests/test_swift_vectors.py": [
+      "100644",
+      "blob",
+      "d483cec08c647acb88167bc43a2c75187cc1c3c5"
+    ],
+    "tools/storage/crash_replay.py": [
+      "100644",
+      "blob",
+      "961c45d1b8dd61f33abb86f255e79a43021c0646"
+    ]
+  },
+  "source_revision": "8ca109963bfca3a707b1af8b80aabcd9dd28fd8a",
+  "version": 1
+}
