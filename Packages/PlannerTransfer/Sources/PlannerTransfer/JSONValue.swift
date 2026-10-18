@@ -102,7 +102,7 @@ struct JSONParser {
         guard token.utf8.count <= 128, significant.count <= 15,
               parts.count == 1 || (Int(parts[1]).map { (-64...64).contains($0) } ?? false),
               let number = Decimal(string: token, locale: Locale(identifier: "en_US_POSIX")),
-              !number.isNaN, abs(number) <= Decimal(9_007_199_254_740_991),
+              !number.isNaN, number != 0 || coefficient.allSatisfy({ $0 == "0" }), abs(number) <= Decimal(9_007_199_254_740_991),
               number == 0 || abs(number) >= Decimal(string: "0.000000000001")! else { throw TransferError.unsupportedNumber }
         return .number(number)
     }

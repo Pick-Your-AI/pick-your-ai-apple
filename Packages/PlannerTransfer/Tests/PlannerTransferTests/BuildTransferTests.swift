@@ -154,13 +154,13 @@ final class BuildTransferTests: XCTestCase {
 
 extension BuildTransferTests {
     func testExponentNumbersRemainAcceptedAfterEncoding() throws {
-        for token in ["1e15", "1.23456789e-12", "1000000000000000", "0.00000000000123456789", "1.230000000000000000"] {
+        for token in ["1e15", "1.23456789e-12", "1000000000000000", "0.00000000000123456789", "1.230000000000000000", "-0", "0e-64", "-0.000e+64"] {
             var parser = try JSONParser(Data(token.utf8))
             let value = try parser.parse()
             var reparsed = try JSONParser(JSONEncoder().encode(value))
             XCTAssertEqual(try reparsed.parse(), value, token)
         }
-        for token in ["1e-999", "1e999", "1.234567890123456", "0.0000000000001"] {
+        for token in ["1e-999", "1e999", "1.234567890123456", "0.0000000000001", "0." + String(repeating: "0", count: 60) + "1e-64"] {
             var parser = try JSONParser(Data(token.utf8))
             XCTAssertThrowsError(try parser.parse(), token)
         }
