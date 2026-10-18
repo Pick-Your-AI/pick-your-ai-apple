@@ -1,10 +1,11 @@
-# Frozen-v1 catalog, snapshot and transfer boundaries
+# Frozen-v1 catalog, quality-record, snapshot and transfer boundaries
 
-This portable Swift 6 package implements part of Apple [#32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32), [#33](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/33), [#82](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/82) and [#102](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/102). It has no storage, network, credential or UI authority. A successful parse establishes schema validity only, never compatibility, ownership, deployment readiness or source-use rights.
+This portable Swift 6 package implements part of Apple [#32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32), [#33](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/33), [#49](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/49), [#82](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/82) and [#102](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/102). It has no storage, network, credential or UI authority. A successful parse establishes schema validity only, never compatibility, ownership, deployment readiness or source-use rights.
 
 ## API and integration
 
 - `CatalogItem.decode(_:)` validates a single frozen-v1 catalog item, preserves its exact `CatalogKind` identity and every supported field, and returns an immutable value. Kind-specific specs and their required tier are checked against the unchanged canonical schema. No missing optional fact is filled in and no catalog item becomes a user selection.
+- `QualityEvaluationRun.decode(_:)` validates a frozen-v1 quality record and retains the supplied build/suite identities, timestamps, recorded status and measurements. Typed views preserve exact supported decimals, optional absence and array order. This structural boundary performs no evaluation, evidence authentication or current-build binding.
 - `CatalogSnapshot.decode(_:)` validates a complete frozen-v1 catalog envelope and every item before returning an immutable snapshot. It preserves catalog identity, exact revision, capture timestamp and item order. A malformed envelope or item rejects the entire document; this boundary cannot activate a cache or publish a partial catalog.
 - `BuildTransfer.snapshot(fromDraftJSON:)` validates a complete frozen-v1 BuildSnapshot and returns an immutable value. Missing fields and fewer than two selections fail; no defaults, locks or synthetic values are inserted. Keep editor drafts in PlannerData even when this transition fails.
 - `BuildTransfer.preview(_:)` accepts a bare snapshot or the existing web `pickyour.ai/build-export` version-1 envelope. Envelope provenance is untrusted metadata, not a verified catalog activation. `usesSyntheticData` is nil for bare imports; do not interpret that as production evidence.
@@ -26,11 +27,11 @@ round-trip regression; only actual hosted results establish Swift execution.
 
 The transfer gate rejects secret references and credential-like property names. It also rejects account references, encryption-key references, approval tickets, index names and endpoint/artifact URLs because they can disclose private infrastructure, signed links or credentials. This is a conservative client transfer subset; it does not redefine the frozen schema. Notes/extensions on import are rejected rather than silently accepted. Export strips them before applying the transfer gate. A schema-valid snapshot containing these fields can remain local but cannot be transferred through this package. This is not arbitrary free-text secret detection: names, aliases and other allowed text require preview and deliberate user review. It provides no remote share capability or server authorization.
 
-Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. Duplicate keys (including escaped aliases), invalid UTF-8, trailing input, wrong types/enums and unknown schema fields fail with payload-free error codes. JSON numeric tokens are restricted to at most 15 numeric digits, magnitude at most 9,007,199,254,740,991, and nonzero magnitude at least 10^-12; larger/smaller values fail explicitly rather than rounding. Money remains the exact schema-constrained decimal string. Leap-second timestamps are unsupported and rejected. URI checking implements an ASCII RFC3986 subset and rejects malformed percent escapes and all IP-literal (IPv6/IPvFuture) hosts; full general-purpose JSON Schema/URI conformance is not claimed.
+Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. Duplicate keys (including escaped aliases), invalid UTF-8, trailing input, wrong types/enums and unknown schema fields fail with payload-free error codes. JSON numeric tokens are restricted to at most 15 significant coefficient digits, 128 token bytes, exponent -64 through 64, magnitude at most 9,007,199,254,740,991, and nonzero magnitude at least 10^-12; larger/smaller values fail explicitly rather than rounding. Money remains the exact schema-constrained decimal string. Leap-second timestamps are unsupported and rejected. URI checking implements an ASCII RFC3986 subset and rejects malformed percent escapes and all IP-literal (IPv6/IPvFuture) hosts; full general-purpose JSON Schema/URI conformance is not claimed.
 
 ## Pinned inputs and validation
 
-`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/catalog-snapshot schemas and synthetic build/catalog fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. Swift and Python Draft202012Validator with FormatChecker replay exactly the same JSON corpus. Synthetic fixtures are not real catalog or installed-application evidence.
+`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/catalog-snapshot/quality-evaluation-run schemas and synthetic build/catalog/quality fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. Swift and Python Draft202012Validator with FormatChecker replay exactly the same JSON corpus. Synthetic fixtures are not real catalog or installed-application evidence.
 
 Run:
 
@@ -263,6 +264,27 @@ artifacts and migration under #32 are superseded by that criterion-specific
 disposition. The envelope's separate delivery does not add a new #32 closure gate
 or claim completion of other work packages.
 
+### Envelope and accepted quality composition (2026-10-18)
+
+The later [#256 transfer job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124016445/job/117665292496)
+executed `4d753248943f73b03d6fffe31323503b7b8b3b31`, tree
+`be2d7d62090499f1b58efb8f48ca65dbcd2dada2`, with ordered parents accepted
+`f636afb24b8ecc1324a361aa2a7d2caa3a2481d7` and reviewed envelope composition
+`c2fbf1e7a19edbeca3ec84328de32f4798eeb6b2`. Xcode 16.4 / 16F6 and Swift 6.1.2
+passed all 42 XCTest cases, seven source hashes, 129 build/selection cases,
+1,635 item cases and 77 envelope cases, then built the unsigned simulator SDK
+target. This result includes the four accepted comparison regressions; it does
+not include the later quality source.
+
+QualityEvaluationRun was separately delivered through [#249](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/249)
+on signed `549543abed6f75d7eef4401584b4922c1f7f59ca`. This receiving composition
+retains both complete immutable boundaries, their exact schema/fixture bytes,
+both verifier loops and the union of nine canonical source hashes. The combined
+reference corpora contain 129 + 1,635 + 202 + 77 cases, and the package declares
+51 XCTest methods. These counts describe the combined inputs; the earlier
+42-case run does not establish execution of the 51-case composition. Current
+receiving and signed-main checks retain their own artifact identities and results.
+
 ## Remaining acceptance
 
 Independent code review and hosted macOS/iOS compilation remain required for new code. A cross-package SQLite integration test now saves an empty draft, rejects snapshot export and malicious import, reopens the store, and verifies identical payload, locks, revision and history. PlannerData is a test-only dependency; the library remains independent. macOS 14 is the package testing floor; iOS 17 remains the product floor. #32's delivered all-kind boundary and explicit model/representation limits are reconciled in the [receiving conformance record](#32-receiving-conformance-record); its exact record review and signed publication govern closure. #33’s exact draft/snapshot boundary criteria are satisfied by the linked [criterion-specific receipt](../../docs/acceptance/issue-33-draft-snapshot-boundary.md), subject to its recorded receiving disposition; the earlier UI-integration gap is reconciled there. Actual UI autosave/termination remains #69 and Files workflows remain #82. #82 still needs actual Files/share-sheet flows, cross-client UI round trips and approved privacy/source-use review. #102 still needs server cross-user access, capability guessing and Universal Link/device tests against the real service and signed app. No broader hardware, release or production claims are made.
@@ -321,3 +343,64 @@ Catalog serialization reparses the exact encoded bytes before returning them. Co
 input can expand during JSON normalization; output beyond the same decoder bounds
 is rejected rather than returned as bytes that cannot be reopened. A near-limit
 slash-expansion regression covers this boundary; native execution remains required.
+
+## Quality-record conformance slice (#32 / #49)
+
+`QualityEvaluationRun` adds the remaining quality-record decode boundary using the
+existing bounded parser and the existing frozen-schema evaluator. Its schema and
+synthetic example are copied byte-for-byte from research revision
+`7acbefbf4e4e700231e88be272bc89e3a73dde15` and match that revision's import manifest:
+
+| Resource | SHA-256 |
+| --- | --- |
+| `schemas/quality-evaluation-run.schema.json` | `ed6b3f60805428e3788ce27fa224fb3d5008998f0637f24723bf65eea546a959` |
+| `examples/quality-evaluation-run.json` | `bc0abc0b33e2b6bf77fc4609ac88a73981068eac6fabf604c255f58fec954a6d` |
+
+Only `decode(_:)` can construct the immutable run. Typed views expose recorded
+status, comparator and measurement values while `value` retains every supported
+field. Build revision and sample size remain integral `Decimal` values rather than
+being narrowed to a machine integer. The frozen schema permits arbitrary positive
+JSON integers and arbitrary measurement numbers; this client retains the explicit
+numeric subset described above and rejects unsupported inputs without rounding.
+This does not claim whole-schema numeric interoperability with other clients.
+
+Optional notes remain absent, empty or populated as supplied; a measurement unit
+can be absent or an empty string. Required artifacts may be empty. Measurement
+order, duplicate metric names, duplicate artifact URIs and private text survive
+round trips. Artifact URIs remain inert strings, including supported non-HTTP
+schemes. `encoded()` is local serialization retaining private content, with exact
+semantic value comparison and the decoder's bounds applied to its returned bytes.
+It is not a sanitizing export, evidence upload or source-use approval.
+
+The frozen schema does not enforce timestamp order, measurement/comparator/pass
+consistency, aggregate status consistency, unit semantics or current build/suite
+resolution. Decoding preserves those reported facts without computing a score,
+turning an `incomplete` label into failure, or assigning a quality/compatibility
+verdict. A schema-valid synthetic score remains synthetic and unverified.
+
+`Tools/quality_vectors.py` deterministically generates 202 compact mutations shared
+by Python and Swift. They cover all required fields, null/type/enum/additional-field
+failures, identifier/date/URI checks, optional distinctions, reported labels and
+numeric boundaries. The 18 deliberate client differences are three terminal-newline
+identifiers, two unbounded positive integers, twelve measurement numeric cases and
+one IP-literal URI. Swift inserts the raw replacement JSON before decoding so its
+test helper cannot round a numeric token through `Double` or Foundation bridging.
+
+Original local reference validation on 2026-10-18 passed eight source hashes, the existing
+129 transfer and 1,635 catalog cases, and all 202 quality cases using Python 3.12.14
+with `jsonschema[format]==4.26.0`, including active URI and date-time format checking.
+Nine new Swift tests are declared for typed preservation, shared vectors, absence,
+uninterpreted labels, exact numbers, duplicate keys, resource bounds, sanitized
+errors and normalized-output rejection. Swift/Xcode were unavailable in that
+implementation workspace. Those observations are historical; actual hosted macOS
+Swift and unsigned iOS SDK results retain their separate receiving receipts.
+
+This advances #32 transport coverage and #49 quality-record preparation. It does
+not establish qualified evaluation execution, exact-current-workload evidence,
+resource-estimate binding, live service/fault handling, UI delivery or receiving
+acceptance. The existing #49 prerequisites (Apple #44, Apple #34 and Android #79)
+and the remaining #49 criteria remain open. The accepted [#32 conformance
+record](#32-receiving-conformance-record) governs its three literal all-kind
+criteria; quality-record preparation does not reopen that closed work package.
+Frozen contracts, service ownership and other active artifact-boundary
+implementations are unchanged.
