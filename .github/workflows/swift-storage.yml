@@ -8,7 +8,7 @@ permissions:
 jobs:
   macos-storage:
     runs-on: macos-15
-    timeout-minutes: 15
+    timeout-minutes: 35
     env:
       DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
     steps:
@@ -35,11 +35,46 @@ jobs:
         run: |
           set -euo pipefail
           xcodebuild -scheme PlannerData -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/planner-data-derived CODE_SIGNING_ALLOWED=NO build 2>&1 | tee "$GITHUB_WORKSPACE/storage-ios-build.log"
+      - name: Run recovery regression tests on compact iPhone and iPad simulators
+        working-directory: Packages/PlannerData
+        run: |
+          set -euo pipefail
+          xcrun simctl list --json > "$GITHUB_WORKSPACE/storage-simulator-inventory.json"
+          python3 - <<'PYTHON'
+          import json, os
+          from pathlib import Path
+          root = Path(os.environ["GITHUB_WORKSPACE"])
+          inventory = json.loads((root / "storage-simulator-inventory.json").read_text())
+          runtime = "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
+          if not any(r["identifier"] == runtime and r.get("isAvailable") for r in inventory["runtimes"]):
+              raise SystemExit("Required installed iOS 18.5 runtime unavailable")
+          rows = []
+          for label, name in [("iphone", "iPhone SE (3rd generation)"), ("ipad", "iPad (10th generation)")]:
+              matches = [d for d in inventory["devices"].get(runtime, []) if d["name"] == name and d.get("isAvailable")]
+              if len(matches) != 1:
+                  raise SystemExit(f"Expected exactly one available {name}, found {len(matches)}")
+              rows.append(f"{label}\t{matches[0]['udid']}")
+          (root / "storage-simulator-selection.tsv").write_text("\n".join(rows) + "\n")
+          PYTHON
+          while IFS=$'\t' read -r label udid; do
+            xcodebuild test -scheme PlannerData \
+              -destination "platform=iOS Simulator,id=$udid" \
+              -destination-timeout 120 -parallel-testing-enabled NO \
+              -derivedDataPath /tmp/planner-data-simulator-tests \
+              -resultBundlePath "$GITHUB_WORKSPACE/storage-$label.xcresult" \
+              CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Test Case .*DraftStoreTests.*testInterruptedMigrationRollsBackSchemaThenRecovers.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Executed 25 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+          done < "$GITHUB_WORKSPACE/storage-simulator-selection.tsv"
       - name: Retain storage evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
         with:
           name: swift-storage-validation
-          path: storage-*.log
+          path: |
+            storage-*.log
+            storage-simulator-inventory.json
+            storage-simulator-selection.tsv
+            storage-*.xcresult
           if-no-files-found: error
           retention-days: 14
