@@ -1,0 +1,24 @@
+{
+  "case": "pinned-action-empty-diff-and-three-array-license-object",
+  "corrected_diagnostic": null,
+  "corrected_exit": 0,
+  "corrected_guard_sha256": "4729a141e7dd72d1e0c9b99bcf0f0bb8e56f8c65dfc0cd79a69288f74bbc31b3",
+  "corrected_report": {
+    "accepted": true,
+    "added_dependencies": 0,
+    "disallowed_licenses": 0,
+    "removed_dependencies": 0,
+    "unlicensed_dependencies": 0,
+    "unresolved_licenses": 0,
+    "vulnerable_dependencies": 0
+  },
+  "input": {
+    "DEPENDENCY_CHANGES": "[]",
+    "INVALID_LICENSE_CHANGES": "{\"unlicensed\":[],\"unresolved\":[],\"forbidden\":[]}"
+  },
+  "original_commit": "81d29bb979a3ed8e55c06524981df2877fccef68",
+  "original_diagnostic": "Dependency review could not be verified: Dependency-review output must be an array of objects",
+  "original_exit": 1,
+  "original_guard_sha256": "c8c9a24382ecc45c2db76c1f7c4bdebbb2fe6ad146bc91a92b2a0282e158f546",
+  "upstream_commit": "907a6e9569212033966bc0b69d32473b046dd66b"
+}
