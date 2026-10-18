@@ -3,6 +3,7 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
+import plistlib
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -12,7 +13,7 @@ journey = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(journey)
 PREEXISTING = "ABCDEF01-2345-4678-9ABC-DEF012345678"
 CREATED = ("10000000-0000-0000-0000-000000000001", "20000000-0000-0000-0000-000000000001")
-PASSING = {"result": "Passed", "totalTestCount": 1, "passedTests": 1,
+PASSING = {"result": "Passed", "totalTestCount": 2, "passedTests": 2,
            "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}
 
 
@@ -70,31 +71,71 @@ class UIJourneyRunnerTests(unittest.TestCase):
         self.assertEqual(command[:2], ["xcodebuild", "test"])
         self.assertIn(f"platform=iOS Simulator,id={CREATED[0]}", command)
         self.assertIn(f"-only-testing:{journey.TEST}", command)
+        self.assertIn(f"-only-testing:{journey.LIFECYCLE_TEST}", command)
         self.assertIn("CODE_SIGNING_ALLOWED=NO", command)
         self.assertIn("ONLY_ACTIVE_ARCH=YES", command)
         self.assertIn("retained.xcresult", command)
+        self.assertEqual(command[command.index("-clonedSourcePackagesDirPath") + 1],
+                         ".build/native-source-packages")
         self.assertNotIn("-allowProvisioningUpdates", command)
         self.assertNotIn("-retry-tests-on-failure", command)
 
-    def test_summary_requires_exactly_one_passed_real_test(self):
+    def test_summary_requires_exactly_both_selected_real_tests(self):
         self.assertTrue(journey.summary_passed(PASSING))
         for key, value in (("result", "Failed"), ("totalTestCount", 0), ("passedTests", 0),
                            ("failedTests", 1), ("skippedTests", 1), ("expectedFailures", 1)):
             with self.subTest(key=key):
                 self.assertFalse(journey.summary_passed({**PASSING, key: value}))
         self.assertFalse(journey.summary_passed({}))
+        self.assertFalse(journey.summary_passed({**PASSING, "totalTestCount": 1, "passedTests": 1}))
+        self.assertFalse(journey.summary_passed({**PASSING, "failedTests": False}))
+        self.assertFalse(journey.summary_passed({**PASSING, "passedTests": 2.0}))
 
-    def exercise_main(self, directory, *, first_exit=0, first_timeout=False, summary=PASSING,
-                      first_create=None, cleanup_exit=0, omit_bundle=False):
+    def test_live_configuration_selects_its_actual_build_and_single_launch_guard_test(self):
+        passing = {**PASSING, "totalTestCount": 1, "passedTests": 1}
+        for configuration in ("Staging", "Release"):
+            command = journey.test_command(CREATED[0], Path("retained.xcresult"), configuration)
+            self.assertEqual(command[command.index("-configuration") + 1], configuration)
+            self.assertEqual([item for item in command if item.startswith("-only-testing:")],
+                             [f"-only-testing:{journey.CONFIGURATION_TEST}"])
+            self.assertIn(f".build/native-{configuration.lower()}", command)
+            self.assertEqual(command[command.index("-clonedSourcePackagesDirPath") + 1],
+                             f".build/native-{configuration.lower()}-source-packages")
+            self.assertTrue(journey.summary_passed(passing, configuration))
+            self.assertFalse(journey.summary_passed(PASSING, configuration))
+            self.assertFalse(journey.summary_passed({**passing, "passedTests": True}, configuration))
+
+    def exercise_main(self, directory, *, first_exit=0, first_timeout=False, summary=None,
+                      first_create=None, cleanup_exit=0, omit_bundle=False,
+                      configuration="Debug", info_overrides=None, startup_store=False):
         evidence = Path(directory) / "evidence"
         commands = []
         test_commands = []
         creates = iter((first_create if first_create is not None else CREATED[0], CREATED[1]))
+        expected = journey.CONFIGURATIONS[configuration]
+        test_count = len(expected["tests"])
+        if summary is None:
+            summary = {**PASSING, "totalTestCount": test_count, "passedTests": test_count}
+        info_path = Path(directory) / "synthetic-built-Info.plist"
+        information = {"CFBundleIdentifier": expected["bundleID"], "PlannerEnvironment": expected["environment"],
+                       "PlannerContractVersion": "1.0.0", "PlannerServiceEndpoint": "",
+                       "CFBundleShortVersionString": "0.1.0", "CFBundleVersion": "1"}
+        information.update(info_overrides or {})
+        with info_path.open("wb") as destination:
+            plistlib.dump(information, destination)
 
         def output(command, **kwargs):
             commands.append(command)
             if command[2] == "list":
                 return json.dumps(inventory())
+            if command[2] == "get_app_container":
+                self.assertIn(command[3], CREATED)
+                self.assertEqual(command[4:], [expected["bundleID"], "data"])
+                container = Path(directory) / "synthetic-owned-container" / command[3]
+                container.mkdir(parents=True, exist_ok=True)
+                if startup_store:
+                    (container / "Library" / "Application Support" / "LocalDrafts").mkdir(parents=True, exist_ok=True)
+                return str(container)
             self.assertEqual(command[:3], ["xcrun", "simctl", "create"])
             self.assertEqual(command[-1], journey.RUNTIME)
             value = next(creates)
@@ -119,10 +160,11 @@ class UIJourneyRunnerTests(unittest.TestCase):
             self.assertIn(command[2], ("shutdown", "delete"))
             return journey.subprocess.CompletedProcess(command, cleanup_exit, "", "synthetic cleanup")
 
-        with patch("sys.argv", ["ui-journey.py", "--evidence-directory", str(evidence)]), \
+        with patch("sys.argv", ["ui-journey.py", "--evidence-directory", str(evidence), "--configuration", configuration]), \
                 patch.object(journey.subprocess, "check_output", side_effect=output), \
                 patch.object(journey, "run_logged", side_effect=run_test), \
                 patch.object(journey.subprocess, "run", side_effect=run), \
+                patch.object(journey, "built_info_path", return_value=info_path), \
                 patch("builtins.print"):
             failure = None
             try:
@@ -141,8 +183,41 @@ class UIJourneyRunnerTests(unittest.TestCase):
             self.assertEqual([c[-1] for c in cleanups], [CREATED[0], CREATED[0], CREATED[1], CREATED[1]])
             self.assertFalse(any(PREEXISTING in command for command in commands))
             self.assertTrue(all(r["verifiedPassed"] and r["cleanupSucceeded"] for r in results))
+            self.assertTrue(all(r["configurationVerified"] for r in results))
             self.assertTrue((evidence / "ipad-summary.json").exists())
             self.assertTrue((evidence / "iphone-result.json").exists())
+
+    def test_live_configuration_requires_actual_bundle_identity_and_no_opened_store(self):
+        for configuration in ("Staging", "Release"):
+            with self.subTest(configuration=configuration), tempfile.TemporaryDirectory() as directory:
+                evidence, commands, tests, results, failure = self.exercise_main(directory, configuration=configuration)
+                self.assertIsNone(failure)
+                self.assertEqual(len(tests), 2)
+                self.assertTrue(all(r["configurationVerified"] and r["verifiedPassed"] for r in results))
+                self.assertTrue(all(not r["builtConfiguration"]["startupStoreDirectoryCreated"] for r in results))
+                self.assertEqual(len([c for c in commands if c[:3] == ["xcrun", "simctl", "get_app_container"]]), 2)
+                self.assertEqual(json.loads((evidence / "iphone-built-configuration.json").read_text())["environment"],
+                                 journey.CONFIGURATIONS[configuration]["environment"])
+
+    def test_wrong_built_environment_or_endpoint_cannot_pass_a_synthetic_green_summary(self):
+        for override in ({"PlannerEnvironment": "preview"},
+                         {"CFBundleIdentifier": "invalid.pickyourai.localpreview"},
+                         {"PlannerServiceEndpoint": "https://private-user:private-secret@example.invalid"},
+                         {"PlannerContractVersion": "2.0.0"}, {"CFBundleVersion": "private-secret"}):
+            with self.subTest(override=override), tempfile.TemporaryDirectory() as directory:
+                evidence, _, tests, results, failure = self.exercise_main(
+                    directory, configuration="Release", info_overrides=override)
+                self.assertIsNotNone(failure)
+                self.assertEqual(len(tests), 2)
+                self.assertTrue(all(not r["verifiedPassed"] and not r["configurationVerified"] and r["cleanupSucceeded"] for r in results))
+                self.assertNotIn("private-secret", (evidence / "journey-results.json").read_text())
+
+    def test_invalid_configuration_opening_storage_fails_even_with_a_green_ui_summary(self):
+        with tempfile.TemporaryDirectory() as directory:
+            _, _, _, results, failure = self.exercise_main(directory, configuration="Release", startup_store=True)
+            self.assertIsNotNone(failure)
+            self.assertTrue(all(not r["verifiedPassed"] and r["cleanupSucceeded"] for r in results))
+            self.assertTrue(all(r["builtConfiguration"]["startupStoreDirectoryCreated"] for r in results))
 
     def test_created_id_spelling_is_preserved_for_xcode_and_cleanup(self):
         # simctl returns uppercase hex; Xcode's destination matching is case-sensitive.

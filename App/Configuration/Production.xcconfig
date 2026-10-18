@@ -1,0 +1,6 @@
+// This development identifier is not an App Store registration or release.
+// No deployed production service is accepted. A missing endpoint fails at launch.
+PLANNER_ENVIRONMENT = production
+PRODUCT_BUNDLE_IDENTIFIER = invalid.pickyourai.production
+PLANNER_SERVICE_ENDPOINT =
+PLANNER_CONTRACT_VERSION = 1.0.0

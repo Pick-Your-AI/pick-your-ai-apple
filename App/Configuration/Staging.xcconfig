@@ -1,0 +1,5 @@
+// No deployed staging service is accepted. A missing endpoint fails at launch.
+PLANNER_ENVIRONMENT = staging
+PRODUCT_BUNDLE_IDENTIFIER = invalid.pickyourai.staging
+PLANNER_SERVICE_ENDPOINT =
+PLANNER_CONTRACT_VERSION = 1.0.0

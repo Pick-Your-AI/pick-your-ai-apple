@@ -8,6 +8,8 @@ Every invocation needs a new evidence directory, preserving earlier test results
 import argparse
 import json
 from pathlib import Path
+import plistlib
+import re
 import shlex
 import subprocess
 import sys
@@ -16,6 +18,13 @@ import uuid
 RUNTIME = "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
 DESTINATIONS = (("iphone", "iPhone SE (3rd generation)"), ("ipad", "iPad (10th generation)"))
 TEST = "PlannerAppUITests/LocalDraftJourneyTests/testSavedNotesSurviveCloseReopenAndRelaunch"
+LIFECYCLE_TEST = "PlannerAppUITests/LocalDraftLifecycleTests/testBackgroundRecoveryAndCancelledDiscardPreserveOwnDraft"
+CONFIGURATION_TEST = "PlannerAppUITests/ConfigurationLaunchTests/testMissingEndpointStopsStartupWithoutPreviewFallback"
+CONFIGURATIONS = {
+    "Debug": {"environment": "preview", "bundleID": "invalid.pickyourai.localpreview", "tests": (TEST, LIFECYCLE_TEST)},
+    "Staging": {"environment": "staging", "bundleID": "invalid.pickyourai.staging", "tests": (CONFIGURATION_TEST,)},
+    "Release": {"environment": "production", "bundleID": "invalid.pickyourai.production", "tests": (CONFIGURATION_TEST,)},
+}
 TEST_TIMEOUT_SECONDS = 15 * 60
 
 
@@ -32,25 +41,83 @@ def select_devices(inventory):
     return selected
 
 
-def test_command(udid, result_path):
+def derived_data_path(configuration):
+    return Path(".build/native" if configuration == "Debug" else f".build/native-{configuration.lower()}")
+
+
+def source_packages_path(configuration):
+    return Path(str(derived_data_path(configuration)) + "-source-packages")
+
+
+def built_info_path(configuration):
+    return derived_data_path(configuration) / "Build" / "Products" / f"{configuration}-iphonesimulator" / "Planner.app" / "Info.plist"
+
+
+def test_command(udid, result_path, configuration="Debug"):
+    tests = CONFIGURATIONS[configuration]["tests"]
     return [
         "xcodebuild", "test", "-project", "App/Planner.xcodeproj", "-scheme", "Planner",
-        "-configuration", "Debug", "-sdk", "iphonesimulator",
+        "-configuration", configuration, "-sdk", "iphonesimulator",
         "-destination", f"platform=iOS Simulator,id={udid}", "-destination-timeout", "120",
         "-parallel-testing-enabled", "NO", "-maximum-concurrent-test-simulator-destinations", "1",
-        "-derivedDataPath", ".build/native", "-resultBundlePath", str(result_path),
-        f"-only-testing:{TEST}", "CODE_SIGNING_ALLOWED=NO", "ONLY_ACTIVE_ARCH=YES",
+        "-derivedDataPath", str(derived_data_path(configuration)),
+        "-clonedSourcePackagesDirPath", str(source_packages_path(configuration)),
+        "-resultBundlePath", str(result_path),
+        *[f"-only-testing:{test}" for test in tests], "CODE_SIGNING_ALLOWED=NO", "ONLY_ACTIVE_ARCH=YES",
     ]
 
 
-def summary_passed(summary):
+def summary_passed(summary, configuration="Debug"):
     # Fail closed for zero, skipped, failed, expected-failure, or unknown output.
+    if not isinstance(summary, dict):
+        return False
+    expected = len(CONFIGURATIONS[configuration]["tests"])
+    counts = {key: summary.get(key, 0 if key == "expectedFailures" else None)
+              for key in ("totalTestCount", "passedTests", "failedTests", "skippedTests", "expectedFailures")}
     return (summary.get("result") == "Passed"
-            and summary.get("totalTestCount") == 1
-            and summary.get("passedTests") == 1
-            and summary.get("failedTests") == 0
-            and summary.get("skippedTests") == 0
-            and summary.get("expectedFailures", 0) == 0)
+            and all(type(value) is int for value in counts.values())
+            and counts["totalTestCount"] == expected
+            and counts["passedTests"] == expected
+            and counts["failedTests"] == 0
+            and counts["skippedTests"] == 0
+            and counts["expectedFailures"] == 0)
+
+
+def verify_built_configuration(configuration, udid, evidence, label, outcome):
+    """Read the actual built bundle, and only this run's owned app container.
+
+    No raw endpoint or arbitrary plist strings are written into the evidence.
+    The repository's live configurations intentionally have no endpoint; their
+    real UI tests must fail visibly before either local store is opened.
+    """
+    expected = CONFIGURATIONS[configuration]
+    with built_info_path(configuration).open("rb") as source:
+        information = plistlib.load(source)
+    if (not isinstance(information, dict)
+            or information.get("CFBundleIdentifier") != expected["bundleID"]
+            or information.get("PlannerEnvironment") != expected["environment"]
+            or information.get("PlannerContractVersion") != "1.0.0"
+            or information.get("PlannerServiceEndpoint") != ""):
+        raise ValueError("Built bundle does not match the requested environment matrix and absent endpoint")
+    version = information.get("CFBundleShortVersionString")
+    build = information.get("CFBundleVersion")
+    if (not isinstance(version, str) or re.fullmatch(r"[0-9]{1,6}(\.[0-9]{1,6}){0,2}", version) is None
+            or not isinstance(build, str) or re.fullmatch(r"[0-9]{1,9}", build) is None):
+        raise ValueError("Built bundle version diagnostics are invalid")
+    metadata = {"bundleID": expected["bundleID"], "environment": expected["environment"],
+                "contractVersion": "1.0.0", "version": version, "build": build, "endpointConfigured": False}
+    if configuration != "Debug":
+        container = Path(subprocess.check_output(
+            ["xcrun", "simctl", "get_app_container", udid, expected["bundleID"], "data"],
+            text=True, timeout=60,
+        ).strip())
+        if not container.is_absolute() or not container.is_dir():
+            raise ValueError("Owned app container could not be verified")
+        metadata["startupStoreDirectoryCreated"] = (container / "Library" / "Application Support" / "LocalDrafts").exists()
+    (evidence / f"{label}-built-configuration.json").write_text(json.dumps(metadata, indent=2) + "\n")
+    outcome["builtConfiguration"] = metadata
+    if metadata.get("startupStoreDirectoryCreated", False):
+        raise ValueError("Invalid configuration opened local storage before its launch guard")
 
 
 def run_logged(command, log_path):
@@ -80,7 +147,7 @@ def cleanup_simulator(udid):
     return results
 
 
-def collect_summary(result_path, evidence, label, outcome):
+def collect_summary(result_path, evidence, label, outcome, configuration="Debug"):
     if not result_path.exists():
         outcome["summaryError"] = "No xcresult bundle was produced"
         return
@@ -94,15 +161,17 @@ def collect_summary(result_path, evidence, label, outcome):
     if summary_run.returncode == 0:
         try:
             summary = json.loads(summary_run.stdout)
-            outcome["verifiedPassed"] = outcome.get("xcodebuildExitCode") == 0 and summary_passed(summary)
+            outcome["verifiedPassed"] = outcome.get("xcodebuildExitCode") == 0 and summary_passed(summary, configuration)
         except (ValueError, AttributeError):
             outcome["summaryError"] = "Result summary was not the expected JSON object"
 
 
-def run_destination(destination, evidence, existing_ids):
+def run_destination(destination, evidence, existing_ids, configuration="Debug"):
     label = destination["label"]
     result_path = evidence / f"{label}.xcresult"
-    outcome = {"destination": destination, "test": TEST, "verifiedPassed": False, "cleanupSucceeded": False}
+    outcome = {"destination": destination, "configuration": configuration,
+               "tests": CONFIGURATIONS[configuration]["tests"], "verifiedPassed": False,
+               "configurationVerified": False, "cleanupSucceeded": False}
     owned_udid = None
     try:
         name = f"Planner-UI-{label}-{uuid.uuid4().hex[:12]}"
@@ -119,16 +188,19 @@ def run_destination(destination, evidence, existing_ids):
         owned_udid = output
         outcome["simulator"] = {"udid": owned_udid, "name": name, "createdByThisRun": True}
         (evidence / f"{label}-result.json").write_text(json.dumps(outcome, indent=2) + "\n")
-        command = test_command(owned_udid, result_path)
+        command = test_command(owned_udid, result_path, configuration)
         (evidence / f"{label}-command.txt").write_text(shlex.join(command) + "\n")
         try:
             outcome["xcodebuildExitCode"] = run_logged(command, evidence / f"{label}-tests.log")
         except subprocess.TimeoutExpired:
             outcome["error"] = f"xcodebuild exceeded {TEST_TIMEOUT_SECONDS} seconds"
         # Attempt a structured receipt even after an ordinary test timeout/failure.
-        collect_summary(result_path, evidence, label, outcome)
+        collect_summary(result_path, evidence, label, outcome, configuration)
+        verify_built_configuration(configuration, owned_udid, evidence, label, outcome)
+        outcome["configurationVerified"] = True
     except (OSError, ValueError, subprocess.SubprocessError) as error:
         outcome["error"] = str(error)
+        outcome["verifiedPassed"] = False
     finally:
         if owned_udid is not None:
             outcome["cleanup"] = cleanup_simulator(owned_udid)
@@ -140,6 +212,7 @@ def run_destination(destination, evidence, existing_ids):
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--evidence-directory", type=Path, default=Path(".build/native-evidence/ui-journey"))
+    parser.add_argument("--configuration", choices=tuple(CONFIGURATIONS), default="Debug")
     args = parser.parse_args()
     evidence = args.evidence_directory.resolve()
     # Do not remove old bundles to make a repeated run appear new.
@@ -152,12 +225,12 @@ def main():
     existing_ids = {str(uuid.UUID(d["udid"])) for devices in inventory["devices"].values() for d in devices}
     results = []
     for destination in selected:
-        results.append(run_destination(destination, evidence, existing_ids))
+        results.append(run_destination(destination, evidence, existing_ids, args.configuration))
         # Retain partial progress even if the second destination is interrupted.
         (evidence / "journey-results.json").write_text(json.dumps(results, indent=2) + "\n")
-    if len(results) != len(DESTINATIONS) or not all(r["verifiedPassed"] and r["cleanupSucceeded"] for r in results):
+    if len(results) != len(DESTINATIONS) or not all(r["verifiedPassed"] and r["configurationVerified"] and r["cleanupSucceeded"] for r in results):
         raise SystemExit("UI journey or owned-simulator cleanup failed on a pinned destination; inspect retained results")
-    print("Verified one UI journey passed on each pinned iPhone/iPad simulator; no physical-device or release claim.")
+    print(f"Verified {len(CONFIGURATIONS[args.configuration]['tests'])} {args.configuration} UI journeys passed on each pinned iPhone/iPad simulator; no physical-device or release claim.")
 
 
 if __name__ == "__main__":

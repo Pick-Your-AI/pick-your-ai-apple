@@ -1,0 +1,5 @@
+// Local-only preview. No live endpoint or credentials belong in this file.
+PLANNER_ENVIRONMENT = preview
+PRODUCT_BUNDLE_IDENTIFIER = invalid.pickyourai.localpreview
+PLANNER_SERVICE_ENDPOINT =
+PLANNER_CONTRACT_VERSION = 1.0.0

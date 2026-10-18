@@ -1,0 +1,12 @@
+<?xml version="1.0" encoding="UTF-8"?>
+<!DOCTYPE plist PUBLIC "-//Apple//DTD PLIST 1.0//EN" "http://www.apple.com/DTDs/PropertyList-1.0.dtd">
+<plist version="1.0">
+<dict>
+    <key>PlannerEnvironment</key>
+    <string>$(PLANNER_ENVIRONMENT)</string>
+    <key>PlannerServiceEndpoint</key>
+    <string>$(PLANNER_SERVICE_ENDPOINT)</string>
+    <key>PlannerContractVersion</key>
+    <string>$(PLANNER_CONTRACT_VERSION)</string>
+</dict>
+</plist>

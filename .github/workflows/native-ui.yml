@@ -115,3 +115,59 @@ jobs:
           path: .build/native-evidence
           if-no-files-found: error
           retention-days: 14
+  native-configuration:
+    name: Native configuration (${{ matrix.configuration }})
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
+    runs-on: macos-15
+    timeout-minutes: 40
+    strategy:
+      fail-fast: false
+      matrix:
+        configuration: [Staging, Release]
+    env:
+      PLANNER_UI_CONFIGURATION: ${{ matrix.configuration }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify unavailable and exact Xcode pins
+        run: |
+          set -o pipefail
+          mkdir -p .build/configuration-evidence
+          python3 -m unittest discover -s App/scripts/tests -p 'test_toolchain.py' -v 2>&1 | tee .build/configuration-evidence/pin-tests.txt
+          python3 App/scripts/toolchain.py --github-env "$GITHUB_ENV" 2>&1 | tee .build/configuration-evidence/pin-selection.txt
+      - name: Verify fresh configuration build and package outputs
+        run: |
+          set -o pipefail
+          python3 - <<'PY' | tee .build/configuration-evidence/empty-caches.txt
+          import os
+          from pathlib import Path
+          name = {"Staging": "native-staging", "Release": "native-release"}[os.environ["PLANNER_UI_CONFIGURATION"]]
+          for suffix in ("", "-source-packages"):
+              path = Path(".build") / (name + suffix)
+              if path.exists():
+                  raise SystemExit(f"Expected an empty clean-checkout output at {path}; use a fresh checkout without restored caches.")
+              print(f"Verified absent before dependency resolution/build: {path}")
+          PY
+      - name: Record configuration toolchain and source
+        run: |
+          set -o pipefail
+          xcodebuild -version | tee .build/configuration-evidence/xcode.txt
+          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') .build/configuration-evidence/xcode.txt
+          sw_vers | tee .build/configuration-evidence/macos.txt
+          swift --version | tee .build/configuration-evidence/swift.txt
+          xcrun simctl list runtimes | tee .build/configuration-evidence/runtimes.txt
+          git rev-parse HEAD | tee .build/configuration-evidence/source-commit.txt
+      - name: Exercise the missing endpoint through the real app UI
+        run: |
+          set -o pipefail
+          python3 App/scripts/ui-journey.py --configuration "$PLANNER_UI_CONFIGURATION" --evidence-directory .build/configuration-evidence/ui-journey 2>&1 | tee .build/configuration-evidence/ui-journey.txt
+      - name: Retain configuration evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-configuration-${{ matrix.configuration }}-evidence
+          path: .build/configuration-evidence
+          if-no-files-found: error
+          retention-days: 14

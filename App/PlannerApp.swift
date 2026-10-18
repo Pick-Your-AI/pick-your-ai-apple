@@ -4,7 +4,7 @@ import PlannerUI
 @main
 struct PlannerApp: App {
     var body: some Scene {
-        WindowGroup { LocalLibrariesView() }
+        WindowGroup { ApplicationConfigurationView { LocalLibrariesView() } }
     }
 }
 

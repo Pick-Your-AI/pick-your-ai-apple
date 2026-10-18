@@ -1,8 +1,8 @@
 # Native local draft preview
 
-This unsigned iPhone/iPad app composes `PlannerUI` and `PlannerData`. It is a local
+This unsigned iPhone/iPad app composes `PlannerUI`, `PlannerData` and `PlannerCore`. It is a local
 editor with a separate read-only imported-build library and reviewed JSON file export.
-It has no catalog UI, evaluation, account, remote sync or release configuration. The reserved `invalid.pickyourai.localpreview` bundle ID is for simulator
+It has no catalog UI, evaluation, account, remote sync or release signing. The reserved `invalid.pickyourai.localpreview` bundle ID is for simulator
 use only; it does not allocate a production application identifier or signing team.
 
 The delegated engineering mandate selects SwiftUI/iOS 17 and the local SQLite actor
@@ -65,6 +65,32 @@ Primary Apple references checked 2026-10-18: [scene phase](https://developer.app
 Local Linux inspection cannot establish SwiftUI/Xcode correctness. See the PR checks
 for observed hosted results, distinct from device, store or production acceptance.
 
+## Build environment and runtime journeys
+
+Debug is the explicit local preview. Staging and Release use separate development
+bundle identifiers and require an endpoint; because no deployed service is
+accepted, their checked-in endpoint is empty and launch fails visibly before
+opening either local library. The configuration comes from the built plist and
+does not accept process-environment or launch-argument overrides. Diagnostics show
+the validated environment, build and contract version; rejected values are never
+included in the error message. See the [configuration matrix and boundary](../docs/validation/runtime-configuration.md).
+
+The separate lifecycle UI test creates its own synthetic record, backgrounds the
+actual app while editing, verifies foreground text and durable process-relaunch
+recovery, and exercises cancellation of a genuinely dirty discard operation.
+Staging and Release tests launch their actual configurations and verify that the
+missing-endpoint guard persists across background and process recovery. The runner
+also checks built metadata and that rejected configurations created no local-store
+directory in its newly owned simulator. The original save/undo/redo/discard/delete
+test remains selected and unchanged. Exact native results remain pending until
+the hosted run and receiving review are linked in the [runtime journey record](../docs/validation/runtime-journeys.md).
+
+Debug retains the native model/build/smoke job. Staging and Release each run both
+owned destinations in a separate mandatory matrix job with independent deadlines,
+exact toolchain verification and failure artifacts. A failure does not cancel the
+other configuration; each result must pass its selected real UI tests, metadata
+checks and owned cleanup.
+
 ## Pinned toolchain
 
 [toolchain.json](toolchain.json) pins the full Xcode bundle to version 16.4, build
@@ -82,6 +108,8 @@ python3 App/scripts/toolchain.py -- xcodebuild -project App/Planner.xcodeproj -s
 python3 App/scripts/toolchain.py -- python3 App/scripts/simulator-smoke.py
 python3 -m unittest discover -s App/scripts/tests -v
 python3 App/scripts/toolchain.py -- python3 App/scripts/ui-journey.py
+python3 App/scripts/toolchain.py -- python3 App/scripts/ui-journey.py --configuration Staging --evidence-directory .build/native-evidence/configuration-staging
+python3 App/scripts/toolchain.py -- python3 App/scripts/ui-journey.py --configuration Release --evidence-directory .build/native-evidence/configuration-production
 ```
 
 The verifier checks the selected directory and exact version/build before executing
