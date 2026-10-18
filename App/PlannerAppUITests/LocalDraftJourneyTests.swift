@@ -224,16 +224,16 @@ final class LocalDraftJourneyTests: XCTestCase {
 
     @MainActor
     private func reveal(_ element: XCUIElement, in app: XCUIApplication, towardTop: Bool) {
+        // The library List remains in the hierarchy behind the editor sheet.
+        // Scroll only this editor Form, never the first hittable collection.
+        let container = app.descendants(matching: .any).matching(identifier: "draftEditorForm").firstMatch
+        XCTAssertTrue(container.waitForExistence(timeout: 10), "The editor Form must be present")
         for _ in 0..<6 {
-            if element.isHittable { return }
-            let candidates = app.collectionViews.allElementsBoundByIndex
-                + app.tables.allElementsBoundByIndex + app.scrollViews.allElementsBoundByIndex
-            guard let container = candidates.first(where: { $0.isHittable }) else {
-                XCTFail("No visible editor scroll container for \(element.identifier)"); return
-            }
+            if element.exists && element.isHittable { return }
+            guard container.isHittable else { XCTFail("The editor Form must be hittable"); return }
             if towardTop { container.swipeDown() } else { container.swipeUp() }
         }
-        XCTAssertTrue(element.isHittable, "Could not reveal \(element.identifier)")
+        XCTAssertTrue(element.exists && element.isHittable, "Could not reveal the control in the editor Form")
     }
 
     @MainActor

@@ -45,12 +45,21 @@ cleanup remain mandatory.
 
 ## Evidence and remaining gates
 
-The combined package contains 52 declared XCTest cases: 22 editor/library model,
+The combined package contains 52 XCTest cases: 22 editor/library model,
 13 controlled autosave, two bounded history, seven imported-build, six startup and
-two independent-store cases. This is a source inventory, not an executed test count.
+two independent-store cases. [Run 39100534357 / job 117595708300](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39100534357/job/117595708300)
+at `206fbb0a97673bc03246af6175411c3eff11f4a4` executed all 52 with zero failures and
+passed the unsigned build and launch smoke. Its complete iPad UI journey passed;
+iPhone failed before the first history read while the scroll helper repeatedly swiped
+the first hittable collection, which can select the library behind the editor sheet.
+The focused correction binds every
+reveal gesture to the new `draftEditorForm` identifier and keeps every assertion.
+The retained failure artifact is `12126633882`, SHA-256
+`96bf09374aeafe7490166ae74dac7039df15fedbe7ea2b6536eb2cf52f5cbb31`.
 The runner still requires exactly one passed journey, zero failures/skips and successful
 owned cleanup on each pinned iPhone/iPad destination. Swift/Xcode are unavailable in
-the local preparation workspace. No combined native execution is asserted here.
+the local preparation workspace. Both destinations must pass on the corrected head
+before this integration qualifies for signed delivery.
 
 Earlier [#181 native execution](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39095778902/job/117581802505)
 passed its 19 model cases, including both retained delayed-open scenarios, and its

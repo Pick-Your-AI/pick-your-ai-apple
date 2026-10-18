@@ -63,6 +63,16 @@ at `de1f432` in [native run 39094714003](https://github.com/Pick-Your-AI/pick-yo
 Those earlier results establish that harness revision only; the combined production
 autosave, undo/redo and invalid-amendment journey requires fresh native execution.
 
+The first combined attempt at `206fbb0a97673bc03246af6175411c3eff11f4a4` in
+[native run 39100534357](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39100534357/job/117595708300)
+passed all 52 model cases and the entire iPad journey. The iPhone journey failed before
+its history read: the generic helper repeatedly swiped the first hittable collection,
+but `loadRevisions` never appeared. The library also remains behind the editor sheet,
+so that container selection is ambiguous. The editor Form now has the exact
+`draftEditorForm` identifier, and every reveal gesture targets only that container.
+All persistence, revision, dirty-discard and destination assertions remain mandatory.
+This correction requires a fresh successful run on both destinations.
+
 A try/finally scope protects every verified creation, including later evidence-writing
 or test failures. Cleanup shuts down and deletes only the verified ID created by this
 invocation, retaining both command outcomes; it never uses blanket shutdown, erase or

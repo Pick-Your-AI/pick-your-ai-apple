@@ -126,6 +126,7 @@ public struct DraftLibraryView: View {
                     }
                 }
             }
+            .accessibilityIdentifier("draftEditorForm")
             .navigationTitle("Edit local draft")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
