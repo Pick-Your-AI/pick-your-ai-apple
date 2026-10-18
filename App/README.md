@@ -111,3 +111,12 @@ negative case and the required hosted failure/recovery and clean-build evidence.
 Apple's [command-line tools configuration](https://developer.apple.com/documentation/xcode/configuring-command-line-tools-settings)
 documents the command-scoped DEVELOPER_DIR override; [TN2339](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)
 describes the full Xcode command-line tools and build commands.
+
+## Submission SDK compatibility
+
+The separate [unsigned submission SDK lane](../docs/validation/submission-sdk.md)
+selects Xcode 26.3 / 17C529 and verifies device and simulator SDK 26.2 before
+testing all five packages and building both unsigned Release products. The
+existing 16.4 development pin remains a regression baseline. Consult the dated
+[#113 policy matrix](../docs/validation/issue-113-policy.md) for current Apple
+requirements and the signed-artifact, privacy and channel evidence still needed.

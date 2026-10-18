@@ -23,3 +23,33 @@ for case in cases:
     actual = validator.is_valid(case['payload'])
     assert actual == case['valid'], case['name']
 print(f'Verified {len(manifest["files"])} source hashes and {len(cases)} canonical conformance cases.')
+
+# Catalog cases use compact mutations to avoid duplicating the canonical fixture.
+# The Swift test applies these exact mutations before using the public decoder.
+from catalog_vectors import apply_vector, encoded_vectors
+catalog_cases_path = FIXTURES / 'catalog-conformance.json'
+assert catalog_cases_path.read_text() == encoded_vectors(), 'Stale catalog vectors'
+catalog_cases = json.loads(catalog_cases_path.read_text())
+catalog = json.loads((FIXTURES / 'catalog.json').read_text())
+items = {item['kind']: item for item in catalog['items']}
+assert len(items) == len(catalog['items']) == 29
+assert set(items) == set(schemas['catalog-item.schema.json']['properties']['kind']['enum'])
+validator = Draft202012Validator(schemas['catalog-item.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in catalog_cases:
+    payload = apply_vector(items[case['kind']], case)
+    assert validator.is_valid(payload) == case['canonicalValid'], case['name']
+print(f'Verified all 29 catalog kinds and {len(catalog_cases)} canonical catalog cases; client subsets remain explicit.')
+
+# Quality records retain reported results without assigning evidence authority.
+# Swift inserts the raw replacement token before decoding, avoiding a Foundation
+# number conversion that could hide an unsupported precision/exponent input.
+from quality_vectors import apply_vector as apply_quality_vector, encoded_vectors as encoded_quality_vectors
+quality_cases_path = FIXTURES / 'quality-conformance.json'
+assert quality_cases_path.read_text() == encoded_quality_vectors(), 'Stale quality vectors'
+quality_cases = json.loads(quality_cases_path.read_text())
+quality = json.loads((FIXTURES / 'quality-evaluation-run.json').read_text())
+validator = Draft202012Validator(schemas['quality-evaluation-run.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in quality_cases:
+    payload = apply_quality_vector(quality, case)
+    assert validator.is_valid(payload) == case['canonicalValid'], case['name']
+print(f'Verified {len(quality_cases)} canonical quality cases; recorded labels and client subsets remain explicit.')

@@ -38,9 +38,19 @@ and [unspecified permissions being disabled](https://docs.github.com/en/actions/
 ## Selection and preservation
 
 The [script](../../tools/ci/retire_obsolete_pr_runs.py) only considers queued or
-running, first-attempt `pull_request` runs from the six existing validation workflow
-paths, with the exact Apple repository ID on both sides. It excludes main-branch,
+running, first-attempt `pull_request` runs from the seven validation workflow
+paths, including [unsigned submission SDK compatibility](submission-sdk.md),
+with the exact Apple repository ID on both sides. It excludes main-branch,
 push, manual, rerun, completed, foreign, unknown and ambiguous runs.
+
+GitHub's [workflow-run response](https://docs.github.com/en/rest/actions/workflow-runs?apiVersion=2026-03-10)
+also documents ref-qualified paths such as `.github/workflows/build.yml@main`.
+The allowlist accepts the listed exact local paths either unqualified or followed by
+one bounded, syntactically checked ASCII Git ref. It rejects unknown workflow
+paths and malformed qualifiers. The qualifier supplies no repository or PR
+authority, and the complete original path must remain identical at the final
+preflight. Current Apple runs inspected on 2026-10-18 used unqualified paths;
+the qualified variant is covered by synthetic cancellation/preservation tests.
 
 A run must resolve to one matching PR. When GitHub omits closed PR associations,
 the fallback requires the same repository, branch and exact SHA to match exactly one

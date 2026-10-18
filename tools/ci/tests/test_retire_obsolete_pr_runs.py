@@ -102,6 +102,16 @@ class SelectionTests(unittest.TestCase):
         self.assertIn("superseded PR head", messages[0])
         self.assertFalse(any("untrusted.example" in path for path, _ in api.calls))
 
+    def test_submission_workflow_keeps_current_manual_and_rerun_checks(self):
+        old, current, manual, rerun = run(), run(101, sha=NEW), run(102), run(103)
+        for candidate in (old, current, manual, rerun):
+            candidate["path"] = ".github/workflows/submission-sdk.yml"
+        manual["event"] = "workflow_dispatch"
+        rerun["run_attempt"] = 2
+        api = FakeAPI([old, current, manual, rerun], [pr()])
+        self.assertEqual(self.execute(api)[0], 1)
+        self.assertEqual(api.cancelled, [f"{cleanup.PREFIX}/actions/runs/100/cancel"])
+
     def test_compact_github_run_association_needs_no_full_pr_fields(self):
         candidate = run()
         association = candidate["pull_requests"][0]
@@ -110,6 +120,42 @@ class SelectionTests(unittest.TestCase):
         del association["head"]["repo"]["full_name"]
         api = FakeAPI([candidate], [pr()])
         self.assertEqual(self.execute(api)[0], 1)
+
+    def test_plain_and_documented_ref_qualified_workflows_resolve_same_obsolete_pr(self):
+        for workflow in cleanup.WORKFLOWS:
+            for suffix in ("", "@main", "@refs/pull/7/merge", "@candidate/example", "@" + OLD):
+                with self.subTest(workflow=workflow, suffix=suffix):
+                    candidate = dict(run(), path=workflow + suffix)
+                    api = FakeAPI([candidate], [pr()])
+                    self.assertEqual(self.execute(api)[0], 1)
+                    self.assertEqual(api.cancelled, [f"{cleanup.PREFIX}/actions/runs/100/cancel"])
+                    current = dict(candidate, head_sha=NEW)
+                    current["pull_requests"] = [pr()]
+                    protected = FakeAPI([current], [pr()])
+                    self.assertEqual(self.execute(protected)[0], 0)
+                    self.assertFalse(protected.cancelled)
+
+    def test_unknown_workflow_or_malformed_ref_qualifier_never_cancels(self):
+        paths = [".github/workflows/unknown.yml@main", ".github/workflows/swift-storage.yml/extra@main"]
+        paths += [".github/workflows/swift-storage.yml@" + ref for ref in (
+            "", "@main", "main@other", "main\n", "main\r", "main branch", "main?query", "main#fragment",
+            "../main", "refs//main", "/main", "main/", "main.", ".main", "main.lock",
+            "refs/.hidden/main", "refs/heads/main.lock", "a" * 256,
+        )]
+        for path in paths:
+            with self.subTest(path=path):
+                api = FakeAPI([dict(run(), path=path)], [pr()])
+                self.assertEqual(self.execute(api)[0], 0)
+                self.assertFalse(api.cancelled)
+
+    def test_qualified_path_change_at_final_preflight_is_preserved(self):
+        candidate = dict(run(), path=".github/workflows/swift-storage.yml@main")
+        for path in (".github/workflows/swift-storage.yml", ".github/workflows/swift-storage.yml@other"):
+            with self.subTest(path=path):
+                api = FakeAPI([candidate], [pr()])
+                api.run_preflight[100] = dict(candidate, path=path)
+                self.assertEqual(self.execute(api)[0], 0)
+                self.assertFalse(api.cancelled)
 
     def test_closed_pr_with_missing_association_requires_exact_unique_match(self):
         api = FakeAPI([run(association=False)], [pr(sha=OLD, state="closed")])

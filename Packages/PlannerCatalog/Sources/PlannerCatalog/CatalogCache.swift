@@ -1,4 +1,9 @@
 import Foundation
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#endif
 #if canImport(CryptoKit)
 import CryptoKit
 #endif
@@ -172,14 +177,9 @@ public actor CatalogCache {
     /// is unavailable (never a partial release); no deletion or automatic promotion occurs.
     public func load(mode: CatalogDataMode) throws -> CachedCatalog? {
         try requirePreview(mode)
-        guard FileManager.default.fileExists(atPath: activeURL.path) else { return nil }
-        let attributes = try FileManager.default.attributesOfItem(atPath: activeURL.path)
-        guard let size = attributes[.size] as? NSNumber,
-              size.intValue <= maximumEnvelopeBytes else {
-            throw CatalogCacheError.oversizedRelease
-        }
+        guard let bytes = try loadEnvelopeBytes() else { return nil }
         let envelope: CacheEnvelope
-        do { envelope = try JSONDecoder().decode(CacheEnvelope.self, from: Data(contentsOf: activeURL)) }
+        do { envelope = try JSONDecoder().decode(CacheEnvelope.self, from: bytes) }
         catch { throw CatalogCacheError.corruptCache }
         guard envelope.synthetic else { throw CatalogCacheError.productionReceiptUnavailable }
         try validateManifest(envelope.manifest)
@@ -207,6 +207,47 @@ public actor CatalogCache {
     private var maximumEnvelopeBytes: Int { maximumArtifactBytes * 3 + 2_097_152 }
 
     private var activeURL: URL { directory.appendingPathComponent("active-preview-v1.json") }
+
+    private func loadEnvelopeBytes() throws -> Data? {
+        // Foundation can report a directory in the same Cocoa error family as an
+        // absent file. Capture the actual open errno instead of inferring absence
+        // from a broad Cocoa code or from a second path lookup.
+        let opened: (descriptor: Int32, failure: Int32) = activeURL.withUnsafeFileSystemRepresentation { path in
+            guard let path else { return (-1, EINVAL) }
+            let descriptor = open(path, O_RDONLY | O_CLOEXEC | O_NONBLOCK)
+            return (descriptor, descriptor < 0 ? errno : 0)
+        }
+        guard opened.descriptor >= 0 else {
+            if opened.failure == ENOENT { return nil }
+            throw CatalogCacheError.corruptCache
+        }
+        let handle = FileHandle(fileDescriptor: opened.descriptor, closeOnDealloc: true)
+        defer { try? handle.close() }
+        // Check the opened object, not its path. Nonblocking open lets us reject
+        // FIFOs without waiting for a writer; only regular files reach the reader.
+        var metadata = stat()
+        guard fstat(opened.descriptor, &metadata) == 0,
+              metadata.st_mode & mode_t(S_IFMT) == mode_t(S_IFREG) else {
+            throw CatalogCacheError.corruptCache
+        }
+
+        // Read from one open file rather than checking path metadata and reopening it.
+        // The extra byte distinguishes an exact-limit envelope from an oversized one,
+        // including when the file grows or the path refers to a larger symlink target.
+        var bytes = Data()
+        do {
+            while bytes.count <= maximumEnvelopeBytes {
+                let remaining = maximumEnvelopeBytes + 1 - bytes.count
+                guard let chunk = try handle.read(upToCount: min(65_536, remaining)),
+                      !chunk.isEmpty else { break }
+                bytes.append(chunk)
+            }
+        } catch { throw CatalogCacheError.corruptCache }
+        guard bytes.count <= maximumEnvelopeBytes else {
+            throw CatalogCacheError.oversizedRelease
+        }
+        return bytes
+    }
 
     private func requirePreview(_ mode: CatalogDataMode) throws {
         if case .production = mode { throw CatalogCacheError.productionReceiptUnavailable }
