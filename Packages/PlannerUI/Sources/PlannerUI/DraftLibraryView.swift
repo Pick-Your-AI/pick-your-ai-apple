@@ -28,7 +28,7 @@ public struct DraftLibraryView: View {
                     if model.hasNextPage {
                         Button("More drafts") { Task { await model.changePage(forward: true) } }
                     }
-                    if model.records.isEmpty { Text("No local drafts yet") }
+                    if model.records.isEmpty { Text("No readable drafts on this page") }
                     ForEach(model.records, id: \.id) { record in
                         Button { Task { await model.open(record) } } label: {
                             VStack(alignment: .leading) {
