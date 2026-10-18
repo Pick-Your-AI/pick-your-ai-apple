@@ -84,8 +84,11 @@ final class BuildTransferTests: XCTestCase {
     func testSnapshotEncodingRejectsExpansionPastItsDecodeLimit() throws {
         var source = try fixture()
         source["extensions"] = .object(["x_padding": .string(String(repeating: "/", count: 270_000))])
-        let object = try JSONSerialization.jsonObject(with: encode(source))
-        let compact = try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys, .withoutEscapingSlashes])
+        // Keep JSONValue's exact Decimal encoding. JSONSerialization would bridge
+        // fractional fixture numbers through NSNumber and can change their digits.
+        let compactEncoder = JSONEncoder()
+        compactEncoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+        let compact = try compactEncoder.encode(JSONValue.object(source))
         XCTAssertLessThan(compact.count, BuildTransfer.maximumBytes)
         let snapshot = try BuildTransfer.snapshot(fromDraftJSON: compact)
         let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
