@@ -78,6 +78,32 @@ final class DraftStoreTests: XCTestCase, @unchecked Sendable {
         let history = try await store.history(id: id)
         XCTAssertEqual(history.records.map(\.title), ["one", "three", "two", "one"])
     }
+    func testRestoreRejectsFutureHistoryWithoutChangingReadableDrafts() async throws {
+        let url = try location(); let id = UUID(); let otherID = UUID(); let store = try DraftStore(url: url)
+        let original = try await store.save(id: id, expectedRevision: nil, title: "current", payload: empty)
+        let other = try await store.save(id: otherID, expectedRevision: nil, title: "unrelated", payload: empty)
+        try sql(url, """
+            INSERT INTO revisions(draft_id,revision,title,payload,restored_from)
+            VALUES('\(id.uuidString)',7,'future',X'7b22667574757265223a377d',NULL)
+            """)
+
+        do { try await store.restore(id: id, revision: 7, expectedRevision: 1); XCTFail("Future history must not become a new head") }
+        catch { XCTAssertEqual(error as? DraftStoreError, .corruptRecord) }
+
+        XCTAssertEqual(try scalar(url, "SELECT revision FROM drafts WHERE id='\(id.uuidString)'"), 1)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM revisions WHERE draft_id='\(id.uuidString)'"), 2)
+        let reopened = try DraftStore(url: url)
+        let retained = try await reopened.read(id: id); XCTAssertEqual(retained, original)
+        let unrelated = try await reopened.read(id: otherID); XCTAssertEqual(unrelated, other)
+
+        // A failed corrupt restore must leave the current revision usable as a
+        // valid restore source and preserve the damaged history for recovery.
+        let restored = try await reopened.restore(id: id, revision: 1, expectedRevision: 1)
+        XCTAssertEqual(restored.revision, 2); XCTAssertEqual(restored.restoredFrom, 1)
+        XCTAssertEqual(restored.payload, original.payload); XCTAssertEqual(restored.title, original.title)
+        let reloaded = try await DraftStore(url: url).read(id: id); XCTAssertEqual(reloaded, restored)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM revisions WHERE draft_id='\(id.uuidString)' AND revision=7"), 1)
+    }
     func testDuplicateCreatesIndependentIdentityAndDeleteIsScoped() async throws {
         let store = try DraftStore(url: location()); let id = UUID()
         let original = try await store.save(id: id, expectedRevision: nil, title: "one", payload: empty)

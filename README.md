@@ -4,6 +4,8 @@ The Apple/iOS planning client for discovering, configuring, checking, costing, c
 
 This repository contains an [unsigned SwiftUI iPhone/iPad app](App/README.md) for local draft notes and revision history, a [Swift client core](Packages/PlannerCore/README.md), [transactional local storage](Packages/PlannerData/README.md), [frozen-v1 transfer and configuration comparison](Packages/PlannerTransfer/README.md), a [public preview catalog cache](Packages/PlannerCatalog/README.md), and a [contract preparation harness](tools/conformance/README.md). The app's current local editing slice does not establish service integration or a production release. Swift package tests, iOS SDK compilation, simulator execution and physical-device acceptance are separate evidence stages.
 
+The [PlannerUI preference privacy declaration](docs/validation/planner-ui-privacy.md) records the app-owned catalog filter use, packaged-resource regression and remaining integrated privacy evidence.
+
 Review the [current foundation disposition](docs/decisions/foundation-disposition.md), [guest journey map](docs/proposals/issue-20-journey-map.md), and [acceptance/ownership intake](docs/proposals/issue-25-acceptance-intake.md) before dependent implementation. The [criterion-by-criterion acceptance map](docs/acceptance/README.md) tracks implemented slices and remaining executable work. Decision-artifact acceptance and downstream application, device, service and release acceptance retain their own criteria.
 
 - [Delivery Project 5](https://github.com/orgs/Pick-Your-AI/projects/5) and program [Pick-Your-AI/pick-your-ai-apple#1](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/1).

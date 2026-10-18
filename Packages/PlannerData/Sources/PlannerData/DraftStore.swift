@@ -244,6 +244,7 @@ public actor DraftStore {
         let oldRevision = current?.revision ?? 0
         guard oldRevision < Int.max else { throw DraftStoreError.invalidDraft }
         let next = oldRevision + 1
+        guard restored.map({ $0 > 0 && $0 < next }) ?? true else { throw DraftStoreError.corruptRecord }
         let head = try db.prepare(current == nil ? "INSERT INTO drafts(revision,id) VALUES(?,?)" : "UPDATE drafts SET revision=? WHERE id=?")
         defer { sqlite3_finalize(head) }
         sqlite3_bind_int64(head, 1, Int64(next)); try bind(id.uuidString, at: 2, to: head); try done(head)

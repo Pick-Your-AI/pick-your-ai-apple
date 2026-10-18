@@ -207,9 +207,28 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         let container = app.descendants(matching: .any).matching(identifier: containerID).firstMatch
         XCTAssertTrue(container.waitForExistence(timeout: 10))
         for _ in 0..<12 {
-            if element.exists && element.isHittable { return }
+            let exists = element.exists
+            if exists && element.isHittable { return }
             guard container.isHittable else { XCTFail("Catalog container is not hittable"); return }
-            if towardTop { container.swipeDown() } else { container.swipeUp() }
+            if exists {
+                // A full swipe can pass a short row beneath the navigation bar.
+                // Move an existing occluded target toward the container's center.
+                let target = element.frame
+                let bounds = container.frame
+                guard target.midY.isFinite, bounds.midY.isFinite,
+                      target.height > 0, bounds.height > 0 else {
+                    XCTFail("Catalog scroll geometry is unavailable"); return
+                }
+                let endY = target.midY < bounds.midY ? 0.65 : 0.35
+                let start = container.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+                let end = container.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: endY))
+                start.press(forDuration: 0.05, thenDragTo: end,
+                            withVelocity: .slow, thenHoldForDuration: 0.1)
+            } else if towardTop {
+                container.swipeDown()
+            } else {
+                container.swipeUp()
+            }
         }
         XCTAssertTrue(element.exists && element.isHittable, "Could not reveal \(element.identifier)")
     }

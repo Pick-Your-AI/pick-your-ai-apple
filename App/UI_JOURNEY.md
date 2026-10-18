@@ -322,8 +322,8 @@ focus handling; the complete notes journey retains its normal keyboard dismissal
 exact post-dismissal title/notes assertions and the observed paste-education
 correction. All source-specific results above remain historical. The current
 combined source must execute both exact complete journeys on each pinned device,
-plus its full 110-model and 57-transfer gates, before delivery. The strict profiles
-require all 61 UI and 21 Transfer class-qualified mandatory identities. This union
+plus its full 111-model and 65-transfer gates, before delivery. The strict profiles
+require all 62 UI and 29 Transfer class-qualified mandatory identities. This union
 retains the fourteen [source-link review cases](../docs/validation/catalog-source-navigation.md)
 and nine [comparison worker cases](../docs/validation/comparison-preparation.md).
 Historical 87/48, 96/57 and 101/48 profiles remain available only for their recorded sources.
@@ -337,3 +337,14 @@ identified row value to change from off to on. The exact label, restored-on stat
 and every count, detail, pagination and empty-state assertion remain. The
 contained-control query is a source-reviewed candidate; both complete catalog
 journeys must pass before it qualifies for delivery.
+
+The [subsequent 5af result and occluded-row correction](../docs/validation/catalog-editor-receiving.md#observed-occluded-detail-row-and-bounded-scroll-correction)
+retain all 110 model passes, both complete iPad journeys, the passing iPhone Notes
+journey and the failed iPhone Catalog result. That exact Catalog label existed
+behind the navigation bar after a full swipe; continuing in the same direction
+moved it out of view. The helper now uses a small container-relative drag toward
+the center only for an existing unhittable element. Missing elements retain the
+caller's search direction. The 12-attempt ceiling, finite geometry, exact labels,
+uniqueness, values and final hittability remain required. Production source,
+both full journey definitions and the runner gates are unchanged. The fresh
+corrected native run must still pass; this is not a new device receipt.

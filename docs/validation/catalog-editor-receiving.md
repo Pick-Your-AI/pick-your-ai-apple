@@ -63,7 +63,7 @@ below do not establish acceptance of the corrected source or of either full
 catalog journey. The current receiving inventory also includes the accepted
 ResourceEstimate carry described next.
 
-## Current accepted-resource receiving carry
+## Accepted-resource receiving carry at 5af
 
 The corrected receiving source preserves signed main
 `51952c75f2280d57891491903e495fb822b83bfd`, tree
@@ -511,6 +511,99 @@ transition. A control that remains off still fails. The complete fresh native
 run must determine whether the state becomes selected and whether both full
 journeys finish on each pinned destination. Application source and production
 clocks are unchanged; this is not a responsiveness or physical-device result.
+
+## Observed occluded detail row and bounded scroll correction
+
+The combined `5af50d4eadac56a19a46191e6b5d82e056441349` candidate actually ran
+as checkout `95f9efc88ac5cc644d2556446aa262a23a0ed198`, tree
+`98ad02cf9c6d34c2e73f633f0a7c5523e212bf87`, with ordered parents
+`51952c75f2280d57891491903e495fb822b83bfd` and that candidate, in
+[run 39144793858 / job 117726617287](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39144793858/job/117726617287).
+The pinned Xcode 16.4 / 16F6 and Swift 6.1.2 run passed all 110 distinct model
+cases, matching every source declaration and all 61 required identities, with
+zero failures/skips in 33.819 seconds. The unsigned build and both launch smokes
+also passed. These successful steps do not qualify the failed complete UI gate.
+
+| Complete journey | iPhone SE (3rd generation) | iPad (10th generation) |
+| --- | --- | --- |
+| Catalog filters, restored selection, details and pagination | Failed, 152.007 seconds | Passed, 229.191 seconds |
+| Durable Notes, real autosave, history and deletion | Passed, 231.425 seconds | Passed, 245.495 seconds |
+
+Both iOS 18.5 destinations executed the exact two cases with zero skips. Both
+run-owned deletions returned zero and cleanup succeeded; the retained shutdown
+commands returned 149 because each device was already shut down. The original
+artifact [12145376756](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39144793858/artifacts/12145376756)
+is 127,842,323 bytes, SHA-256
+`ea31a4920dae626b73433d06e390e75485eae1734f4a7d7ac70b4babcda2159c`;
+its digest matches GitHub and all 1,304 ZIP entries passed CRC verification.
+
+The iPhone failure is the reveal helper at line 214. The exact scoped
+`Catalog, catalog.fixture.1` selector resolves successfully at 17:31:23.093.
+Its frame is `(16, 46, 343, 44)` and XCTest explicitly reports the unhittable
+activation point `(-1, -1)`. The first full upward swipe has passed the short
+row behind the sheet's navigation bar; the subsequent upward swipe moves it
+farther out of view. The retained recording at 114, 120 and 123 seconds and the
+original session agree on that sequence. The decoded session is 9,289,701 bytes,
+SHA-256 `b3e5981e52815c802f59acc4a58dae1912b000b2ab4ae440686359a3f284f5e0`.
+The eventual bottom-of-form hierarchy therefore does not demonstrate a missing
+catalog identity or an incorrect label. The iPhone's later detail/source review,
+pagination and empty-state checks did not execute in this run.
+
+The correction keeps the exact locator and all uniqueness, value and hittability
+assertions. Within the same 12-attempt ceiling, an existing but unhittable target
+uses its current vertical position relative to the identified container to
+choose a small drag toward the center. Invalid geometry fails explicitly. The
+normal gesture starts at the container center and moves 15 percent of its
+height, with slow velocity and a short hold before release. Missing elements
+retain the caller's search direction. No application, model, fixture, runner,
+workflow, timing bound or required test identity changes. This candidate still
+requires the complete native run; the observed failure is not relabeled as a pass.
+
+Primary XCTest references checked 2026-10-18:
+[normalized element coordinates](https://developer.apple.com/documentation/xcuiautomation/xcuielement/coordinate(withnormalizedoffset:)),
+[bounded drag parameters](https://developer.apple.com/documentation/xcuiautomation/xcuicoordinate/press(forduration:thendragto:withvelocity:thenholdforduration:)),
+and [existing versus hittable elements](https://developer.apple.com/documentation/xcuiautomation/xcuielement/ishittable).
+These API definitions support the input method, not a native result for the correction.
+
+## Current privacy and restoration receiving composition
+
+The next canonical #198 source combines the reviewed reveal correction above
+with the exact privacy contribution
+[`7d9a9b1bb98d81352454a8e70091090fe3ec606d`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/7d9a9b1bb98d81352454a8e70091090fe3ec606d)
+and signed current main
+[`9c744450d689690f66ab6a28aa146a1318917464`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/9c744450d689690f66ab6a28aa146a1318917464).
+The [privacy record](planner-ui-privacy.md) describes the two unchanged package
+declarations, production-resource tests, strict executed-test profile and
+bounded inventory of both unsigned Release products. Its previously reviewed
+CLI loop correction and all existing negative filesystem cases remain intact.
+
+Main's restoration guard rejects a nonpositive or future history source before
+writing the head. Its real SQLite regression is retained beside both prepared-
+duplicate regressions and the interrupted-migration recovery case. Each storage
+simulator must report all four named cases and **29 passing tests**. The actual
+abrupt-exit replay, Xcode pin, caches, build settings and native destinations
+are unchanged.
+
+The combined source declares **111 UI cases / 62 required identities**, **65
+Transfer cases / 29 required identities**, 45 Catalog, 29 Data and 85 Core cases:
+**335 package cases** in total. The complete iPhone/iPad Catalog and Notes
+journeys and both actual built-product privacy inventories remain required.
+This receiving source has no new Swift or native execution receipt yet.
+
+The other completed checks for source `5af50d4e`, prepared `95f9efc8` and tree
+`98ad02cf` retain their narrower historical scope:
+
+| Exact job | Verified original result |
+| --- | --- |
+| [Core](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39144793827/job/117726588264) | All 85 distinct cases passed in macOS debug and release and separately on both pinned simulators. The intentional failing test failed, and the clean baseline plus three named semantic mutations were detected as required. |
+| [Storage](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39144793887/job/117726624291) | All 28 distinct cases passed on macOS, iPhone and iPad; actual abrupt exits after history write, before commit and during migration preserved the durable revision. |
+| [Transfer](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39144793853/job/117726497152) | All 65 distinct cases and 29 required identities passed, with eleven source pins and all five reference-vector families. |
+| [Catalog](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39144793851/job/117726741724) | All 44 distinct cases passed, followed by unsigned Simulator compilation. |
+| [Submission SDK](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39144793921/job/117726675535) | Xcode 26.3 / 17C529 ran all 332 then-current package cases and built both unsigned Release products with valid metadata. This source did not contain the new complete two-manifest inventory. |
+
+These checks do not override the actual iPhone catalog failure recorded above
+or establish execution of the expanded 335-case source. All original artifacts
+and their source-specific failures remain evidence for their own revisions.
 
 ## Remaining delivery gates
 
