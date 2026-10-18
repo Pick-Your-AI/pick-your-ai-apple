@@ -45,7 +45,10 @@ Independent code review and hosted macOS/iOS compilation are required before int
 using two immutable snapshots from the existing frozen-v1 boundary. It compares
 objectives, version locks, policy, selection settings/roles/versions/enabled state,
 and relationships. Selection/link IDs define the match; reordering those arrays
-is immaterial. Each row preserves before/after values and the selection kind with
+is immaterial. IDs remain identity coordinates even when their text matches a
+private field name: a selection named `notes` or a link named `secret` still has
+its public configuration compared. Privacy rules apply to actual field names and
+values within the record, not to its ID. Each row preserves before/after values and the selection kind with
 its T0–T6 display group from the canonical
 [contract mapping](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/afa7513bd278791ffd7e751fb11f9869549ecd13/docs/CONTRACT_MAPPING.md).
 Missing values stay absent, distinct from zero, false and empty values. Decimal
@@ -69,10 +72,13 @@ outcome/estimate comparison requires separate exact-build evidence with matching
 workload, locks, units, conditions and source approval. An unknown result is never
 rendered as zero or an endorsement.
 
-Twelve synthetic regression tests cover exact setting/lock differences, absent
+Sixteen synthetic regression tests cover exact setting/lock differences, absent
 workload inputs, added/removed/disabled selections, decimal strings, relationships,
 deterministic ordering, ambiguous IDs, conflicting revision identity, privacy,
-foreign extension measurements, fork identity and bounds. Native UI selection,
+foreign extension measurements, fork identity and bounds. The four identifier
+regressions cover changed, added and removed selections/links with field-like IDs,
+while requiring nested notes/extensions to remain excluded and private settings
+to remain hidden. Native UI selection,
 qualified outcomes/costs and physical accessibility review remain separate #81
 acceptance work. Hosted macOS/iOS checks are required before merge; a Linux run
 does not establish native UI or device behavior.
