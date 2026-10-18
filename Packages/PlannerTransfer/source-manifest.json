@@ -11,6 +11,8 @@
     "examples/catalog.json": "2e9120db823faef3e1e330a7d2e8067b3ab064328e2faed699d15cf41880fbf8",
     "schemas/quality-evaluation-run.schema.json": "ed6b3f60805428e3788ce27fa224fb3d5008998f0637f24723bf65eea546a959",
     "examples/quality-evaluation-run.json": "bc0abc0b33e2b6bf77fc4609ac88a73981068eac6fabf604c255f58fec954a6d",
+    "schemas/cost-estimate.schema.json": "ef7cf8c0492022c1a8a1f971e49eb86dfad5b66ce6a4b2cf72a965fc9ba81259",
+    "examples/cost-estimate.json": "4b7c3889881d3c424ed98cc47b146b25b05df21c5459c9558717f21b6198b7e4",
     "schemas/resource-estimate.schema.json": "39ab5d061f9021ce14e1f987717441cff04d1a40f76db5582d343d599a5d876c",
     "examples/resource-estimate.json": "41469a377c0b428e779c269eb052fa8f455b4768e2add3c137b5e465a79a362f"
   }
