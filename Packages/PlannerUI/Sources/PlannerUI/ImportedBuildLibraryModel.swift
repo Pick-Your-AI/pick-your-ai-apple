@@ -218,8 +218,8 @@ public final class ImportedBuildLibraryModel: ObservableObject {
                 return try Self.prepareFork(preview, markedSynthetic: prior.wrapper.markedSynthetic,
                                             sourceRevision: prior.wrapper.sourceRevision)
             }
-            let row = try await store.save(id: UUID(), expectedRevision: nil, title: prior.row.title,
-                                           payload: prepared.payload)
+            let row = try await store.duplicate(id: record.id, expectedRevision: record.revision,
+                                               title: prior.row.title, payload: prepared.payload)
             adopt(row, snapshot: prepared.snapshot, markedSynthetic: prior.wrapper.markedSynthetic,
                   sourceRevision: prior.wrapper.sourceRevision)
             await reloadAfterMutation("The duplicate local fork was saved.", offset: 0)

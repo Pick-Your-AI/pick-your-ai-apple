@@ -94,8 +94,9 @@ locks and previous label revisions. Export continues to project the pinned snaps
 the existing transfer fork boundary to create distinct wire and local identities.
 It preserves the local label, component/settings/version locks, and synthetic/source
 metadata; the original entry and its history remain intact. The duplicate starts at
-local revision 1 with no current analysis. A concurrent newer revision causes an
-explicit rejection and requires reopening the entry. Confirmed deletion carries
+local revision 1 with no current analysis. The source revision check and new row
+insert share one SQLite transaction, so a newer revision or deletion during fork
+preparation causes an explicit rejection and requires reopening the entry. Confirmed deletion carries
 the exact selected row/revision; another selected entry is preserved.
 
 Pages contain at most 20 stored rows. Stored-snapshot decoding and fork preparation
@@ -112,7 +113,11 @@ malformed wrapper, an entirely unreadable page followed by a valid entry, and in
 qualification metadata. The large-library case expects 501 valid entries plus the
 preserved unreadable row after one deletion, with exact unrelated metadata/history.
 These added tests require their exact-head hosted SwiftUI test/build execution before
-acceptance; no result is inferred from source inspection. Existing PlannerData tests
+acceptance; no result is inferred from source inspection. Three added PlannerData
+regressions exercise a prepared fork against source changes/deletion through another
+connection and a successful distinct-payload insert with exact source/history
+preservation after reopening. The storage simulator gate requires the new stale-source
+cases and all 28 storage tests to pass. Existing PlannerData tests
 separately exercise actual malformed SQLite rows, storage exhaustion and migration.
 Actual Files-provider/cross-client journeys, unavailable/revoked remote references,
 VoiceOver and physical-device behavior retain their own unverified acceptance gates.
