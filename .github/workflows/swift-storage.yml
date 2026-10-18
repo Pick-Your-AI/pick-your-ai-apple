@@ -49,6 +49,10 @@ jobs:
           diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') storage-toolchain.log
           swift --version | tee -a storage-toolchain.log
           sw_vers | tee -a storage-toolchain.log
+      - name: Test crash replay exit and SQLite guards
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tools/storage/tests -p 'test_crash_replay.py' -v 2>&1 | tee storage-replay-guards.log
       - name: Run storage regression tests
         run: |
           set -euo pipefail
@@ -91,7 +95,8 @@ jobs:
               -resultBundlePath "$GITHUB_WORKSPACE/storage-$label.xcresult" \
               CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Test Case .*DraftStoreTests.*testInterruptedMigrationRollsBackSchemaThenRecovers.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
-            grep -E 'Executed 25 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Test Case .*DraftStoreTests.*testRestoreRejectsFutureHistoryWithoutChangingReadableDrafts.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Executed 26 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
           done < "$GITHUB_WORKSPACE/storage-simulator-selection.tsv"
       - name: Retain storage evidence
         if: always()

@@ -1,5 +1,7 @@
 import copy
+from contextlib import redirect_stderr, redirect_stdout
 import importlib.util
+import io
 import json
 from pathlib import Path
 import plistlib
@@ -108,6 +110,7 @@ class SubmissionSDKTests(unittest.TestCase):
         environment = self.root / "github-env"
         environment.write_text("EXISTING=value\n", encoding="utf-8")
         receipt = self.root / "receipt.json"
+        receipt.write_text('{"earlier_verification": "passed"}\n', encoding="utf-8")
         result = subprocess.run([
             sys.executable, str(SCRIPT), "--toolchain-pin", str(self.xcode_file), "--sdk-pin", str(self.sdk_file),
             "verify", "--github-env", str(environment), "--output", str(receipt),
@@ -122,6 +125,7 @@ class SubmissionSDKTests(unittest.TestCase):
         environment = self.root / "github-env"
         environment.write_text("EXISTING=value\n", encoding="utf-8")
         receipt = self.root / "receipt.json"
+        receipt.write_text('{"earlier_verification": "passed"}\n', encoding="utf-8")
         results = self.probe_results()
         results[2] = subprocess.CompletedProcess([], 0, "18.5\n", "")
         runner = Mock(side_effect=results)
@@ -203,6 +207,131 @@ class SubmissionSDKTests(unittest.TestCase):
                 (app / "Info.plist").write_bytes(data)
                 with self.assertRaises(submission.toolchain.SetupError):
                     submission.inspect_product(app, "iphoneos", self.xcode, self.sdks)
+
+    def run_cli(self, *arguments):
+        return subprocess.run([
+            sys.executable, str(SCRIPT), "--toolchain-pin", str(self.xcode_file),
+            "--sdk-pin", str(self.sdk_file), *map(str, arguments),
+        ], capture_output=True, text=True, timeout=10, check=False)
+
+    def test_actual_cli_failed_product_recheck_removes_success_and_valid_retry_recovers(self):
+        for sdk in submission.SDK_PLATFORMS:
+            with self.subTest(sdk=sdk):
+                valid = self.product_info(sdk)
+                app = self.write_product(valid)
+                receipt = self.root / "evidence" / f"{sdk}.json"
+                arguments = ("inspect", "--sdk", sdk, "--app", app, "--output", receipt)
+                first = self.run_cli(*arguments)
+                self.assertEqual(first.returncode, 0, first.stderr)
+                self.assertEqual(json.loads(receipt.read_text())["DTSDKName"], sdk + "26.2")
+
+                self.write_product({**valid, "DTSDKName": sdk + "18.5"})
+                failed = self.run_cli(*arguments)
+                self.assertEqual(failed.returncode, 2, failed.stdout + failed.stderr)
+                self.assertIn("DTSDKName", failed.stderr)
+                self.assertEqual(failed.stdout, "")
+                self.assertFalse(receipt.exists())
+
+                self.write_product(valid)
+                recovered = self.run_cli(*arguments)
+                self.assertEqual(recovered.returncode, 0, recovered.stderr)
+                self.assertEqual(json.loads(receipt.read_text()), json.loads(recovered.stdout))
+                self.assertEqual(list(receipt.parent.glob(".submission-sdk-*.tmp")), [])
+
+    def test_actual_cli_invalid_pin_removes_the_previous_receipt_before_loading_inputs(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        receipt = self.root / "product.json"
+        arguments = ("inspect", "--sdk", "iphoneos", "--app", app, "--output", receipt)
+        for pin in (self.xcode_file, self.sdk_file):
+            with self.subTest(pin=pin.name):
+                original = pin.read_bytes()
+                self.assertEqual(self.run_cli(*arguments).returncode, 0)
+                self.assertTrue(receipt.exists())
+                pin.write_text("{", encoding="utf-8")
+                try:
+                    failed = self.run_cli(*arguments)
+                    self.assertEqual(failed.returncode, 2)
+                    self.assertEqual(failed.stdout, "")
+                    self.assertFalse(receipt.exists())
+                finally:
+                    pin.write_bytes(original)
+
+    def test_environment_write_failure_does_not_publish_a_success_receipt(self):
+        self.directory.mkdir(parents=True)
+        environment = self.root / "missing-directory" / "github-env"
+        receipt = self.root / "receipt.json"
+        receipt.write_text('{"earlier_verification": "passed"}\n', encoding="utf-8")
+        runner = Mock(side_effect=self.probe_results())
+        verify = submission.verify_sdks
+        out, err = io.StringIO(), io.StringIO()
+        with patch.object(submission, "verify_sdks", side_effect=lambda xcode, sdks: verify(
+                xcode, sdks, runner=runner, environment={})), redirect_stdout(out), redirect_stderr(err):
+            code = submission.main([
+                "--toolchain-pin", str(self.xcode_file), "--sdk-pin", str(self.sdk_file),
+                "verify", "--github-env", str(environment), "--output", str(receipt),
+            ])
+        self.assertEqual(code, 2)
+        self.assertEqual(runner.call_count, 3)
+        self.assertEqual(out.getvalue(), "")
+        self.assertFalse(receipt.exists())
+        self.assertFalse(environment.exists())
+
+    def test_failed_atomic_receipt_publication_removes_temporary_and_previous_success(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        receipt = self.root / "receipt.json"
+        receipt.write_text('{"earlier_inspection": "passed"}\n', encoding="utf-8")
+        out, err = io.StringIO(), io.StringIO()
+        with patch.object(Path, "replace", side_effect=OSError("controlled publication failure")), \
+                redirect_stdout(out), redirect_stderr(err):
+            code = submission.main([
+                "--toolchain-pin", str(self.xcode_file), "--sdk-pin", str(self.sdk_file),
+                "inspect", "--sdk", "iphoneos", "--app", str(app), "--output", str(receipt),
+            ])
+        self.assertEqual(code, 2)
+        self.assertEqual(out.getvalue(), "")
+        self.assertFalse(receipt.exists())
+        self.assertEqual(list(self.root.glob(".submission-sdk-*.tmp")), [])
+
+    def test_receipt_paths_cannot_remove_pins_product_or_ci_environment(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        environment = self.root / "github-env"
+        environment.write_text("EXISTING=value\n", encoding="utf-8")
+        protected = (self.xcode_file, self.sdk_file, app / "Info.plist")
+        for path in protected:
+            with self.subTest(path=path.name):
+                before = path.read_bytes()
+                result = self.run_cli("inspect", "--sdk", "iphoneos", "--app", app, "--output", path)
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("separate", result.stderr)
+                self.assertEqual(path.read_bytes(), before)
+        result = self.run_cli("verify", "--github-env", environment, "--output", environment)
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(environment.read_text(), "EXISTING=value\n")
+        alias = self.root / "directory-alias"
+        alias.symlink_to(self.root, target_is_directory=True)
+        result = self.run_cli("inspect", "--sdk", "iphoneos", "--app", app,
+                              "--output", alias / "xcode.json")
+        self.assertEqual(result.returncode, 2)
+        self.assertEqual(json.loads(self.xcode_file.read_text()), self.xcode)
+
+    def test_linked_or_directory_receipts_are_rejected_without_changing_the_target(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        target = self.root / "retained.json"
+        target.write_text("retained source bytes\n", encoding="utf-8")
+        symlink = self.root / "symlink.json"
+        symlink.symlink_to(target)
+        hardlink = self.root / "hardlink.json"
+        hardlink.hardlink_to(target)
+        directory = self.root / "directory.json"
+        directory.mkdir()
+        for path in (symlink, hardlink, directory):
+            with self.subTest(path=path.name):
+                result = self.run_cli("inspect", "--sdk", "iphoneos", "--app", app, "--output", path)
+                self.assertEqual(result.returncode, 2)
+                self.assertIn("unshared regular file", result.stderr)
+                self.assertEqual(result.stdout, "")
+                self.assertTrue(path.exists())
+                self.assertEqual(target.read_text(), "retained source bytes\n")
 
 
 if __name__ == "__main__":
