@@ -6,6 +6,7 @@ This portable Swift 6 package implements part of Apple [#32](https://github.com/
 
 - `CatalogItem.decode(_:)` validates a single frozen-v1 catalog item, preserves its exact `CatalogKind` identity and every supported field, and returns an immutable value. Kind-specific specs and their required tier are checked against the unchanged canonical schema. No missing optional fact is filled in and no catalog item becomes a user selection.
 - `QualityEvaluationRun.decode(_:)` validates a frozen-v1 quality record and retains the supplied build/suite identities, timestamps, recorded status and measurements. Typed views preserve exact supported decimals, optional absence and array order. This structural boundary performs no evaluation, evidence authentication or current-build binding.
+- `CatalogSnapshot.decode(_:)` validates a complete frozen-v1 catalog envelope and every item before returning an immutable snapshot. It preserves catalog identity, exact revision, capture timestamp and item order. A malformed envelope or item rejects the entire document; this boundary cannot activate a cache or publish a partial catalog.
 - `BuildTransfer.snapshot(fromDraftJSON:)` validates a complete frozen-v1 BuildSnapshot and returns an immutable value. Missing fields and fewer than two selections fail; no defaults, locks or synthetic values are inserted. Keep editor drafts in PlannerData even when this transition fails.
 - `BuildTransfer.preview(_:)` accepts a bare snapshot or the existing web `pickyour.ai/build-export` version-1 envelope. Envelope provenance is untrusted metadata, not a verified catalog activation. `usesSyntheticData` is nil for bare imports; do not interpret that as production evidence.
 - `ImportPreview.fork(localOwner:timestamp:)` explicitly creates a new UUID-based build identity, revision 1 and draft lifecycle. Source owner is replaced by the caller's local identity. Every lock, selection and link is retained. This API cannot overwrite an existing record; the integration must insert the returned value as a new draft only after user confirmation.
@@ -30,7 +31,7 @@ Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. D
 
 ## Pinned inputs and validation
 
-`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/quality-evaluation-run schemas and synthetic build/catalog/quality fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. Swift and Python Draft202012Validator with FormatChecker replay exactly the same JSON corpus. Synthetic fixtures are not real catalog or installed-application evidence.
+`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/catalog-snapshot/quality-evaluation-run schemas and synthetic build/catalog/quality fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. Swift and Python Draft202012Validator with FormatChecker replay exactly the same JSON corpus. Synthetic fixtures are not real catalog or installed-application evidence.
 
 Run:
 
@@ -80,8 +81,8 @@ numeric range, IP-literal URI, and terminal-newline pattern limits. The existing
 leap-second, precision and size/depth/complexity limits also remain in force. Unsupported
 representations fail rather than being rounded, discarded or reported as a canonical
 schema failure. This is a bounded schema-driven item decoder, not whole JSON Schema
-conformance, generated per-field DTOs, a catalog-snapshot validator, approved real
-catalog activation or an Apple UI integration.
+conformance, generated per-field DTOs, approved real catalog activation or an Apple
+UI integration. The separate envelope boundary below validates a whole snapshot.
 
 Original preparation evidence for this slice: Python 3.12/jsonschema 4.26.0 verified
 all six source hashes, the existing 129 cases and the 1,635 catalog cases. Swift/Xcode
@@ -168,6 +169,121 @@ catalog publication and real-data qualification are #40–43; live adapters and 
 physical-device and release gates remain in their own work packages. The accepted
 #22 framework/module decision supplies #32's prerequisite; broader downstream
 completion is not inferred.
+
+## Catalog-snapshot envelope (#32)
+
+The envelope uses the same frozen contract and research revision as the item
+boundary above. `schemas/catalog-snapshot.schema.json` is copied byte-for-byte from
+the canonical `contracts/v1` directory, with SHA-256
+`a5af428386768b698d280a18bf99c0e52364ee397a2075685213b3d0762693a4`, matching
+that revision's `IMPORT_MANIFEST.json`. No schema rule, source fixture or existing
+item vector changes.
+
+`CatalogSnapshot` retains the original immutable `JSONValue` and an ordered array
+of validated `CatalogItem` values. Its revision remains an exact `Decimal` within
+the existing numeric representation limits. The timestamp is retained as supplied;
+schema-valid time metadata does not prove freshness. Required metadata, additional
+fields, revision minimum/type, date-time format and nonempty item cardinality are
+checked with the same locally bundled validator. Each of the 29 item kinds uses
+the existing item validation before any snapshot is returned.
+
+The frozen schema permits duplicate item identities. This boundary preserves them,
+including conflicting source claims, so a receiving graph or catalog activation
+policy must resolve or reject them explicitly. It never deduplicates, chooses a
+winner, grants source rights or interprets a catalog as approved production data.
+
+The 512 KiB, 48-level and 16,384-node limits apply to the entire catalog, even when
+every individual item would fit. Oversized catalogs fail explicitly. A larger or
+paged representation requires a separately reviewed contract and consumer path.
+`CatalogSnapshot.encoded()` reparses its exact output and checks value equality
+before returning local serialization, so normalization cannot silently produce
+bytes outside the reopening boundary. It is not a sanitized sharing API.
+
+`Tools/catalog_snapshot_vectors.py` generates 77 compact envelope mutations. The
+reference verifier applies those exact mutations with the existing item-vector
+helper and checks Python Draft202012Validator/FormatChecker outcomes. Cases cover
+metadata, malformed roots, empty/mixed item arrays, nested invalid input for all
+29 kinds, ordering, duplicate identities and unsupported versions. Two cases mark
+the existing stricter large-number and terminal-newline limits separately from
+canonical schema acceptance. `CatalogSnapshotTests` replays the same corpus and
+adds aggregate byte/node/depth, duplicate/escaped-key, identity-preservation and
+serialization-expansion regressions.
+
+Original preparation evidence for this envelope slice: all seven source hashes, the
+existing 129 build/selection cases, 1,635 item cases and 77 envelope cases passed
+the Python reference verifier. Swift/Xcode were absent in that implementation
+workspace. The later actual native executions below supersede that tooling gap;
+the envelope remains a separate top-level artifact boundary rather than an added
+criterion for the accepted all-kind report in #32.
+
+### Receiving evidence after catalog delivery (2026-10-18)
+
+The tooling observations above describe the original implementation slices.
+The catalog prerequisite is now delivered on signed main through [#227](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/227),
+commit `0ece6114ae2d639992346e8c1bb3ae239dbb1999`. Its actual receiving
+[transfer job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39112613078/job/117631807159)
+passed 32 Swift tests, six source hashes, 129 build/selection cases, 1,635 item
+cases and unsigned iOS Simulator SDK compilation.
+
+The original envelope candidate also completed actual Xcode 16.4 / Swift 6.1.2
+[native validation](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/182#issuecomment-6246002448):
+36 Swift tests, all seven hashes and the 129 + 1,635 + 77 reference cases passed,
+followed by unsigned iOS Simulator SDK compilation. That source-stage result
+predates the two later serialization regressions retained from accepted main.
+
+The #182 receiving candidate `412d6d01083cc5f8e8627635da7fd11cad92d9cd` preserved
+every executable, schema, fixture, test and tool input from the separately executed
+Swift 6.1.2 Linux composition:
+38 XCTest cases passed with zero failures or skips in 5.068 seconds after a
+6.34-second build. Its retained 12,928-byte log has SHA-256
+`9e0c2166eb6788e18ecc1586f197054cd28034bc53089080fe67d78f13b51a94`.
+That source identity check did not rerun those inputs or turn the portable result
+into Apple execution.
+
+The later actual [#182 transfer job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39116407061/job/117643015395)
+checked out `e625080eb80d49693d445293ed6adb581b289230`, tree
+`a73fb503726e7d3a0275c4dce3a4cfabd137a683`, with ordered parents accepted catalog
+main `0ece6114ae2d639992346e8c1bb3ae239dbb1999` and that receiving candidate.
+Xcode 16.4 / 16F6 and Apple Swift 6.1.2 passed all seven source hashes,
+129 build/selection + 1,635 catalog-item + 77 envelope cases, all 38 XCTest cases
+with zero failures/skips, and unsigned iOS Simulator SDK compilation. All eleven
+source checks completed successfully. Normal reviewed squash produced verified
+signed `94f436653f46421a8bb983224df055b3fd05241a` with that exact tree and sole
+accepted parent `0ece6114ae2d639992346e8c1bb3ae239dbb1999`.
+
+These are source/signing-stage results. Later main compositions retain their own
+actual receiving checks; this record does not relabel those 38 cases as execution
+of additional comparison, UI or contract changes. Catalog activation, source-use
+rights, physical-device behavior and production release remain separate outcomes.
+
+The subsequently accepted [#252 conformance record](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/252),
+delivered on signed main `971e8ea6500c52a5be0493c7686ffc7dc7792cb4`, governs #32's
+three literal all-kind boundary criteria and accepted immutable model strategy.
+Earlier preparation statements grouping generated per-field DTOs, other top-level
+artifacts and migration under #32 are superseded by that criterion-specific
+disposition. The envelope's separate delivery does not add a new #32 closure gate
+or claim completion of other work packages.
+
+### Envelope and accepted quality composition (2026-10-18)
+
+The later [#256 transfer job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124016445/job/117665292496)
+executed `4d753248943f73b03d6fffe31323503b7b8b3b31`, tree
+`be2d7d62090499f1b58efb8f48ca65dbcd2dada2`, with ordered parents accepted
+`f636afb24b8ecc1324a361aa2a7d2caa3a2481d7` and reviewed envelope composition
+`c2fbf1e7a19edbeca3ec84328de32f4798eeb6b2`. Xcode 16.4 / 16F6 and Swift 6.1.2
+passed all 42 XCTest cases, seven source hashes, 129 build/selection cases,
+1,635 item cases and 77 envelope cases, then built the unsigned simulator SDK
+target. This result includes the four accepted comparison regressions; it does
+not include the later quality source.
+
+QualityEvaluationRun was separately delivered through [#249](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/249)
+on signed `549543abed6f75d7eef4401584b4922c1f7f59ca`. This receiving composition
+retains both complete immutable boundaries, their exact schema/fixture bytes,
+both verifier loops and the union of nine canonical source hashes. The combined
+reference corpora contain 129 + 1,635 + 202 + 77 cases, and the package declares
+51 XCTest methods. These counts describe the combined inputs; the earlier
+42-case run does not establish execution of the 51-case composition. Current
+receiving and signed-main checks retain their own artifact identities and results.
 
 ## Remaining acceptance
 
@@ -270,18 +386,21 @@ identifiers, two unbounded positive integers, twelve measurement numeric cases a
 one IP-literal URI. Swift inserts the raw replacement JSON before decoding so its
 test helper cannot round a numeric token through `Double` or Foundation bridging.
 
-Local reference validation on 2026-10-18 passed eight source hashes, the existing
+Original local reference validation on 2026-10-18 passed eight source hashes, the existing
 129 transfer and 1,635 catalog cases, and all 202 quality cases using Python 3.12.14
 with `jsonschema[format]==4.26.0`, including active URI and date-time format checking.
 Nine new Swift tests are declared for typed preservation, shared vectors, absence,
 uninterpreted labels, exact numbers, duplicate keys, resource bounds, sanitized
-errors and normalized-output rejection. Swift/Xcode execution is unavailable in
-this local environment; actual hosted macOS Swift and unsigned iOS SDK results are
-required before delivery and must be recorded separately.
+errors and normalized-output rejection. Swift/Xcode were unavailable in that
+implementation workspace. Those observations are historical; actual hosted macOS
+Swift and unsigned iOS SDK results retain their separate receiving receipts.
 
 This advances #32 transport coverage and #49 quality-record preparation. It does
 not establish qualified evaluation execution, exact-current-workload evidence,
 resource-estimate binding, live service/fault handling, UI delivery or receiving
 acceptance. The existing #49 prerequisites (Apple #44, Apple #34 and Android #79)
-and the remaining #32/#49 criteria remain open. Frozen contracts, service ownership
-and other active artifact-boundary implementations are unchanged.
+and the remaining #49 criteria remain open. The accepted [#32 conformance
+record](#32-receiving-conformance-record) governs its three literal all-kind
+criteria; quality-record preparation does not reopen that closed work package.
+Frozen contracts, service ownership and other active artifact-boundary
+implementations are unchanged.
