@@ -16,6 +16,28 @@ The workflow records the actual compiler/SDK/runtime and runs model tests, an un
 simulator build, and iPhone/iPad launch smoke checks. It contains no signing secrets.
 The smoke script is not an accessibility or complete journey test.
 
+The [launch-smoke runner](scripts/simulator-smoke.py) retains its existing selection:
+the newest available iOS runtime and the first available iPhone and iPad types in
+that runtime's inventory. Its inventory/create/boot/install/launch/terminate commands
+have 60-second deadlines; waiting for boot readiness has a separate five-minute
+deadline. Each command, deadline, exit code and captured output is printed into the
+workflow's retained `launch.txt`, including partial stdout/stderr after a timeout.
+A timed-out or failed launch command still fails the smoke gate.
+
+Only a successfully returned, parseable UUID absent from the original inventory is
+eligible for use or cleanup. Commands preserve that returned ID's original spelling.
+Each verified creation is protected by `finally`: shutdown and delete are separately
+bounded to 60 seconds, and delete is attempted even if shutdown fails or times out.
+Successful deletion is required; an already-shutdown result alone is not a cleanup
+failure. If creation times out, even a partial UUID does not authorize cleanup, and
+the retained command/name/output is the evidence for later inspection. The runner
+never shuts down or deletes a pre-existing device, guesses an ID, or erases a device.
+Thirteen portable regressions cover these deadlines, partial output, failed launch,
+ownership and cleanup boundaries; one executes a real bounded synthetic subprocess.
+The mandatory native CI step runs them separately from the Xcode-pin guards and
+retains their complete output in `smoke-runner-tests.txt` with the native evidence.
+Actual macOS simulator execution remains required for a changed runner.
+
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
 | #26 pinned clean checkout; #30 native CI | Checked-in project/local packages, explicit Xcode pin, actual CLI missing-pin regression and isolated-cache workflow | Exact-head hosted evidence and receiving review; #30 untrusted-PR and release-secret gates remain separate |

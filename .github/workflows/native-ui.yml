@@ -40,11 +40,12 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - name: Verify unavailable and exact Xcode pins
+      - name: Verify Xcode pins and smoke runner guards
         run: |
-          set -o pipefail
+          set -e -o pipefail
           mkdir -p .build/native-evidence
           python3 -m unittest discover -s App/scripts/tests -p 'test_toolchain.py' -v 2>&1 | tee .build/native-evidence/pin-tests.txt
+          python3 -m unittest discover -s App/scripts/tests -p 'test_simulator_smoke.py' -v 2>&1 | tee .build/native-evidence/smoke-runner-tests.txt
           python3 App/scripts/toolchain.py --github-env "$GITHUB_ENV" 2>&1 | tee .build/native-evidence/pin-selection.txt
       - name: Verify fresh dependency and build caches
         run: |
