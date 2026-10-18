@@ -31,12 +31,20 @@ iOS 17 and macOS 13 for compilation; macOS is a test host, not an added product.
   completion cannot replace or erase the latest result. Network transport remains
   outside the actor; cancellation is not relied upon for correctness.
 
+- `EvidencePresentation` retains original provenance and selected evidence identity,
+  separates source inspection from accepted independent support, and distinguishes
+  newer-snapshot notices from selected-tuple corrections requiring recheck. Capture
+  dates do not create automatic expiry or source-use permissions.
+
 All tests are synthetic. The evaluation fixture is copied without byte changes
 from research revision `7acbefbf4e4e700231e88be272bc89e3a73dde15`, frozen contract
 1.0.0, SHA-256 `039626962ef0f2c4f706614d775ad47eda1d148c58f736c98ad169fc153221f3`.
 [Canonical pricing semantics](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/contracts/v1/docs/PRICING_AND_GATES.md)
 and [adoption limits](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/contracts/v1/ADOPTION.md)
 remain authoritative. No frozen schema, evaluator or real-data publication is changed.
+The [refreshed research handoff](../../docs/decisions/research-inputs-20261018.md)
+pins the subsequently merged #126/#127 decisions and the scoped #41 receipt; it
+does not infer global acceptance or add a freshness TTL.
 
 ## Run and qualify
 
@@ -65,6 +73,7 @@ Refer to the delivering PR and its exact Actions runs for observed results.
 | #32, #36, #37 | Report/money decoding and explicit unknown/outcome states; pinned fixture roundtrip | All 29 kinds, generated model/validator coverage, UI semantics, other-client parity and supported migration tests |
 | #47, #75 | Request/response identity and generation gates; deterministic races, cancellation, wrong-response and reconnect tests | Real service adapters, actual UI visible-revision integration and receiving acceptance |
 | #77, #78 | Exact decimal arithmetic, complete-versus-partial coverage and budget guards | Canonical service scenario parity, actual line-item rounding and UI cost/coverage presentation |
+| #36, #42 | Evidence display grades, capture dates and retained-snapshot recheck state | Catalog/service adapters, actual source inspection and acceptance receipts, UI integration and source-use gates |
 | #104 | Swift boundary, decimal and concurrency regressions alongside existing reference mutation tests | Complete app/domain regression coverage and receiving disposition |
 
 Product and service receiving decisions do not block these bounded library changes.
