@@ -48,9 +48,12 @@ Seven additional model regressions cover restore/reopen/history retention, dirty
 concurrent edit guards, binding updates during restore, bounded history, unsupported
 history, and background saves during paused history/restore operations. These are
 controlled actor-boundary tests, not simulated OS termination or end-to-end UI taps.
-Undo/redo, timed autosave, process-kill during UI autosave and physical lifecycle
-qualification remain work under #69. Hosted exact-head compilation and model tests
-are required before this slice is accepted.
+The subsequent [undo and autosave implementation](../docs/validation/editor-autosave.md)
+adds bounded session undo/redo and a 750 ms typing debounce through the same queued
+save path. Input remains editable while saving, and delayed timers/opens cannot
+overwrite another draft or newer input. Actual process-kill during UI autosave,
+full builder journeys and physical lifecycle qualification remain work under #69.
+Hosted exact-head compilation and model tests are required before acceptance.
 
 Storage opens in Application Support under a directory protected until first unlock.
 A failure shows an unavailable screen and never resets the database. Locked-device

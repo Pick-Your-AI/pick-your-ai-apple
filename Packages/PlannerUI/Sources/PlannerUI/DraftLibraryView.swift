@@ -73,10 +73,22 @@ public struct DraftLibraryView: View {
             Form {
                 Section("Draft name") {
                     TextField("Draft name", text: $model.title).accessibilityIdentifier("draftTitle")
+                        .disabled(!model.canEdit)
                 }
                 Section("Planning notes") {
                     TextEditor(text: $model.notes).frame(minHeight: 160)
                         .accessibilityLabel("Planning notes").accessibilityIdentifier("draftNotes")
+                        .disabled(!model.canEdit)
+                }
+                Section("Edit history") {
+                    HStack {
+                        Button("Undo edit", systemImage: "arrow.uturn.backward") { model.undo() }
+                            .disabled(!model.canUndo).accessibilityIdentifier("undoDraftEdit")
+                        Button("Redo edit", systemImage: "arrow.uturn.forward") { model.redo() }
+                            .disabled(!model.canRedo).accessibilityIdentifier("redoDraftEdit")
+                    }
+                    .buttonStyle(.borderless)
+                    Text("Changes save automatically after you pause typing. Undo and redo apply to this editing session; saved revisions remain available below.")
                 }
                 Section("Revision history") {
                     Button("Load saved revisions") { Task { await model.loadHistory() } }
@@ -105,13 +117,13 @@ public struct DraftLibraryView: View {
                     }
                     Text("Restoration creates a new local revision and keeps later saved revisions. Save or discard unsaved changes first. Historical notes are not current compatibility or pricing evidence.")
                 }
+                .disabled(model.busy)
                 Section {
                     Text(model.dirty ? "Unsaved changes" : model.status).accessibilityIdentifier("saveStatus")
                     Text("Compatibility: unknown. Pricing: unknown. Saving notes does not create a validated build.")
                     if let notice = model.notice { Text(notice).foregroundStyle(.red) }
                 }
             }
-            .disabled(model.busy)
             .navigationTitle("Edit local draft")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
