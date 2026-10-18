@@ -41,14 +41,14 @@
       "Packages/PlannerCatalog": [
         "040000",
         "tree",
-        "89fc0888800891a5bd2de7c06769c25d0734076e"
+        "3b19d0a21e95ba1a727f7729cb56e7456793028d"
       ]
     },
     "macos-core": {
       "Packages/PlannerCore": [
         "040000",
         "tree",
-        "2e13085e86c8624d45edee52adbcf68173912fef"
+        "0537885631a8f6761790363540dae3fff682c905"
       ]
     },
     "macos-storage": {
@@ -67,7 +67,7 @@
       "Packages/PlannerTransfer": [
         "040000",
         "tree",
-        "ebfd99c3008b7ebc9bb7e963e3cf7e98892068ad"
+        "dad347a9ce149a05b0fec296a4e16938bb302fcc"
       ]
     },
     "native-ui": {
@@ -107,7 +107,7 @@
     ".github/workflows/contract-preparation.yml": [
       "100644",
       "blob",
-      "8fff2e9950c5cc578962bc04cb4753c7f7457a4d"
+      "cb9b12a94e0f142968f4195db9220dfe1bc0108e"
     ],
     ".github/workflows/native-ui.yml": [
       "100644",
@@ -207,7 +207,7 @@
     "tools/ci/tests/test_native_scope.py": [
       "100644",
       "blob",
-      "61ebed0254f84ec158cb5cfbb3c0e47b81bb1655"
+      "4bedd49a5ed67e65ab0ba9f9b3e59dd8a6bc6882"
     ],
     "tools/ci/tests/test_obsolete_workflow.py": [
       "100644",
@@ -234,6 +234,11 @@
       "blob",
       "45922b56f44d38461ca23e2066fc493302245279"
     ],
+    "tools/conformance/raw_core_vectors.py": [
+      "100644",
+      "blob",
+      "9a0f495f36a5f67f2422b497196ee053e988c62a"
+    ],
     "tools/conformance/requirements.txt": [
       "100644",
       "blob",
@@ -247,7 +252,7 @@
     "tools/conformance/swift_mutations.py": [
       "100644",
       "blob",
-      "1c97acb809f16cce937d5ea2375a491095285b2c"
+      "2719a3eb1386b01bcef6353c3e95a55e6ed1ec23"
     ],
     "tools/conformance/tests/test_harness.py": [
       "100644",
@@ -257,7 +262,7 @@
     "tools/conformance/tests/test_swift_mutations.py": [
       "100644",
       "blob",
-      "3e1fe6395a78b963864353d3df295f42cc4b34b9"
+      "6402d8bb3aca182502d48aa9384f73b566773fae"
     ],
     "tools/conformance/tests/test_swift_vectors.py": [
       "100644",
@@ -270,6 +275,6 @@
       "961c45d1b8dd61f33abb86f255e79a43021c0646"
     ]
   },
-  "source_revision": "8ca109963bfca3a707b1af8b80aabcd9dd28fd8a",
+  "source_revision": "13e67df89309289b42fd9302c5908041739d9d11",
   "version": 1
 }

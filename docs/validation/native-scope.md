@@ -100,6 +100,23 @@ library/history recovery. Its surrounding-input pins include this selector and
 regression update plus the five literal job-name additions. Every native job body,
 action pin and command remains identical to that accepted base.
 
+The current record explicitly refreshes that audit to accepted main
+`13e67df89309289b42fd9302c5908041739d9d11`. The intervening accepted work adds
+the frozen quality reader and resources, strict Core raw-JSON admission and its
+raw-vector replay, bounded Catalog loading, and the stricter XCTest evidence
+qualifier. Their complete source/test changes and input readers were inspected;
+the five package manifests and app project/scheme remain byte-identical, so the
+dependency matrix is unchanged. Core, Transfer and Catalog receive new complete
+package-tree pins; Data and UI retain their existing pins.
+
+The surrounding audit now contains 38 leaves. It includes the added raw-vector
+helper, its contract-preparation workflow step, the accepted mutation qualifier
+and tests, and the foreground-maintenance fixture correction below. All other
+surrounding pins are unchanged. The selector algorithm, documentation allowlist
+and five literal job-name workflow additions are unchanged. This explicit refresh
+does not treat earlier native executions as evidence for the newer tree; all
+native jobs are allocated for the audit change itself.
+
 A drift is a safe allocation decision, not a request to refresh hashes blindly.
 Before updating the record, independently inspect the changed native code and
 tests, all package manifests, resource readers, app project/scheme, workflows and
@@ -129,6 +146,38 @@ endpoints, all seven dependency pins, prior root/workflow/helper drift, corrupte
 and duplicate audit data, input bounds, and committed versus working-copy audit
 identity. They run locally and on each scope preflight. These Python tests do not
 compile Swift or prove simulator execution.
+
+### Disposable Git fixture lifetime
+
+The fixture sets repository-local `maintenance.autoDetach=false` before its first
+commit. Automatic maintenance still runs when Git decides it is needed, but the
+invoking command waits for it to finish before the temporary repository is removed.
+This follows Git's documented [maintenance lifetime setting](https://git-scm.com/docs/git-maintenance)
+and does not change the checked-out project's configuration or the scope selector.
+
+The motivating [scope job 117666335194](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124385062/job/117666335194)
+at editor source `8e76d0ee3db9659df4b7c96bef0eb0c70909ea52` ran all 15 methods
+using Git 2.55.0. Its submodule case errored during `TemporaryDirectory.cleanup`
+with `OSError: [Errno 39] Directory not empty: 'objects'`, after the assertion.
+The four sibling scope jobs passed. The original failed receipt is retained;
+the conservative fallback still allocates the native job after a scope failure.
+
+A bounded local diagnostic on Git 2.51.1 ran the unchanged submodule method 20
+times and the foreground comparison 20 times. Both completed without the hosted
+cleanup exception. Git Trace2 nevertheless recorded 60 detached maintenance
+children in the first run and 60 foreground maintenance children, with no detach
+regions, in the second. This verifies the lifetime mechanism being corrected; it
+does not establish the hosted exception's exact interleaving. Cleanup errors are
+still fatal, and no retry, assertion removal or native acceptance is implied.
+
+With the repository-local fixture setting, all 15 real-Git regression methods
+passed on Git 2.51.1. Their Trace2 receipt contained 34 maintenance children, all
+with `--no-detach`, and zero detach regions. Fresh hosted scope results remain
+required for delivery.
+
+That 15-method lifetime receipt belongs to the linked editor checkpoint. The
+selector's 32-method suite shares the same corrected setup across its original
+and audited-package classes; no assertion or cleanup error is suppressed.
 
 This change schedules future runs. It neither cancels existing main/current-head
 runs nor changes [obsolete-run maintenance](obsolete-pr-checks.md). #30's broader
