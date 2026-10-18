@@ -1,11 +1,11 @@
 import Foundation
 
 /// Evaluates only the keywords in the bundled, hash-pinned frozen schemas. Not a general JSON Schema engine.
-struct FrozenValidator {
+struct FrozenValidator: Sendable {
     let schemas: [String: JSONValue]
-    init() throws {
+    init(schemaNames: [String] = ["build", "selection", "common"]) throws {
         var schemas: [String: JSONValue] = [:]
-        for name in ["build", "selection", "common"] {
+        for name in schemaNames {
             guard let url = Bundle.module.url(forResource: name + ".schema", withExtension: "json") else { throw TransferError.unavailableSchema }
             var parser = try JSONParser(Data(contentsOf: url))
             schemas[name + ".schema.json"] = try parser.parse()
@@ -15,6 +15,11 @@ struct FrozenValidator {
     func validateBuild(_ value: JSONValue) throws {
         guard value.object?["schema_version"] == .string("1.0.0") else { throw TransferError.unsupportedVersion }
         try check(value, schema: schemas["build.schema.json"]!, document: "build.schema.json")
+    }
+    func validateResourceEstimate(_ value: JSONValue) throws {
+        guard value.object?["schema_version"] == .string("1.0.0") else { throw TransferError.unsupportedVersion }
+        guard let schema = schemas["resource-estimate.schema.json"] else { throw TransferError.unavailableSchema }
+        try check(value, schema: schema, document: "resource-estimate.schema.json")
     }
     func check(_ value: JSONValue, schema: JSONValue, document: String) throws {
         guard let s = schema.object else { throw TransferError.unavailableSchema }
