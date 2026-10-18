@@ -36,3 +36,29 @@ Run `swift test` from this directory on macOS. The dedicated `macos-catalog-cach
 | Issue evidence and receiving disposition | Source identity, test names, limitations and workflow supplied here | Independent engineering review pending; product receiving review and issue closure remain separate |
 
 No physical-device run, power-loss durability measurement, full-disk test, signing, release, publication rights, canonical schema conformance or production receiving approval is claimed by these unit tests.
+
+
+## Snapshot-consistent local discovery
+
+`CatalogSearchIndex` searches a bounded local projection of already validated
+canonical records. `CatalogSearchEntry` is an internal display projection, not a
+new wire schema. An adapter must validate the original artifact and retain its
+source-use/evidence semantics before installing entries; this index never promotes
+data, infers compatibility, or turns a synthetic fixture into real product facts.
+
+It installs at most 10,000 bounded entries atomically, rejects duplicate `(id, version)` keys and
+changed bytes under the currently installed identity, and sorts deterministically
+by folded title, kind, ID and version. Distinct versions of one item remain separate, preserving the frozen selection pin fields `catalog_item_id` and `catalog_item_version`. Kind is a filter and display field, not an extra namespace for a duplicate pin. The durable cache remains responsible for historical
+immutable-version enforcement. Query/filter/page-size-bound opaque tokens are valid
+only for the issuing index and exact installed generation. Refresh during paging
+throws `stalePage`; callers must discard the old displayed page collection and
+restart, never concatenate different revisions. A failed install preserves the old
+release. Reinstalling the identical release preserves active cursors.
+
+Eight regression tests cover page boundaries, stable ordering, no duplicate composite keys and preservation of distinct versions,
+refresh between pages and clean restart, foreign cursors, query/filter/limit drift,
+normalized text search, immutable identity conflict, clear/missing state and input
+bounds. Existing hosted catalog CI must execute these tests and compile iOS for the
+exact final head. This is partial #45/#59 behavior; no actual API cursor contract,
+live staging handoff, full canonical catalog decoder, UI, source inspection or
+physical-device acceptance is claimed.
