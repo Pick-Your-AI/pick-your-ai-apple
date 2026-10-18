@@ -12,23 +12,29 @@ struct PlannerApp: App {
                 .appendingPathComponent("LocalDrafts", isDirectory: true)
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true,
                 attributes: [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication])
-            let draftStore = try DraftStore(url: root.appendingPathComponent("drafts.sqlite"))
-            let buildStore = try DraftStore(url: root.appendingPathComponent("imported-builds.sqlite"))
-            store = draftStore; importedStore = buildStore
+            let libraries = LocalLibraryStores(directory: root)
+            store = libraries.notes; importedStore = libraries.importedBuilds
         } catch { store = nil; importedStore = nil }
     }
     var body: some Scene {
         WindowGroup {
-            if let store, let importedStore {
-                TabView {
-                    DraftLibraryView(store: store).tabItem { Label("Notes", systemImage: "note.text") }
-                    ImportedBuildLibraryView(store: importedStore).tabItem { Label("Imported builds", systemImage: "doc.badge.plus") }
+            TabView {
+                Group {
+                    if let store { DraftLibraryView(store: store) }
+                    else { unavailable("Notes") }
                 }
-            }
-            else {
-                ContentUnavailableView("Local storage unavailable", systemImage: "externaldrive.badge.exclamationmark",
-                    description: Text("Your existing data has not been reset. Unlock the device, check available storage, and reopen the app."))
+                .tabItem { Label("Notes", systemImage: "note.text") }
+                Group {
+                    if let importedStore { ImportedBuildLibraryView(store: importedStore) }
+                    else { unavailable("Imported builds") }
+                }
+                .tabItem { Label("Imported builds", systemImage: "doc.badge.plus") }
             }
         }
+    }
+
+    private func unavailable(_ library: String) -> some View {
+        ContentUnavailableView("\(library) unavailable", systemImage: "externaldrive.badge.exclamationmark",
+            description: Text("Your existing data has not been reset. Unlock the device, check available storage, and reopen the app. Other available libraries can still be used."))
     }
 }
