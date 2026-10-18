@@ -1,14 +1,21 @@
 import SwiftUI
 import PlannerUI
+import PlannerCore
 
 @main
 struct PlannerApp: App {
     var body: some Scene {
-        WindowGroup { ApplicationConfigurationView { LocalLibrariesView() } }
+        WindowGroup {
+            ApplicationConfigurationView { configuration in
+                LocalLibrariesView(environment: configuration.environment)
+            }
+        }
     }
 }
 
 private struct LocalLibrariesView: View {
+    let environment: ClientEnvironment
+
     @StateObject private var startup = LocalLibraryStartup {
         try await LocalLibraryStores.open {
             let root = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
@@ -41,6 +48,10 @@ private struct LocalLibrariesView: View {
                 }
             }
             .tabItem { Label("Imported builds", systemImage: "doc.badge.plus") }
+            if environment == .preview {
+                CatalogBrowserView()
+                    .tabItem { Label("Demo catalog", systemImage: "square.grid.2x2") }
+            }
         }
         .task { await startup.load() }
     }

@@ -18,10 +18,12 @@ import uuid
 RUNTIME = "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
 DESTINATIONS = (("iphone", "iPhone SE (3rd generation)"), ("ipad", "iPad (10th generation)"))
 TEST = "PlannerAppUITests/LocalDraftJourneyTests/testSavedNotesSurviveCloseReopenAndRelaunch"
+CATALOG_TEST = "PlannerAppUITests/CatalogBrowserJourneyTests/testCatalogFiltersPaginationAndPinnedDetailsSurviveRelaunch"
 LIFECYCLE_TEST = "PlannerAppUITests/LocalDraftLifecycleTests/testBackgroundRecoveryAndCancelledDiscardPreserveOwnDraft"
+TESTS = (TEST, CATALOG_TEST, LIFECYCLE_TEST)
 CONFIGURATION_TEST = "PlannerAppUITests/ConfigurationLaunchTests/testMissingEndpointStopsStartupWithoutPreviewFallback"
 CONFIGURATIONS = {
-    "Debug": {"environment": "preview", "bundleID": "invalid.pickyourai.localpreview", "tests": (TEST, LIFECYCLE_TEST)},
+    "Debug": {"environment": "preview", "bundleID": "invalid.pickyourai.localpreview", "tests": TESTS},
     "Staging": {"environment": "staging", "bundleID": "invalid.pickyourai.staging", "tests": (CONFIGURATION_TEST,)},
     "Release": {"environment": "production", "bundleID": "invalid.pickyourai.production", "tests": (CONFIGURATION_TEST,)},
 }

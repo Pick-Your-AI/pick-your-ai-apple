@@ -5,9 +5,9 @@ import PlannerCore
 /// No process environment, launch argument or preview fallback is consulted.
 struct ApplicationConfigurationView<Content: View>: View {
     private let configuration: Result<RuntimeConfiguration, Error>
-    private let content: () -> Content
+    private let content: (RuntimeConfiguration) -> Content
 
-    init(@ViewBuilder content: @escaping () -> Content) {
+    init(@ViewBuilder content: @escaping (RuntimeConfiguration) -> Content) {
         self.content = content
         self.configuration = Result {
             try RuntimeConfiguration.fromBundleInfo(Bundle.main.infoDictionary ?? [:])
@@ -18,7 +18,7 @@ struct ApplicationConfigurationView<Content: View>: View {
         switch configuration {
         case .success(let configuration):
             VStack(spacing: 0) {
-                content()
+                content(configuration)
                 Text("\(configuration.environment.rawValue.capitalized) · Build \(configuration.diagnostics.buildIdentity) · Contract \(configuration.diagnostics.contractVersion)")
                     .font(.caption2)
                     .foregroundStyle(.secondary)

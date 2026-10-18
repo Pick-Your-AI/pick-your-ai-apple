@@ -4,8 +4,9 @@
 
 This record covers the remaining concrete app-runtime checks named by #26 and
 the missing-configuration launch case in #27. It builds on the canonical #198
-editor/Files/startup target. It does not replace that delivery's existing durable
-save, undo/redo, discard, deletion and independent-control journey.
+editor/Files/startup/catalog target. It retains the complete Notes and catalog
+journeys, including durable save, undo/redo, discard, deletion, independent controls,
+catalog filtering, exact details and source-review behavior.
 
 All added Swift and XCTest behavior is **unverified native execution** until the
 exact reviewed candidate passes the normal hosted workflow. Local portable
@@ -43,21 +44,27 @@ python3 App/scripts/ui-journey.py --configuration Staging --evidence-directory .
 python3 App/scripts/ui-journey.py --configuration Release --evidence-directory .build/native-evidence/configuration-production
 ```
 
-Each destination must produce the exact expected passed XCTest count: two Debug
-journeys, one Staging configuration journey and one Release configuration journey.
+Each destination must produce the exact expected passed XCTest count: three Debug
+journeys (Notes, Catalog and Lifecycle), one Staging configuration journey and one
+Release configuration journey.
 Zero/partial/skipped/expected-failure summaries, wrong metadata, opened local
 storage under rejected configuration, test failures and cleanup failures all
 fail the runner. Test selection is fixed by the requested build configuration.
 No rerun/retry flag, alternate runtime, launch seed or app-container reset exists.
 
-Debug keeps the native model/build/smoke and both durable UI journeys in the
-existing native job. Staging and Release run in separate mandatory matrix jobs,
+Debug keeps the native model/build/smoke and all three complete UI journeys in the
+existing native job. The canonical 110-case UI model gate and all 61 required
+identities remain mandatory; current Transfer qualification separately requires
+all 65 cases and 29 identities in the accepted resource/quality union, retaining
+the historical 57-case profile for its own source. Staging and Release run in separate mandatory matrix jobs,
 each with both destinations and its own 40-minute deadline. Matrix fail-fast is
 disabled so a failed configuration does not cancel the other configuration's
 evidence. All three jobs share the conservative native-source scope precondition
 and require the exact Xcode pin; each checks its configured cache/build paths are
 absent before use. No configuration result is allowed to fail without failing
-the workflow.
+the workflow. The separate Xcode 26.3 / SDK 26.2 submission lane retains its
+five-package and unsigned simulator/device checks; it does not substitute for
+these pinned Xcode 16.4 / iOS 18.5 development journeys.
 
 `native-local-drafts-evidence`, `native-configuration-Staging-evidence` and
 `native-configuration-Release-evidence` retain their toolchain/build logs, exact
@@ -72,8 +79,9 @@ independent receiving review. Nothing in this record asserts those future result
 
 - #26 remains open pending actual accepted results for its named runtime checks
   and any supported simulator/device qualification not supplied by those results.
-- #27 still needs an accepted deployed endpoint and authenticated response
-  provenance. No fixture-only response, credential-storage, device or release
+- #27 consumes the [accepted shared-service architecture](../decisions/issue-23-services.md),
+  but still needs an approved deployed origin, actual O1 operating acceptance and
+  authenticated response provenance. No fixture-only response, credential-storage, device or release
   acceptance is established by a missing-endpoint launch.
 - #28's required interrupted edit followed by a second cold build link is not
   implemented or exercised here. Deep-link routing and protection of unsaved

@@ -14,12 +14,6 @@ private struct ExportBuildDocument: FileDocument {
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper { FileWrapper(regularFileWithContents: data) }
 }
 
-private struct PreparedBuildComparison {
-    let result: BuildComparison
-    let beforeSynthetic: Bool
-    let afterSynthetic: Bool
-}
-
 public struct ImportedBuildLibraryView: View {
     @StateObject private var model: ImportedBuildLibraryModel
     @State private var importing = false
@@ -31,11 +25,6 @@ public struct ImportedBuildLibraryView: View {
     @State private var localLabel = ""
     @State private var pendingDelete: DraftRecord?
     @State private var deleting = false
-    @State private var comparisonBaseline: BuildSnapshot?
-    @State private var baselineRecordID: UUID?
-    @State private var baselineSynthetic = false
-    @State private var comparison: PreparedBuildComparison?
-    @State private var comparisonNotice: String?
     public init(store: DraftStore) { _model = StateObject(wrappedValue: ImportedBuildLibraryModel(store: store)) }
     public var body: some View {
         NavigationStack {
@@ -98,31 +87,26 @@ public struct ImportedBuildLibraryView: View {
                     }
                     Section("Compare configurations") {
                         Button("Use selected build as baseline") {
-                            comparisonBaseline = snapshot; baselineSynthetic = model.markedSynthetic
-                            baselineRecordID = model.selected?.id
-                            comparison = nil; comparisonNotice = nil
+                            model.pinComparisonBaseline()
                         }.accessibilityIdentifier("pinComparisonBaseline")
-                        if let baseline = comparisonBaseline {
+                        if let baseline = model.comparisonBaseline {
                             Text("Baseline: " + baseline.name)
                             Text(baseline.id).font(.caption).textSelection(.enabled)
                             Text("Choose another imported build above, then compare. The baseline stays pinned until you replace or clear it, or delete its local entry.")
                             Button("Compare baseline with selected build") {
-                                comparison = nil; comparisonNotice = nil
-                                do {
-                                    comparison = PreparedBuildComparison(
-                                        result: try BuildComparison.compare(baseline, snapshot),
-                                        beforeSynthetic: baselineSynthetic, afterSynthetic: model.markedSynthetic)
-                                }
-                                catch {
-                                    comparisonNotice = "These builds could not be compared completely. Their identities may be ambiguous or conflicting, or the number of differences exceeds the supported limit. Both builds were preserved."
-                                }
-                            }.accessibilityIdentifier("compareSelectedBuilds")
+                                model.prepareComparison()
+                            }.disabled(model.comparing).accessibilityIdentifier("compareSelectedBuilds")
                             Button("Clear comparison baseline", role: .cancel) {
-                                clearBaseline()
+                                model.clearComparisonBaseline()
                             }.accessibilityIdentifier("clearComparisonBaseline")
                         }
-                        if let comparisonNotice { Text(comparisonNotice).fixedSize(horizontal: false, vertical: true) }
-                        if let comparison {
+                        if model.comparing {
+                            ProgressView("Preparing comparison…")
+                            Button("Cancel comparison", role: .cancel) { model.cancelComparison() }
+                                .accessibilityIdentifier("cancelBuildComparison")
+                        }
+                        if let comparisonNotice = model.comparisonNotice { Text(comparisonNotice).fixedSize(horizontal: false, vertical: true) }
+                        if let comparison = model.comparison {
                             NavigationLink("View configuration differences (\(comparison.result.differences.count))") {
                                 BuildComparisonView(comparison: comparison.result, beforeSynthetic: comparison.beforeSynthetic,
                                                     afterSynthetic: comparison.afterSynthetic)
@@ -148,12 +132,9 @@ public struct ImportedBuildLibraryView: View {
             .disabled(model.busy)
             .navigationTitle("Imported builds")
             .task { await model.refresh() }
+            .onDisappear { model.cancelComparison() }
             .onChange(of: alias) { _, _ in reviewed = false; model.clearExport() }
             .onChange(of: model.selected?.id) { _, _ in alias = ""; reviewed = false }
-            .onChange(of: model.snapshot) { _, _ in comparison = nil; comparisonNotice = nil }
-            .onChange(of: model.lastDeletedID) { _, deletedID in
-                if let deletedID, baselineRecordID == deletedID { clearBaseline() }
-            }
             .alert("Rename local label", isPresented: $renaming, presenting: pendingRename) { record in
                 TextField("Local label", text: $localLabel)
                 Button("Save label") {
@@ -183,10 +164,6 @@ public struct ImportedBuildLibraryView: View {
                 reviewed = false; model.clearExport()
             }
         }
-    }
-    private func clearBaseline() {
-        comparisonBaseline = nil; baselineRecordID = nil; baselineSynthetic = false
-        comparison = nil; comparisonNotice = nil
     }
     private func revisionText(_ snapshot: BuildSnapshot) -> String {
         guard case .object(let fields) = snapshot.value, case .number(let revision)? = fields["revision"] else {

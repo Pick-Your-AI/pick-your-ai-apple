@@ -34,14 +34,21 @@ settings from the three adjacent `.xcconfig` files. An explicit plist is needed:
 that arbitrary user-defined `INFOPLIST_KEY_` settings do not create custom keys.
 The bundle identifier must agree with the declared environment. These `invalid`
 identifiers are development configuration, not registered App Store identities.
-No deployed endpoint has been selected. Endpoints are nonsecret base URLs;
-authentication credentials must not be supplied through these settings.
+The [accepted shared-service design](../decisions/issue-23-services.md) selects
+one TypeScript/Node API and managed PostgreSQL on Render in Frankfurt. An approved
+deployed origin, credentials and the O1 operating agreement remain pending.
+Endpoints are nonsecret base URLs; authentication credentials must not be supplied
+through these settings. The relative OpenAPI server is not a deployed origin.
 
 `ApplicationConfigurationView` validates before constructing either local
 library. Missing live endpoints show a fixed actionable error; other invalid
 configuration shows fixed error text without rejected values. Successful local
 configuration exposes its environment, bounded numeric build identity and
-contract version. It does not establish a service connection.
+contract version. The validated environment reaches app composition: only preview
+exposes the explicitly synthetic Demo catalog. Valid configurations retain local
+draft and imported-build access without a service reachability check. No network
+request occurs here, so an outage cannot itself reject a valid configuration;
+actual transport outage and authenticated-response qualification remain pending.
 
 The actual [configuration UI test](../../App/PlannerAppUITests/ConfigurationLaunchTests.swift)
 cold-launches Staging and Release without overrides, checks the missing-endpoint

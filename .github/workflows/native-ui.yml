@@ -23,6 +23,8 @@ jobs:
           fetch-depth: 0
       - name: Test conservative scope selection
         run: python3 -m unittest discover -s tools/ci/tests -p 'test_native_scope.py' -v
+      - name: Test Swift execution evidence guards
+        run: python3 -m unittest discover -s tools/ci/tests -p 'test_swift_test_results.py' -v
       - name: Inspect complete exact Git comparison
         id: scope
         env:
@@ -84,7 +86,16 @@ jobs:
             testExportPreparationLeavesMainActorResponsiveAndPreservesQualification \
             testClearedExportRejectsLateBytesAndErrorsAndRetryUsesNewAlias \
             testInvalidatedQueuedExportNeverEntersPreparation \
-            testCancelledExportPreparationCannotPublishOrWrite
+            testCancelledExportPreparationCannotPublishOrWrite \
+            testComparisonPreparationLeavesMainActorResponsiveAndPreservesInputs \
+            testNewSelectionComparisonFinishesBeforeCancelledOlderResultOrError \
+            testCancelledOlderComparisonCannotClearPendingNewerWork \
+            testReplacingBaselineRejectsLateComparisonAndRetainsNewQualification \
+            testClearedBaselineRejectsLateComparisonAndError \
+            testCancelledComparisonRejectsLateResultAndErrorWithoutClearingPin \
+            testInvalidatedQueuedComparisonNeverEntersWorker \
+            testCommittedBaselineDeletionCancelsPendingComparisonAndPreservesSelection \
+            testRejectedBaselineDeletionPreservesPinAndPendingComparison
           do
             grep -E "Test Case .*ImportedBuildLibraryTests.*${name}.* passed" .build/native-evidence/model-tests.txt
           done
@@ -95,15 +106,18 @@ jobs:
           do
             grep -E "Test Case .*DraftLibraryModelTests.*${name}.* passed" .build/native-evidence/model-tests.txt
           done
+          python3 tools/ci/require_swift_test_results.py comparison-catalog-source-ui .build/native-evidence/model-tests.txt
       - name: Build unsigned simulator app
         run: |
           set -o pipefail
           xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/native -clonedSourcePackagesDirPath .build/native-source-packages CODE_SIGNING_ALLOWED=NO build 2>&1 | tee .build/native-evidence/build.txt
+          cp .build/native/Build/Products/Debug-iphonesimulator/Planner.app/Info.plist .build/native-evidence/app-Info.plist
+          plutil -p .build/native-evidence/app-Info.plist | tee .build/native-evidence/app-Info.txt
       - name: Launch on iPhone and iPad simulators
         run: |
           set -o pipefail
           python3 App/scripts/simulator-smoke.py 2>&1 | tee .build/native-evidence/launch.txt
-      - name: Exercise durable notes through the real app UI
+      - name: Exercise notes, catalog and lifecycle through the real app UI
         run: |
           set -o pipefail
           python3 App/scripts/ui-journey.py 2>&1 | tee .build/native-evidence/ui-journey.txt

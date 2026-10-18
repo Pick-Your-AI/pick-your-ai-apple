@@ -1,5 +1,7 @@
 # Combined editor, startup and native journey integration
 
+This receipt retains the canonical #198 source history and its named results. The later [catalog/editor receiving composition](catalog-editor-receiving.md) preserves these behaviors and tests with separate current totals and execution gates.
+
 This record tracks a receiving integration for partial [#29](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/29),
 [#57](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/57) and
 [#69](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/69) work. It carries the
@@ -162,10 +164,40 @@ The composed package contains 71 unique model cases. The native workflow require
 the three new methods to report passed in addition to its existing 13 imported-build
 method checks. Both full pinned UI journeys and owned cleanup remain mandatory.
 
-The prior 68-case results remain attributed to their original sources. This
-composition is source preparation and requires its own successful native run;
-neither the older editor results nor #237's model/launch-smoke results establish
-acceptance of the combined editor.
+The prior 68-case results remain attributed to their original sources. The combined
+`877f8f16447be2698ba43079ff4ef8066f85a2c4`, tree
+`1bfc17779920d4e12b41e20f58288e97d37fe30c`, subsequently executed in
+[run 39118569803 / job 117649322901](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39118569803/job/117649322901).
+The actual test checkout `d9a4f7fd6be9f61996fed5bc4b0698ed3067867e` has that same tree.
+All **71 model cases passed with zero failures** in 26.516 seconds, including all
+three accepted history regressions. The unsigned app build and both launch smokes
+passed. The complete iPhone journey passed in 216.071 seconds; iPad failed in
+149.385 seconds at `LocalDraftJourneyTests.swift:288`, waiting for
+`finishDraftEditing` to become hittable and enabled after synthetic Paste. Its
+durable undo/redo reopening had already passed. Each destination executed one test
+with zero skips; both owned deletions returned exit zero and cleanup succeeded.
+
+The complete retained artifact `12135102483` is 107,853,028 bytes. Its independently
+downloaded ZIP passes CRC checks and has SHA-256
+`c6bf8aa9696b9db3c1effe61c70892aa32008620152fe09e47104c690dbc3e4a`.
+The iPad recording at 134 and 137 seconds shows the Undo tutorial covering Done;
+at 145 seconds it has rotated to Copy and Paste. The decoded app payload
+`mtI7JpDswgc6pR8uZlVuoIZ7GMI80Qa_nk6SGQK2Ql3zYkEGkSKWnGAEGKEmfJ4uwvJzjjswTTc58ZEKqmsw7g`
+contains 17,500,648 bytes, SHA-256
+`89c2e93f94830d1fa579e167423664b855aaaac8d6c9ca7db2c97d32427d7ec3`.
+It records the raw Undo label with trailing U+000A, then the query snapshot at
+11:23:30.459750 with trailing U+0020 and no matching result from the prior list.
+The decoded runner payload
+`Mc3cSCwIIXbV7AlI2Dlm4USB478IKmjuv4Sel7qLuDuESVM08gviqnpe8YjfM4WWPGuQx_G_3Zgigo_NefP6lg`
+contains 6,889,709 bytes, SHA-256
+`763f9b9aa66a7e945dba3fb39c27af8754cc57ef0fbf12db6ea898406c84b0b0`.
+The focused follow-up retains the raw label and adds only the exact observed
+trailing-space form. Continue must still be identified through a known sentence,
+both the button and tutorial must disappear, and the complete pasted value must
+remain unchanged before the strict Done/keyboard/Form checks. Production code,
+autosave, failed validation, dirty discard, runner and destination gates are unchanged.
+The failed 877 result is preserved; the corrected source requires fresh native
+execution and both complete pinned journeys before signed delivery.
 
 The original #198 source package contains 52 XCTest cases: 22 editor/library model,
 13 controlled autosave, two bounded history, seven imported-build, six startup and
@@ -211,3 +243,41 @@ signed candidate's tree and parent before main integration. Link final receipts 
 the PR. Physical-device, accessibility, unacknowledged process termination, complete
 builder/Files-provider flows, real-data rights, release and broader issue acceptance
 remain separately evidenced requirements.
+
+## Completed corrected editor execution
+
+The exact query-label correction at
+`8e76d0ee3db9659df4b7c96bef0eb0c70909ea52` completed
+[run 39124384850 / job 117666403863](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124384850/job/117666403863).
+The actual checkout was `1626e530da7577cab88f9c7718896c3a48319564`, with ordered
+parents `a86b0bf88abdb8f9c2177fd54ea4d5f22bb5ddf7` and that source head. Git Data
+independently confirms tree `d61176786e1886e16bced6788c8052126a9aeb7e` equals the
+reviewed source. The gate verified Xcode 16.4/16F6 and Swift 6.1.2 before execution.
+
+All **71 model cases passed with zero failures** in 28.281 seconds. The unsigned
+app build and both launch checks passed. The complete production-autosave,
+durable undo/redo, rejected-amendment, discard and deletion journey passed on
+iPhone SE (3rd generation), iOS 18.5, in **279.590 seconds**, and on iPad
+(10th generation), iOS 18.5, in **244.912 seconds**. Each actual result summary
+contains exactly one passing test, zero failures, zero expected failures and zero
+skips. Both runner receipts identify devices created by that run and record
+successful cleanup. Both deletions exited zero; both shutdown commands retained
+exit 149 with the explicit already-Shutdown diagnostic.
+
+Artifact [12136704709](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124384850/artifacts/12136704709)
+was independently downloaded and rehashed: 5,556,775 bytes, SHA-256
+`6382cf178df4ed916bc4a8016a646138f497f69ab7b275f505167bba5cbde548`.
+The exact iPhone and iPad summary hashes are
+`c6fa6588a9f688c184e15a956daf037a7f0f35b4971ededf3c4d83473184198f`
+and `65956fe0bf5681e6a8e75c733bb35daa1d81470b7f0ecad19a47c268a9facaaf`.
+Core, Storage, Catalog and macOS Transfer native jobs also passed on that head.
+
+The separate Transfer documentation-scope job still failed with the recorded
+disposable-fixture cleanup error. The [foreground-maintenance correction](native-scope.md#disposable-git-fixture-lifetime)
+at `10cd075c` is preserved for receiving execution; this successful UI result
+does not erase that failed gate or prove the fixture diagnosis. The later
+[comparison/catalog/current-contract union](comparison-preparation.md) requires
+its own 96-case UI and 57-case Transfer execution, both complete Notes and catalog
+journeys on each pinned destination, normal signing and receiving review. None
+of those expanded-source results, physical-device or release acceptance is
+inferred from this successful 71-case source run. All earlier failures above remain.

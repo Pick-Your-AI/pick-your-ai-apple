@@ -3,6 +3,12 @@ import SwiftUI
 import PlannerData
 import PlannerTransfer
 
+struct PreparedBuildComparison: Equatable, Sendable {
+    let result: BuildComparison
+    let beforeSynthetic: Bool
+    let afterSynthetic: Bool
+}
+
 /// Local persistence wrapper only; this is not a shared wire format or evidence claim.
 struct ImportedBuildRecord: Codable, Sendable {
     let storageVersion: Int
@@ -57,6 +63,14 @@ public final class ImportedBuildLibraryModel: ObservableObject {
     @Published public private(set) var offset = 0
     @Published public private(set) var hasNext = false
     @Published public private(set) var exportData: Data?
+    @Published private(set) var comparisonBaseline: BuildSnapshot?
+    @Published private(set) var comparison: PreparedBuildComparison?
+    @Published private(set) var comparisonNotice: String?
+    @Published private(set) var comparing = false
+    private var baselineRecordID: UUID?
+    private var baselineSynthetic = false
+    private var comparisonGeneration: UUID?
+    private var comparisonTask: Task<Void, Never>?
     private var sourceRevision: String?
     private let store: DraftStore
     private let preparation: ImportedBuildPreparation
@@ -260,7 +274,10 @@ public final class ImportedBuildLibraryModel: ObservableObject {
             _ = try await current(record)
             try await store.delete(id: record.id, expectedRevision: record.revision)
             lastDeletedID = record.id
+            // Only a committed deletion can remove a pinned comparison source.
+            if baselineRecordID == record.id { clearComparisonBaseline() }
             if selected?.id == record.id {
+                invalidateComparison()
                 selected = nil; snapshot = nil; markedSynthetic = false; sourceRevision = nil; clearExport()
             }
             notice = nil
@@ -268,8 +285,65 @@ public final class ImportedBuildLibraryModel: ObservableObject {
         } catch { notice = "The selected revision could not be deleted. Reopen the entry and retry; existing records were preserved." }
     }
     private func adopt(_ record: DraftRecord, snapshot: BuildSnapshot, markedSynthetic: Bool, sourceRevision: String?) {
+        invalidateComparison()
         selected = record; self.snapshot = snapshot; self.markedSynthetic = markedSynthetic; self.sourceRevision = sourceRevision
         clearExport(); notice = nil
+    }
+    func pinComparisonBaseline() {
+        guard !busy, let selected, let snapshot else { return }
+        invalidateComparison()
+        comparisonBaseline = snapshot; baselineRecordID = selected.id; baselineSynthetic = markedSynthetic
+    }
+    func clearComparisonBaseline() {
+        invalidateComparison()
+        comparisonBaseline = nil; baselineRecordID = nil; baselineSynthetic = false
+    }
+    /// Capture both immutable snapshots and their qualification on the same actor
+    /// turn as the button action. A new selection or baseline invalidates the
+    /// request without blocking either another comparison or ordinary library work.
+    @discardableResult
+    func prepareComparison() -> Task<Void, Never>? {
+        guard !busy, !comparing, let baseline = comparisonBaseline, let snapshot, let selected else { return nil }
+        invalidateComparison()
+        let generation = UUID()
+        comparisonGeneration = generation; comparing = true
+        let beforeSynthetic = baselineSynthetic, afterSynthetic = markedSynthetic
+        let preparation = preparation
+        let operation = Task { @MainActor [weak self] in
+            guard let self else { return }
+            defer {
+                if self.comparisonGeneration == generation {
+                    self.comparisonGeneration = nil; self.comparisonTask = nil; self.comparing = false
+                }
+            }
+            guard !Task.isCancelled, self.currentComparison(generation, selected: selected) else { return }
+            do {
+                let result = try await Self.offMain { try preparation.compare(baseline, snapshot) }
+                try Task.checkCancellation()
+                guard self.currentComparison(generation, selected: selected) else { return }
+                self.comparison = PreparedBuildComparison(result: result, beforeSynthetic: beforeSynthetic,
+                                                          afterSynthetic: afterSynthetic)
+                self.comparisonNotice = nil
+            } catch is CancellationError {
+                // Cancelled preparation cannot publish a result or a late failure.
+            } catch {
+                guard !Task.isCancelled, self.currentComparison(generation, selected: selected) else { return }
+                self.comparisonNotice = "These builds could not be compared completely. Their identities may be ambiguous or conflicting, or the number of differences exceeds the supported limit. Both builds were preserved."
+            }
+        }
+        comparisonTask = operation
+        return operation
+    }
+    private func currentComparison(_ generation: UUID, selected: DraftRecord) -> Bool {
+        comparisonGeneration == generation && self.selected?.id == selected.id
+            && self.selected?.revision == selected.revision
+    }
+    /// Leaving the library cancels in-flight work without removing a completed
+    /// comparison when navigation opens its immutable detail view.
+    func cancelComparison() { if comparing { invalidateComparison() } }
+    private func invalidateComparison() {
+        comparisonTask?.cancel(); comparisonTask = nil; comparisonGeneration = nil
+        comparing = false; comparison = nil; comparisonNotice = nil
     }
     /// Capture intent before a queued Task can observe a different alias or row.
     /// The returned operation permits cancellation/acknowledgement; it never

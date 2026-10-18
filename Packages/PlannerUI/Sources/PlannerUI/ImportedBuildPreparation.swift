@@ -13,6 +13,15 @@ struct ImportedBuildPreparation: Sendable {
     }
     let preview: @Sendable (Data) throws -> ImportPreview
     let export: @Sendable (ExportRequest) throws -> Data
+    let compare: @Sendable (BuildSnapshot, BuildSnapshot) throws -> BuildComparison
+
+    init(preview: @escaping @Sendable (Data) throws -> ImportPreview,
+         export: @escaping @Sendable (ExportRequest) throws -> Data,
+         compare: @escaping @Sendable (BuildSnapshot, BuildSnapshot) throws -> BuildComparison = {
+             try BuildComparison.compare($0, $1)
+         }) {
+        self.preview = preview; self.export = export; self.compare = compare
+    }
 
     static let live = Self(preview: { try BuildTransfer.preview($0) }, export: { request in
         var data = try BuildTransfer.export(request.snapshot, publicOwnerAlias: request.publicAlias)

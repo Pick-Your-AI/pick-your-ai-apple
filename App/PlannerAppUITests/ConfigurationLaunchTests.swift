@@ -35,6 +35,7 @@ final class ConfigurationLaunchTests: XCTestCase {
         XCTAssertEqual(app.staticTexts["configurationFailureDetails"].label,
                        "This build requires a service endpoint. Install a correctly configured build. Local drafts have not been opened.")
         XCTAssertFalse(app.buttons["newDraft"].exists, "Invalid configuration must not open preview libraries")
+        XCTAssertFalse(app.buttons["Demo catalog"].exists, "Invalid configuration must not expose the synthetic catalog")
         XCTAssertFalse(app.staticTexts["runtimeDiagnostics"].exists, "A rejected build cannot report a ready environment")
         XCTAssertFalse(app.textFields["draftTitle"].exists)
     }

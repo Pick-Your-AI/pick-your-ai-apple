@@ -13,7 +13,7 @@ journey = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(journey)
 PREEXISTING = "ABCDEF01-2345-4678-9ABC-DEF012345678"
 CREATED = ("10000000-0000-0000-0000-000000000001", "20000000-0000-0000-0000-000000000001")
-PASSING = {"result": "Passed", "totalTestCount": 2, "passedTests": 2,
+PASSING = {"result": "Passed", "totalTestCount": 3, "passedTests": 3,
            "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}
 
 
@@ -70,8 +70,14 @@ class UIJourneyRunnerTests(unittest.TestCase):
         command = journey.test_command(CREATED[0], Path("retained.xcresult"))
         self.assertEqual(command[:2], ["xcodebuild", "test"])
         self.assertIn(f"platform=iOS Simulator,id={CREATED[0]}", command)
-        self.assertIn(f"-only-testing:{journey.TEST}", command)
-        self.assertIn(f"-only-testing:{journey.LIFECYCLE_TEST}", command)
+        self.assertEqual(
+            [arg.removeprefix("-only-testing:") for arg in command if arg.startswith("-only-testing:")],
+            list(journey.TESTS),
+        )
+        self.assertEqual(len(journey.TESTS), 3)
+        self.assertIn(journey.TEST, journey.TESTS)
+        self.assertIn(journey.CATALOG_TEST, journey.TESTS)
+        self.assertIn(journey.LIFECYCLE_TEST, journey.TESTS)
         self.assertIn("CODE_SIGNING_ALLOWED=NO", command)
         self.assertIn("ONLY_ACTIVE_ARCH=YES", command)
         self.assertIn("retained.xcresult", command)
@@ -80,16 +86,18 @@ class UIJourneyRunnerTests(unittest.TestCase):
         self.assertNotIn("-allowProvisioningUpdates", command)
         self.assertNotIn("-retry-tests-on-failure", command)
 
-    def test_summary_requires_exactly_both_selected_real_tests(self):
+    def test_summary_requires_exactly_three_selected_real_tests(self):
         self.assertTrue(journey.summary_passed(PASSING))
         for key, value in (("result", "Failed"), ("totalTestCount", 0), ("passedTests", 0),
+                           ("totalTestCount", 1), ("passedTests", 1), ("totalTestCount", 2),
+                           ("passedTests", 2), ("totalTestCount", 4), ("passedTests", 4),
                            ("failedTests", 1), ("skippedTests", 1), ("expectedFailures", 1)):
             with self.subTest(key=key):
                 self.assertFalse(journey.summary_passed({**PASSING, key: value}))
         self.assertFalse(journey.summary_passed({}))
         self.assertFalse(journey.summary_passed({**PASSING, "totalTestCount": 1, "passedTests": 1}))
         self.assertFalse(journey.summary_passed({**PASSING, "failedTests": False}))
-        self.assertFalse(journey.summary_passed({**PASSING, "passedTests": 2.0}))
+        self.assertFalse(journey.summary_passed({**PASSING, "passedTests": 3.0}))
 
     def test_live_configuration_selects_its_actual_build_and_single_launch_guard_test(self):
         passing = {**PASSING, "totalTestCount": 1, "passedTests": 1}
