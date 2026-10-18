@@ -1,5 +1,10 @@
 import Foundation
 import XCTest
+#if canImport(Darwin)
+import Darwin
+#elseif canImport(Glibc)
+import Glibc
+#endif
 @testable import PlannerCatalog
 
 final class CatalogCacheTests: XCTestCase, @unchecked Sendable {
@@ -57,6 +62,50 @@ final class CatalogCacheTests: XCTestCase, @unchecked Sendable {
         } catch { XCTAssertEqual(error as? CatalogCacheError, .corruptCache) }
         let attributes = try FileManager.default.attributesOfItem(atPath: file.path)
         XCTAssertEqual(attributes[.type] as? FileAttributeType, .typeDirectory)
+    }
+
+    func testNonDirectoryCacheParentRemainsCorruptAndPreserved() async throws {
+        let parent = try directory()
+        let file = parent.appendingPathComponent("not-a-directory")
+        let original = Data("retain this file".utf8)
+        try original.write(to: file)
+        do {
+            _ = try await cache(file).load(mode: .syntheticPreview)
+            XCTFail("A non-directory parent was accepted as an absent cache")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .corruptCache) }
+        XCTAssertEqual(try Data(contentsOf: file), original)
+    }
+
+    func testNamedPipeAtEnvelopePathRemainsCorruptAndPreserved() async throws {
+        let url = try directory()
+        let file = url.appendingPathComponent("active-preview-v1.json")
+        let status = file.withUnsafeFileSystemRepresentation { path in
+            guard let path else { return Int32(-1) }
+            return mkfifo(path, mode_t(0o600))
+        }
+        XCTAssertEqual(status, 0)
+        do {
+            _ = try await cache(url).load(mode: .syntheticPreview)
+            XCTFail("A named pipe was accepted as an absent or valid cache")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .corruptCache) }
+        var metadata = stat()
+        let retained = file.withUnsafeFileSystemRepresentation { path in
+            guard let path else { return Int32(-1) }
+            return lstat(path, &metadata)
+        }
+        XCTAssertEqual(retained, 0)
+        XCTAssertEqual(metadata.st_mode & mode_t(S_IFMT), mode_t(S_IFIFO))
+    }
+
+    func testSymlinkLoopRemainsCorruptAndPreserved() async throws {
+        let url = try directory()
+        let file = url.appendingPathComponent("active-preview-v1.json")
+        try FileManager.default.createSymbolicLink(atPath: file.path, withDestinationPath: file.lastPathComponent)
+        do {
+            _ = try await cache(url).load(mode: .syntheticPreview)
+            XCTFail("A symbolic-link loop was accepted as an absent cache")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .corruptCache) }
+        XCTAssertEqual(try FileManager.default.destinationOfSymbolicLink(atPath: file.path), file.lastPathComponent)
     }
 
     func testProductionRejectsEvenEmptyCacheAndEmptyManifest() async throws {
