@@ -11,49 +11,6 @@ public enum EvaluationReadiness: String, Codable, Sendable {
 public enum EvaluationOutcome: String, Codable, Sendable { case pass, fail, unknown, skipped }
 public enum EvaluationSeverity: String, Codable, Sendable { case error, warning, info }
 
-private struct EvaluationKey: CodingKey {
-    let stringValue: String
-    let intValue: Int? = nil
-    init?(stringValue: String) { self.stringValue = stringValue }
-    init?(intValue: Int) { return nil }
-}
-private func evaluationReject(_ decoder: Decoder, _ message: String) -> DecodingError {
-    .dataCorrupted(.init(codingPath: decoder.codingPath, debugDescription: message))
-}
-private func evaluationKeys(_ decoder: Decoder, _ allowed: [String]) throws {
-    let c = try decoder.container(keyedBy: EvaluationKey.self)
-    if c.allKeys.contains(where: { !allowed.contains($0.stringValue) }) {
-        throw evaluationReject(decoder, "Unknown property in frozen-v1 object")
-    }
-}
-private func evaluationMatches(_ value: String, _ pattern: String) -> Bool {
-    value.range(of: pattern, options: .regularExpression) != nil
-}
-private func evaluationID(_ value: String) -> Bool {
-    evaluationMatches(value, "\\A[a-z][a-z0-9._:-]{2,119}\\z")
-}
-
-// Explicit Gregorian validation prevents Foundation's date-parser normalization.
-// Leap-second timestamps are outside this client's supported representation.
-private func evaluationTimestamp(_ text: String) -> Bool {
-    let pattern = #"\A([0-9]{4})-([0-9]{2})-([0-9]{2})[Tt]([0-9]{2}):([0-9]{2}):([0-9]{2})(?:\.[0-9]+)?(?:[Zz]|[+-]([0-9]{2}):([0-9]{2}))\z"#
-    guard let regex = try? NSRegularExpression(pattern: pattern),
-          let match = regex.firstMatch(in: text, range: NSRange(text.startIndex..., in: text))
-    else { return false }
-    let ns = text as NSString
-    func component(_ index: Int) -> Int {
-        let range = match.range(at: index)
-        return range.location == NSNotFound ? 0 : Int(ns.substring(with: range)) ?? -1
-    }
-    let year = component(1), month = component(2), day = component(3)
-    guard year >= 1, (1...12).contains(month),
-          (0...23).contains(component(4)), (0...59).contains(component(5)),
-          (0...59).contains(component(6)), (0...23).contains(component(7)),
-          (0...59).contains(component(8)) else { return false }
-    let leap = year.isMultiple(of: 4) && (!year.isMultiple(of: 100) || year.isMultiple(of: 400))
-    let days = [31, leap ? 29 : 28, 31, 30, 31, 30, 31, 31, 30, 31, 30, 31]
-    return (1...days[month - 1]).contains(day)
-}
 
 /// Arbitrary evidence with a maximum nesting depth of 32. Null is distinct from absence.
 public indirect enum EvaluationJSONValue: Codable, Equatable, Sendable {
@@ -63,14 +20,14 @@ public indirect enum EvaluationJSONValue: Codable, Equatable, Sendable {
         try self.init(from: decoder, depth: 0)
     }
     private init(from decoder: Decoder, depth: Int) throws {
-        guard depth <= 32 else { throw evaluationReject(decoder, "Evidence nesting exceeds 32") }
+        guard depth <= 32 else { throw contractReject(decoder, "Evidence nesting exceeds 32") }
         let c = try decoder.singleValueContainer()
         if c.decodeNil() { self = .null }
         else if let v = try? c.decode(Bool.self) { self = .bool(v) }
         else if let v = try? c.decode(String.self) { self = .string(v) }
         else if let v = try? c.decode(Decimal.self), !v.isNaN {
             guard decoder.userInfo[evaluationPreflightKey] as? Bool == true else {
-                throw evaluationReject(decoder, "Numeric evidence requires EvaluationReport.decode preflight")
+                throw contractReject(decoder, "Numeric evidence requires EvaluationReport.decode preflight")
             }
             self = .number(v)
         }
@@ -79,7 +36,7 @@ public indirect enum EvaluationJSONValue: Codable, Equatable, Sendable {
             while !a.isAtEnd { values.append(try .init(from: a.superDecoder(), depth: depth + 1)) }
             self = .array(values)
         } else {
-            let o = try decoder.container(keyedBy: EvaluationKey.self)
+            let o = try decoder.container(keyedBy: ContractBoundaryKey.self)
             var values: [String: EvaluationJSONValue] = [:]
             for key in o.allKeys { values[key.stringValue] = try .init(from: o.superDecoder(forKey: key), depth: depth + 1) }
             self = .object(values)
@@ -132,7 +89,7 @@ private struct EvaluationReportWire: Codable, Equatable, Sendable {
         case summary = "summary"
     }
     public init(from decoder: Decoder) throws {
-        try evaluationKeys(decoder, ["schema_version", "id", "build_id", "build_revision", "catalog_snapshot_id", "ruleset_id", "ruleset_version", "dependency_graph_id", "dependency_graph_revision", "evaluated_at", "result", "deployment_readiness", "findings", "summary"])
+        try contractKeys(decoder, ["schema_version", "id", "build_id", "build_revision", "catalog_snapshot_id", "ruleset_id", "ruleset_version", "dependency_graph_id", "dependency_graph_revision", "evaluated_at", "result", "deployment_readiness", "findings", "summary"])
         let c = try decoder.container(keyedBy: CodingKeys.self)
         schemaVersion = try c.decode(String.self, forKey: .schemaVersion)
         id = try c.decode(String.self, forKey: .id)
@@ -149,13 +106,13 @@ private struct EvaluationReportWire: Codable, Equatable, Sendable {
         findings = try c.decode([EvaluationFinding].self, forKey: .findings)
         summary = try c.decode(EvaluationSummary.self, forKey: .summary)
 
-        guard schemaVersion == "1.0.0" else { throw evaluationReject(decoder, "Unsupported schema version") }
-        guard [id, buildID, catalogSnapshotID, rulesetID, dependencyGraphID].allSatisfy(evaluationID),
+        guard schemaVersion == "1.0.0" else { throw contractReject(decoder, "Unsupported schema version") }
+        guard [id, buildID, catalogSnapshotID, rulesetID, dependencyGraphID].allSatisfy(contractID),
               buildRevision >= 1, dependencyGraphRevision >= 1,
-              evaluationMatches(rulesetVersion, "\\A[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?\\z")
-        else { throw evaluationReject(decoder, "Invalid identity, revision or ruleset version") }
-        guard evaluationTimestamp(evaluatedAt)
-        else { throw evaluationReject(decoder, "Invalid or unsupported evaluation timestamp") }
+              contractMatches(rulesetVersion, "\\A[0-9]+\\.[0-9]+\\.[0-9]+(?:-[0-9A-Za-z.-]+)?\\z")
+        else { throw contractReject(decoder, "Invalid identity, revision or ruleset version") }
+        guard contractTimestamp(evaluatedAt)
+        else { throw contractReject(decoder, "Invalid or unsupported evaluation timestamp") }
     }
 }
 
@@ -228,7 +185,7 @@ public struct EvaluationFinding: Codable, Equatable, Sendable {
         case evidence = "evidence"
     }
     public init(from decoder: Decoder) throws {
-        try evaluationKeys(decoder, ["rule_id", "outcome", "severity", "code", "message", "remediation", "selection_ids", "evidence"])
+        try contractKeys(decoder, ["rule_id", "outcome", "severity", "code", "message", "remediation", "selection_ids", "evidence"])
         let c = try decoder.container(keyedBy: CodingKeys.self)
         ruleID = try c.decode(String.self, forKey: .ruleID)
         outcome = try c.decode(EvaluationOutcome.self, forKey: .outcome)
@@ -239,11 +196,11 @@ public struct EvaluationFinding: Codable, Equatable, Sendable {
         selectionIDs = try c.decode([String].self, forKey: .selectionIDs)
         evidence = c.contains(.evidence) ? try c.decode([EvaluationEvidence].self, forKey: .evidence) : nil
 
-        guard evaluationID(ruleID), !message.isEmpty,
-              evaluationMatches(code, "\\A[A-Z][A-Z0-9_]{2,80}\\z"),
-              selectionIDs.allSatisfy({ evaluationMatches($0, "\\A[a-z][a-z0-9_-]{2,79}\\z") }),
+        guard contractID(ruleID), !message.isEmpty,
+              contractMatches(code, "\\A[A-Z][A-Z0-9_]{2,80}\\z"),
+              selectionIDs.allSatisfy({ contractMatches($0, "\\A[a-z][a-z0-9_-]{2,79}\\z") }),
               Set(selectionIDs).count == selectionIDs.count
-        else { throw evaluationReject(decoder, "Invalid finding identity, code, message or selections") }
+        else { throw contractReject(decoder, "Invalid finding identity, code, message or selections") }
     }
 }
 
@@ -259,7 +216,7 @@ public struct EvaluationEvidence: Codable, Equatable, Sendable {
         case sourceVersion = "source_version"
     }
     public init(from decoder: Decoder) throws {
-        try evaluationKeys(decoder, ["path", "observed", "expected", "source_version"])
+        try contractKeys(decoder, ["path", "observed", "expected", "source_version"])
         let c = try decoder.container(keyedBy: CodingKeys.self)
         path = try c.decode(String.self, forKey: .path)
         observed = c.contains(.observed) ? try c.decode(EvaluationJSONValue.self, forKey: .observed) : nil
@@ -280,7 +237,7 @@ public struct EvaluationSummary: Codable, Equatable, Sendable {
         case skipped = "skipped"
     }
     public init(from decoder: Decoder) throws {
-        try evaluationKeys(decoder, ["passed", "failed", "unknown", "skipped"])
+        try contractKeys(decoder, ["passed", "failed", "unknown", "skipped"])
         let c = try decoder.container(keyedBy: CodingKeys.self)
         passed = try c.decode(Int.self, forKey: .passed)
         failed = try c.decode(Int.self, forKey: .failed)
@@ -288,7 +245,7 @@ public struct EvaluationSummary: Codable, Equatable, Sendable {
         skipped = try c.decode(Int.self, forKey: .skipped)
 
         guard [passed, failed, unknown, skipped].allSatisfy({ $0 >= 0 })
-        else { throw evaluationReject(decoder, "Negative summary count") }
+        else { throw contractReject(decoder, "Negative summary count") }
     }
 }
 
