@@ -1,0 +1,11 @@
+{
+  "repository": "Pick-Your-AI/pick-your-ai-research",
+  "revision": "7acbefbf4e4e700231e88be272bc89e3a73dde15",
+  "contractVersion": "1.0.0",
+  "files": {
+    "schemas/build.schema.json": "1beacb0b01fcdea0b8b47357cdf2e99d80a10b8a4218aaac9e3b6af55391b42a",
+    "schemas/selection.schema.json": "f8f189c6555fec41e616c32f081d06fab9f966b0fa4891ddca55580f577d51a8",
+    "schemas/common.schema.json": "0342ce2f1114e7276fc7f6a08ff5b86e8727caadd83ae4f443de9a7e1431c43c",
+    "examples/build.json": "26762208769a8cf1012b4f33b1c1608556d275187ce21117d0b9632cdf951864"
+  }
+}
