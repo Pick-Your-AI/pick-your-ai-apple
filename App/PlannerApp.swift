@@ -16,10 +16,17 @@ struct PlannerApp: App {
     }
     var body: some Scene {
         WindowGroup {
-            if let store { DraftLibraryView(store: store) }
-            else {
-                ContentUnavailableView("Local storage unavailable", systemImage: "externaldrive.badge.exclamationmark",
-                    description: Text("Your existing data has not been reset. Unlock the device, check available storage, and reopen the app."))
+            TabView {
+                Group {
+                    if let store { DraftLibraryView(store: store) }
+                    else {
+                        ContentUnavailableView("Local storage unavailable", systemImage: "externaldrive.badge.exclamationmark",
+                            description: Text("Your existing data has not been reset. Unlock the device, check available storage, and reopen the app."))
+                    }
+                }
+                .tabItem { Label("Notes", systemImage: "note.text") }
+                CatalogBrowserView()
+                    .tabItem { Label("Demo catalog", systemImage: "square.grid.2x2") }
             }
         }
     }
