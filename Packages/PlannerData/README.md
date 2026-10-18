@@ -60,9 +60,19 @@ are design inputs; the tests below are evidence of this implementation's behavio
 On macOS with Xcode 16.4 (16F6), or Swift 6.0.3 on Linux with SQLite headers/library:
 
 ```sh
+python3 -m unittest discover -s tools/storage/tests -p 'test_crash_replay.py' -v
 swift test --package-path Packages/PlannerData --scratch-path .build-storage -Xswiftc -warnings-as-errors
 python3 tools/storage/crash_replay.py .build-storage/debug/DraftCrashProbe
 ```
+
+The replay driver's exit-code, integrity and migration-rollback checks use
+explicit runtime failures and remain active under optimized Python. Its
+[portable regression tests](../../tools/storage/tests/test_crash_replay.py)
+exercise every probe phase, invalid SQLite contents and changed migration state
+in normal and optimized Python, with a valid synthetic protocol control. These
+fixtures test the driver; they do not execute Swift or establish native storage
+durability. The mandatory hosted step retains `storage-replay-guards.log` with
+the existing storage evidence, and the actual native crash probe still runs.
 
 Tests cover incomplete drafts, exact-byte locks, stale writes, restoration, scoped
 CRUD, corrupt records in a 503-entry library, migrations, actual `SQLITE_FULL`
