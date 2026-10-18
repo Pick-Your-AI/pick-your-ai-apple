@@ -187,6 +187,60 @@ extension DraftLibraryModelTests {
         XCTAssertFalse(model.dirty)
         XCTAssertEqual(model.status, "Saved locally")
         XCTAssertTrue(model.notice?.contains("could not refresh") == true)
+        await controlled.configure()
+        await model.refresh()
+        XCTAssertNil(model.notice)
+        XCTAssertEqual(model.selected?.revision, 2)
+        XCTAssertEqual(model.records.first?.title, "Committed")
+        XCTAssertEqual(model.status, "Saved locally")
+        XCTAssertFalse(model.dirty)
+    }
+    func testSuccessfulRefreshClearsLibraryFailureAndLoadsCurrentRecords() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled)
+        await model.create()
+        let original = try XCTUnwrap(model.selected)
+        model.close()
+        await controlled.configure(failRefresh: true)
+        await model.refresh()
+        XCTAssertNotNil(model.notice)
+        XCTAssertEqual(model.records, [original])
+        XCTAssertFalse(model.busy)
+        let updated = try await store.rename(id: original.id, expectedRevision: original.revision, title: "New durable title")
+        await controlled.configure()
+        await model.refresh()
+        XCTAssertEqual(model.records, [updated])
+        XCTAssertNil(model.notice)
+        XCTAssertFalse(model.busy)
+    }
+    func testLibraryFailureAndRecoveryPreserveConflictGuidanceAndUnsavedInput() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled)
+        await model.create()
+        let original = try XCTUnwrap(model.selected)
+        let concurrent = try await store.rename(id: original.id, expectedRevision: original.revision, title: "Concurrent edit")
+        model.title = "Unsaved title"; model.notes = "Unsaved notes"
+        await model.save()
+        let conflictNotice = try XCTUnwrap(model.notice)
+        XCTAssertTrue(conflictNotice.contains("newer revision"))
+        await controlled.configure(failRefresh: true)
+        await model.refresh()
+        XCTAssertEqual(model.notice, conflictNotice)
+        await controlled.configure()
+        await model.refresh()
+        XCTAssertEqual(model.notice, conflictNotice)
+        XCTAssertEqual(model.title, "Unsaved title")
+        XCTAssertEqual(model.notes, "Unsaved notes")
+        XCTAssertTrue(model.dirty)
+        XCTAssertEqual(model.status, "Not saved")
+        XCTAssertEqual(model.selected, original)
+        XCTAssertEqual(model.records, [concurrent])
+        let durable = try await store.read(id: original.id)
+        XCTAssertEqual(durable, concurrent)
     }
     func testDirtyNavigationGuardsAndSelectedDeletion() async throws {
         let (_, model, folder) = try fixture()
@@ -251,6 +305,34 @@ extension DraftLibraryModelTests {
         XCTAssertFalse(model.hasNextPage)
         await model.changePage(forward: false)
         XCTAssertEqual(model.records.count, DraftLibraryModel.pageSize)
+    }
+    func testPageRetryClearsItsFailureWithoutReplacingRowsOnFailedRead() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        for index in 0...DraftLibraryModel.pageSize {
+            _ = try await store.save(id: UUID(), expectedRevision: nil, title: "Draft \(index)",
+                payload: JSONEncoder().encode(EditorPayload(notes: "Synthetic page recovery case")))
+        }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled)
+        await model.refresh()
+        let firstPage = model.records
+        XCTAssertEqual(firstPage.count, DraftLibraryModel.pageSize)
+        await controlled.configure(failRefresh: true)
+        await model.changePage(forward: true)
+        XCTAssertEqual(model.pageOffset, 0)
+        XCTAssertEqual(model.records, firstPage)
+        XCTAssertTrue(model.hasNextPage)
+        XCTAssertNotNil(model.notice)
+        XCTAssertFalse(model.busy)
+        await controlled.configure()
+        await model.changePage(forward: true)
+        XCTAssertEqual(model.pageOffset, DraftLibraryModel.pageSize)
+        XCTAssertEqual(model.records.count, 1)
+        XCTAssertTrue(Set(firstPage.map(\.id)).isDisjoint(with: model.records.map(\.id)))
+        XCTAssertFalse(model.hasNextPage)
+        XCTAssertNil(model.notice)
+        XCTAssertFalse(model.busy)
     }
 }
 
