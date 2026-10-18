@@ -87,7 +87,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
     def test_combined_profiles_require_each_class_qualified_group_through_cli(self):
         for profile in ("catalog-editor-transfer", "catalog-editor-ui", "comparison-catalog-editor-ui",
                         "quality-catalog-editor-transfer", "catalog-source-ui",
-                        "comparison-catalog-source-ui"):
+                        "comparison-catalog-source-ui", "catalog-recorded-versions-ui"):
             text = self.profile_log(profile)
             with self.subTest(profile=profile):
                 self.assertEqual(self.run_profile(profile, text), 0)
@@ -108,7 +108,8 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                 ("catalog-editor-transfer", "quality-catalog-editor-transfer"),
                 ("catalog-editor-ui", "catalog-source-ui"),
                 ("comparison-catalog-editor-ui", "comparison-catalog-source-ui"),
-                ("catalog-source-ui", "comparison-catalog-source-ui")):
+                ("catalog-source-ui", "comparison-catalog-source-ui"),
+                ("comparison-catalog-source-ui", "catalog-recorded-versions-ui")):
             with self.subTest(stacked=stacked):
                 self.assertEqual(self.run_profile(stacked, self.profile_log(stacked)), 0)
                 padded = self.profile_log(stacked, total=gate.PROFILES[receiving][0])

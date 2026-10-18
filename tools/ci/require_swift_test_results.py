@@ -166,6 +166,23 @@ PROFILES["comparison-catalog-source-ui"] = (110, {
         PROFILES["catalog-source-ui"][1]["PlannerUITests.CatalogSourceReviewModelTests"],
 })
 
+# Recorded-version navigation adds nine cases to the complete comparison/source
+# receiver. Historical receipts keep their own exact totals and required groups.
+PROFILES["catalog-recorded-versions-ui"] = (119, {
+    **PROFILES["comparison-catalog-source-ui"][1],
+    "PlannerUITests.CatalogRecordedVersionsTests": (
+        "testBundledRecordedVersionsKeepAllKindsAndExistingPageCursor",
+        "testBundledRecordedVersionsRejectChangedHashAndForgedAnchor",
+        "testVersionProjectionPreservesOpaqueVersionsAndExplicitDetailNavigation",
+        "testVersionProjectionRejectsAmbiguityAndBoundsCompleteListing",
+        "testOnlyCompleteListedRowsCanRequestInspection",
+        "testMalformedListingsCannotBecomeEmptyOrNavigableResults",
+        "testFailureRetryPreservesTheExactDetailAndCatalogHash",
+        "testDismissalRejectsLateResultsErrorsAndRetiredActions",
+        "testChangedDetailPinInvalidatesAnOutstandingVersionRequest",
+    ),
+})
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

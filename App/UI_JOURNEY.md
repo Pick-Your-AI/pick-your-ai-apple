@@ -44,6 +44,13 @@ does not establish pagination across an arbitrarily populated library.
 
 ## Catalog browsing journey
 
+The isolated [recorded-version consumer](../docs/validation/catalog-recorded-versions.md)
+also requires the bundled catalog's exact one-version count, its explicit
+no-other-version label and no alternate-version buttons. This candidate retains
+all existing detail/source/filter assertions and the same two full journey names.
+The new 119-case UI profile and these additional native assertions remain
+unexecuted; the original canonical 110-case attempt is preserved separately.
+
 [`PlannerAppUITests/CatalogBrowserJourneyTests.swift`](PlannerAppUITests/CatalogBrowserJourneyTests.swift)
 uses the same actual app and ordinary controls to browse the fixed synthetic
 catalog. It verifies the initial 25-of-29 result count, combines a query with the

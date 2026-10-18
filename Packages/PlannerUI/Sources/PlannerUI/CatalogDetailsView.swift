@@ -6,11 +6,16 @@ import PlannerTransfer
 /// destination before a one-use system handoff; the preview approves no hosts.
 struct CatalogPreviewDetails: View {
     @StateObject private var model: CatalogDetailsModel
+    @StateObject private var versions: CatalogRecordedVersionsModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
+    private let inspectVersion: @MainActor (CatalogBrowserRow) -> Bool
 
-    init(row: CatalogBrowserRow, source: any CatalogDetailSource) {
+    init(row: CatalogBrowserRow, source: any CatalogDetailSource,
+         inspectVersion: @escaping @MainActor (CatalogBrowserRow) -> Bool) {
         _model = StateObject(wrappedValue: CatalogDetailsModel(row: row, source: source))
+        _versions = StateObject(wrappedValue: CatalogRecordedVersionsModel(row: row, source: source))
+        self.inspectVersion = inspectVersion
     }
 
     var body: some View {
@@ -38,6 +43,7 @@ struct CatalogPreviewDetails: View {
                     LabeledContent("Version") { literal(model.row.item.version) }
                     LabeledContent("Identifier") { literal(model.row.item.id) }
                 }
+                if model.result != nil { recordedVersions }
                 Section("Assessment") {
                     LabeledContent("Compatibility", value: "Unknown")
                     LabeledContent("Price estimate", value: "Unknown")
@@ -59,11 +65,60 @@ struct CatalogPreviewDetails: View {
             }
             .accessibilityIdentifier("catalogDetailsForm")
             .navigationTitle("Component details")
-            .toolbar { Button("Done") { model.close(); dismiss() } }
+            .toolbar { Button("Done") { retire(); dismiss() } }
             .task { model.loadIfNeeded() }
-            .onDisappear { model.close() }
+            .onChange(of: model.result) { _, result in
+                if let result { versions.loadIfNeeded(details: result) }
+            }
+            .onDisappear { retire() }
         }
     }
+
+    private var recordedVersions: some View {
+        Section("Recorded versions") {
+            Text("These entries share this exact identifier and kind in the pinned catalog. Other product variants, the latest version and availability have not been established.")
+            if versions.isLoading {
+                ProgressView("Checking recorded versions…")
+                    .accessibilityIdentifier("catalogVersionsLoading")
+            }
+            if versions.unavailable {
+                Text("Other recorded versions could not be checked or opened. This component and your browsing filters are preserved. You can close and reopen details.")
+                    .accessibilityIdentifier("catalogVersionsUnavailable")
+                if versions.canRetry {
+                    Button("Retry recorded versions") { versions.retry() }
+                        .accessibilityIdentifier("catalogVersionsRetry")
+                }
+            }
+            if let result = versions.result {
+                Text("Recorded versions in this catalog: \(result.rows.count)")
+                    .accessibilityIdentifier("catalogVersionCount")
+                if versions.otherVersions.isEmpty {
+                    Text("No other version of this identifier and kind is recorded in this catalog.")
+                        .accessibilityIdentifier("catalogVersionsNoOthers")
+                } else {
+                    Text("Ordered by recorded version text. Inspecting another version does not select or replace a build component.")
+                    ForEach(versions.otherVersions) { row in
+                        Button {
+                            guard let target = versions.selection(for: row) else { return }
+                            if inspectVersion(target) { retire() }
+                            else { versions.rejectSelection() }
+                        } label: {
+                            VStack(alignment: .leading, spacing: 4) {
+                                Text("Inspect recorded version")
+                                literal(row.item.version)
+                                literal(row.item.title)
+                            }
+                            .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
+                        }
+                        .accessibilityIdentifier("catalogRecordedVersion-\(row.item.version)")
+                    }
+                }
+            }
+        }
+    }
+
+    private func retire() { model.close(); versions.close() }
 
     @ViewBuilder
     private func recordedDetails(_ details: CatalogItemDetails) -> some View {

@@ -13,6 +13,15 @@ struct CatalogPinnedDetails: Equatable, Sendable {
 
 protocol CatalogDetailSource: Sendable {
     func details(for row: CatalogBrowserRow) async throws -> CatalogPinnedDetails
+    func recordedVersions(for row: CatalogBrowserRow, snapshotSHA256: String) async throws -> CatalogRecordedVersionListing
+}
+
+extension CatalogDetailSource {
+    // An existing detail provider need not claim a complete version listing.
+    // Lack of that capability remains unavailable, never an empty result.
+    func recordedVersions(for row: CatalogBrowserRow, snapshotSHA256: String) async throws -> CatalogRecordedVersionListing {
+        throw CatalogSearchError.snapshotUnavailable
+    }
 }
 
 /// A detail sheet must be recreated when any displayed item or catalog pin

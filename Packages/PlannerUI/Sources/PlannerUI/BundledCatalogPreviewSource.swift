@@ -54,6 +54,14 @@ public actor BundledCatalogPreviewSource: CatalogBrowsingSource, CatalogDetailSo
                                         snapshot: Self.identity(snapshot), sha256: Self.expectedSHA256)
     }
 
+    func recordedVersions(for row: CatalogBrowserRow, snapshotSHA256: String) async throws -> CatalogRecordedVersionListing {
+        guard snapshotSHA256 == Self.expectedSHA256 else { throw CatalogSearchError.snapshotUnavailable }
+        let snapshot = try qualifiedSnapshot()
+        // The same qualified bytes supply details and all recorded versions.
+        // This does not reinstall the search index or retire its page cursors.
+        return try CatalogRecordedVersionListing.project(snapshot, anchor: row, sha256: Self.expectedSHA256)
+    }
+
     private func qualifiedSnapshot() throws -> CatalogSnapshot {
         if let decodedSnapshot { return decodedSnapshot }
         let snapshot = try CatalogSnapshot.decode(Self.fixtureData())

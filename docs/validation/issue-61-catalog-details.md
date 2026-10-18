@@ -174,7 +174,13 @@ in the delivery PR.
 | Stale or contradictory specifications and unsafe URLs expose limitations and permit only validated navigation. | Original dates and conflicting notes remain available; URLs remain bounded literal text, and explicit source review checks exact approved HTTPS hosts before one-use consent. The fictional preview approves no hosts. | Current-source policy/model execution, native review/recovery and accessibility journeys, approved host/source-use intake, and installed positive handoff evidence. |
 | Criterion results, versions, limitations and receiving disposition are linked. | This scoped consumer receipt records the source boundaries and meaningful projection, model and UI regressions. | Published exact commit, executed checks, independent receiving review and accepted delivery composition. |
 
-Variant selection/replacement, active builder context, screen-reader traversal,
+The isolated [recorded-version consumer](catalog-recorded-versions.md) adds
+explicit inspection of other versions with the same identifier and kind in the
+same qualified catalog. This does not infer a variant family, a latest version or
+a build selection. Its new 119-case receiving profile and native assertions remain
+unexecuted until their own exact-source checks run.
+
+Build component selection/replacement, variant-family navigation, active builder context, screen-reader traversal,
 Dynamic Type, installed devices and production source/service/store acceptance
 remain separate. This partial delivery does not close #61 or declare a new
 owner, deadline or commitment.

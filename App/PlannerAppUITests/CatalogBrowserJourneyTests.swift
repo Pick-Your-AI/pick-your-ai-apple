@@ -100,6 +100,13 @@ final class CatalogBrowserJourneyTests: XCTestCase {
             XCTAssertEqual(value.label, expected)
         }
         retainScreenshot(app, name: "Exact fictional component and pinned catalog details")
+        let versionCount = app.staticTexts["catalogVersionCount"]
+        reveal(versionCount, in: app, towardTop: true, containerID: "catalogDetailsForm")
+        XCTAssertEqual(versionCount.label, "Recorded versions in this catalog: 1")
+        let noOtherVersions = app.staticTexts["catalogVersionsNoOthers"]
+        reveal(noOtherVersions, in: app, towardTop: false, containerID: "catalogDetailsForm")
+        XCTAssertEqual(noOtherVersions.label, "No other version of this identifier and kind is recorded in this catalog.")
+        XCTAssertEqual(app.buttons.matching(NSPredicate(format: "identifier BEGINSWITH %@", "catalogRecordedVersion-")).count, 0)
         let hash = app.staticTexts["catalogDetailHash"]
         reveal(hash, in: app, towardTop: false, containerID: "catalogDetailsForm")
         XCTAssertEqual(hash.label, "2e9120db823faef3e1e330a7d2e8067b3ab064328e2faed699d15cf41880fbf8")

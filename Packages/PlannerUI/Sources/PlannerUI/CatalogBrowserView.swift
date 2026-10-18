@@ -114,7 +114,13 @@ public struct CatalogBrowserView: View {
             }
             .task { model.loadIfNeeded() }
             .sheet(item: $inspected) { row in
-                CatalogPreviewDetails(row: row, source: detailSource).id(CatalogDetailsIdentity(row))
+                CatalogPreviewDetails(row: row, source: detailSource) { target in
+                    guard inspected == row, model.snapshot == row.snapshot,
+                          target.snapshot == row.snapshot, target.item.id == row.item.id,
+                          target.item.kind == row.item.kind else { return false }
+                    inspected = target
+                    return true
+                }.id(CatalogDetailsIdentity(row))
             }
             .sheet(isPresented: $choosingKinds) {
                 NavigationStack {
