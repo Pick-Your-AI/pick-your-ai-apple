@@ -40,9 +40,10 @@ def digest(path):
 
 def verify_source(root):
     """Trust only the pinned manifest, then verify every frozen import byte."""
-    if digest(root / 'IMPORT_MANIFEST.json') != LOCK['import_manifest_sha256']:
+    manifest_bytes = (root / 'IMPORT_MANIFEST.json').read_bytes()
+    if hashlib.sha256(manifest_bytes).hexdigest() != LOCK['import_manifest_sha256']:
         raise ValueError('Frozen import manifest differs from contract-lock.json')
-    manifest = read(root / 'IMPORT_MANIFEST.json')
+    manifest = json.loads(manifest_bytes)
     if manifest['contract_version'] != LOCK['contract_version']:
         raise ValueError('Unexpected contract version')
     for entry in manifest['files']:
@@ -50,6 +51,23 @@ def verify_source(root):
         if not path.is_relative_to(root.resolve()) or digest(path) != entry['sha256']:
             raise ValueError(f"Frozen import hash mismatch: {entry['path']}")
     return manifest
+
+
+def copy_verified_source(root, snapshot, manifest):
+    """Copy listed inputs, then verify the complete copy before consumption."""
+    root = root.resolve()
+    for entry in manifest['files']:
+        source = (root / entry['path']).resolve()
+        if not source.is_relative_to(root):
+            raise ValueError(f"Frozen import hash mismatch: {entry['path']}")
+        target = snapshot / entry['path']
+        target.parent.mkdir(parents=True, exist_ok=True)
+        shutil.copyfile(source, target)
+    # The source checkout can change after verify_source. Pin the bytes that
+    # will actually be consumed, using its already verified in-memory manifest.
+    for entry in manifest['files']:
+        if digest(snapshot / entry['path']) != entry['sha256']:
+            raise ValueError(f"Frozen import hash mismatch: {entry['path']}")
 
 
 def versions():
@@ -166,10 +184,7 @@ def run(root):
     # Copy exactly manifest-covered files, excluding untracked scripts or bytecode.
     with tempfile.TemporaryDirectory() as tmp:
         snapshot = Path(tmp) / 'v1'
-        for entry in manifest['files']:
-            target = snapshot / entry['path']
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(root / entry['path'], target)
+        copy_verified_source(root, snapshot, manifest)
         cases = vectors(snapshot)
         schema = schema_results(snapshot, cases)
         domain = domain_results(snapshot)

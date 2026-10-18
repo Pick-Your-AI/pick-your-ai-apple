@@ -11,6 +11,11 @@ The runner consumes the canonical research import from a read-only checkout.
 `contract-lock.json` pins its revision, contract/fixture versions and import
 manifest hash; every imported file must match that manifest before reference
 code executes. Research branches may advance without changing the frozen bytes.
+Manifest verification and parsing use the same bytes. Both the runner and Swift
+vector exporter also verify every completed copy against that trusted manifest
+before reading copied fixtures or executing copied reference code. Copied-byte
+drift fails without a success result; restoring the pinned bytes permits a normal
+retry. Copying also rechecks source-path containment.
 The copied executable inputs are exactly those listed in the verified manifest;
 no network schema retrieval or untracked source code is needed. The
 [adoption limitations](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/contracts/v1/ADOPTION.md)
