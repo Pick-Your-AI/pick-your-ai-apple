@@ -16,8 +16,39 @@ struct ContractJSONPreflight {
     private var index = 0
     private var values = 0
 
+    /// Pricebook historically accepts Foundation's UTF-8/16/32 input forms.
+    /// Called only after the original byte cap; this view never replaces the
+    /// original data passed to the typed decoder or rounds numeric tokens.
+    static func textView(_ data: Data) throws -> String {
+        let prefix = Array(data.prefix(4))
+        var encoding = String.Encoding.utf8
+        var bomLength = 0
+        if prefix.starts(with: [0, 0, 0xfe, 0xff]) {
+            encoding = .utf32BigEndian; bomLength = 4
+        } else if prefix.starts(with: [0xff, 0xfe, 0, 0]) {
+            encoding = .utf32LittleEndian; bomLength = 4
+        } else if prefix.starts(with: [0xfe, 0xff]) {
+            encoding = .utf16BigEndian; bomLength = 2
+        } else if prefix.starts(with: [0xff, 0xfe]) {
+            encoding = .utf16LittleEndian; bomLength = 2
+        } else if prefix.count == 4 {
+            // Without a BOM, ASCII JSON punctuation identifies the byte order.
+            if prefix[0] == 0 && prefix[1] == 0 && prefix[2] == 0 { encoding = .utf32BigEndian }
+            else if prefix[1] == 0 && prefix[2] == 0 && prefix[3] == 0 { encoding = .utf32LittleEndian }
+            else if prefix[0] == 0 && prefix[2] == 0 { encoding = .utf16BigEndian }
+            else if prefix[1] == 0 && prefix[3] == 0 { encoding = .utf16LittleEndian }
+        }
+        guard let text = String(data: data.dropFirst(bomLength), encoding: encoding) else {
+            throw encoding == .utf8 ? ContractJSONError.invalidUTF8 : ContractJSONError.malformed
+        }
+        return text
+    }
+
     static func validate(_ text: String) throws {
         var scanner = Self(bytes: Array(text.utf8))
+        // Foundation accepts one leading UTF-8 BOM. It is transport framing,
+        // not a primitive value or whitespace allowed elsewhere in the text.
+        if scanner.bytes.starts(with: [0xef, 0xbb, 0xbf]) { scanner.index = 3 }
         try scanner.value(depth: 0)
         scanner.whitespace()
         guard scanner.index == scanner.bytes.count else { throw ContractJSONError.malformed }

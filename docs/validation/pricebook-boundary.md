@@ -21,16 +21,30 @@ criteria remain open.
 
 ## Raw JSON boundary
 
-Both `Pricebook.decode` and `EvaluationReport.decode` require UTF-8 and check raw
-object keys before Foundation creates keyed containers. Repeated keys, escaped
+Both `Pricebook.decode` and `EvaluationReport.decode` check raw object keys before
+Foundation creates keyed containers. Repeated keys, escaped
 spellings of one key, and canonically equivalent Unicode keys reject with a typed
 error that contains no source keys or values. Keys in separate objects remain
-independent. No input bytes, money spelling, or provenance values are normalized.
+independent. The original bytes still go to the existing typed decoder; money
+spelling and provenance values are preserved.
+
+Both entry points retain Foundation's leading UTF-8 byte-order mark support.
+Pricebook also retains UTF-16/32 byte-order detection with or without a BOM, with
+the original Foundation decoder remaining the final authority for supported
+forms. Only its preflight text view is transcoded; it does not parse and serialize
+the artifact. Reports retain their UTF-8 admission rule and reject raw NUL bytes,
+which can otherwise make Foundation detect UTF-16/32 after the UTF-8 numeric
+scan has inspected different tokens. An escaped `\u0000` value remains valid.
+This closes the demonstrated report bypass for `1e101`, `1e-101` and 16-digit
+evidence in the four BOM-less UTF-16/32 byte orders without changing the numeric
+limits.
 
 The shared Core preflight checks framing and limits traversal to root depth zero
 through depth 48 and 131,072 JSON values, counting the root and containers. Object
 names do not count as values; each member's value does. The existing 4 MiB bound
-is checked before text conversion. This avoids unbounded keyed/evidence container
+is checked before text conversion and applies to the original encoding. UTF-16
+can produce at most a 6 MiB UTF-8 view from that bounded input; UTF-32 produces
+no larger view than its input. This avoids unbounded keyed/evidence container
 construction within an otherwise small input. The preflight leaves literal,
 number and string-value interpretation to the existing typed decoder. Report
 numeric limits, its 32-level evidence limit, Pricebook's machine `Int` range,
@@ -42,8 +56,9 @@ define literal replacements on the unchanged hash-pinned canonical fixtures.
 Swift and `tools/conformance/raw_core_vectors.py` apply the replacements directly
 to text; parsing/re-encoding a vector before the boundary would erase the defect.
 The Python replay checks the raw-key profile and frozen structural validation.
-Native tests separately cover invalid UTF-8/non-UTF8 encodings, Unicode key
-equivalence, string punctuation/escapes, exact money and maximum `Int`, malformed
+Native tests separately cover supported BOM/byte-order forms and duplicate keys
+within them, invalid encodings, the report numeric bypass, escaped NUL, Unicode
+key equivalence, string punctuation/escapes, exact money and maximum `Int`, malformed
 and trailing input, and byte/depth/node bounds. Applicable hosted Core Debug,
 Release, iOS SDK and simulator checks remain required for a delivering PR; local
 Linux results alone are not Apple platform acceptance.

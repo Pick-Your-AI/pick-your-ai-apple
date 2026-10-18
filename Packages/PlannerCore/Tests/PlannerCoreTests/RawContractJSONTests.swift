@@ -97,7 +97,7 @@ final class RawContractJSONTests: XCTestCase {
         }
     }
 
-    func testInvalidUTF8AndNonUTF8TransportAreRejected() throws {
+    func testInvalidUTF8IsRejected() throws {
         let invalid = Data([0xff])
         XCTAssertThrowsError(try Pricebook.decode(invalid)) { error in
             XCTAssertEqual(error as? ContractJSONError, .invalidUTF8)
@@ -105,9 +105,104 @@ final class RawContractJSONTests: XCTestCase {
         XCTAssertThrowsError(try EvaluationReport.decode(invalid)) { error in
             XCTAssertEqual(error as? EvaluationBoundaryError, .invalidUTF8)
         }
-        for encoding in [String.Encoding.utf16, .utf32] {
-            XCTAssertThrowsError(try Pricebook.decode(XCTUnwrap(fixture("pricebook").data(using: encoding))))
-            XCTAssertThrowsError(try EvaluationReport.decode(XCTUnwrap(fixture("evaluation-report").data(using: encoding))))
+        for malformed in [Data([0xff, 0xfe, 0x7b]), Data([0, 0, 0xfe, 0xff, 0, 0, 0])] {
+            XCTAssertThrowsError(try Pricebook.decode(malformed))
+        }
+    }
+
+    private func pricebookEncodings(_ text: String) throws -> [(String, Data)] {
+        var forms: [(String, Data)] = [("UTF-8", Data(text.utf8)), ("UTF-8 BOM", Data([0xef, 0xbb, 0xbf]) + Data(text.utf8))]
+        let byteOrders: [(String, String.Encoding, [UInt8])] = [
+            ("UTF-16LE", .utf16LittleEndian, [0xff, 0xfe]),
+            ("UTF-16BE", .utf16BigEndian, [0xfe, 0xff]),
+            ("UTF-32LE", .utf32LittleEndian, [0xff, 0xfe, 0, 0]),
+            ("UTF-32BE", .utf32BigEndian, [0, 0, 0xfe, 0xff])
+        ]
+        for (name, encoding, bom) in byteOrders {
+            let encoded = try XCTUnwrap(text.data(using: encoding))
+            forms.append((name, encoded))
+            // Foundation versions differ on UTF-32LE with BOM. The original
+            // decoder remains authoritative; do not require a new accepted form.
+            if encoding != .utf32LittleEndian { forms.append((name + " BOM", Data(bom) + encoded)) }
+        }
+        return forms
+    }
+
+    func testEncodingCompatibilityPreservesUTF8BOMAtBothEntryPoints() throws {
+        let bom = Data([0xef, 0xbb, 0xbf])
+        XCTAssertEqual(try Pricebook.decode(bom + Data(fixture("pricebook").utf8)).id, "prices.fixture.1")
+        XCTAssertEqual(try EvaluationReport.decode(bom + Data(fixture("evaluation-report").utf8)).buildRevision, 1)
+    }
+
+    func testEncodingCompatibilityPreservesPricebookByteOrdersAndOriginalValues() throws {
+        let original = try fixture("pricebook")
+        let text = original.replacingOccurrences(of: #""Illustrative price, NOT a live market quote.""#, with: #""café 🚀 \u0000""#)
+        for (name, data) in try pricebookEncodings(text) {
+            do {
+                let book = try Pricebook.decode(data)
+                XCTAssertEqual(book.id, "prices.fixture.1", name)
+                XCTAssertEqual(book.revision, 1, name)
+                XCTAssertEqual(book.rates[0].unitPrice.amount.rawValue, "0.80", name)
+                XCTAssertEqual(book.rates[0].provenance.notes, "café 🚀 \u{0}", name)
+            } catch { XCTFail("\(name): \(error)") }
+        }
+    }
+
+    func testEncodingCompatibilityRejectsDuplicateAliasesInEveryPricebookByteOrder() throws {
+        let text = try fixture("pricebook").replacingOccurrences(of: #""revision": 1"#, with: #""revision": 1, "\u0072evision": 2"#)
+        for (name, data) in try pricebookEncodings(text) {
+            XCTAssertThrowsError(try Pricebook.decode(data), name) { error in
+                XCTAssertEqual(error as? ContractJSONError, .duplicateKey, name)
+            }
+        }
+        let report = try replacing(fixture("evaluation-report"), #""build_revision": 1"#, #""build_revision": 1, "\u0062uild_revision": 2"#)
+        XCTAssertThrowsError(try EvaluationReport.decode(Data([0xef, 0xbb, 0xbf]) + report)) { error in
+            XCTAssertEqual(error as? ContractJSONError, .duplicateKey)
+        }
+    }
+
+    func testEncodingCompatibilityCannotBypassReportNumericLimits() throws {
+        for token in ["1e101", "1e-101", "1234567890123456"] {
+            let raw = try reportWithObserved(token)
+            for prefix in [Data(), Data([0xef, 0xbb, 0xbf])] {
+                XCTAssertThrowsError(try EvaluationReport.decode(prefix + raw)) { error in
+                    XCTAssertEqual(error as? EvaluationBoundaryError, .unsupportedNumber)
+                }
+            }
+            let text = try XCTUnwrap(String(data: raw, encoding: .utf8))
+            for encoding in [String.Encoding.utf16LittleEndian, .utf16BigEndian, .utf32LittleEndian, .utf32BigEndian] {
+                let data = try XCTUnwrap(text.data(using: encoding))
+                XCTAssertThrowsError(try EvaluationReport.decode(data), "\(encoding): \(token)") { error in
+                    XCTAssertEqual(error as? EvaluationBoundaryError, .invalidUTF8)
+                }
+            }
+        }
+    }
+
+    func testEncodingCompatibilityPreservesEscapedNULAndRejectsRawNUL() throws {
+        for prefix in [Data(), Data([0xef, 0xbb, 0xbf])] {
+            let valid = try reportWithObserved(#""\u0000""#)
+            XCTAssertEqual(try EvaluationReport.decode(prefix + valid).findings[0].evidence?[0].observed, .string("\u{0}"))
+            let raw = try reportWithObserved("\"\u{0}\"")
+            XCTAssertThrowsError(try EvaluationReport.decode(prefix + raw)) { error in
+                XCTAssertEqual(error as? EvaluationBoundaryError, .invalidUTF8)
+            }
+        }
+    }
+
+    func testEncodingCompatibilityCapsOriginalBytesBeforeTranscoding() throws {
+        let original = try fixture("pricebook")
+        let marker = #""Illustrative price, NOT a live market quote.""#
+        let range = try XCTUnwrap(original.range(of: marker))
+        let count = (Pricebook.maximumPayloadBytes - original.utf16.count * 2) / 2
+        let text = original.replacingCharacters(in: range, with: "\"" + String(repeating: "\u{800}", count: count) + "\"")
+        var data = try XCTUnwrap(text.data(using: .utf16LittleEndian))
+        XCTAssertGreaterThan(text.utf8.count, Pricebook.maximumPayloadBytes)
+        XCTAssertLessThan(data.count, Pricebook.maximumPayloadBytes)
+        XCTAssertEqual(try Pricebook.decode(data).rates[0].provenance.notes?.unicodeScalars.count, count)
+        data.append(Data(repeating: 0, count: Pricebook.maximumPayloadBytes + 1 - data.count))
+        XCTAssertThrowsError(try Pricebook.decode(data)) { error in
+            XCTAssertEqual(error as? Pricebook.BoundaryError, .payloadTooLarge)
         }
     }
 
