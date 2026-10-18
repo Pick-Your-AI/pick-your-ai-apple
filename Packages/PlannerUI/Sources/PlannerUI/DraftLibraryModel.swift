@@ -4,6 +4,7 @@ import PlannerData
 
 /// Actor boundary permits deterministic failure/race tests without fake product data.
 public protocol DraftLibraryStorage: Sendable {
+    func read(id: UUID) async throws -> DraftRecord
     func list(limit: Int, offset: Int) async throws -> DraftPage
     func save(id: UUID, expectedRevision: Int?, title: String, payload: Data) async throws -> DraftRecord
     func duplicate(id: UUID, expectedRevision: Int, newID: UUID) async throws -> DraftRecord
@@ -25,8 +26,19 @@ public final class DraftLibraryModel: ObservableObject {
     @Published public private(set) var busy = false
     @Published public private(set) var notice: String?
     @Published public private(set) var selected: DraftRecord?
-    @Published public var title = "" { didSet { if deleting { title = oldValue } } }
-    @Published public var notes = "" { didSet { if deleting { notes = oldValue } } }
+    @Published private var titleValue = ""
+    @Published private var notesValue = ""
+    public var title: String {
+        get { titleValue }
+        set { if !deleting { titleValue = newValue } }
+    }
+    public var notes: String {
+        get { notesValue }
+        set { if !deleting { notesValue = newValue } }
+    }
+    public static let pageSize = 20
+    @Published public private(set) var pageOffset = 0
+    @Published public private(set) var hasNextPage = false
     @Published public private(set) var status = "Saved locally"
     private var deleting = false
     private var savedTitle = ""
@@ -42,18 +54,28 @@ public final class DraftLibraryModel: ObservableObject {
         do { try await load() } catch { report(error) }
     }
     private func load() async throws {
-        var all: [DraftRecord] = []; var unreadable = 0; var offset = 0
-        while true {
-            let page = try await store.list(limit: 100, offset: offset)
-            all += page.records; unreadable += page.unreadableCount
-            let count = page.records.count + page.unreadableCount
-            if count < 100 { break }
-            offset += count
-        }
-        records = all; unreadableCount = unreadable
+        let page = try await store.list(limit: Self.pageSize, offset: pageOffset)
+        records = page.records; unreadableCount = page.unreadableCount
+        hasNextPage = page.records.count + page.unreadableCount == Self.pageSize
     }
-    public func open(_ record: DraftRecord) {
+    public func changePage(forward: Bool) async {
+        guard !busy, !dirty, forward ? hasNextPage : pageOffset > 0 else { return }
+        let previous = pageOffset
+        pageOffset = max(0, pageOffset + (forward ? Self.pageSize : -Self.pageSize))
+        busy = true
+        defer { busy = false }
+        do { try await load() }
+        catch { pageOffset = previous; report(error) }
+    }
+    public func open(_ record: DraftRecord) async { await open(id: record.id) }
+    public func open(id: UUID) async {
         guard !busy, !dirty else { return }
+        busy = true
+        defer { busy = false }
+        do { adopt(try await store.read(id: id)) }
+        catch { report(error) }
+    }
+    private func adopt(_ record: DraftRecord) {
         do {
             guard let fields = try JSONSerialization.jsonObject(with: record.payload) as? [String: Any],
                   Set(fields.keys) == ["editorVersion", "notes"] else { throw DraftStoreError.invalidDraft }
@@ -110,7 +132,7 @@ public final class DraftLibraryModel: ObservableObject {
                     selected = result
                     savedTitle = submittedTitle; savedNotes = submittedNotes
                 } else if !dirty {
-                    open(result)
+                    adopt(result)
                 }
             }
             status = "Saved locally"
