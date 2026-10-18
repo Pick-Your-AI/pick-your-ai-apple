@@ -5,6 +5,7 @@ This portable Swift 6 package implements part of Apple [#32](https://github.com/
 ## API and integration
 
 - `CatalogItem.decode(_:)` validates a single frozen-v1 catalog item, preserves its exact `CatalogKind` identity and every supported field, and returns an immutable value. Kind-specific specs and their required tier are checked against the unchanged canonical schema. No missing optional fact is filled in and no catalog item becomes a user selection.
+- `CatalogSnapshot.decode(_:)` validates a complete frozen-v1 catalog envelope and every item before returning an immutable snapshot. It preserves catalog identity, exact revision, capture timestamp and item order. A malformed envelope or item rejects the entire document; this boundary cannot activate a cache or publish a partial catalog.
 - `BuildTransfer.snapshot(fromDraftJSON:)` validates a complete frozen-v1 BuildSnapshot and returns an immutable value. Missing fields and fewer than two selections fail; no defaults, locks or synthetic values are inserted. Keep editor drafts in PlannerData even when this transition fails.
 - `BuildTransfer.preview(_:)` accepts a bare snapshot or the existing web `pickyour.ai/build-export` version-1 envelope. Envelope provenance is untrusted metadata, not a verified catalog activation. `usesSyntheticData` is nil for bare imports; do not interpret that as production evidence.
 - `ImportPreview.fork(localOwner:timestamp:)` explicitly creates a new UUID-based build identity, revision 1 and draft lifecycle. Source owner is replaced by the caller's local identity. Every lock, selection and link is retained. This API cannot overwrite an existing record; the integration must insert the returned value as a new draft only after user confirmation.
@@ -20,7 +21,7 @@ Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. D
 
 ## Pinned inputs and validation
 
-`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item schemas and synthetic build/catalog fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. Swift and Python Draft202012Validator with FormatChecker replay exactly the same JSON corpus. Synthetic fixtures are not real catalog or installed-application evidence.
+`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/catalog-snapshot schemas and synthetic build/catalog fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. Swift and Python Draft202012Validator with FormatChecker replay exactly the same JSON corpus. Synthetic fixtures are not real catalog or installed-application evidence.
 
 Run:
 
@@ -70,14 +71,60 @@ numeric range, IP-literal URI, and terminal-newline pattern limits. The existing
 leap-second, precision and size/depth/complexity limits also remain in force. Unsupported
 representations fail rather than being rounded, discarded or reported as a canonical
 schema failure. This is a bounded schema-driven item decoder, not whole JSON Schema
-conformance, generated per-field DTOs, a catalog-snapshot validator, approved real
-catalog activation or an Apple UI integration.
+conformance, generated per-field DTOs, approved real catalog activation or an Apple
+UI integration. The separate envelope boundary below validates a whole snapshot.
 
 Observed local evidence for this slice: Python 3.12/jsonschema 4.26.0 verified all six
 source hashes, the existing 129 cases and the 1,635 catalog cases. Swift/Xcode are
 absent in the implementation workspace, so the six new Swift tests have not run
 locally. The existing transfer workflow will execute them and the reference verifier
 on the exact PR head; native compilation, review and acceptance remain pending.
+
+## Catalog-snapshot envelope (#32)
+
+The envelope uses the same frozen contract and research revision as the item
+boundary above. `schemas/catalog-snapshot.schema.json` is copied byte-for-byte from
+the canonical `contracts/v1` directory, with SHA-256
+`a5af428386768b698d280a18bf99c0e52364ee397a2075685213b3d0762693a4`, matching
+that revision's `IMPORT_MANIFEST.json`. No schema rule, source fixture or existing
+item vector changes.
+
+`CatalogSnapshot` retains the original immutable `JSONValue` and an ordered array
+of validated `CatalogItem` values. Its revision remains an exact `Decimal` within
+the existing numeric representation limits. The timestamp is retained as supplied;
+schema-valid time metadata does not prove freshness. Required metadata, additional
+fields, revision minimum/type, date-time format and nonempty item cardinality are
+checked with the same locally bundled validator. Each of the 29 item kinds uses
+the existing item validation before any snapshot is returned.
+
+The frozen schema permits duplicate item identities. This boundary preserves them,
+including conflicting source claims, so a receiving graph or catalog activation
+policy must resolve or reject them explicitly. It never deduplicates, chooses a
+winner, grants source rights or interprets a catalog as approved production data.
+
+The 512 KiB, 48-level and 16,384-node limits apply to the entire catalog, even when
+every individual item would fit. Oversized catalogs fail explicitly. A larger or
+paged representation requires a separately reviewed contract and consumer path.
+`CatalogSnapshot.encoded()` reparses its exact output and checks value equality
+before returning local serialization, so normalization cannot silently produce
+bytes outside the reopening boundary. It is not a sanitized sharing API.
+
+`Tools/catalog_snapshot_vectors.py` generates 77 compact envelope mutations. The
+reference verifier applies those exact mutations with the existing item-vector
+helper and checks Python Draft202012Validator/FormatChecker outcomes. Cases cover
+metadata, malformed roots, empty/mixed item arrays, nested invalid input for all
+29 kinds, ordering, duplicate identities and unsupported versions. Two cases mark
+the existing stricter large-number and terminal-newline limits separately from
+canonical schema acceptance. `CatalogSnapshotTests` replays the same corpus and
+adds aggregate byte/node/depth, duplicate/escaped-key, identity-preservation and
+serialization-expansion regressions.
+
+Observed local evidence for this envelope slice: all seven source hashes, the
+existing 129 build/selection cases, 1,635 item cases and 77 envelope cases passed
+the Python reference verifier. Swift/Xcode are absent in this workspace; the six
+new Swift tests require the hosted transfer workflow before integration. This
+remains partial #32 work, with the broader model, migration and receiving-review
+requirements listed below unchanged.
 
 ## Remaining acceptance
 
