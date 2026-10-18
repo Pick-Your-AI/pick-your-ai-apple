@@ -18,11 +18,12 @@ The smoke script is not an accessibility or complete journey test.
 
 The [launch-smoke runner](scripts/simulator-smoke.py) retains its existing selection:
 the newest available iOS runtime and the first available iPhone and iPad types in
-that runtime's inventory. Its inventory/create/boot/install/launch/terminate commands
-have 60-second deadlines; waiting for boot readiness has a separate five-minute
-deadline. Each command, deadline, exit code and captured output is printed into the
-workflow's retained `launch.txt`, including partial stdout/stderr after a timeout.
-A timed-out or failed launch command still fails the smoke gate.
+that runtime's inventory. Its inventory/create/boot/launch/terminate commands have
+60-second deadlines. Installation has a dedicated three-minute budget, and waiting
+for boot readiness has a separate five-minute deadline. Each command, deadline,
+exit code and captured output is printed into the workflow's retained `launch.txt`,
+including partial stdout/stderr after a timeout. Each operation is attempted once;
+a timed-out or failed installation or launch command still fails the smoke gate.
 
 Only a successfully returned, parseable UUID absent from the original inventory is
 eligible for use or cleanup. Commands preserve that returned ID's original spelling.
@@ -32,7 +33,7 @@ Successful deletion is required; an already-shutdown result alone is not a clean
 failure. If creation times out, even a partial UUID does not authorize cleanup, and
 the retained command/name/output is the evidence for later inspection. The runner
 never shuts down or deletes a pre-existing device, guesses an ID, or erases a device.
-Thirteen portable regressions cover these deadlines, partial output, failed launch,
+Fourteen portable regressions cover these deadlines, partial output, failed install/launch,
 ownership and cleanup boundaries; one executes a real bounded synthetic subprocess.
 The mandatory native CI step runs them separately from the Xcode-pin guards and
 retains their complete output in `smoke-runner-tests.txt` with the native evidence.

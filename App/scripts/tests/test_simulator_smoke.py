@@ -79,7 +79,8 @@ class SimulatorSmokeTests(unittest.TestCase):
         ])
         for call in calls:
             args = call.args[0]
-            self.assertEqual(call.kwargs["timeout"], 300 if args[2] == "bootstatus" else 60)
+            expected_timeout = {"bootstatus": 300, "install": 180}.get(args[2], 60)
+            self.assertEqual(call.kwargs["timeout"], expected_timeout)
             self.assertTrue(call.kwargs["capture_output"])
             if args[2] not in ("list", "create"):
                 udid = args[4] if args[2] == "launch" else args[3]
@@ -150,6 +151,33 @@ class SimulatorSmokeTests(unittest.TestCase):
             self.assertEqual(call.kwargs["timeout"], 60)
         self.assertIn("Waiting for boot", self.stdout.getvalue())
         self.assertIn("timed out after 300s", self.stderr.getvalue())
+
+    def test_install_timeout_preserves_failure_output_and_bounded_cleanup_without_retry(self):
+        for cleanup_fails in (False, True):
+            with self.subTest(cleanup_fails=cleanup_fails):
+                primary = subprocess.TimeoutExpired(
+                    "install", 180, output=b"partial installation\n", stderr=b"installation pending\n")
+
+                def effect(args, **kwargs):
+                    if args[2] == "install":
+                        self.assertEqual(kwargs["timeout"], 180)
+                        raise primary
+                    if cleanup_fails and args[2] in ("shutdown", "delete"):
+                        raise subprocess.TimeoutExpired(args, 60, stderr=b"cleanup stalled\n")
+                    return self.completed(args, **kwargs)
+
+                with self.commands(effect) as mocked, self.assertRaises(subprocess.TimeoutExpired) as caught:
+                    SMOKE.main()
+                self.assertIs(caught.exception, primary)
+                calls = mocked.call_args_list
+                self.assertEqual([c.args[0][2] for c in calls],
+                                 ["list", "create", "boot", "bootstatus", "install", "shutdown", "delete"])
+                for call in calls[-2:]:
+                    self.assertEqual(call.args[0][3], CREATED_PHONE)
+                    self.assertEqual(call.kwargs["timeout"], 60)
+                self.assertIn("partial installation", self.stdout.getvalue())
+                self.assertIn("installation pending", self.stderr.getvalue())
+                self.assertIn("timed out after 180s: xcrun simctl install", self.stderr.getvalue())
 
     def test_shutdown_timeout_still_attempts_deletion_and_preserves_launch_requirements(self):
         def effect(args, **kwargs):

@@ -7,6 +7,7 @@ import sys
 import uuid
 
 COMMAND_TIMEOUT_SECONDS = 60
+INSTALL_TIMEOUT_SECONDS = 3 * 60
 BOOT_TIMEOUT_SECONDS = 5 * 60
 CLEANUP_TIMEOUT_SECONDS = 60
 
@@ -65,7 +66,8 @@ def smoke_destination(device, runtime, family, existing_ids):
         print(f"Smoke launch: {device['name']}, iOS {runtime['version']}", flush=True)
         run("xcrun", "simctl", "boot", udid)
         run("xcrun", "simctl", "bootstatus", udid, "-b", timeout=BOOT_TIMEOUT_SECONDS)
-        run("xcrun", "simctl", "install", udid, ".build/native/Build/Products/Debug-iphonesimulator/Planner.app")
+        run("xcrun", "simctl", "install", udid,
+            ".build/native/Build/Products/Debug-iphonesimulator/Planner.app", timeout=INSTALL_TIMEOUT_SECONDS)
         run("xcrun", "simctl", "launch", "--terminate-running-process", udid, "invalid.pickyourai.localpreview")
         run("xcrun", "simctl", "terminate", udid, "invalid.pickyourai.localpreview")
     finally:
