@@ -2,6 +2,15 @@
 
 For the current criterion-level assessment after merged Swift implementation and successful macOS CI, read [foundation disposition](foundation-disposition.md). It separates authorized engineering decisions from actual external inputs. The proposal-1 intake and validation statements below are historical; they do not describe the current CI capability.
 
+The [#21 scope decision](issue-21-scope.md) selects the guest planning release,
+preserves all 110 capability rows, core public sharing and T6, and names the exact
+first public-text target and available research captures. It consumes the accepted
+#20/#22/#24 decisions and current #23 service handoff. C1/C2 decision content is
+prepared for independent product/release review; C3 remains incomplete because
+the first supported real-data tuple and its publication/receiving evidence are
+missing. The existing decision file remains its canonical receipt location; no
+production, device or participant evidence is invented and #21 remains open.
+
 The [#23 consumer delta](issue-23-services.md) now consumes the accepted canonical
 service decision delivered through Android #347 at signed `4c753bd6`. Its exact
 topology, frozen routes and operating-gate handoff are available inputs; actual
