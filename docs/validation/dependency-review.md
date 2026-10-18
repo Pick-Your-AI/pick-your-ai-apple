@@ -60,8 +60,10 @@ the workflow contains no per-package or advisory exemption.
 
 GitHub's action documents that an undetected license is reported without failing.
 The supplementary [output guard](../../tools/security/check_dependency_review.py)
-closes that specific gap: every entry in the pinned action's `forbidden`,
-`unresolved` or `unlicensed` result categories fails. All three arrays must be
+closes that specific gap: every entry in the pinned action's `forbidden` or
+`unresolved` categories fails, and an `unlicensed` entry requires verified license
+evidence. Only the exact observed metadata gap described below has a supported
+source-verification path; every other `unlicensed` entry fails. All three arrays must be
 present in their enclosing object; an absent category, wrong type or an unexpected
 category fails. The raw dependency list can retain a null license even when the
 action resolves and checks that license through GitHub's license API, so the
@@ -98,15 +100,71 @@ unsupported manifests, unsubmitted packages or every existing dependency.
 
 The guard consumes action outputs through environment variables. It does not
 interpolate dependency JSON into shell commands, reinterpret SPDX expressions,
-fetch an alternative feed, install a proposed dependency or infer that an empty
+fetch an alternative advisory feed, install a proposed dependency or infer that an empty
 diff audited existing dependencies. Unsupported ecosystem coverage and unresolved
 transitives remain review gaps. The check's existence does not prove it is a
 branch-protection requirement.
 
+## Exact pinned Action license recovery
+
+After the [saved Dependency Graph enablement](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/230#issuecomment-6248379193),
+unchanged source `915acc89cf135fdb1bda0b3704474c990c61b016` completed
+[run 39113412122 attempt 2, job 117643998609](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39113412122/job/117643998609).
+All 23 regressions, the upstream action and the exact snapshot comparison passed.
+The final guard correctly rejected one unlicensed addition: the pinned review
+Action had both `license: null` and `source_repository_url: null`. The two public
+dependency rows and classified result are preserved in the
+[observed-input fixture](../../tools/security/tests/fixtures/pinned-action-license-gap.json).
+This failed run is not relabeled as a successful dependency review.
+
+The exact Action's [MIT LICENSE](https://github.com/actions/dependency-review-action/blob/907a6e9569212033966bc0b69d32473b046dd66b/LICENSE)
+was independently retrieved and inspected. Its immutable tree is
+`b40f699a97606bd5e51943956ff4e9507ee1101f`, LICENSE blob
+`cdfebd4e4322284fde560f21808182055976d9bf`, and 1,095 exact bytes have SHA-256
+`399ebcd5cf53d2ba8f32e8d7c7aa77a64b959734f662c533f30b0e75d76012a1`.
+The [retained licensed test copy](../../tools/security/tests/fixtures/dependency-review-action.LICENSE)
+preserves those bytes and their notice.
+
+For that single full matching added record, the guard can read the fixed GitHub
+contents endpoint at the complete Action commit and require the exact file type,
+path, blob, byte count, base64 encoding and SHA-256 above. The job supplies one
+shared SPDX allowlist to the upstream action and guard; MIT must still be present.
+Only a complete match resolves the one missing-source license result. Duplicate
+or absent raw records, another manifest/name/PURL/version/scope, conflicting
+license/source metadata, any vulnerable addition and every forbidden or unresolved
+category retain rejection. Raw action and snapshot data remain unchanged; the
+final aggregate report separately counts `pinned_license_resolutions`.
+
+This read uses the existing read-only token only on the fixed GitHub API URL,
+refuses redirects, accepts at most 64 KiB, and checks a ten-second deadline before
+and after bounded reads with a ten-second socket timeout. A two-minute workflow
+step bound also applies. Transport, metadata and content failures fail closed
+without printing tokens or response bodies. No package is installed or executed.
+The upstream `allow-dependencies-licenses` option remains absent: its pinned
+[PURL matcher](https://github.com/actions/dependency-review-action/blob/907a6e9569212033966bc0b69d32473b046dd66b/src/purl.ts)
+ignores versions and would exempt future package versions as well. No advisory
+result, unknown license or future pin is exempted by this source proof.
+
+The actual retained-input regression fails against the original guard and passes
+with the immutable-license response supplied by a controlled HTTP double. All 31
+local regression methods pass, including altered identities, duplicate/conflicting
+records, removed MIT policy, changed license bytes/metadata, redirects, HTTP errors,
+byte bounds and expired deadlines. A separate credential-free read of the actual
+fixed public GitHub contents endpoint returned 2,542 bytes, SHA-256
+`5f8227c354506f81d603b2c913b5c160badcb6a0eeaeaf1164e4634be46bb4a0`;
+the real response verifier accepted its exact LICENSE metadata and MIT bytes.
+This is a source-provenance API receipt, not a dependency advisory comparison.
+The controlled tests exercise the real CLI entry point
+but do not claim a hosted advisory or license scan. The corrected current-head
+workflow must supply its own actual GitHub result before delivery. The exact
+snapshot-completeness guard is unchanged. Existing bundled/transitive inventory,
+release notices and the separate unacceptable-dependency/urgent-patch drill remain
+required; this proves the inspected Action source license only.
+
 ## Observed local rejection and recovery
 
 The portable implementation uses Python's standard library only. On Python 3.12.14
-on 2026-10-18, all 23 regression methods passed. Thirteen output/CLI cases cover
+on 2026-10-18, the initial `915acc89` source's 23 regression methods passed. Thirteen output/CLI cases cover
 all three dependency scopes, low-severity rejection, each actual license category,
 upstream license resolution, malformed/duplicate/oversized/deep output, missing
 secondary output, removal, urgent-update recovery and diagnostic payload exclusion.
@@ -124,9 +182,11 @@ link exact upstream source/test hashes and model empty, licensed, forbidden,
 unresolved and unlicensed results. They are source-derived protocol cases, not
 fabricated hosted advisory scan receipts.
 
-The [retained six-case rehearsal](dependency-review-rehearsal.json) invokes the
+The [retained six-case rehearsal](dependency-review-rehearsal.json) from that source invokes the
 actual guard in separate processes with only its two synthetic input variables.
-It preserves the guard's SHA-256 and Python version. The vulnerable and unapproved
+It preserves that historical guard's SHA-256 and Python version. Replaying the
+corrected guard retains all six required outcomes and additionally reports zero
+`pinned_license_resolutions` for these unrelated synthetic cases. The vulnerable and unapproved
 packages are inert JSON descriptions with conspicuous synthetic identities; they
 are never downloaded, resolved or executed.
 
