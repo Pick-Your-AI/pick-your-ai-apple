@@ -105,10 +105,13 @@ exact versions, and the separate native receiving gate. These synthetic inputs
 do not establish source verification or a compatibility policy.
 
 `qualify_evidence_rendering.py` qualifies the four selected native UI test methods
-using the existing strict XCTest parser and the explicit `PlannerUITests` module.
+using the existing strict XCTest parser and the explicit `PlannerEvidenceUITests` module.
 The Core parser's default module and mutation criteria remain unchanged. The
 workflow first requires the actual `xcodebuild test` command to succeed, then
 rejects empty, skipped, duplicate, truncated or incorrectly named log receipts.
+The [isolated real-app host](../evidence-rendering/README.md) preserves the original
+failed direct-host native evidence and runs the four rendering methods through
+public UI automation; it does not change production views or the shared bytes.
 
 `swift_mutations.py --package Packages/PlannerCore --output-dir /tmp/swift-mutations`
 first runs the unmodified Swift suite, then changes required-field handling,

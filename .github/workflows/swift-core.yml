@@ -109,23 +109,24 @@ jobs:
             grep -E 'Executed [1-9][0-9]* tests?, with 0 failures' "simulator-$label-test.log"
           done < simulator-selection.tsv
       - name: Render evidence views on the selected iPhone and iPad simulators
-        working-directory: Packages/PlannerUI
+        working-directory: .
         run: |
           set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/evidence-rendering"
           while IFS=$'\t' read -r label udid; do
-            xcodebuild test -scheme PlannerUI \
-              -only-testing:PlannerUITests/EvidenceRenderingTests \
+            xcodebuild test -project tools/evidence-rendering/EvidenceHarness.xcodeproj -scheme EvidenceHarness \
+              -only-testing:PlannerEvidenceUITests/EvidenceRenderingTests \
               -destination "platform=iOS Simulator,id=$udid" \
               -destination-timeout 120 \
               -parallel-testing-enabled NO \
               -derivedDataPath /tmp/planner-evidence-rendering-tests \
-              -resultBundlePath "$PWD/evidence-$label.xcresult" \
+              -resultBundlePath "$RUNNER_TEMP/evidence-rendering/evidence-$label.xcresult" \
               CODE_SIGNING_ALLOWED=NO \
-              2>&1 | tee "evidence-$label-test.log"
+              2>&1 | tee "$RUNNER_TEMP/evidence-rendering/evidence-$label-test.log"
             # The strict existing parser requires actual unique XCTest starts,
             # passes and summaries; compile-only, empty and skipped runs fail.
-            python3 ../../tools/conformance/qualify_evidence_rendering.py "evidence-$label-test.log"
-          done < ../PlannerCore/simulator-selection.tsv
+            python3 tools/conformance/qualify_evidence_rendering.py "$RUNNER_TEMP/evidence-rendering/evidence-$label-test.log"
+          done < Packages/PlannerCore/simulator-selection.tsv
       - name: Prove a failing Swift test returns failure
         run: |
           set -euo pipefail
@@ -167,8 +168,7 @@ jobs:
             Packages/PlannerCore/simulator-inventory.json
             Packages/PlannerCore/simulator-selection.tsv
             Packages/PlannerCore/simulator-*.xcresult
-            Packages/PlannerUI/evidence-*-test.log
-            Packages/PlannerUI/evidence-*.xcresult
+            ${{ runner.temp }}/evidence-rendering/
             swift-mutation-evidence/
           if-no-files-found: warn
           retention-days: 14

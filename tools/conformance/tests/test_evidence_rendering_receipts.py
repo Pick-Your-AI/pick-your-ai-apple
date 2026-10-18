@@ -8,7 +8,7 @@ import qualify_evidence_rendering as qualifier
 
 
 class EvidenceRenderingReceiptTests(unittest.TestCase):
-    def receipt(self, module="PlannerUITests", methods=None, bare=False):
+    def receipt(self, module="PlannerEvidenceUITests", methods=None, bare=False):
         methods = sorted(qualifier.REQUIRED) if methods is None else methods
         lines = ["Test Suite 'Selected tests' started at 2026-10-18"]
         for method in methods:
@@ -21,7 +21,9 @@ class EvidenceRenderingReceiptTests(unittest.TestCase):
 
     def test_exact_native_ui_module_and_all_four_methods_are_required(self):
         qualifier.require_rendering_receipt(self.receipt())
-        for text in [self.receipt(module="PlannerCoreTests"), self.receipt(module="OtherModule"), self.receipt(bare=True),
+        qualifier.require_rendering_receipt(self.receipt().replace("Selected tests", "All tests"))
+        for text in [self.receipt(module="PlannerCoreTests"), self.receipt(module="PlannerUITests"),
+                     self.receipt(module="OtherModule"), self.receipt(bare=True),
                      self.receipt(methods=sorted(qualifier.REQUIRED)[:-1]),
                      self.receipt().replace("EvidenceRenderingTests", "EvidenceRenderingTestsExtra"),
                      self.receipt().replace(sorted(qualifier.REQUIRED)[0].split(".")[1], "testOther")]:
@@ -39,7 +41,9 @@ class EvidenceRenderingReceiptTests(unittest.TestCase):
                      complete.replace("Executed 4 tests", "Executed 3 tests"),
                      complete.replace("with 0 failures", "with 1 failure"),
                      complete.replace("(0 unexpected)", "(1 unexpected)"),
-                     "\n".join(lines[:-1]), complete + lines[2] + "\n"]:
+                     "\n".join(lines[:-1]), complete + lines[2] + "\n",
+                     complete + complete.replace("Selected tests", "All tests"),
+                     "Test Suite 'All tests' started at SYNTHETIC\n" + complete]:
             with self.subTest(text=text), self.assertRaises(ValueError):
                 qualifier.require_rendering_receipt(text)
 

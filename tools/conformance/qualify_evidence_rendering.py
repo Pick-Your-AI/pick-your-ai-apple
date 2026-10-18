@@ -2,6 +2,7 @@
 """Require all four real native evidence-rendering XCTest methods to pass."""
 import argparse
 from pathlib import Path
+import re
 
 import swift_mutations
 
@@ -15,7 +16,10 @@ REQUIRED = {
 
 
 def require_rendering_receipt(output):
-    result = swift_mutations.suite_results(output, "Selected tests", "passed", module="PlannerUITests", require_module=True)
+    roots = re.findall(r"^Test Suite '(All tests|Selected tests)' started at .+$", output, flags=re.MULTILINE)
+    if len(roots) != 1:
+        raise ValueError("Exactly one complete native rendering XCTest session is required")
+    result = swift_mutations.suite_results(output, roots[0], "passed", module="PlannerEvidenceUITests", require_module=True)
     if result is None:
         raise ValueError("Missing complete, uniquely qualified native rendering XCTest execution")
     cases, failures, unexpected, _ = result

@@ -108,32 +108,45 @@ limits remain those of the accepted public decoder.
 
 ## Native rendering qualification
 
-`EvidenceRenderingTests` hosts the real SwiftUI views in `NSHostingView` on macOS
-and `UIHostingController` on iOS. It walks their actual public accessibility
-descendants, without inserting the expected strings into test accessibility
-labels. Empty, missing or unbounded native output fails the test. The source uses
-Apple's documented [AppKit accessibility protocol](https://developer.apple.com/documentation/appkit/nsaccessibilityprotocol)
-and [UIKit container APIs](https://developer.apple.com/documentation/objectivec/nsobject-swift.class/accessibilityelementcount()).
+The [isolated native test host](../../tools/evidence-rendering/README.md) runs the
+real public SwiftUI views in a separate application. `EvidenceRenderingTests`
+uses public `XCUIApplication` queries against that foreground app, without
+inserting expected strings into app accessibility labels. It requires actual
+launch/readiness, the exact selected fixture and sequence, and native static-text
+elements. Empty or missing output fails. Bounded scrolling materializes lazy
+content and keeps later observed text in the negative outcome/grade assertions.
 
 Four methods render all 28 valid shared cases, test independent outcome/severity
 labels, exercise compact and wide widths at an accessibility text size, and cover
-the claim grades and retained-identity change events. The large hosting canvas
-allows semantic text inspection; it is not evidence of physical-device layout,
-scroll reachability, visual contrast, localization or a complete VoiceOver journey.
+the claim grades and retained-identity change events. A horizontal viewport
+exposes the requested wide report on a compact screen. This checks native
+accessibility text; it is not evidence of physical-device layout, visual contrast,
+localization or a complete VoiceOver journey.
 
-The existing native UI job runs the package's macOS tests. The existing Core
-workflow also runs these four selected methods on its already inventoried iPhone
-and iPad destinations. At this source baseline the pin is Xcode 16.4/16F6 and iOS
+The existing native UI job runs the original package model tests and the separate
+host's four macOS UI tests. The existing Core workflow runs the same four selected
+UI tests on its already inventoried iPhone and iPad. At this source baseline the pin is Xcode 16.4/16F6 and iOS
 18.5; each delivering run must retain its actual selected toolchain and destination
 identities. The new log gate reuses the strict XCTest parser with explicit module
-`PlannerUITests`, keeping `PlannerCoreTests` as its unchanged default. It requires
-all four exact methods, unique starts and passes, a complete matching suite and
-zero failures or skips. Its synthetic adversarial logs qualify the parser only.
+`PlannerEvidenceUITests`, keeping `PlannerCoreTests` as its unchanged default.
+It requires all four exact methods, unique starts and passes, exactly one complete
+matching `All tests` or `Selected tests` session and zero failures or skips. Its
+synthetic adversarial logs qualify the parser only; the older `PlannerUITests`
+module cannot qualify this host.
 Independent review reproduced a false acceptance of bare class/method names in
 the initial qualifier. The corrected UI call requires an explicit module prefix;
 the regression rejects those same bare names while Core's existing default
 continues to accept its historical Linux spelling. This was a synthetic parser
-failure and recovery, not an observed native view failure.
+failure and recovery, distinct from the later observed native failures below.
+
+The original direct-host package implementation at source `7d9724b1` / prepared
+`29579d01` / tree `0c7c83e0` did then fail both actual native runs with entirely
+empty accessibility trees. All four rendering methods failed with 238 assertions
+on each platform, while the existing Core runs and 23 editor-model methods had
+passed. Both complete original failed logs and their exact identities remain in
+the [host correction record](../../tools/evidence-rendering/README.md#actual-failed-predecessor-and-current-qualification).
+The production views, Core tests and both 37-case resources are unchanged by the
+test-host correction. Fresh native execution of that correction remains required.
 
 ## Reproduce and receiving disposition
 
@@ -145,6 +158,10 @@ python tools/conformance/evidence_vectors.py --contract-root "$CONTRACT_ROOT" --
 CONTRACT_ROOT="$CONTRACT_ROOT" python -m unittest discover -s tools/conformance/tests -v
 swift test --package-path Packages/PlannerCore
 swift test --package-path Packages/PlannerUI
+xcodebuild test -project tools/evidence-rendering/EvidenceHarness.xcodeproj \
+  -scheme EvidenceHarness -destination 'platform=macOS' \
+  -only-testing:PlannerEvidenceUITests/EvidenceRenderingTests \
+  -parallel-testing-enabled NO CODE_SIGNING_ALLOWED=NO
 ```
 
 The final 37-vector candidate was run on the signed `074ae4bf` base with Swift
@@ -161,9 +178,10 @@ semantic mutations, and the existing 45-vector report export remained exact.
 | `evidence-harness-module-required.log` | 5,122 bytes, SHA-256 `376f686bf8676211548a089fd92fd698dddfeeccfc1cf0f5fa999a8e79f1a113`; 30 methods in 25.416 seconds after the explicit-module correction |
 
 Earlier 35/36-vector checkpoints keep their own logs and do not supply these
-final counts. Native view execution is **unverified at this local preparation
-stage**; Swift syntax parsing and the Python/reference results do not qualify
-AppKit, UIKit or SwiftUI behavior. The delivering PR must pin actual native runs,
+final counts. The original native view attempts failed as recorded above;
+corrected-host execution is **pending actual native qualification**. Swift syntax
+parsing and the Python/reference results do not qualify AppKit, UIKit or SwiftUI
+behavior. The delivering PR must pin actual native runs,
 their full source composition and the final independent receiving disposition.
 
 | Literal #36 criterion | Evidence and receiving result |
