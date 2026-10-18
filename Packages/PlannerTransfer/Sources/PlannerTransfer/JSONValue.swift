@@ -94,9 +94,15 @@ struct JSONParser {
         let token = String(decoding: bytes[start..<index], as: UTF8.self)
         guard token.range(of: #"\A-?(0|[1-9][0-9]*)(\.[0-9]+)?([eE][+-]?[0-9]+)?\z"#, options: .regularExpression) != nil else { throw TransferError.malformed }
         // Explicit interoperable numeric subset: prevents precision rounding in Decimal/JavaScript.
-        guard token.filter({ $0.isNumber }).count <= 15,
+        // Count significant coefficient digits, not exponent or insignificant zeros.
+        // This subset is closed under Decimal's plain/scientific JSON encoding.
+        let parts = token.lowercased().split(separator: "e", omittingEmptySubsequences: false)
+        let coefficient = parts[0].filter { $0.isNumber }
+        let significant = coefficient.drop(while: { $0 == "0" }).reversed().drop(while: { $0 == "0" })
+        guard token.utf8.count <= 128, significant.count <= 15,
+              parts.count == 1 || (Int(parts[1]).map { (-64...64).contains($0) } ?? false),
               let number = Decimal(string: token, locale: Locale(identifier: "en_US_POSIX")),
-              !number.isNaN, abs(number) <= Decimal(9_007_199_254_740_991),
+              !number.isNaN, number != 0 || coefficient.allSatisfy({ $0 == "0" }), abs(number) <= Decimal(9_007_199_254_740_991),
               number == 0 || abs(number) >= Decimal(string: "0.000000000001")! else { throw TransferError.unsupportedNumber }
         return .number(number)
     }
