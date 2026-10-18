@@ -1,0 +1,288 @@
+{
+  "record_version": 1,
+  "issue": "https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/103",
+  "scope": "Observed hosted unacceptable-license rejection and removal recovery in an inert, unmerged review draft.",
+  "observed_on": "2026-10-18",
+  "drill": {
+    "url": "https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/259",
+    "draft": true,
+    "state": "closed",
+    "merged": false,
+    "closed_at": "2026-10-18T11:44:57Z",
+    "manifest_path": "tools/security/drills/requirements.txt",
+    "failure_to_recovery_changed_paths": [
+      "tools/security/drills/requirements.txt"
+    ],
+    "other_tree_leaves_unchanged": 146,
+    "correction_semantics": "Remove the entire unacceptable declaration. six==1.17.0 is an MIT metadata control, not a functional replacement for an RFC parser.",
+    "failure_receipt": "https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/259#issuecomment-6249492795"
+  },
+  "isolated_test_base": {
+    "commit": "e2c3998c93ef6a672eb3789d7f6bce0f20e0c181",
+    "tree": "e91780c2d64888f1195cb40166a1bdc34fe932d8",
+    "ordered_parents": [
+      "c939aaec31afa55efe9c594495ba7a6831711d6f",
+      "3cfa7c523c95d5ebcb3518414ba157cd83cc8ec2"
+    ],
+    "policy_source_base": "a12ab324e499907bd15abf4b80709d0f02667ae1",
+    "reference_lock_source_base": "8ca109963bfca3a707b1af8b80aabcd9dd28fd8a",
+    "composition": "Thirteen actual policy paths against a12 plus six lock paths against 8ca; all 127 other 8ca leaves are preserved. This is an isolated test composition, not a product-main or release identity.",
+    "product_merge": false
+  },
+  "reviewed_controls": {
+    "pinned_dependency_review_action": "actions/dependency-review-action@907a6e9569212033966bc0b69d32473b046dd66b",
+    "allow_licenses": [
+      "MIT",
+      "Apache-2.0",
+      "BSD-2-Clause",
+      "BSD-3-Clause",
+      "ISC",
+      "PSF-2.0",
+      "Python-2.0",
+      "Zlib",
+      "CC0-1.0",
+      "Unlicense"
+    ],
+    "workflow_blobs": [
+      {
+        "path": ".github/workflows/catalog-cache.yml",
+        "blob": "53d12700b755d44ed1dfbdd0b8a662376898d7ac"
+      },
+      {
+        "path": ".github/workflows/contract-preparation.yml",
+        "blob": "8fff2e9950c5cc578962bc04cb4753c7f7457a4d"
+      },
+      {
+        "path": ".github/workflows/dependency-review.yml",
+        "blob": "3044312862c8f27cb7d1285c5fe662c8f1f062a7"
+      },
+      {
+        "path": ".github/workflows/native-ui.yml",
+        "blob": "eda193fbb4d88f1ef03efe778c40eb6525a1600f"
+      },
+      {
+        "path": ".github/workflows/obsolete-pr-checks.yml",
+        "blob": "58430fc5b56239052bb3a90aa9eb6437245a5e77"
+      },
+      {
+        "path": ".github/workflows/swift-core.yml",
+        "blob": "aa1d413e387abf4bce44a7d606d2444dc4c44fd5"
+      },
+      {
+        "path": ".github/workflows/swift-storage.yml",
+        "blob": "07b3708b7ebb262c498f34aa66007e186271d9a0"
+      },
+      {
+        "path": ".github/workflows/swift-transfer.yml",
+        "blob": "c87e708ef1a908a002a8426af9d640f41a7707a4"
+      }
+    ],
+    "literal_python_installer_inputs": [
+      {
+        "path": "tools/conformance/requirements.txt",
+        "blob": "9c0434686af6b35d511e18b12bab02bc1e5336c3"
+      },
+      {
+        "path": "Packages/PlannerTransfer/Tools/requirements.txt",
+        "blob": "938c69ecb43b8eda36bee6066e1802f103190ece"
+      }
+    ],
+    "inert_manifest_is_installer_input": false,
+    "proposed_dependency_installed_by_drill": false,
+    "settings_readback": {
+      "observed_at": "2026-10-18T11:20:12Z",
+      "method": "Independent authenticated repository security-settings readback, attributed in the source/control review.",
+      "dependency_graph": "On",
+      "automatic_dependency_submission": "Disabled",
+      "settings_changed_during_readback": false
+    },
+    "independent_source_control_review": "https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/259#pullrequestreview-5562767217"
+  },
+  "failure": {
+    "head": "36082b8bf2bbddefbf03788c54af34fabd3147e4",
+    "tree": "e208e6313620f8cbef00acce36e08171cf3a9138",
+    "parent": "e2c3998c93ef6a672eb3789d7f6bce0f20e0c181",
+    "manifest_blob": "29a5702aba02b124946862496580b27e26120147",
+    "prepared_merge": "4d105333bb3c61bd89116f875a2d732e66303aea",
+    "run_id": 39123830465,
+    "run_attempt": 1,
+    "job_id": 117664719345,
+    "job_url": "https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39123830465/job/117664719345",
+    "run_conclusion": "failure",
+    "run_created_at": "2026-10-18T11:35:10Z",
+    "run_updated_at": "2026-10-18T11:35:40Z",
+    "security_tests": {
+      "passed": 31,
+      "failed": 0,
+      "skipped": 0
+    },
+    "action_dependency_changes": [
+      {
+        "change_type": "added",
+        "manifest": "tools/security/drills/requirements.txt",
+        "ecosystem": "pip",
+        "name": "rfc3987",
+        "version": "1.3.8",
+        "package_url": "pkg:pypi/rfc3987@1.3.8",
+        "license": "GPL-3.0-or-later",
+        "source_repository_url": null,
+        "scope": "runtime",
+        "vulnerabilities": []
+      }
+    ],
+    "exact_snapshot": {
+      "base": "e2c3998c93ef6a672eb3789d7f6bce0f20e0c181",
+      "head": "36082b8bf2bbddefbf03788c54af34fabd3147e4",
+      "matched_dependencies": 1,
+      "snapshot_warnings": false
+    },
+    "guard_result": {
+      "accepted": false,
+      "added_dependencies": 1,
+      "disallowed_licenses": 1,
+      "pinned_license_resolutions": 0,
+      "removed_dependencies": 0,
+      "unlicensed_dependencies": 0,
+      "unresolved_licenses": 0,
+      "vulnerable_dependencies": 0
+    },
+    "observed_guard_exit_code": 1,
+    "decoded_log_utf8": {
+      "bytes": 23817,
+      "sha256": "380e9ce77aba9767480aa2c6aeb3e3dc4da70b85200f4de5533efb59393277c9"
+    }
+  },
+  "recovery": {
+    "head": "13c8f5f42db5f63632bc33346b07c018eb02cc57",
+    "tree": "1fb41a2f92e188da2099d5ff88bc7069fe52b5d9",
+    "parent": "36082b8bf2bbddefbf03788c54af34fabd3147e4",
+    "manifest_blob": "cfe97a19c610d2f401c5d26cac4fefeca9593640",
+    "prepared_merge": "2456c2a59670137691494cfbf181f62936fd8cd3",
+    "run_id": 39124371655,
+    "run_attempt": 1,
+    "job_id": 117666294093,
+    "job_url": "https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124371655/job/117666294093",
+    "run_conclusion": "success",
+    "run_created_at": "2026-10-18T11:43:11Z",
+    "run_updated_at": "2026-10-18T11:43:23Z",
+    "security_tests": {
+      "passed": 31,
+      "failed": 0,
+      "skipped": 0
+    },
+    "action_dependency_changes": [
+      {
+        "change_type": "added",
+        "manifest": "tools/security/drills/requirements.txt",
+        "ecosystem": "pip",
+        "name": "six",
+        "version": "1.17.0",
+        "package_url": "pkg:pypi/six@1.17.0",
+        "license": "MIT",
+        "source_repository_url": "https://github.com/benjaminp/six",
+        "scope": "runtime",
+        "vulnerabilities": []
+      }
+    ],
+    "exact_snapshot": {
+      "base": "e2c3998c93ef6a672eb3789d7f6bce0f20e0c181",
+      "head": "13c8f5f42db5f63632bc33346b07c018eb02cc57",
+      "matched_dependencies": 1,
+      "snapshot_warnings": false
+    },
+    "guard_result": {
+      "accepted": true,
+      "added_dependencies": 1,
+      "disallowed_licenses": 0,
+      "pinned_license_resolutions": 0,
+      "removed_dependencies": 0,
+      "unlicensed_dependencies": 0,
+      "unresolved_licenses": 0,
+      "vulnerable_dependencies": 0
+    },
+    "observed_guard_exit_code": 0,
+    "decoded_log_utf8": {
+      "bytes": 23331,
+      "sha256": "3899e5ad79aefde0adbb14da6122ee8f4c18be1de8c2d3c10c2c092da6d885b0"
+    }
+  },
+  "reference_lock_input_evidence": {
+    "pull_request": "https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/251",
+    "source_commit": "3cfa7c523c95d5ebcb3518414ba157cd83cc8ec2",
+    "source_tree": "7405cea1fa60a0a2584e26f1588ec2d18976e83a",
+    "requirements_blob": "938c69ecb43b8eda36bee6066e1802f103190ece",
+    "requirements_sha256": "49d2158183e44a47f0f66fd7ce6cb146ca52281015cfcd2e9dd2670724eb0344",
+    "provenance_url": "https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/3cfa7c523c95d5ebcb3518414ba157cd83cc8ec2/Packages/PlannerTransfer/Tools/requirements-provenance.json",
+    "environment_url": "https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/3cfa7c523c95d5ebcb3518414ba157cd83cc8ec2/Packages/PlannerTransfer/Tools/reference-environment.md",
+    "independent_source_review": "https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/251#pullrequestreview-5562643682",
+    "prepared_merge": "517fbc7f65b7d5fb805bd35a3014e9b0906960b3",
+    "run_id": 39121450000,
+    "run_attempt": 1,
+    "job_id": 117658223143,
+    "job_url": "https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39121450000/job/117658223143",
+    "run_conclusion": "success",
+    "xcode_version": "16.4",
+    "xcode_build": "16F6",
+    "python_version": "3.14.7",
+    "install_command": "/tmp/transfer-python/bin/python -m pip --isolated install --require-hashes --only-binary=:all: -r Packages/PlannerTransfer/Tools/requirements.txt",
+    "installed_versions": {
+      "attrs": "26.1.0",
+      "jsonschema": "4.26.0",
+      "jsonschema-specifications": "2025.9.1",
+      "referencing": "0.37.0",
+      "rfc3339-validator": "0.1.4",
+      "rfc3986-validator": "0.1.1",
+      "rpds-py": "2026.9.1",
+      "six": "1.17.0"
+    },
+    "declared_conditional_not_installed": {
+      "typing-extensions": "4.16.0; python_version < '3.13'"
+    },
+    "pip_check": "No broken requirements found.",
+    "frozen_source_hashes_verified": 6,
+    "shared_conformance_cases_verified": 129,
+    "catalog_kinds_verified": 29,
+    "catalog_cases_verified": 1635,
+    "swift_xctest": {
+      "executed": 36,
+      "failures": 0,
+      "unexpected_failures": 0
+    },
+    "unsigned_simulator_sdk_build": "BUILD SUCCEEDED",
+    "decoded_log_utf8": {
+      "bytes": 112395,
+      "sha256": "6cadc81c76cb6f0cc2bfbc83d384a2130b3b6ca0921917a40614957a3624e6e1"
+    },
+    "scope_limit": "This is the actual transfer gate on the exact lock source. It does not attest the other source/final-main gates, a signed release, or an installed device."
+  },
+  "unrelated_native_cleanup": {
+    "result": "All ten drill-only native runs were read back completed/cancelled, not passed.",
+    "failure_head_run_ids": [
+      39123830296,
+      39123830315,
+      39123830325,
+      39123830409,
+      39123830470
+    ],
+    "recovery_head_run_ids": [
+      39124371643,
+      39124371652,
+      39124371667,
+      39124371668,
+      39124371676
+    ],
+    "recovery_cleanup_run": 39124761678,
+    "recovery_cleanup_job": 117667675477,
+    "recovery_cleanup_source": "f636afb24b8ecc1324a361aa2a7d2caa3a2481d7",
+    "recovery_cancellation_requests_at": "2026-10-18T11:51:21Z",
+    "dependency_and_reference_results_preserved": true
+  },
+  "log_digest_encoding": "SHA-256 of the complete decoded GitHub job log re-encoded as UTF-8, with all returned timestamps, ANSI sequences and line endings preserved. These are not ZIP-artifact digests.",
+  "remaining_acceptance": [
+    "Reviewed current baseline and complete bundled/transitive vulnerability and license inventory, including unsupported or unsubmitted dependencies.",
+    "Normal signed product delivery and destination verification for the policy and locked environment; this test base is never merged.",
+    "Actual signed release/system-library inventory, notices, applicable device/service security evidence and affected receiving review.",
+    "The real credential custodian's applicable revocation/replacement/old-access denial/new-access success/audit receipt. No actual credential rotation was performed.",
+    "Issue-wide criterion reconciliation and receiving acceptance. This bounded drill does not close Apple #103."
+  ]
+}

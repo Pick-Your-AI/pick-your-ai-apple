@@ -25,8 +25,8 @@ jobs:
         run: python3 -m unittest discover -s tools/security/tests -v
       - name: Review dependency changes with GitHub
         id: review
-        # The final guard rejects failures unless the exact observed license
-        # classification has its independently reviewed immutable source proof.
+        # The mandatory final guard retains this outcome and permits only a
+        # separately verified immutable-artifact recovery of a known failure.
         continue-on-error: true
         uses: actions/dependency-review-action@907a6e9569212033966bc0b69d32473b046dd66b
         with:
@@ -49,12 +49,12 @@ jobs:
           DEPENDENCY_CHANGES: ${{ steps.review.outputs.dependency-changes }}
         run: python3 tools/security/check_dependency_snapshots.py
       - name: Reject incomplete license or review evidence
-        if: ${{ always() && steps.review.outcome != 'skipped' }}
+        if: ${{ always() }}
         timeout-minutes: 2
         env:
-          DEPENDENCY_REVIEW_OUTCOME: ${{ steps.review.outcome }}
-          DEPENDENCY_SNAPSHOT_OUTCOME: ${{ steps.snapshots.outcome }}
           DEPENDENCY_REVIEW_TOKEN: ${{ github.token }}
           DEPENDENCY_CHANGES: ${{ steps.review.outputs.dependency-changes }}
           INVALID_LICENSE_CHANGES: ${{ steps.review.outputs.invalid-license-changes }}
+          DEPENDENCY_REVIEW_OUTCOME: ${{ steps.review.outcome }}
+          DEPENDENCY_SNAPSHOT_OUTCOME: ${{ steps.snapshots.outcome }}
         run: python3 tools/security/check_dependency_review.py
