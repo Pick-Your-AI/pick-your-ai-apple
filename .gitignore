@@ -18,3 +18,6 @@ __pycache__/
 .venv/
 .build/
 .swiftpm/
+
+# Isolated Swift validation output
+.build-*/

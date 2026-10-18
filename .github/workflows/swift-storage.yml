@@ -1,0 +1,45 @@
+name: Swift local storage
+on:
+  pull_request:
+  push:
+    branches: [main]
+permissions:
+  contents: read
+jobs:
+  macos-storage:
+    runs-on: macos-15
+    timeout-minutes: 15
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Require toolchain and record identity
+        run: |
+          set -euo pipefail
+          xcodebuild -version | tee storage-toolchain.log
+          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') storage-toolchain.log
+          swift --version | tee -a storage-toolchain.log
+          sw_vers | tee -a storage-toolchain.log
+      - name: Run storage regression tests
+        run: |
+          set -euo pipefail
+          swift test --package-path Packages/PlannerData --scratch-path .build-storage -Xswiftc -warnings-as-errors 2>&1 | tee storage-tests.log
+      - name: Replay actual process termination during write and migration
+        run: |
+          set -euo pipefail
+          python3 tools/storage/crash_replay.py .build-storage/debug/DraftCrashProbe | tee storage-crash.log
+      - name: Compile library for iOS Simulator without signing
+        working-directory: Packages/PlannerData
+        run: |
+          set -euo pipefail
+          xcodebuild -scheme PlannerData -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/planner-data-derived CODE_SIGNING_ALLOWED=NO build 2>&1 | tee "$GITHUB_WORKSPACE/storage-ios-build.log"
+      - name: Retain storage evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: swift-storage-validation
+          path: storage-*.log
+          if-no-files-found: error
+          retention-days: 14

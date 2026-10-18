@@ -1,6 +1,6 @@
 # #22: Native Apple platform and repository ADR
 
-Status: proposed; receiving acceptance pending. [Intake and sources](README.md). Depends on the reviewed #20 journey and [#21 scope](issue-21-scope.md), not closure of unrelated research.
+Status: product/platform receiving acceptance pending; subsequent engineering implementation decisions are recorded explicitly below. [Intake and sources](README.md). Depends on the reviewed #20 journey and [#21 scope](issue-21-scope.md), not closure of unrelated research.
 
 ## Recommendation and alternatives
 
@@ -8,7 +8,7 @@ Recommend SwiftUI with narrowly scoped UIKit interoperability, Swift 6 language 
 
 | Candidate | Offline persistence | Accessibility | Toolchain and maintenance assessment | Disposition |
 | --- | --- | --- | --- | --- |
-| SwiftUI + native adapters | Core Data behind a repository protocol; explicit transactions and migrations | System controls plus explicit focus, labels, Dynamic Type and VoiceOver checks | One Swift/Apple toolchain; direct lifecycle, Keychain and file-protection access | Recommend; native integration fits this Apple-only repository |
+| SwiftUI + native adapters | Platform SQLite behind a storage actor; explicit transactions and migrations | System controls plus explicit focus, labels, Dynamic Type and VoiceOver checks | One Swift/Apple toolchain; direct lifecycle, Keychain and file-protection access | Recommend; native integration fits this Apple-only repository |
 | UIKit-first | Same native storage boundary | Direct UIKit accessibility APIs; manual layout/focus work | Same macOS/Xcode requirement; more imperative state wiring for this new app | Keep interoperability escape hatch, reject as default |
 | React Native | Requires chosen native storage integration and migration testing | Provides platform accessibility APIs; platform behavior still differs | Adds JavaScript tooling and native dependency compatibility; still needs Xcode for iOS | Reject for baseline absent an existing shared UI/code investment |
 | Flutter | Requires a persistence/plugin choice and migration testing | Provides accessibility support; semantics and physical assistive testing remain necessary | Adds Dart/toolchain/plugin maintenance and Apple integration boundaries | Reject for baseline; no demonstrated reuse offsets added boundary |
@@ -17,11 +17,17 @@ This is a maintainability judgment, not a framework benchmark or claim that alte
 
 ## Proposed implementation boundaries
 
-All Apple code belongs in this repository. `App/` contains the Xcode application composition, SwiftUI screens, navigation and scene lifecycle. Swift package `Packages/PlannerCore` contains contract DTOs and domain state/revision logic without SwiftUI, Keychain or network I/O. `Packages/PlannerData` contains protocol-backed Core Data storage, catalog activation, URLSession adapters and Keychain access. App depends on Core and Data; Data depends on Core; Core never imports App or Data. Separate test targets cover portable domain semantics, Apple persistence/network adapters and app UI journeys. Do not copy a server, catalog publisher or pricing authority into these modules.
+All Apple code belongs in this repository. `App/` contains the Xcode application composition, SwiftUI screens, navigation and scene lifecycle. Swift package `Packages/PlannerCore` contains contract DTOs and domain state/revision logic without SwiftUI, Keychain or network I/O. `Packages/PlannerData` contains protocol-backed local storage, catalog activation, URLSession adapters and Keychain access. App depends on Core and Data; Data depends on Core; Core never imports App or Data. Separate test targets cover portable domain semantics, Apple persistence/network adapters and app UI journeys. Do not copy a server, catalog publisher or pricing authority into these modules.
 
-Recommend Core Data for durable local records with versioned model migrations; store immutable snapshots separately from incomplete editor drafts. No automatic CloudKit synchronization. Persistence acceptance requires interrupted-migration, disk-full, corrupt-record isolation, locked-device, revision-race and termination tests. Schema choice alone does not prove recovery. Contract JSON must preserve decimal/unknown semantics and reject unsupported versions; generated fields remain governed by research #40. Do not put incomplete drafts into a valid frozen-v1 build by inventing defaults.
+The original Core Data recommendation is superseded for local drafts by the engineering decision below; store immutable snapshots separately from incomplete editor drafts. No automatic CloudKit synchronization. Persistence acceptance requires interrupted-migration, disk-full, corrupt-record isolation, locked-device, revision-race and termination tests. Schema choice alone does not prove recovery. Contract JSON must preserve decimal/unknown semantics and reject unsupported versions; generated fields remain governed by research #40. Do not put incomplete drafts into a valid frozen-v1 build by inventing defaults.
 
 Application bundle identifier, Developer Team ID and App Store Connect record remain unknown: do not fabricate them. Display name may be provisionally Pick Your AI. Preview uses explicitly synthetic inputs and no production endpoint; staging and production remain separately configured with validated endpoint/identity gates.
+
+## Local storage implementation decision — 2026-10-18
+
+Under the user’s explicit delegation of ordinary engineering decisions, use the system SQLite library for `Packages/PlannerData` local drafts and revision history. This supersedes the initial Core Data recommendation for this boundary. It requires no external Swift package, supports atomic compare-and-swap revision writes and schema upgrades, and allows the same negative/recovery cases to run on Linux and hosted macOS. Keep app-owned file protection, identity routing, SwiftUI integration and snapshot validation outside this actor. No stateful backend or shared contract changes are introduced.
+
+The [implementation and tests](../../Packages/PlannerData/README.md) record schema migrations, actual capacity errors, abrupt process-exit recovery and retired-ID replay protection. These engineering results do not approve product scope, actual device persistence, security receiving acceptance or release. Core Data remains a rejected default for this slice because its platform-only stack adds no demonstrated requirement that offsets losing portable recovery tests; revisit if actual app requirements justify it. Future changes must preserve existing SQLite migrations and payload history rather than replacing data silently.
 
 ## Toolchain and validation gate
 
