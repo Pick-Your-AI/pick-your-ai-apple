@@ -234,6 +234,8 @@ final class LocalDraftJourneyTests: XCTestCase {
         let introduction = app.staticTexts.matching(NSPredicate(format: "label IN %@", [
             "Double-tap with three fingers.",
             "Double-tap with three fingers.\n",
+            // The retained query snapshot exposes the raw newline as one space.
+            "Double-tap with three fingers. ",
             "Swipe left with three fingers to undo and swipe right to redo.",
             "Pinch and spread with three fingers to copy and paste a selection."
         ])).firstMatch

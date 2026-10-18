@@ -105,7 +105,8 @@ both owned-simulator deletions succeeded. The complete failure artifact is retai
 
 Immediately after the synthetic paste, the journey now recognizes only the three
 instructional sentences shown in that tutorial, including the exact trailing-newline
-variant of the Undo sentence retained in both control captures, waits at most three seconds
+and trailing-space forms of Undo observed in the raw and query accessibility snapshots,
+waits at most three seconds
 for it to appear, uses its normal Continue button, and requires the tutorial to
 disappear together with that button. It then reasserts the exact pasted title before
 the unchanged strict
@@ -113,6 +114,19 @@ Done editing, keyboard-absence and Form navigation checks. It does not accept an
 unidentified Continue dialog or configure away system onboarding. App source,
 the real timer, failed-autosave notice, dirty discard, durable reopening and both
 destination gates are unchanged. This test-only correction needs a new native run.
+
+The subsequent `877f8f16447be2698ba43079ff4ef8066f85a2c4` composition in
+[native run 39118569803](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39118569803/job/117649322901)
+passed all 71 model cases, the unsigned build, both launch smokes and the complete
+iPhone journey in 216.071 seconds. iPad failed in 149.385 seconds at the strict Done
+editing check after Paste. Its raw Undo label ends in U+000A, while the actual
+query snapshot at 11:23:30.459 reports the same sentence ending in U+0020. The prior
+list omitted that query form and returned no match while the recording showed Undo.
+The correction adds only that exact observed label; it does not trim or broaden
+unrecognized labels. Both result summaries report zero skips and successful owned
+deletion. The [integration receipt](../docs/validation/editor-integration.md) records
+the independently verified archive and decoded payload hashes. This failed run is
+retained evidence; the corrected source still requires both complete journeys.
 
 A try/finally scope protects every verified creation, including later evidence-writing
 or test failures. Cleanup shuts down and deletes only the verified ID created by this
