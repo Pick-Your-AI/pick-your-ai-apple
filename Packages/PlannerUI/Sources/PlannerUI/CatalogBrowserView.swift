@@ -85,6 +85,7 @@ public struct CatalogBrowserView: View {
                                     .font(.subheadline).foregroundStyle(.secondary)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("catalogItem-\(row.item.id)-\(row.item.version)")
@@ -121,19 +122,26 @@ public struct CatalogBrowserView: View {
                     List {
                         Section {
                             ForEach(model.visibleKinds, id: \.self) { kind in
-                                HStack {
-                                    Text(Self.kindTitle(kind))
-                                        .accessibilityHidden(true)
-                                    Spacer()
-                                    // Keep the switch's hit frame intrinsic and its label accessible.
-                                    Toggle(Self.kindTitle(kind), isOn: Binding(
-                                        get: { model.filters.kinds.contains(kind) },
-                                        set: { model.setKind(kind, included: $0) }))
-                                        .toggleStyle(.switch)
-                                        .labelsHidden()
-                                        .fixedSize()
-                                        .accessibilityIdentifier("catalogKind-\(kind)")
+                                let selected = model.filters.kinds.contains(kind)
+                                Button {
+                                    model.setKind(kind, included: !model.filters.kinds.contains(kind))
+                                } label: {
+                                    HStack {
+                                        Text(Self.kindTitle(kind))
+                                        Spacer()
+                                        Image(systemName: selected ? "checkmark.circle.fill" : "circle")
+                                            .foregroundStyle(.tint)
+                                            .accessibilityHidden(true)
+                                    }
+                                    .frame(maxWidth: .infinity, minHeight: 44)
+                                    .contentShape(Rectangle())
                                 }
+                                .buttonStyle(.plain)
+                                .accessibilityIdentifier("catalogKind-\(kind)")
+                                .accessibilityLabel(Self.kindTitle(kind))
+                                .accessibilityValue(selected ? "Selected" : "Not selected")
+                                .accessibilityAddTraits(selected ? .isSelected : [])
+                                .accessibilityHint(selected ? "Removes this kind from the filters" : "Includes this kind in the filters")
                             }
                         } footer: {
                             Text("Choose one or more kinds. When none are selected, all component kinds are included. Changes apply immediately.")

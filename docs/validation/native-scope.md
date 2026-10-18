@@ -7,7 +7,7 @@ each acceptance receipt consumes native capacity needed by actual app changes.
 
 ## Exact scope decision
 
-The five native/package workflows still trigger on the same pull-request events
+The native/package workflows still trigger on the same pull-request events
 and main pushes. A read-only Ubuntu job runs the scope regressions and
 [`native_scope.py`](../../tools/ci/native_scope.py) before allocating macOS:
 

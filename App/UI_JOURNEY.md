@@ -48,9 +48,17 @@ does not establish pagination across an arbitrarily populated library.
 uses the same actual app and ordinary controls to browse the fixed synthetic
 catalog. It verifies the initial 25-of-29 result count, combines a query with the
 Accelerator kind and kind ordering, then terminates and relaunches the process.
+The kind row is one full-width button with a visible checkmark and explicit
+selected accessibility state. The journey verifies its initial, tapped and
+restored state. Detail value queries retain the complete native field labels;
+the [control correction receipt](../docs/validation/catalog-selection-controls.md)
+binds these changes to the actual failed runs and their remaining native gates.
 The recreated browser must restore those preferences and return the exact
 `cat.accelerator.fixture` item at `2026.10-demo`. Its detail must identify the
 pinned `catalog.fixture.1` source and explicitly unknown assessment.
+The detail query matches the complete native labeled values inside the exact
+detail Form, including separate `Compatibility, Unknown` and
+`Price estimate, Unknown` labels; one generic Unknown cannot satisfy both gaps.
 The detail consumer also requires the exact source SHA-256, all eight accelerator
 specification fields in its loaded summary, recorded `vram_gb` of 24, an explicit
 missing `rated_power_w`, and the retained source's `user_supplied` declaration,

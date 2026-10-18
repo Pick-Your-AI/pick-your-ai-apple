@@ -102,6 +102,8 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/native -clonedSourcePackagesDirPath .build/native-source-packages CODE_SIGNING_ALLOWED=NO build 2>&1 | tee .build/native-evidence/build.txt
+          cp .build/native/Build/Products/Debug-iphonesimulator/Planner.app/Info.plist .build/native-evidence/app-Info.plist
+          plutil -p .build/native-evidence/app-Info.plist | tee .build/native-evidence/app-Info.txt
       - name: Launch on iPhone and iPad simulators
         run: |
           set -o pipefail

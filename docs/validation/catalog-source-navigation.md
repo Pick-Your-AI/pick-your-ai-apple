@@ -123,6 +123,65 @@ installed rejection, positive browser/associated-app handoff, VoiceOver traversa
 or physical-device behavior for other destinations. Those evidence scopes remain
 open alongside approved host/source-use intake and the other #61 criteria.
 
+## Accepted-main receiving preparation
+
+This separate, unpublished receiving composition combines accepted main
+`074ae4bffec6066d3fe6e6a5fe47ab429dde54ed` with the reviewed source-navigation
+candidate `3bdb956ab5640a055913621d9b96eec5cf329489`. Their common ancestor is
+`f636afb24b8ecc1324a361aa2a7d2caa3a2481d7`. The original #240/#273 candidates,
+their running jobs and canonical #198 branch are unchanged.
+
+The ordinary merge exposed four Transfer overlaps. Each resolution retains both
+accepted behaviors; no schema, source fixture or evaluator rule is rewritten.
+
+| Overlap | Receiving resolution |
+| --- | --- |
+| `FrozenValidator.swift` | Keep the complete quality-record and catalog-snapshot validation entry points, each selecting its own unchanged frozen schema. |
+| `source-manifest.json` | Keep all nine exact source hashes, including both quality resources and the catalog-snapshot schema. |
+| `Tools/verify_contract.py` | Run both the 202-case quality loop and the 77-case snapshot loop after the existing build/item checks. |
+| Transfer `README.md` | Retain both API/scope sections and every historical receiving qualification. |
+
+The complete 200-leaf comparison preserves every other input byte except the
+explicit Transfer execution-profile update and this receiving record. All app,
+UI model, source-navigation policy, device-journey and UI workflow blobs remain
+exactly those of the reviewed source candidate. Main's newer Core, Catalog,
+quality-record, dependency and conformance-harness changes are retained.
+
+| Package | Accepted main declarations | Source candidate declarations | Receiving declarations |
+| --- | ---: | ---: | ---: |
+| PlannerUI | 23 | 101 | 101 |
+| PlannerTransfer | 45 | 48 | 57 |
+| PlannerCore | 85 | 67 | 85 |
+| PlannerData | 25 | 28 | 28 |
+| PlannerCatalog | 44 | 36 | 44 |
+
+These are distinct class-qualified source inventories, **not executed Swift
+results**. The new `catalog-quality-transfer` gate requires 57 passing cases,
+including the prior twelve required identities and all nine quality-record
+regressions: 21 required identities across four classes. The native UI gate
+remains 101/52/seven. Every historical profile, the strict parser, both history
+guards and the complete device journeys remain intact. Another accepted-main or
+worker addition requires a newly reviewed complete inventory.
+
+Local preparation verified all nine bundled hashes, 129 build/selection cases,
+1,635 item cases across 29 kinds, 202 quality cases and 77 snapshot cases with
+the existing Python 3.12.14/jsonschema 4.26.0 environment and format checks.
+The separately pinned Python/jsonschema 4.25.1 contract harness verified its
+manifest and every covered byte before passing 137 schema vectors, six domain
+checks, three detected mutations and all 24 harness regressions with zero skips.
+The reusable research checkout supplies the exact locked contract bytes; its
+current Git revision is not represented as the historical contract revision.
+All 59 CI helper tests, including ten execution-guard methods, and all 26 app
+runner tests passed. Fourteen real CLI trials also passed their expected
+outcomes: complete 57/101-case synthetic logs are accepted, each of the
+eleven required class substitutions is rejected, and padded old 48-case output
+cannot replace the nine quality cases. Those logs are parser specimens only.
+
+**No Swift, simulator or device execution has occurred for this receiving
+composition.** Its combined 57 Transfer and 101 UI results, other package gates,
+both full native journeys and independent receiving review remain required.
+Historical runs of either parent cannot qualify this new source combination.
+
 ## Primary API references
 
 Apple's [strict URL initializer](https://developer.apple.com/documentation/foundation/url/init(string:encodinginvalidcharacters:))

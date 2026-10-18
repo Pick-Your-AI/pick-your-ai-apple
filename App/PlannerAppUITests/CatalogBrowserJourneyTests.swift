@@ -31,26 +31,23 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         tap(kindSort)
         reveal(app.buttons["catalogKinds"], in: app, towardTop: false)
         tap(app.buttons["catalogKinds"])
-        let accelerator = app.switches["catalogKind-accelerator"]
+        let accelerator = app.buttons["catalogKind-accelerator"]
         XCTAssertTrue(accelerator.waitForExistence(timeout: 10))
+        XCTAssertEqual(app.buttons.matching(identifier: "catalogKind-accelerator").count, 1)
         XCTAssertEqual(accelerator.label, "Accelerator")
-        XCTAssertEqual(accelerator.value as? String, "0")
-        retainScreenshot(app, name: "Component-kind switch before selection")
-        // SwiftUI exposes the whole row as a Switch and includes the visible
-        // native switch beneath it. Tap that single control, not the row center.
+        XCTAssertFalse(accelerator.isSelected)
+        XCTAssertEqual(accelerator.value as? String, "Not selected")
+        XCTAssertGreaterThanOrEqual(accelerator.frame.height, 44)
+        retainScreenshot(app, name: "Component-kind button before selection")
+        // The complete visible row is one button, with an explicit selected
+        // accessibility state. Use the same ordinary native tap as other rows.
         let controlTree = XCTAttachment(string: accelerator.debugDescription)
-        controlTree.name = "Identified kind row and its native switch"
+        controlTree.name = "Identified component-kind selection button"
         controlTree.lifetime = .keepAlways
         add(controlTree)
-        let nativeSwitches = accelerator.descendants(matching: .switch)
-        XCTAssertEqual(nativeSwitches.count, 1, "The kind row must contain one native switch")
-        let nativeAccelerator = nativeSwitches.element
-        XCTAssertLessThan(nativeAccelerator.frame.width, accelerator.frame.width)
-        XCTAssertTrue(accelerator.frame.contains(nativeAccelerator.frame))
-        XCTAssertEqual(nativeAccelerator.value as? String, "0")
-        tap(nativeAccelerator)
-        XCTAssertEqual(nativeAccelerator.value as? String, "1")
-        XCTAssertEqual(accelerator.value as? String, "1")
+        tap(accelerator)
+        XCTAssertTrue(accelerator.isSelected)
+        XCTAssertEqual(accelerator.value as? String, "Selected")
         tap(app.buttons["catalogKindFiltersDone"])
         wait(accelerator, matching: "exists == false")
         assertCount(app, "Showing 1 of 1 results")
@@ -71,7 +68,8 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         tap(app.buttons["catalogKinds"])
         XCTAssertTrue(accelerator.waitForExistence(timeout: 10))
         XCTAssertEqual(accelerator.label, "Accelerator")
-        XCTAssertEqual(accelerator.value as? String, "1", "The reopened filter control must retain its selected state")
+        XCTAssertTrue(accelerator.isSelected, "The reopened filter control must retain its selected state")
+        XCTAssertEqual(accelerator.value as? String, "Selected")
         tap(app.buttons["catalogKindFiltersDone"])
         wait(accelerator, matching: "exists == false")
         let candidate = app.buttons["catalogItem-cat.accelerator.fixture-2026.10-demo"]
@@ -79,16 +77,22 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         tap(candidate)
         XCTAssertTrue(app.staticTexts["catalogDetailReady"].waitForExistence(timeout: 10))
         XCTAssertEqual(app.staticTexts["catalogDetailReady"].label, "Specifications: 8 · Source records: 1")
-        let identifier = app.staticTexts["cat.accelerator.fixture"]
-        reveal(identifier, in: app, towardTop: false, containerID: "catalogDetailsForm")
-        XCTAssertTrue(identifier.exists)
-        XCTAssertTrue(app.staticTexts["2026.10-demo"].exists)
-        let unknown = app.staticTexts.matching(identifier: "Unknown").firstMatch
-        reveal(unknown, in: app, towardTop: false, containerID: "catalogDetailsForm")
-        XCTAssertTrue(unknown.exists)
-        let source = app.staticTexts["catalog.fixture.1"]
-        reveal(source, in: app, towardTop: false, containerID: "catalogDetailsForm")
-        XCTAssertTrue(source.exists)
+        let detailForm = app.descendants(matching: .any).matching(identifier: "catalogDetailsForm").firstMatch
+        // LabeledContent exposes each caption and value as one exact label in
+        // the observed native snapshot. Require both assessment gaps separately.
+        for expected in [
+            "Version, 2026.10-demo",
+            "Identifier, cat.accelerator.fixture",
+            "Compatibility, Unknown",
+            "Price estimate, Unknown",
+            "Catalog, catalog.fixture.1"
+        ] {
+            let matches = detailForm.staticTexts.matching(NSPredicate(format: "label == %@", expected))
+            let value = matches.element
+            reveal(value, in: app, towardTop: false, containerID: "catalogDetailsForm")
+            XCTAssertEqual(matches.count, 1, "The detail must expose one exact labeled value: \(expected)")
+            XCTAssertEqual(value.label, expected)
+        }
         retainScreenshot(app, name: "Exact fictional component and pinned catalog details")
         let hash = app.staticTexts["catalogDetailHash"]
         reveal(hash, in: app, towardTop: false, containerID: "catalogDetailsForm")

@@ -97,6 +97,25 @@ PROFILES = {
 }
 
 
+# Accepted main adds the nine quality-record regressions to the separately
+# qualified 48-case catalog/editor transfer source. Neither prior receipt can
+# stand in for execution of this complete receiving composition.
+PROFILES["catalog-quality-transfer"] = (57, {
+    **PROFILES["catalog-editor-transfer"][1],
+    "PlannerTransferTests.QualityEvaluationRunTests": (
+        "testCanonicalRecordRetainsIdentityAndEverySupportedField",
+        "testSharedCanonicalQualityConformanceVectorsUseRawNumericTokens",
+        "testOptionalAbsenceRemainsDistinctFromEmptyArraysAndStrings",
+        "testRecordedLabelsChronologyDuplicatesAndPrivateTextAreNotReinterpreted",
+        "testNumericViewsRemainExactWithoutNarrowingOrRounding",
+        "testDuplicateRootAndMeasurementKeysIncludingEscapedAliasesFail",
+        "testByteDepthAndAggregateNodeLimitsApplyBeforeSchemaAcceptance",
+        "testUnsupportedAndMalformedInputReturnsPayloadFreeErrors",
+        "testNormalizedOutputCannotExceedTheDecoderLimitOrChangeTheValue",
+    ),
+})
+
+
 # Source-link review adds fourteen executed cases while retaining every required
 # identity from the separately qualified 87-case receiving source.
 PROFILES["catalog-source-ui"] = (101, {
