@@ -55,8 +55,9 @@ statement describes implementation intake; it is not a current native-evidence g
 The following receipt was independently checked against the raw hosted job log,
 artifact metadata and Git objects on 2026-10-18. It covers the issue's pinned
 configuration, fresh-cache build and unavailable-pin negative/recovery case.
-Issue closure still requires the receiving reviewer to accept this exact
-criterion record and its signed-main publication; no checkbox is changed here.
+Receiving review of this exact record and its signed-main publication remains
+required. The additional validation gaps below also remain unresolved; this
+receipt alone does not justify issue closure or change any checkbox.
 
 ### Execution and artifact identity
 
@@ -89,9 +90,26 @@ push-triggered run has already passed.
 
 | Criterion from Apple #26 | Observed implementation and failure/recovery result | Receiving boundary |
 | --- | --- | --- |
-| Fresh macOS checkout builds supported targets reproducibly. | The retained job checked out the exact merge above, verified the explicit Xcode pin, passed all 17 native model tests, built the unsigned simulator app for both architectures, and completed iPhone/iPad launch smoke. The configuration and native inputs are preserved in signed main. | The selected iPhone/iPad application build boundary is demonstrated. Full OS/device, backgrounding and lifecycle qualification remains in the corresponding application validation tasks. |
+| Fresh macOS checkout builds supported targets reproducibly. | The retained job checked out the exact merge above, verified the explicit Xcode pin, passed all 17 native model tests, built the unsigned simulator app for both architectures, and completed iPhone/iPad launch smoke. The configuration and native inputs are preserved in signed main. | The selected iPhone/iPad application build boundary is demonstrated. The issue's additional backgrounding/cancellation validation and full OS/device qualification are not established by this run. |
 | Build from a fresh macOS checkout with an empty dependency cache; unavailable pins must fail with actionable setup instructions rather than resolve a different dependency silently. | All four named SwiftPM/Xcode cache and output paths were verified absent before resolution/build. All eight pin regressions passed. The actual missing-pin CLI returned status 2 with exact version/build/path setup instructions, preserved the existing environment file, and prevented its downstream sentinel command. The next production CLI invocation selected and verified the real pinned Xcode; model tests and the clean build then succeeded. Five committed Swift package manifests use local paths and the SDK system library, with no remote package release to substitute. | Both the intended failure and successful recovery were executed. Portable or injected-probe results alone are not used as the clean native build evidence. Future remote dependencies require their own version pins and unavailable-pin case. |
-| The pinned Xcode/package configuration and clean-build log is linked with criterion results, exact versions, limitations and receiving-review disposition. | The pin, verifier, configuration and reproduction commands above lead to this exact run/artifact and its identity table. [Source/execution review on #176](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/176#pullrequestreview-5561501356) and [final integration/execution review on #195](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/195#pullrequestreview-5561607454) accepted the source and observed native gate; both explicitly reserved this issue-specific receipt. | Independent acceptance of this updated criterion record and its publication is the remaining receiving step. Link that review and the final signed artifact from #26 before closing the issue. |
+| The pinned Xcode/package configuration and clean-build log is linked with criterion results, exact versions, limitations and receiving-review disposition. | The pin, verifier, configuration and reproduction commands above lead to this exact run/artifact and its identity table. [Source/execution review on #176](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/176#pullrequestreview-5561501356) and [final integration/execution review on #195](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/195#pullrequestreview-5561607454) accepted the source and observed native gate; both explicitly reserved this issue-specific receipt. | Independent acceptance of this updated criterion record and its publication remains required. Link that review and the final signed artifact from #26, and resolve the additional validation gaps before whole-issue closure. |
+
+### Additional issue validation remains explicit
+
+The live #26 validation paragraph also names cold start, backgrounding,
+cancellation and invalid environment configuration. The observed launch smoke
+covers initial simulator launch. The pin tests exercise invalid toolchain
+configuration and preserve the environment file on failure; they do not test the
+app's preview/staging/production configuration. The two passing native model tests
+`testLifecycleSaveDuringHistoryReadIsDrainedWithLatestEdits` and
+`testLifecycleSaveDuringRestoreUsesNewRevisionAndLatestEdits` exercise controlled
+lifecycle-save calls; they do not reproduce an operating-system background event.
+
+Actual app background/foreground, cancellation and invalid app-environment
+journeys are not evidenced by this receipt. Existing #27/#28/#29 and cumulative
+editor work can supply the corresponding artifacts once executed and accepted, but
+their presence is not an acceptance waiver for #26. Keep #26 open until these
+named checks have evidence or a recorded applicable receiving scope disposition.
 
 The architecture prerequisite is the accepted
 [#22 decision receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/22#issuecomment-6244062120).
