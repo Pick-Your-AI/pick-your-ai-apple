@@ -36,7 +36,7 @@ def test_command(udid, result_path):
         "-destination", f"platform=iOS Simulator,id={udid}", "-destination-timeout", "120",
         "-parallel-testing-enabled", "NO", "-maximum-concurrent-test-simulator-destinations", "1",
         "-derivedDataPath", ".build/native", "-resultBundlePath", str(result_path),
-        f"-only-testing:{TEST}", "CODE_SIGNING_ALLOWED=NO",
+        f"-only-testing:{TEST}", "CODE_SIGNING_ALLOWED=NO", "ONLY_ACTIVE_ARCH=YES",
     ]
 
 

@@ -28,6 +28,11 @@ storage destinations. It fails instead of choosing a newer runtime, another devi
 an ambiguous name. It records the full `simctl` JSON inventory and selected runtime/build,
 device type, UDID and state as returned by the host. Xcode's simulator test command uses
 the exact selected UDID, disables parallel testing and requires no signing credentials.
+The test invocation uses `ONLY_ACTIVE_ARCH=YES` so the app and its Swift package
+dependencies build the same active simulator architecture. A hosted candidate
+without this setting failed before UI execution because the app requested an
+unbuilt x86_64 package module on an arm64 destination. The setting follows the
+selected destination rather than hard-coding either processor architecture.
 The existing Xcode 16.4 build 16F6 verification remains in the workflow.
 
 Every run keeps per-device `xcodebuild` commands/logs, `.xcresult` bundles (including

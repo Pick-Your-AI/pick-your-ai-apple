@@ -65,6 +65,7 @@ class UIJourneyRunnerTests(unittest.TestCase):
         self.assertIn("platform=iOS Simulator,id=synthetic-iphone", command)
         self.assertIn(f"-only-testing:{journey.TEST}", command)
         self.assertIn("CODE_SIGNING_ALLOWED=NO", command)
+        self.assertIn("ONLY_ACTIVE_ARCH=YES", command)
         self.assertIn("retained.xcresult", command)
         self.assertNotIn("-allowProvisioningUpdates", command)
         self.assertNotIn("-retry-tests-on-failure", command)
