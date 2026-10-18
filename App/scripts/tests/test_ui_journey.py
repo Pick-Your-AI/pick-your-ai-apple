@@ -10,7 +10,7 @@ from unittest.mock import patch
 SPEC = importlib.util.spec_from_file_location("ui_journey", Path(__file__).resolve().parents[1] / "ui-journey.py")
 journey = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(journey)
-PREEXISTING = "00000000-0000-0000-0000-000000000001"
+PREEXISTING = "ABCDEF01-2345-4678-9ABC-DEF012345678"
 CREATED = ("10000000-0000-0000-0000-000000000001", "20000000-0000-0000-0000-000000000001")
 PASSING = {"result": "Passed", "totalTestCount": 1, "passedTests": 1,
            "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}
@@ -144,6 +144,18 @@ class UIJourneyRunnerTests(unittest.TestCase):
             self.assertTrue((evidence / "ipad-summary.json").exists())
             self.assertTrue((evidence / "iphone-result.json").exists())
 
+    def test_created_id_spelling_is_preserved_for_xcode_and_cleanup(self):
+        # simctl returns uppercase hex; Xcode's destination matching is case-sensitive.
+        created = "ABCDEF12-3456-4789-ABCD-EF1234567890"
+        with tempfile.TemporaryDirectory() as directory:
+            evidence, commands, tests, results, failure = self.exercise_main(directory, first_create=created)
+            self.assertIsNone(failure)
+            self.assertIn(f"platform=iOS Simulator,id={created}", tests[0])
+            self.assertEqual(results[0]["simulator"]["udid"], created)
+            self.assertIn(created, (evidence / "iphone-command.txt").read_text())
+            cleanups = [c for c in commands if c[:2] == ["xcrun", "simctl"] and c[2] in ("shutdown", "delete")]
+            self.assertEqual([c[-1] for c in cleanups[:2]], [created, created])
+
     def test_failed_first_destination_still_attempts_and_cleans_both(self):
         with tempfile.TemporaryDirectory() as directory:
             _, commands, tests, results, failure = self.exercise_main(directory, first_exit=65)
@@ -163,7 +175,7 @@ class UIJourneyRunnerTests(unittest.TestCase):
             self.assertTrue((evidence / "iphone-summary.json").exists())
 
     def test_unverified_or_preexisting_create_result_is_never_used_or_deleted(self):
-        for create_result in ("not-a-uuid", PREEXISTING,
+        for create_result in ("not-a-uuid", PREEXISTING, PREEXISTING.lower(),
                               journey.subprocess.TimeoutExpired(["xcrun", "simctl", "create"], 60)):
             with self.subTest(result=str(create_result)), tempfile.TemporaryDirectory() as directory:
                 _, commands, tests, results, failure = self.exercise_main(directory, first_create=create_result)

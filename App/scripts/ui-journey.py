@@ -114,7 +114,9 @@ def run_destination(destination, evidence, existing_ids):
         candidate = str(uuid.UUID(output))
         if candidate in existing_ids:
             raise ValueError("Simulator create returned a pre-existing ID; refusing to test or clean it up")
-        owned_udid = candidate
+        # Normalize identity only for the ownership check. Xcode destination
+        # matching requires the original simctl spelling, including letter case.
+        owned_udid = output
         outcome["simulator"] = {"udid": owned_udid, "name": name, "createdByThisRun": True}
         (evidence / f"{label}-result.json").write_text(json.dumps(outcome, indent=2) + "\n")
         command = test_command(owned_udid, result_path)

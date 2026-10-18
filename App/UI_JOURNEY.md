@@ -39,6 +39,14 @@ The complete original `simctl` inventory and requested type/runtime/build metada
 retained. Each created simulator's exact returned UDID and name are recorded before
 test execution. A returned ID that is malformed or appeared in the original inventory
 is never used for testing or cleanup.
+UUID equality for that safety check ignores letter case, while test and cleanup
+commands preserve the validated spelling returned by `simctl`. Candidate
+`f9af742d68a1010af0203953489c4c8ca66b22cf` in
+[native run 39091041272](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39091041272)
+lowercased both returned IDs; Xcode listed those same IDs in uppercase and rejected
+the requested destinations before either UI test executed. The regression check
+covers original command spelling and rejects case variants of pre-existing IDs;
+a new hosted run is required to establish UI execution with the correction.
 
 A try/finally scope protects every verified creation, including later evidence-writing
 or test failures. Cleanup shuts down and deletes only the verified ID created by this
