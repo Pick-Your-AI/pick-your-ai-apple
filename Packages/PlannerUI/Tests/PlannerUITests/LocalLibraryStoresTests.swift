@@ -21,7 +21,7 @@ final class LocalLibraryStoresTests: XCTestCase {
         let broken = Data("not a SQLite database".utf8)
         try broken.write(to: brokenURL)
 
-        let libraries = LocalLibraryStores(directory: directory)
+        let libraries = try await LocalLibraryStores.open { directory }
         XCTAssertNil(libraries.importedBuilds)
         let reopened = try XCTUnwrap(libraries.notes)
         let record = try await reopened.read(id: id)
@@ -41,7 +41,7 @@ final class LocalLibraryStoresTests: XCTestCase {
         let broken = Data("not a SQLite database".utf8)
         try broken.write(to: brokenURL)
 
-        let libraries = LocalLibraryStores(directory: directory)
+        let libraries = try await LocalLibraryStores.open { directory }
         XCTAssertNil(libraries.notes)
         let reopened = try XCTUnwrap(libraries.importedBuilds)
         let record = try await reopened.read(id: id)

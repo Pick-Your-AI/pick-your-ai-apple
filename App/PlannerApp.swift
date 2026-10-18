@@ -1,36 +1,48 @@
 import SwiftUI
-import PlannerData
 import PlannerUI
 
 @main
 struct PlannerApp: App {
-    private let store: DraftStore?
-    private let importedStore: DraftStore?
-    init() {
-        do {
+    var body: some Scene {
+        WindowGroup { LocalLibrariesView() }
+    }
+}
+
+private struct LocalLibrariesView: View {
+    @StateObject private var startup = LocalLibraryStartup {
+        try await LocalLibraryStores.open {
             let root = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
                 .appendingPathComponent("LocalDrafts", isDirectory: true)
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true,
                 attributes: [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication])
-            let libraries = LocalLibraryStores(directory: root)
-            store = libraries.notes; importedStore = libraries.importedBuilds
-        } catch { store = nil; importedStore = nil }
-    }
-    var body: some Scene {
-        WindowGroup {
-            TabView {
-                Group {
-                    if let store { DraftLibraryView(store: store) }
-                    else { unavailable("Notes") }
-                }
-                .tabItem { Label("Notes", systemImage: "note.text") }
-                Group {
-                    if let importedStore { ImportedBuildLibraryView(store: importedStore) }
-                    else { unavailable("Imported builds") }
-                }
-                .tabItem { Label("Imported builds", systemImage: "doc.badge.plus") }
-            }
+            return root
         }
+    }
+
+    var body: some View {
+        TabView {
+            Group {
+                switch startup.state {
+                case .loading: ProgressView("Opening notes…")
+                case .ready(let libraries):
+                    if let store = libraries.notes { DraftLibraryView(store: store) }
+                    else { unavailable("Notes") }
+                case .unavailable: unavailable("Notes")
+                }
+            }
+            .tabItem { Label("Notes", systemImage: "note.text") }
+            Group {
+                switch startup.state {
+                case .loading: ProgressView("Opening imported builds…")
+                case .ready(let libraries):
+                    if let store = libraries.importedBuilds { ImportedBuildLibraryView(store: store) }
+                    else { unavailable("Imported builds") }
+                case .unavailable: unavailable("Imported builds")
+                }
+            }
+            .tabItem { Label("Imported builds", systemImage: "doc.badge.plus") }
+        }
+        .task { await startup.load() }
     }
 
     private func unavailable(_ library: String) -> some View {

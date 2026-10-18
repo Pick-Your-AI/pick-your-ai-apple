@@ -48,6 +48,44 @@ Local Linux inspection cannot establish SwiftUI/Xcode correctness. See the PR ch
 for observed hosted results, distinct from device, store or production acceptance.
 
 
+## Asynchronous local startup
+
+The #86/#29 startup correction builds on the independently available libraries in
+[PR #159](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/159), baseline
+`a8d3ac6c449a483a3373ebfaecc6eab4fa9af861`. Each scene owns a `LocalLibraryStartup`
+model. Its SwiftUI `.task` awaits `LocalLibraryStores.open`; a detached worker prepares
+the same protected Application Support directory and opens/migrates each SQLite
+file. App initialization and the main actor do not perform those blocking operations.
+Each tab shows a loading indicator, then either its library or an explicit unavailable
+state. One failed database still cannot hide the other database's records.
+
+SwiftUI cancellation is forwarded to the detached worker. Synchronous SQLite work
+already in flight is allowed to finish or roll back normally; cancellation is checked
+before directory preparation, between opens and before publishing. Cancelled results
+are discarded, and a generation token prevents an older attempt from replacing a
+newer one even if the older operation ignores cancellation. A reappearing scene can
+retry incomplete startup; a ready scene retains its connections and editor state.
+Separate windows own separate startup lifetimes and use the existing SQLite
+transaction/revision guards when accessing the same files.
+
+`LocalLibraryStartupTests` bounds the controlled opener wait to five seconds and
+checks an editor binding action on the main actor while opening is blocked. It also
+checks off-main directory preparation/opening, cancellation between database opens,
+superseded results, explicit failure/retry, retained ready state and directory errors.
+The timeout is a test deadlock guard, not a responsiveness budget or performance
+measurement. `LocalLibraryStoresTests` continues to exercise both corrupt-file cases
+using real SQLite through the asynchronous factory. Run these with the existing
+`swift test --package-path Packages/PlannerUI` and native UI workflow above.
+
+This is bounded startup/cancellation coverage for #86's #29 prerequisite. Hosted
+exact-head Swift/Xcode tests, simulator launch and receiving review are still required;
+physical-device responsiveness, locked-device and low-storage behavior, and the full
+#29/#86 acceptance criteria are separate. No startup timings or device results are
+inferred from static inspection. Apple references checked 2026-10-18:
+[app responsiveness](https://developer.apple.com/documentation/xcode/improving-app-responsiveness)
+and [Task cancellation](https://developer.apple.com/documentation/swift/task).
+
+
 ## Files import and reviewed export
 
 The Imported builds screen uses a separate `imported-builds.sqlite` database in the
