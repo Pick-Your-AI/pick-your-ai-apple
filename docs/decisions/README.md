@@ -6,6 +6,7 @@ Revision: proposal-1, prepared 2026-10-18 UTC against Apple main `bbf013616b6769
 - [#22 platform and module ADR](issue-22-platform.md)
 - [#23 shared-service integration delta](issue-23-services.md)
 - [#24 accounts, analytics and commerce](issue-24-accounts.md)
+- [Refreshed research inputs and available native CI](research-inputs-20261018.md)
 
 The [#20 journey proposal](../proposals/issue-20-journey-map.md) reuses [revision 70b92e9](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/70b92e91045570b8699c4c814058778da68478cd/docs/proposals/issue-20-journey-map.md), correcting its unsupported reference to a missing source manifest. Its desk research is not participant validation. #20 receiving acceptance remains pending. Live #21–24 were refreshed on 2026-10-18: all lacked assignees and comments. Product/release receiving reviewer identity and disposition remain pending; technical review alone does not fill this role. Research PR #111 remains OPEN/unmerged at refresh. Shared/platform/epic-01 prompts were read as proposed guidance alongside AGENTS.md, CONTRIBUTING.md and repository scope.
 
