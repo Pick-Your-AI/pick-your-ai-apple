@@ -96,7 +96,7 @@ jobs:
               CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Test Case .*DraftStoreTests.*testInterruptedMigrationRollsBackSchemaThenRecovers.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Test Case .*DraftStoreTests.*testRestoreRejectsFutureHistoryWithoutChangingReadableDrafts.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
-            grep -E 'Executed 26 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Executed 31 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
           done < "$GITHUB_WORKSPACE/storage-simulator-selection.tsv"
       - name: Retain storage evidence
         if: always()
