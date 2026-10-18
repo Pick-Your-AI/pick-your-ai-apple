@@ -102,6 +102,16 @@ class SelectionTests(unittest.TestCase):
         self.assertIn("superseded PR head", messages[0])
         self.assertFalse(any("untrusted.example" in path for path, _ in api.calls))
 
+    def test_submission_workflow_keeps_current_manual_and_rerun_checks(self):
+        old, current, manual, rerun = run(), run(101, sha=NEW), run(102), run(103)
+        for candidate in (old, current, manual, rerun):
+            candidate["path"] = ".github/workflows/submission-sdk.yml"
+        manual["event"] = "workflow_dispatch"
+        rerun["run_attempt"] = 2
+        api = FakeAPI([old, current, manual, rerun], [pr()])
+        self.assertEqual(self.execute(api)[0], 1)
+        self.assertEqual(api.cancelled, [f"{cleanup.PREFIX}/actions/runs/100/cancel"])
+
     def test_compact_github_run_association_needs_no_full_pr_fields(self):
         candidate = run()
         association = candidate["pull_requests"][0]

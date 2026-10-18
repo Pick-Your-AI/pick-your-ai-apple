@@ -63,6 +63,8 @@ def execute(changes=None, classified=None, *, transport=None, policy="MIT, Apach
         "DEPENDENCY_CHANGES": json.dumps(OBSERVED["dependency_changes"] if changes is None else changes),
         "INVALID_LICENSE_CHANGES": json.dumps(OBSERVED["invalid_license_changes"] if classified is None else classified),
         "ALLOWED_DEPENDENCY_LICENSES": policy,
+        "DEPENDENCY_REVIEW_OUTCOME": "success",
+        "DEPENDENCY_SNAPSHOT_OUTCOME": "success",
         "DEPENDENCY_REVIEW_TOKEN": TOKEN,
         "GITHUB_REPOSITORY": "Pick-Your-AI/pick-your-ai-apple",
         "GITHUB_EVENT_NAME": "pull_request",

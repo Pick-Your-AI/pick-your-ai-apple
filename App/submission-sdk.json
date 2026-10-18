@@ -1,0 +1,7 @@
+{
+  "sdkVersions": {
+    "iphoneos": "26.2",
+    "iphonesimulator": "26.2"
+  },
+  "minimumOSVersion": "17.0"
+}

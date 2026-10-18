@@ -43,7 +43,11 @@ def main() -> int:
     for name, changes, licenses, expected in cases:
         # The synthetic replay needs no network, repository token or inherited
         # credentials. No package represented in the fixture is installed.
-        env = {"PYTHONUTF8": "1", "DEPENDENCY_CHANGES": json.dumps(changes)}
+        env = {
+            "PYTHONUTF8": "1", "DEPENDENCY_CHANGES": json.dumps(changes),
+            "DEPENDENCY_REVIEW_OUTCOME": "success",
+            "DEPENDENCY_SNAPSHOT_OUTCOME": "success",
+        }
         if licenses is not None:
             env["INVALID_LICENSE_CHANGES"] = json.dumps(licenses)
         run = subprocess.run(
