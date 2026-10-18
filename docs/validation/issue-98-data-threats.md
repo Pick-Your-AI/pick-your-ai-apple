@@ -6,6 +6,38 @@ source boundaries was supplied on that date with no blocking finding. Device and
 service qualification remain unresolved. The record does not establish service
 authorization, secure erasure or production release.
 
+## Subsequent receiving acceptance
+
+The project controller supplied [final receiving acceptance on 2026-10-18](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/98#issuecomment-6246833758)
+under the user's explicit delegation of project engineering decisions and reviews.
+This is agent security/privacy receiving review of the complete thirteen-threat
+assessment, including T12/T13, with independent source review by the Apple project
+agent. The controller also read the complete assessment and the original
+[#185](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/185#pullrequestreview-5561425632)
+and [#186](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/186#pullrequestreview-5561431032)
+receiving reviews. No named-human approval, affected-service execution or
+physical-device qualification is inferred.
+
+The accepted record is the exact document at signed commit
+[`bc58882afe0a6e31b844dd0206a4406c095629f2`](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/bc58882afe0a6e31b844dd0206a4406c095629f2/docs/validation/issue-98-data-threats.md),
+SHA-256 `3af3782e95bd963cf6dbdb2e96856021e28bd9545f2a838ac3147fcecfedeec4`,
+unchanged through receiving-review main `429514f426bc784e11f80338842e941cc0c0e84d`
+and this update's baseline `7952f0cbedc8b19c03b6491197cf1160054c3cd7`.
+The independent receiving check recomputed that hash and the two E6 source hashes
+below, inspected the named negative/recovery regressions, and verified that the
+entire `Packages/PlannerCore` tree is unchanged from E6's tested input through the
+update baseline. All relative file links resolve. These checks add source and
+receipt verification; they are not a new native test run.
+
+All three #98 criteria are accepted for the named inventory, threat model and
+mitigation register, as reconciled below. This disposition resolves the earlier
+pending-receiver wording. The original inspected scope, E1–E6 execution limits and
+every open finding remain intact. Actual provider/device/backup/erasure and
+affected-service verification remain in the named implementation work packages;
+retest each finding before closing that finding. #198's complete native journey
+gate and #86's signed-main startup acceptance are unaffected. Link the reviewed
+publication from #98 and verify its issue state when completing closure.
+
 ## Exact reviewed scope
 
 | Source | Included behavior | Delivery and execution boundary |
@@ -156,9 +188,9 @@ Do not attach private workload files or actual user database snapshots as fixtur
 
 | Exact #98 criterion | Result supplied by this record | Remaining disposition |
 | --- | --- | --- |
-| Reviewed threat model maps risks to concrete verification tasks. | Independent security/privacy engineering review supplied on 2026-10-18 for the original eleven threats with no blocking finding. T12/T13 supplement the register with source-use revocation and analysis/cost controls, exact E6 execution and explicit receiver tasks; the supplement requires its own anchored review. | Affected service review remains necessary when that service boundary exists. Device/provider/service qualification is not supplied by the engineering review. |
-| Trace sensitive workload text through import, storage, diagnostics, sharing and deletion; identify trust boundaries, mitigation evidence and unowned residual risks. | Asset/retention inventory and six-step trace cover delivered local paths and identify candidate Files paths explicitly. T05 is a concrete deletion gap; T06/T07/T10 record unqualified device/erasure/service boundaries and unfilled receiving roles. | Retest actual provider/device/service scenarios as their implementations become available. Unexecuted scenarios remain unverified and open findings stay open. |
-| The data inventory, threat model and mitigation register is linked with criterion results, exact versions, limitations and receiving-review disposition. | This named output, E1–E6 immutable inputs/results, reproduction commands and per-criterion disposition are supplied. | Link the reviewed merged record from #98; retain final commit/review identity. Publication alone does not close #98 or its dependent security/device/service issues. |
+| Reviewed threat model maps risks to concrete verification tasks. | Accepted by the [final receiving review](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/98#issuecomment-6246833758). T01–T13 map each scoped threat to inspected controls, concrete verification tasks, existing work packages and required review roles. The complete register and T12/T13 supplement received anchored independent review with no blocking assessment finding. | Affected service review remains necessary when that service boundary exists. Device/provider/service qualification is not supplied by the engineering review. |
+| Trace sensitive workload text through import, storage, diagnostics, sharing and deletion; identify trust boundaries, mitigation evidence and unowned residual risks. | Accepted. The asset/retention inventory and six-step trace cover delivered local paths and identify candidate Files paths explicitly. T05 remains a deletion finding at the assessed candidate; T06/T07/T10 retain unqualified device/erasure/service boundaries and unfilled receiving roles. | Retest actual provider/device/service scenarios as their implementations become available. Unexecuted scenarios remain unverified and open findings stay open. |
+| The data inventory, threat model and mitigation register is linked with criterion results, exact versions, limitations and receiving-review disposition. | Accepted. This named output, E1–E6 immutable inputs/results, reproduction commands, per-criterion results and [exact receiving disposition](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/98#issuecomment-6246833758) are linked from #98. | Retain the final reviewed publication and issue-state readback. Closing this assessment does not close its dependent security/device/service issues or any open finding. |
 
 Update this record when a trust boundary changes, a finding is remediated, or the
 main app gains a previously separate adapter. Close a finding only after a test

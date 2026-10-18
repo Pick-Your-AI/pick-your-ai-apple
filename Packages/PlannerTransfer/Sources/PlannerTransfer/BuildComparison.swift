@@ -78,16 +78,16 @@ public struct BuildComparison: Equatable, Sendable {
         // Owner, timestamps, lifecycle claims, names and extensions are not evidence
         // or configuration. Names and identities are available separately above.
         for key in ["objectives", "locks", "policy"] {
-            try compareValue(left[key], right[key], path: [key], kind: nil, output: &differences)
+            try compareValue(left[key], right[key], path: [key], kind: nil, fieldName: key, output: &differences)
         }
         for id in Set(leftSelections.keys).union(rightSelections.keys).sorted() {
             let a = leftSelections[id], b = rightSelections[id]
             // If the kind itself changes, its before/after values remain a diff row.
             let kind = b?.object?["kind"]?.string ?? a?.object?["kind"]?.string
-            try compareValue(a, b, path: ["selections", id], kind: kind, output: &differences)
+            try compareValue(a, b, path: ["selections", id], kind: kind, fieldName: nil, output: &differences)
         }
         for id in Set(leftLinks.keys).union(rightLinks.keys).sorted() {
-            try compareValue(leftLinks[id], rightLinks[id], path: ["links", id], kind: nil, output: &differences)
+            try compareValue(leftLinks[id], rightLinks[id], path: ["links", id], kind: nil, fieldName: nil, output: &differences)
         }
         return BuildComparison(before: ComparedBuildIdentity(before), after: ComparedBuildIdentity(after), differences: differences)
     }
@@ -104,16 +104,19 @@ public struct BuildComparison: Equatable, Sendable {
     }
 
     private static func compareValue(_ before: JSONValue?, _ after: JSONValue?, path: [String],
-                                     kind: String?, output: inout [BuildDifference]) throws {
+                                     kind: String?, fieldName: String?, output: inout [BuildDifference]) throws {
         guard before != after else { return }
-        let key = path.last ?? ""
-        // Private annotations have no role in structural comparison. Do not expose
-        // their values, child keys, presence, measurements or apparent authority.
-        if ["notes", "extensions", "owner_ref"].contains(key) { return }
-        if privateKey(key) {
-            try append(before == nil ? .absent : .hidden, after == nil ? .absent : .hidden,
-                       path: path, kind: kind, output: &output)
-            return
+        // Display paths also contain record IDs. Only actual field names carry
+        // privacy semantics; an ID such as "notes" must not hide a whole record.
+        if let key = fieldName {
+            // Private annotations have no role in structural comparison. Do not expose
+            // their values, child keys, presence, measurements or apparent authority.
+            if ["notes", "extensions", "owner_ref"].contains(key) { return }
+            if privateKey(key) {
+                try append(before == nil ? .absent : .hidden, after == nil ? .absent : .hidden,
+                           path: path, kind: kind, output: &output)
+                return
+            }
         }
         let leftObject = before?.object, rightObject = after?.object
         if (leftObject != nil || before == nil), (rightObject != nil || after == nil),
@@ -122,7 +125,7 @@ public struct BuildComparison: Equatable, Sendable {
             let keys = Set(a.keys).union(b.keys).sorted()
             if !keys.isEmpty {
                 for child in keys {
-                    try compareValue(a[child], b[child], path: path + [child], kind: kind, output: &output)
+                    try compareValue(a[child], b[child], path: path + [child], kind: kind, fieldName: child, output: &output)
                 }
                 return
             }
