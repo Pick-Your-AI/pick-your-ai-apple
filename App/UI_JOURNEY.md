@@ -90,7 +90,28 @@ that visible button when the software keyboard is present and requires the
 keyboard to disappear. It then performs the same bounded scroll within the exact
 Form and requires the target to exist and be hittable. No history or persistence
 assertion is replaced with a coordinate tap. This focused correction has no new
-native pass yet; the complete journey must pass on both pinned destinations.
+native acceptance until the complete journey passes on both pinned destinations.
+
+The keyboard-control candidate `8ab4358c1b892db20e20e5876cbb63342186d2eb` in
+[native run 39112764752](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39112764752/job/117632218026)
+passed all 68 model cases with zero failures in 27.478 seconds, the unsigned app
+build and both launch smokes. The entire iPhone journey passed in 231.216 seconds.
+The iPad journey passed durable autosave and undo/redo reopening, then failed in
+213.814 seconds while waiting for the keyboard's `finishDraftEditing` control after
+the oversized paste. Its recording shows the system's first-use gesture tutorial
+covering that control: the pages rotate through Undo, Undo and Redo, and Copy and
+Paste, with a Continue button. Both destinations executed one test with zero skips;
+both owned-simulator deletions succeeded. The complete failure artifact is retained.
+
+Immediately after the synthetic paste, the journey now recognizes only the three
+exact instructional sentences shown in that tutorial, waits at most three seconds
+for it to appear, uses its normal Continue button, and requires the tutorial to
+disappear together with that button. It then reasserts the exact pasted title before
+the unchanged strict
+Done editing, keyboard-absence and Form navigation checks. It does not accept an
+unidentified Continue dialog or configure away system onboarding. App source,
+the real timer, failed-autosave notice, dirty discard, durable reopening and both
+destination gates are unchanged. This test-only correction needs a new native run.
 
 A try/finally scope protects every verified creation, including later evidence-writing
 or test failures. Cleanup shuts down and deletes only the verified ID created by this

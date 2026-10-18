@@ -115,6 +115,31 @@ durable revision assertions, owned cleanup, native pins and both destination gat
 remain. The changed view and UI journey still require fresh native execution;
 the 460 result is retained failure evidence, not acceptance of this correction.
 
+The keyboard-control head `8ab4358c1b892db20e20e5876cbb63342186d2eb` then ran in
+[run 39112764752 / job 117632218026](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39112764752/job/117632218026).
+All **68 model cases passed with zero failures** in 27.478 seconds; the unsigned
+app build and both launch smokes also passed. The complete iPhone journey passed
+in 231.216 seconds. iPad failed in 213.814 seconds at
+`LocalDraftJourneyTests.swift:265`, waiting for `finishDraftEditing` to be hittable
+after the synthetic oversized paste. It had already reopened the exact durable
+undo/redo title and notes. The recording identifies the obstruction: the system's
+first-use keyboard gesture tutorial covers the app's otherwise present Done
+editing control. Its automatically rotating pages show Undo, Undo and Redo, and
+Copy and Paste with Continue. The summaries contain one executed test per device,
+one iPad failure and zero skips. Both owned deletions returned exit zero. Artifact
+`12131687533` is 111,650,150 bytes; its complete downloaded archive matches SHA-256
+`df4d7e08e8525f7a1c9caeccca2925fb81cc33f12ac2afbb7539949157dfd2ba`.
+
+The focused test-only follow-up identifies those three exact tutorial sentences
+after Paste, uses Continue only for that known introduction, and requires it to
+disappear together with its Continue button. A three-second appearance bound
+accommodates the first-use overlay;
+unknown dialogs still fail the normal strict control checks. The exact pasted
+title is checked again after dismissal. The product view, all 68 model tests,
+production debounce, real validation failure, dirty discard, history and durable
+reopening assertions, runner, pins and both destination gates remain unchanged.
+The failed 8ab run is preserved; the correction requires fresh native execution.
+
 The original #198 source package contains 52 XCTest cases: 22 editor/library model,
 13 controlled autosave, two bounded history, seven imported-build, six startup and
 two independent-store cases. [Run 39100534357 / job 117595708300](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39100534357/job/117595708300)
