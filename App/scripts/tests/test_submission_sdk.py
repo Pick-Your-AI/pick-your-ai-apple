@@ -377,25 +377,185 @@ class SubmissionSDKTests(unittest.TestCase):
         app = self.write_product(valid)
         parent_alias = self.root / "parent-alias"
         parent_alias.symlink_to(self.root, target_is_directory=True)
-        receipt = parent_alias / "evidence" / "receipt.json"
-        arguments = ("inspect", "--sdk", "iphoneos", "--app", app, "--output", receipt)
-        first = self.run_cli(*arguments)
-        self.assertEqual(first.returncode, 0, first.stderr)
-        self.assertEqual(json.loads(receipt.read_text()), json.loads(first.stdout))
+        (self.root / "outside").mkdir()
+        targets = {
+            "safe-absolute": self.root / "evidence",
+            "safe-relative": Path("outside") / ".." / "evidence",
+            "safe-nested": Path("safe-relative"),
+        }
+        for name, target in targets.items():
+            (self.root / name).symlink_to(target, target_is_directory=True)
+        parents = (parent_alias / "evidence", *(self.root / name for name in targets))
+        for parent in parents:
+            with self.subTest(parent=parent):
+                receipt = parent / "receipt.json"
+                arguments = ("inspect", "--sdk", "iphoneos", "--app", app, "--output", receipt)
+                first = self.run_cli(*arguments)
+                self.assertEqual(first.returncode, 0, first.stderr)
+                self.assertEqual(json.loads(receipt.read_text()), json.loads(first.stdout))
 
-        self.write_product({**valid, "DTSDKName": "iphoneos18.5"})
-        failed = self.run_cli(*arguments)
-        self.assertEqual(failed.returncode, 2, failed.stdout + failed.stderr)
-        self.assertIn("DTSDKName", failed.stderr)
-        self.assertEqual(failed.stdout, "")
-        self.assertFalse(receipt.exists())
+                self.write_product({**valid, "DTSDKName": "iphoneos18.5"})
+                failed = self.run_cli(*arguments)
+                self.assertEqual(failed.returncode, 2, failed.stdout + failed.stderr)
+                self.assertIn("DTSDKName", failed.stderr)
+                self.assertEqual(failed.stdout, "")
+                self.assertFalse(receipt.exists())
 
-        self.write_product(valid)
-        recovered = self.run_cli(*arguments)
-        self.assertEqual(recovered.returncode, 0, recovered.stderr)
-        self.assertEqual(json.loads(receipt.read_text()), json.loads(first.stdout))
-        self.assertEqual(list(receipt.parent.glob(".submission-sdk-*.tmp")), [])
+                self.write_product(valid)
+                recovered = self.run_cli(*arguments)
+                self.assertEqual(recovered.returncode, 0, recovered.stderr)
+                self.assertEqual(json.loads(receipt.read_text()), json.loads(first.stdout))
+                self.assertEqual(list(receipt.parent.glob(".submission-sdk-*.tmp")), [])
         self.assertTrue(parent_alias.is_symlink())
+        for name, target in targets.items():
+            self.assertEqual((self.root / name).readlink(), target)
+
+    def test_actual_cli_rejects_protected_traversal_inside_directory_link_targets(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        outside = self.root / "outside"
+        outside.mkdir()
+        escape = app / "escape"
+        escape.symlink_to(outside, target_is_directory=True)
+        targets = {
+            "hidden-absolute": escape,
+            "hidden-relative": Path(app.name) / escape.name,
+            "hidden-nested": Path("hidden-relative"),
+            "hidden-dotdot-absolute": app / ".." / outside.name,
+            "hidden-dotdot-relative": Path(app.name) / ".." / outside.name,
+            "hidden-dotdot-nested": Path("hidden-dotdot-relative"),
+        }
+        for name, target in targets.items():
+            (self.root / name).symlink_to(target, target_is_directory=True)
+        inputs = {path: path.read_bytes() for path in
+                  (self.xcode_file, self.sdk_file, app / "Info.plist")}
+        retained = outside / "retained.json"
+        sentinel = b"synthetic retained source bytes\n"
+        for name in targets:
+            for existing in (True, False):
+                with self.subTest(target=name, existing=existing):
+                    if existing:
+                        retained.write_bytes(sentinel)
+                    else:
+                        retained.unlink(missing_ok=True)
+                    result = self.run_cli("inspect", "--sdk", "iphoneos", "--app", app,
+                                          "--output", self.root / name / retained.name)
+                    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                    self.assertIn("separate", result.stderr)
+                    self.assertEqual(result.stdout, "")
+                    self.assertEqual(retained.exists(), existing)
+                    if existing:
+                        self.assertEqual(retained.read_bytes(), sentinel)
+                    for path, before in inputs.items():
+                        self.assertEqual(path.read_bytes(), before)
+                    self.assertEqual(escape.readlink(), outside)
+                    for link, target in targets.items():
+                        self.assertEqual((self.root / link).readlink(), target)
+
+    def test_actual_cli_rejects_non_directory_or_missing_prefix_before_dotdot(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        outside = self.root / "outside"
+        outside.mkdir()
+        ordinary = outside / "ordinary-file"
+        ordinary.write_bytes(b"synthetic ordinary input\n")
+        missing = outside / "missing-directory"
+        retained = outside / "receipt.json"
+        sentinel = b"synthetic retained receipt\n"
+        for prefix in (ordinary, missing):
+            targets = {
+                prefix.name + "-absolute": prefix / "..",
+                prefix.name + "-relative": Path(outside.name) / prefix.name / "..",
+                prefix.name + "-nested": Path(prefix.name + "-relative"),
+            }
+            for name, target in targets.items():
+                (self.root / name).symlink_to(target, target_is_directory=True)
+            parents = (prefix / "..", *(self.root / name for name in targets))
+            for parent in parents:
+                for valid in (True, False):
+                    info = self.product_info("iphoneos")
+                    if not valid:
+                        info["DTSDKName"] = "iphoneos18.5"
+                    self.write_product(info)
+                    inputs = {path: path.read_bytes() for path in
+                              (self.xcode_file, self.sdk_file, app / "Info.plist", ordinary)}
+                    for existing in (True, False):
+                        with self.subTest(prefix=prefix.name, parent=parent, valid=valid, existing=existing):
+                            if existing:
+                                retained.write_bytes(sentinel)
+                            else:
+                                retained.unlink(missing_ok=True)
+                            result = self.run_cli("inspect", "--sdk", "iphoneos", "--app", app,
+                                                  "--output", parent / retained.name)
+                            self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                            self.assertEqual(result.stdout, "")
+                            self.assertNotIn("Traceback", result.stderr)
+                            self.assertEqual(retained.exists(), existing)
+                            if existing:
+                                self.assertEqual(retained.read_bytes(), sentinel)
+                            self.assertFalse(missing.exists())
+                            for path, before in inputs.items():
+                                self.assertEqual(path.read_bytes(), before)
+                            for name, target in targets.items():
+                                self.assertEqual((self.root / name).readlink(), target)
+
+    def test_actual_cli_creates_missing_tail_directories_with_safe_aliases(self):
+        valid = self.product_info("iphoneos")
+        app = self.write_product(valid)
+        for route in ("direct", "absolute", "relative", "nested"):
+            with self.subTest(route=route):
+                destination = self.root / (route + "-new") / "evidence"
+                self.assertFalse(destination.exists())
+                parent = destination
+                if route != "direct":
+                    target = destination if route == "absolute" else destination.relative_to(self.root)
+                    alias = self.root / (route + "-alias")
+                    alias.symlink_to(target, target_is_directory=True)
+                    parent = alias
+                    if route == "nested":
+                        parent = self.root / "nested-outer-alias"
+                        parent.symlink_to(alias.name, target_is_directory=True)
+                receipt = parent / "receipt.json"
+                arguments = ("inspect", "--sdk", "iphoneos", "--app", app, "--output", receipt)
+                first = self.run_cli(*arguments)
+                self.assertEqual(first.returncode, 0, first.stderr)
+                self.assertEqual(json.loads(receipt.read_text()), json.loads(first.stdout))
+                self.assertEqual(receipt.resolve(), destination / receipt.name)
+                self.write_product({**valid, "DTSDKName": "iphoneos18.5"})
+                failed = self.run_cli(*arguments)
+                self.assertEqual(failed.returncode, 2, failed.stdout + failed.stderr)
+                self.assertFalse(receipt.exists())
+                self.write_product(valid)
+                recovered = self.run_cli(*arguments)
+                self.assertEqual(recovered.returncode, 0, recovered.stderr)
+                self.assertEqual(json.loads(receipt.read_text()), json.loads(recovered.stdout))
+                self.assertEqual(list(destination.glob(".submission-sdk-*.tmp")), [])
+
+    def test_actual_cli_resolution_failures_leave_inputs_and_outside_receipt_intact(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        outside = self.root / "outside"
+        outside.mkdir()
+        retained = outside / "retained.json"
+        retained.write_bytes(b"synthetic retained source bytes\n")
+        ordinary = outside / "ordinary-file"
+        ordinary.write_bytes(b"synthetic ordinary file\n")
+        targets = {"loop": Path("loop"), "cycle-first": Path("cycle-second"),
+                   "cycle-second": outside / "cycle-first"}
+        for name, target in targets.items():
+            (outside / name).symlink_to(target, target_is_directory=True)
+        inputs = {path: path.read_bytes() for path in
+                  (self.xcode_file, self.sdk_file, app / "Info.plist", retained, ordinary)}
+        paths = (outside / "loop" / ".." / retained.name,
+                 outside / "cycle-first" / ".." / retained.name, ordinary / retained.name)
+        for path in paths:
+            with self.subTest(path=path):
+                result = self.run_cli("inspect", "--sdk", "iphoneos", "--app", app, "--output", path)
+                self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                self.assertIn("Submission SDK check failed:", result.stderr)
+                self.assertNotIn("Traceback", result.stderr)
+                self.assertEqual(result.stdout, "")
+                for source, before in inputs.items():
+                    self.assertEqual(source.read_bytes(), before)
+                for name, target in targets.items():
+                    self.assertEqual((outside / name).readlink(), target)
 
 
 if __name__ == "__main__":

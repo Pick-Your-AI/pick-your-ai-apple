@@ -88,17 +88,48 @@ def inspect_product(app, sdk, xcode_pin, sdk_pin):
         raise toolchain.SetupError(f"Unsigned {sdk} product metadata verification failed: {error}. {GUIDANCE}") from error
 
 
+def receipt_ancestors(path):
+    """Inspect supplied ancestors and ancestry hidden inside directory-link targets."""
+    pending = list(path.parents)
+    seen = set()
+    while pending:
+        ancestor = pending.pop()
+        if ancestor in seen:
+            continue
+        seen.add(ancestor)
+        try:
+            metadata = ancestor.stat()
+        except FileNotFoundError as error:
+            # Missing tail directories can be created after validation, but
+            # resolving '..' must not erase a nonexistent traversal prefix.
+            if ancestor.name == "..":
+                raise toolchain.SetupError("Receipt '..' traversal requires an existing directory.") from error
+        else:
+            if not stat.S_ISDIR(metadata.st_mode):
+                raise toolchain.SetupError("Receipt parent components must be directories.")
+        yield ancestor.resolve()
+        if ancestor.is_symlink():
+            target = ancestor.readlink()
+            if not target.is_absolute():
+                target = ancestor.parent.resolve() / target
+            # Retain each target prefix, including those before an internal '..'.
+            pending.extend((target, *target.parents))
+
+
 def prepare_receipt(path, protected_paths):
     """Invalidate earlier success without removing input files or following links."""
     if path is None:
         return None
-    # Resolve directory aliases, but inspect the final component without following it.
-    output = path.parent.resolve() / path.name
-    # A later escape link can hide that traversal passed through a protected
-    # product. Check every supplied ancestor before invalidating any receipt.
-    traversed = [output, *(ancestor.resolve() for ancestor in path.parents)]
-    for protected in protected_paths:
-        boundary = protected.resolve()
+    try:
+        # Resolve directory aliases, but never follow the final output component.
+        output = path.parent.resolve() / path.name
+        traversed = [output, *receipt_ancestors(path)]
+        boundaries = [protected.resolve() for protected in protected_paths]
+    except RuntimeError as error:
+        # Python versions that report link loops as RuntimeError still use the
+        # ordinary CLI failure boundary, before any earlier receipt is removed.
+        raise toolchain.SetupError("Receipt paths must resolve without directory-link loops.") from error
+    for boundary in boundaries:
         if any(candidate.is_relative_to(boundary) for candidate in traversed):
             raise toolchain.SetupError("Receipt output must be separate from source, pin, product and CI environment inputs.")
     try:
