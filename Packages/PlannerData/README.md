@@ -82,10 +82,10 @@ from running a UI, simulator lifecycle tests or physical-device qualification.
 | #33 | Empty draft saves and reopens; exact payload/lock bytes survive | Governed valid BuildSnapshot transition, rejection/export and cross-client golden payloads |
 | #69 | CAS, appended restoration, stale undo rejection; real crash recovery | Editor autosave wiring, process termination during actual UI edits, analysis-state integration |
 | #80 | Rename/duplicate/delete, paginated large library, corrupt-record isolation and restart | Native library UI, evidence state display, cross-client build round-trip and private projection |
-| #86 | Schema 1/2→3, interrupted upgrade, actual capacity error, rollback/retry, corrupt DB retention | App integration, supported device/OS upgrade matrix and protected-data tests |
+| #86 | Schema 1/2→3, interrupted upgrade, actual capacity error, rollback/retry, corrupt DB retention; 25 tests also executed on iPhone/iPad simulators | [Criterion-specific storage receipt](../../docs/acceptance/issue-86-durable-storage.md) reconciles this completed database boundary, subject to recorded receiving review; full device qualification and protected-data work remain #107/#99 |
 | #98 | Storage threat boundary and redacted errors documented | Full import/link/API/share flows and security receiving review |
 
-These are partial criteria results; no full issue closure follows from a library
-merge. See the [all-issue acceptance map](../../docs/acceptance/README.md) for exact
+Other rows remain partial criteria results; issue closure follows its exact receipt,
+independent review and signed main integration. See the [all-issue acceptance map](../../docs/acceptance/README.md) for exact
 criteria and remaining executable work. Product/domain receiving acceptance is not
 fabricated; it does not prevent independently testing this implementation.
