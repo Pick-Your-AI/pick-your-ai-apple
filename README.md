@@ -2,9 +2,9 @@
 
 The Apple/iOS planning client for discovering, configuring, checking, costing, comparing and sharing AI stacks. The mobile device is not automatically the inference target.
 
-This repository contains a [Swift client core](Packages/PlannerCore/README.md), delivery proposals and a [frozen-v1 contract preparation harness](tools/conformance/README.md). No application UI, backend or release is included. Swift package tests, iOS SDK compilation, simulator execution and physical-device acceptance are separate evidence stages.
+This repository contains a [Swift client core](Packages/PlannerCore/README.md), [transactional local drafts](Packages/PlannerData/README.md), delivery proposals and a [frozen-v1 contract preparation harness](tools/conformance/README.md). No application UI, backend or release is included. Swift package tests, iOS SDK compilation, simulator execution and physical-device acceptance are separate evidence stages.
 
-Review the [foundation decision proposals](docs/decisions/README.md), [guest journey proposal](docs/proposals/issue-20-journey-map.md), and [acceptance/ownership intake](docs/proposals/issue-25-acceptance-intake.md) before dependent implementation. These records preserve unresolved receiving decisions; publishing them does not close the delivery issues.
+Review the [foundation decision proposals](docs/decisions/README.md), [guest journey proposal](docs/proposals/issue-20-journey-map.md), and [acceptance/ownership intake](docs/proposals/issue-25-acceptance-intake.md) before dependent implementation. The [criterion-by-criterion acceptance map](docs/acceptance/README.md) tracks implemented slices and remaining executable work. These records preserve unresolved receiving decisions; publishing them does not close the delivery issues.
 
 - [Delivery Project 5](https://github.com/orgs/Pick-Your-AI/projects/5) and program [Pick-Your-AI/pick-your-ai-apple#1](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/1).
 - Repository and framework decision: [Pick-Your-AI/pick-your-ai-apple#22](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/22). Repository creation is partial progress; framework, module layout and other architecture decisions remain open.
