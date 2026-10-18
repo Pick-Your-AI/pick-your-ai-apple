@@ -500,6 +500,154 @@ class PrivacyInventoryTests(unittest.TestCase):
                 self.assertEqual(escape.readlink(), outside)
                 self.assertEqual(indirect.readlink(), escape)
 
+    def invalid_product_paths(self):
+        prefix = self.root / "ordinary-input"
+        prefix.write_bytes(b"OWNED_ORDINARY_INPUT_PREFIX\n")
+        targets = {
+            "parent-alias": self.root.resolve(),
+            "hidden-absolute": prefix,
+            "hidden-relative": Path(prefix.name),
+            "hidden-nested": Path("hidden-relative"),
+            "hidden-dotdot-absolute": prefix / "..",
+            "hidden-dotdot-relative": Path(prefix.name) / "..",
+            "hidden-dotdot-nested": Path("hidden-dotdot-relative"),
+            "Final.app": prefix / "Unavailable.app",
+        }
+        for name, target in targets.items():
+            (self.root / name).symlink_to(target)
+        paths = [prefix / "Unavailable.app",
+                 self.root / "parent-alias" / prefix.name / "Unavailable.app",
+                 prefix / ".." / self.app.name,
+                 self.root / "Final.app"]
+        paths.extend(self.root / name / self.app.name for name in targets
+                     if name.startswith("hidden-"))
+        return prefix, targets, paths
+
+    def invoke_cli(self, app, output):
+        return subprocess.run(
+            [sys.executable, str(SCRIPT), "--app", str(app), "--output", str(output)],
+            capture_output=True, text=True, timeout=10,
+        )
+
+    def test_real_cli_non_directory_input_retries_clear_success_and_recover(self):
+        prefix, links, selected_paths = self.invalid_product_paths()
+        before = prefix.read_bytes(), prefix.stat()
+        for selected in selected_paths:
+            with self.subTest(selected=selected):
+                good = self.invoke_cli(self.app, self.output)
+                self.assertEqual((good.returncode, good.stderr), (0, ""))
+                self.assertEqual(json.loads(good.stdout), json.loads(self.output.read_text()))
+                for retry in range(2):
+                    failed = self.invoke_cli(selected, self.output)
+                    self.assertEqual(failed.returncode, 2, failed.stderr)
+                    self.assertEqual(failed.stdout, "")
+                    self.assertNotIn("Traceback", failed.stderr)
+                    self.assertFalse(self.output.exists(), f"stale success retained on retry {retry}")
+                    self.assertEqual(prefix.read_bytes(), before[0])
+                    self.assertEqual((prefix.stat().st_dev, prefix.stat().st_ino),
+                                     (before[1].st_dev, before[1].st_ino))
+                repaired = self.invoke_cli(self.app, self.output)
+                self.assertEqual((repaired.returncode, repaired.stderr), (0, ""))
+                self.assertEqual(json.loads(repaired.stdout), json.loads(self.output.read_text()))
+                self.assertEqual(list(self.output.parent.glob(".privacy-inventory-*")), [])
+                for name, target in links.items():
+                    self.assertEqual((self.root / name).readlink(), target)
+
+    def test_real_cli_non_directory_input_prefix_and_physical_aliases_are_preserved(self):
+        prefix, links, selected_paths = self.invalid_product_paths()
+        sentinel = prefix.read_bytes()
+        hardlink = self.root / "same-input-file"
+        for selected in selected_paths:
+            for route in ("direct", "parent-alias", "hardlink"):
+                with self.subTest(selected=selected, route=route):
+                    # Keep a failing baseline route independent of later routes.
+                    prefix.write_bytes(sentinel)
+                    hardlink.unlink(missing_ok=True)
+                    if route == "hardlink":
+                        hardlink.hardlink_to(prefix)
+                        output = hardlink
+                    elif route == "parent-alias":
+                        output = self.root / "parent-alias" / prefix.name
+                    else:
+                        output = prefix
+                    before = prefix.stat()
+                    failed = self.invoke_cli(selected, output)
+                    self.assertEqual(failed.returncode, 2, failed.stderr)
+                    self.assertEqual(failed.stdout, "")
+                    self.assertTrue(output.exists(), "the selected input prefix lost an output alias")
+                    self.assertEqual(output.read_bytes(), sentinel)
+                    self.assertEqual(prefix.read_bytes(), sentinel)
+                    after = prefix.stat()
+                    self.assertEqual((after.st_dev, after.st_ino, after.st_nlink),
+                                     (before.st_dev, before.st_ino, before.st_nlink))
+                    for name, target in links.items():
+                        self.assertEqual((self.root / name).readlink(), target)
+
+    def test_structural_input_errors_clear_only_proven_separate_receipts(self):
+        structural = [OSError(errno.ELOOP, "PRIVATE_INPUT_ERROR"),
+                      OSError(errno.ENOTDIR, "PRIVATE_INPUT_ERROR"),
+                      OSError(errno.ENAMETOOLONG, "PRIVATE_INPUT_ERROR"),
+                      RuntimeError("Symlink loop from PRIVATE_INPUT_ERROR")]
+        unknown = [OSError(errno.EACCES, "PRIVATE_INPUT_ERROR"),
+                   OSError(errno.EIO, "PRIVATE_INPUT_ERROR"),
+                   RuntimeError("PRIVATE_UNEXPECTED_INPUT_ERROR")]
+        for operation in ("resolve", "stat"):
+            original = getattr(Path, operation)
+            for error in [*structural, *unknown]:
+                with self.subTest(operation=operation, error=repr(error)):
+                    self.assertEqual(self.invoke()[0], 0)
+                    before = self.output.read_bytes(), self.output.stat().st_ino
+
+                    def inaccessible(path, *args, **kwargs):
+                        if path == self.app and kwargs.get("follow_symlinks", True):
+                            raise error
+                        return original(path, *args, **kwargs)
+
+                    with mock.patch.object(Path, operation, new=inaccessible):
+                        status, out, message = self.invoke()
+                    self.assertEqual((status, out), (2, ""))
+                    self.assertNotIn("PRIVATE_", message)
+                    if error in structural:
+                        self.assertFalse(self.output.exists())
+                    else:
+                        self.assertEqual((self.output.read_bytes(), self.output.stat().st_ino), before)
+
+    def test_unknown_prefix_access_and_unsafe_output_preserve_existing_files(self):
+        for code in (errno.EACCES, errno.EIO):
+            with self.subTest(prefix_error=code):
+                self.assertEqual(self.invoke()[0], 0)
+                before = self.output.read_bytes(), self.output.stat().st_ino
+                original = Path.lstat
+
+                def inaccessible(path, *args, **kwargs):
+                    if path == self.app:
+                        raise OSError(code, "PRIVATE_PREFIX_ERROR")
+                    return original(path, *args, **kwargs)
+
+                with mock.patch.object(Path, "lstat", new=inaccessible):
+                    status, out, error = self.invoke()
+                self.assertEqual((status, out), (2, ""))
+                self.assertNotIn("PRIVATE_PREFIX_ERROR", error)
+                self.assertEqual((self.output.read_bytes(), self.output.stat().st_ino), before)
+
+        prefix, links, selected_paths = self.invalid_product_paths()
+        linked = self.root / "unsafe-output-link"
+        linked.symlink_to(self.output)
+        directory = self.root / "unsafe-output-directory"
+        directory.mkdir()
+        fifo = self.root / "unsafe-output-fifo"
+        os.mkfifo(fifo)
+        before = self.output.read_bytes(), self.output.stat().st_ino
+        for output in (linked, directory, fifo):
+            with self.subTest(output=output.name):
+                failed = self.invoke_cli(selected_paths[0], output)
+                self.assertEqual(failed.returncode, 2, failed.stderr)
+                self.assertEqual(failed.stdout, "")
+                self.assertEqual((self.output.read_bytes(), self.output.stat().st_ino), before)
+                self.assertTrue(output.exists())
+                self.assertEqual(linked.readlink(), self.output)
+                self.assertEqual(prefix.read_bytes(), b"OWNED_ORDINARY_INPUT_PREFIX\n")
+
     def test_real_filesystem_case_aliases_or_distinct_directories(self):
         alternate = self.root / self.app.name.swapcase()
         if alternate.exists():

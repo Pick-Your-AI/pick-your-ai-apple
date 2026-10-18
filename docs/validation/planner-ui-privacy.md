@@ -349,6 +349,38 @@ unchanged. The new helper and filesystem-conditioned branch require their own
 configured native receiving results and both built-product privacy inventories.
 Original f4 and separate SDK results establish no execution of this new source.
 
+## Invalid selected-product retries
+
+The next bounded correction addresses the actual failed retry recorded in
+[the receiving privacy finding](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/198#issuecomment-6256221343).
+On preparation `cd90dd3caf4156084f34781c6a72fb9281bf9099`, tree
+`6c2d44dd570cc3dec360ea7a89e827b64d2abc27`, an ordinary file in the selected
+product's ancestry caused `ENOTDIR` before a separate old receipt was removed.
+A supplied internal `..` could also hide that file from the normalized product
+boundary. Simply ignoring the failed identity lookup would risk deleting an
+input file when the output names that prefix or a physical alias.
+
+The helper now retains existing non-directory input-prefix identities, including
+absolute, relative and nested link targets and components before `..`. The
+prefix walk follows the independently reviewed
+[SDK receipt design](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/e9e758e8371cf53768b542ec866b6844445f12e1/App/scripts/submission_sdk.py),
+without adding a runtime dependency between the helpers. Recognized `ENOTDIR`,
+`ELOOP` and `ENAMETOOLONG` failures reject the selected input after invalidating
+only a proven separate ordinary receipt. Unknown access or I/O failures remain
+conservative. Physical prefix aliases and unsafe final output types remain
+unchanged; the scanner, manifest pins and atomic writer are unchanged. This
+remains stable-path validation, with no concurrent-filesystem safety claim.
+
+Four new synthetic methods exercise ten actual invalid selected paths, each with
+a separate success/failure/repeated-failure/repaired-success sequence and direct,
+parent-alias and hardlink output controls. Controlled error cases distinguish
+structural failures from unknown access, I/O and unexpected runtime errors.
+All eighteen preceding method bodies remain unchanged. Actual Python 3.12.14
+execution passes all **22 privacy methods** in 12.410 seconds with no failure,
+error or skip; the unchanged-parent negative log is retained separately. These
+are synthetic filesystem checks. They do not establish native case-alias behavior
+or the corrected receiving source's two built-product privacy inventories.
+
 ## Remaining integration and acceptance
 
 This composition retains the independently reviewed and delivered PlannerCatalog
