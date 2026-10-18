@@ -479,6 +479,52 @@ current-main integration remain separate. #214 stays draft until #285 actually
 reaches signed main; this preparation supplies no evaluator, capacity, quality,
 service, source-use, device or release acceptance.
 
+### Actual resource, envelope and Ruleset Linux execution (2026-10-18)
+
+The exact combined source is retained as unreferenced preparation
+[`bbc7c413e85bdecbe645227b7836582077bb34dd`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/bbc7c413e85bdecbe645227b7836582077bb34dd),
+tree `c8c7d83fb12eaa4bafc78d5cd7ca88a793104a14`, with ordered parents
+`fbc7b043418688c514f9664789014753dc358be8` and
+`a924c46dc6e322d5661dfb358bb743127a25550a`. Independent composition review
+verified all 177 leaves: six original Ruleset entries, 167 unchanged base entries
+and the four explicit validator, replay, manifest and documentation mixtures.
+This checkpoint is unsigned preparation, not a change to the canonical #214 head
+or evidence of accepted envelope or Ruleset main.
+
+That exact source built and passed **67 distinct XCTest cases, zero failures or
+skips**, using the previously verified official Swift 6.1.2 Linux toolchain.
+All starts and passes match across 16 comparison, 13 build, six item, six envelope,
+one durable-transfer, nine quality, eight resource and eight Ruleset cases.
+The build took 18.15 seconds and XCTest took 15.807 seconds. The separate Swift
+Testing harness reported zero tests; it is not the source of the 67-case result.
+The staged source tree and working source bytes were unchanged by execution.
+
+The command used `swift test --jobs 2 --package-path Packages/PlannerTransfer`
+with a new temporary scratch and compiler module-cache directory, the same
+verified private SQLite headers, and an explicit linker path to the existing
+system SQLite runtime. Its `LD_LIBRARY_PATH` selected the previously verified
+private runtime libraries and Swift libraries. The earlier package-config
+overrides were absent. The successful build retained the `pkg-config`/SQLite
+search-path warnings. This new 67-case composition succeeded on its first
+execution without a source repair.
+The complete stdout/stderr is 21,456 bytes with SHA-256
+`5ea7b8c88e7136b5ce2a123ac16940ebccde8a0d077ba2a6124f7ad339f6becd`.
+
+The same source separately passed all **13 canonical hashes and 2,587 reference
+cases** with Python 3.12.14 and `jsonschema[format]==4.26.0`, including deterministic
+vector regeneration checks. Its complete 514-byte log has SHA-256
+`8e11b2d97b8aebbc82ed1dd71faf1de931c14c37fe814cd3eef67e6c28b5408e`.
+The eight Ruleset tests execute the complete 45-rule artifact and 321 shared
+syntax vectors alongside all eight ResourceEstimate regressions in this union.
+
+This execution supplements the two separately historical 59-case inputs above.
+It does not execute later accepted-main changes, macOS, iOS, the full submission
+SDK inventory or application journeys. Current native checks, independent
+receiving review, normal signing and final-main integration remain required.
+#214 remains draft until the envelope actually reaches signed main through #285;
+neither this portable execution nor its preparation checkpoint satisfies that
+dependency or establishes evaluator, service, source-use or release acceptance.
+
 ## Remaining acceptance
 
 Independent code review and hosted macOS/iOS compilation remain required for new code. A cross-package SQLite integration test now saves an empty draft, rejects snapshot export and malicious import, reopens the store, and verifies identical payload, locks, revision and history. PlannerData is a test-only dependency; the library remains independent. macOS 14 is the package testing floor; iOS 17 remains the product floor. #32's accepted all-kind boundary and explicit model/representation limits are reconciled in the [receiving conformance record](#32-receiving-conformance-record) and its completed signed-delivery receipt. #33’s exact draft/snapshot boundary criteria are satisfied by the linked [criterion-specific receipt](../../docs/acceptance/issue-33-draft-snapshot-boundary.md), subject to its recorded receiving disposition; the earlier UI-integration gap is reconciled there. Actual UI autosave/termination remains #69 and Files workflows remain #82. #82 still needs actual Files/share-sheet flows, cross-client UI round trips and approved privacy/source-use review. #102 still needs server cross-user access, capability guessing and Universal Link/device tests against the real service and signed app. No broader hardware, release or production claims are made.
