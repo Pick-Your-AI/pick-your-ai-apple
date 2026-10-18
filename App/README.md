@@ -36,7 +36,21 @@ The user can explicitly discard edits and reopen to load the current revision. D
 with unsupported editor payloads cannot be opened for editing. Unreadable storage rows
 remain stored and are disclosed by count. Selection restoration opens only committed
 content. Background save is best effort: force termination can lose unacknowledged
-edits. UI revision-history/undo and autosave crash recovery remain work under #69.
+edits. Revision history is paged in bounded groups of 20. Explicit restoration
+requires confirmation and clean current input, appends a new revision, preserves
+later saved history, and rejects stale compare-and-swap revisions or unsupported
+editor payloads. Restored notes never become current compatibility or pricing evidence.
+New binding edits arriving during restoration remain dirty. Lifecycle save requests
+arriving during an operation are drained afterward with the latest editor contents
+and committed revision; they are not silently dropped by the busy flag.
+
+Seven additional model regressions cover restore/reopen/history retention, dirty and
+concurrent edit guards, binding updates during restore, bounded history, unsupported
+history, and background saves during paused history/restore operations. These are
+controlled actor-boundary tests, not simulated OS termination or end-to-end UI taps.
+Undo/redo, timed autosave, process-kill during UI autosave and physical lifecycle
+qualification remain work under #69. Hosted exact-head compilation and model tests
+are required before this slice is accepted.
 
 Storage opens in Application Support under a directory protected until first unlock.
 A failure shows an unavailable screen and never resets the database. Locked-device
