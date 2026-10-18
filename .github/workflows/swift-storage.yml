@@ -10,7 +10,30 @@ concurrency:
 permissions:
   contents: read
 jobs:
+  scope:
+    name: macos-storage documentation scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      native_required: ${{ steps.scope.outputs.native_required }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Test conservative scope selection
+        run: python3 -m unittest discover -s tools/ci/tests -p 'test_native_scope.py' -v
+      - name: Inspect complete exact Git comparison
+        id: scope
+        env:
+          APPLE_CI_EVENT: ${{ github.event_name }}
+          APPLE_CI_HEAD: ${{ github.sha }}
+          APPLE_CI_BASE: ${{ github.event.pull_request.base.sha }}
+          APPLE_CI_BEFORE: ${{ github.event.before }}
+        run: python3 tools/ci/native_scope.py
   macos-storage:
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
     runs-on: macos-15
     timeout-minutes: 35
     env:
@@ -68,7 +91,9 @@ jobs:
               -resultBundlePath "$GITHUB_WORKSPACE/storage-$label.xcresult" \
               CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Test Case .*DraftStoreTests.*testInterruptedMigrationRollsBackSchemaThenRecovers.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
-            grep -E 'Executed 25 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Test Case .*DraftStoreTests.*testPreparedDuplicateRejectsSourceChangedAfterPreparation.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Test Case .*DraftStoreTests.*testPreparedDuplicateRejectsSourceDeletedAfterPreparation.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Executed 28 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
           done < "$GITHUB_WORKSPACE/storage-simulator-selection.tsv"
       - name: Retain storage evidence
         if: always()

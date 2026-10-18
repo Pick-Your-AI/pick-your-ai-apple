@@ -263,16 +263,28 @@ def retire(api, *, apply=False, emit=print):
     return accepted
 
 
+def maintenance_context_allowed(environment):
+    """Only reviewed main workflows may apply; event metadata is never code."""
+    event = environment.get("GITHUB_EVENT_NAME")
+    allowed_event = event in ("push", "workflow_run", "workflow_dispatch") or (
+        event == "pull_request_target"
+        and environment.get("MAINTENANCE_ACTION") == "closed"
+        and environment.get("MAINTENANCE_PR_STATE") == "closed"
+        and environment.get("MAINTENANCE_PR_BASE") == "main"
+    )
+    return (
+        environment.get("GITHUB_REPOSITORY") == REPOSITORY
+        and environment.get("GITHUB_REF") == "refs/heads/main"
+        and allowed_event
+    )
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument("--apply", action="store_true", help="Request ordinary cancellation from reviewed main-branch workflow code.")
     args = parser.parse_args()
     try:
-        if args.apply and not (
-            os.environ.get("GITHUB_REPOSITORY") == REPOSITORY
-            and os.environ.get("GITHUB_REF") == "refs/heads/main"
-            and os.environ.get("GITHUB_EVENT_NAME") in ("push", "workflow_run", "workflow_dispatch")
-        ):
+        if args.apply and not maintenance_context_allowed(os.environ):
             raise SafetyError("Apply is restricted to this repository's main-branch maintenance workflow.")
         retire(GitHub(os.environ.get("GITHUB_TOKEN")), apply=args.apply)
         return 0

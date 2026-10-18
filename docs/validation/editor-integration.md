@@ -43,9 +43,44 @@ is cleared after use on the runner's newly created owned simulator. Exact-ID del
 the separately saved control, positive successful reload checks and scoped simulator
 cleanup remain mandatory.
 
-## Evidence and remaining gates
+## Receiving union with comparison and import preparation
 
-The combined package contains 52 XCTest cases: 22 editor/library model,
+The receiving tree was prepared on accepted main
+`0397de2095506440a3516438550cd38289afc31e` and reconciled with signed main
+`7952f0cbedc8b19c03b6491197cf1160054c3cd7`. It keeps the pinned toolchain,
+empty-cache assertions, security and toolchain receipts, bounded obsolete-run
+maintenance, conservative documentation-scope preflights, and the exact reviewed
+catalog sort delivered through [#203](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/203).
+The accepted local serializer's bounded round-trip guard and its two regressions
+also remain alongside the imported-library wrapper validation. The source and
+workflow changes in this candidate still require every native job; a skipped
+documentation job is not execution evidence. It then retains these independently
+reviewed component versions:
+
+| Component | Consumed source | Union check |
+| --- | --- | --- |
+| Corrected editor and UI journey | [#198](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/198), `6d3501cc90aeb98f872f7289c8c9b4946b84f9f7` | Editor model/view, autosave/history tests, selected-draft startup tests, actual UI journey and owned runner remain byte-identical |
+| Comparison and atomic imported-library CRUD | Signed [#193](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/193), `7deb8ddff5fb58efbceb74d89d0fe8404a3db4c1` | Canonical comparison presentation and prepared-duplicate transaction/tests retained; wrapper validation, revision checks and committed-ID baseline invalidation retained |
+| Preview/export worker and cancellation correction | [#208](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/208), `16e5e364e2236eb044a6307f498619a562d873f8` | All three preparation/model/test files and the import view match the reviewed source; cancellation rejects both late success and error |
+
+Workflow reconciliation retains the main toolchain and fresh-cache paths, all
+thirteen required imported-library test names, the 28-case storage/abrupt-exit gates,
+and the complete actual iPhone/iPad journey. No source component was replaced with
+another implementation. The README combines the pin/setup instructions with the
+editor, startup, comparison, CRUD and worker behavior instead of dropping either
+side of the integration conflicts.
+
+The combined PlannerUI package declares 68 cases: 22 editor/library, 13 autosave,
+two bounded history, 20 imported-library, six startup, two independent-store and
+three comparison-presentation tests. All 26 portable pin/runner tests passed in this
+receiving checkout, and 27 critical source/test/maintenance blobs were compared
+against their exact listed revisions. This source composition and portable execution
+do not establish a combined Swift or UI pass. The frozen final receiving head needs
+independent integration review and actual hosted native execution before delivery.
+
+## Earlier execution and remaining gates
+
+The original #198 source package contains 52 XCTest cases: 22 editor/library model,
 13 controlled autosave, two bounded history, seven imported-build, six startup and
 two independent-store cases. [Run 39100534357 / job 117595708300](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39100534357/job/117595708300)
 at `206fbb0a97673bc03246af6175411c3eff11f4a4` executed all 52 with zero failures and
@@ -56,6 +91,21 @@ The focused correction binds every
 reveal gesture to the new `draftEditorForm` identifier and keeps every assertion.
 The retained failure artifact is `12126633882`, SHA-256
 `96bf09374aeafe7490166ae74dac7039df15fedbe7ea2b6536eb2cf52f5cbb31`.
+
+The corrected `6d3501cc90aeb98f872f7289c8c9b4946b84f9f7` attempt in
+[run 39102630153 / job 117601837621](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39102630153/job/117601837621)
+again passed all 52 model cases, unsigned build and launch smoke. Its complete iPad
+journey passed in 237.305 seconds. iPhone failed in 43.669 seconds at the first
+`newDraft` hittability query, before opening the editor. Its retained debug attachment
+reports `{{inf, inf}, {0.0, 0.0}}` for the entire main window and every ancestor,
+while the screen recording shows the normally rendered Notes page and toolbar.
+That evidence supports an automation geometry/readiness failure; it does not prove
+the iPhone Form correction or justify changing app layout or weakening assertions.
+Both owned cleanups succeeded. The result summaries contain one iPhone failure,
+one iPad pass and zero skips. Artifact `12127539603` is 63,026,446 bytes; its downloaded
+archive was independently checked against SHA-256
+`82c5435875330478714f458d4ab0d63bdb992ee19e704931212ff8f92a1af432`.
+
 The runner still requires exactly one passed journey, zero failures/skips and successful
 owned cleanup on each pinned iPhone/iPad destination. Swift/Xcode are unavailable in
 the local preparation workspace. Both destinations must pass on the corrected head
