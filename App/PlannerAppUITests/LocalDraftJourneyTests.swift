@@ -219,7 +219,18 @@ final class LocalDraftJourneyTests: XCTestCase {
         let buttonPaste = app.buttons["Paste"]
         if menuPaste.waitForExistence(timeout: 2) { tap(menuPaste) }
         else { tap(buttonPaste) }
-        XCTAssertGreaterThan((field.value as? String ?? "").utf8.count, 1_024)
+        let pastedTitle = field.value as? String ?? ""
+        XCTAssertGreaterThan(pastedTitle.utf8.count, 1_024)
+        // A newly owned iPad can present its observed first-use Copy and Paste
+        // education after the standard Paste action. It covers the keyboard
+        // toolbar; dismiss only that exact visible panel through its own button.
+        let education = app.staticTexts["Copy and Paste"]
+        if education.exists {
+            tap(app.buttons["Continue"])
+            wait(education, matching: "exists == false")
+        }
+        XCTAssertEqual(field.value as? String, pastedTitle,
+                       "Dismissing paste education must preserve the complete invalid amendment")
     }
 
     @MainActor
