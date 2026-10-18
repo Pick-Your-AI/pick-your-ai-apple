@@ -1,0 +1,102 @@
+{
+  "cases": [
+    {
+      "actual_exit": 0,
+      "case": "no-dependency-change",
+      "diagnostic": null,
+      "expected_exit": 0,
+      "passed": true,
+      "report": {
+        "accepted": true,
+        "added_dependencies": 0,
+        "disallowed_licenses": 0,
+        "removed_dependencies": 0,
+        "unlicensed_dependencies": 0,
+        "unresolved_licenses": 0,
+        "vulnerable_dependencies": 0
+      }
+    },
+    {
+      "actual_exit": 1,
+      "case": "vulnerable-development-dependency",
+      "diagnostic": null,
+      "expected_exit": 1,
+      "passed": true,
+      "report": {
+        "accepted": false,
+        "added_dependencies": 1,
+        "disallowed_licenses": 0,
+        "removed_dependencies": 0,
+        "unlicensed_dependencies": 0,
+        "unresolved_licenses": 0,
+        "vulnerable_dependencies": 1
+      }
+    },
+    {
+      "actual_exit": 1,
+      "case": "unapproved-license",
+      "diagnostic": null,
+      "expected_exit": 1,
+      "passed": true,
+      "report": {
+        "accepted": false,
+        "added_dependencies": 1,
+        "disallowed_licenses": 1,
+        "removed_dependencies": 0,
+        "unlicensed_dependencies": 0,
+        "unresolved_licenses": 0,
+        "vulnerable_dependencies": 0
+      }
+    },
+    {
+      "actual_exit": 1,
+      "case": "unresolved-license",
+      "diagnostic": null,
+      "expected_exit": 1,
+      "passed": true,
+      "report": {
+        "accepted": false,
+        "added_dependencies": 1,
+        "disallowed_licenses": 0,
+        "removed_dependencies": 0,
+        "unlicensed_dependencies": 1,
+        "unresolved_licenses": 0,
+        "vulnerable_dependencies": 0
+      }
+    },
+    {
+      "actual_exit": 0,
+      "case": "urgent-update-recovery",
+      "diagnostic": null,
+      "expected_exit": 0,
+      "passed": true,
+      "report": {
+        "accepted": true,
+        "added_dependencies": 1,
+        "disallowed_licenses": 0,
+        "removed_dependencies": 1,
+        "unlicensed_dependencies": 0,
+        "unresolved_licenses": 0,
+        "vulnerable_dependencies": 0
+      }
+    },
+    {
+      "actual_exit": 1,
+      "case": "patched-version-with-missing-review",
+      "diagnostic": "Dependency review could not be verified: Required dependency-review output is missing",
+      "expected_exit": 1,
+      "passed": true,
+      "report": null
+    }
+  ],
+  "guard_sha256": "4729a141e7dd72d1e0c9b99bcf0f0bb8e56f8c65dfc0cd79a69288f74bbc31b3",
+  "kind": "synthetic-dependency-review-output-drill",
+  "limits": [
+    "Uses supplied synthetic review output; does not query an advisory database.",
+    "Does not install a vulnerable package, change credentials or test a release binary.",
+    "SPDX classifications are fixture inputs; hosted action classification remains a separate gate."
+  ],
+  "passed": true,
+  "python": "3.12.14",
+  "schema_version": 1
+}
