@@ -13,3 +13,6 @@ local.properties
 .gradle/
 DerivedData/
 xcuserdata/
+__pycache__/
+*.pyc
+.venv/
