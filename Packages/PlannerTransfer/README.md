@@ -4,6 +4,7 @@ This portable Swift 6 package implements part of Apple [#32](https://github.com/
 
 ## API and integration
 
+- `DependencyGraph.decode(_:)` preserves all directed frozen-v1 edges with typed kind, relationship and activation labels. Its [boundary and conformance record](DEPENDENCY_GRAPH.md) distinguishes structural decoding from executable graph or placement policy.
 - `CatalogItem.decode(_:)` validates a single frozen-v1 catalog item, preserves its exact `CatalogKind` identity and every supported field, and returns an immutable value. Kind-specific specs and their required tier are checked against the unchanged canonical schema. No missing optional fact is filled in and no catalog item becomes a user selection.
 - `BuildTransfer.snapshot(fromDraftJSON:)` validates a complete frozen-v1 BuildSnapshot and returns an immutable value. Missing fields and fewer than two selections fail; no defaults, locks or synthetic values are inserted. Keep editor drafts in PlannerData even when this transition fails.
 - `BuildTransfer.preview(_:)` accepts a bare snapshot or the existing web `pickyour.ai/build-export` version-1 envelope. Envelope provenance is untrusted metadata, not a verified catalog activation. `usesSyntheticData` is nil for bare imports; do not interpret that as production evidence.
