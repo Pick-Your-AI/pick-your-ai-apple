@@ -106,7 +106,17 @@ trigger that test's expected assertion, and complete with a matching failed
 XCTest suite summary. A class or method that only contains the expected name
 does not qualify. Duplicate results, unexpected failures, truncated output,
 compile errors, crashes, timeouts and changed anchors do not qualify.
-The source package is never changed. CI retains the logs and success receipt.
+The source package is never changed. Before execution, the runner checks all
+five fixed output names (the receipt, baseline log and three mutation logs).
+Existing outputs must be regular files with one hard link; symlinks, shared
+hardlinks, directories and other file types reject the invocation before any
+previous output is removed. The supplied output directory may use an outside
+directory alias, but may not traverse the source package even if a later alias
+resolves outside it. A valid rerun clears all five previous outputs, then creates
+new logs and the final success receipt exclusively. Files appearing after
+preflight cannot be followed or overwritten. Use a separate evidence directory
+per concurrent invocation; concurrent replacement of parent directories is not
+supported. CI retains the logs and success receipt.
 This supplements the existing deliberate XCTest failure probe and Python reference
 mutations for #30/#104; it does not prove branch protection is enforced.
 
@@ -116,6 +126,12 @@ qualified under the former substring check. The corrected guard rejects it.
 Portable tests exercise Linux and macOS XCTest spellings, unrelated similarly
 named methods/classes, assertion identity, missing/duplicate/skipped results,
 summary mismatches, empty successful baselines and stale-receipt removal.
+Output regressions reproduce a real child-process invocation against a synthetic
+package, exercise every destination with symbolic/hard links and nonregular
+files, and verify rejected paths preserve source bytes and prior receipts.
+Separate cases cover a source-traversing directory alias, safe outside aliases,
+failed-baseline cleanup and retry, and files introduced after preflight. These
+portable I/O and synthetic-transcript checks are not a Swift execution receipt.
 The corrected parser also accepts the actual 67-case baseline and all three
 deliberate failures retained in [core run 39108049392](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39108049392),
 artifact `12129239361`, verified SHA-256

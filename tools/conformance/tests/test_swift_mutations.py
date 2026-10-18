@@ -1,6 +1,8 @@
 """Runner qualification without requiring a Swift installation."""
 import importlib.util
+import os
 from pathlib import Path
+import sys
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -183,6 +185,122 @@ class SwiftMutationTests(unittest.TestCase):
             package = self.make_package(Path(tmp))
             with self.assertRaisesRegex(ValueError, 'outside the source'):
                 runner.run(package, package / 'evidence', 'swift', 10)
+
+    def test_real_invocation_rejects_log_alias_without_truncating_source(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = self.make_package(root)
+            source = package / 'Package.swift'
+            original = source.read_bytes()
+            output = root / 'evidence'; output.mkdir()
+            log = output / 'baseline.log'; log.symlink_to(source)
+            child = root / 'synthetic-swift'
+            child.write_text(f'#!{sys.executable}\nraise SystemExit(0)\n')
+            child.chmod(0o755)
+            with self.assertRaisesRegex(ValueError, 'unshared regular'):
+                runner.run(package, output, str(child), 10)
+            self.assertEqual(source.read_bytes(), original)
+            self.assertTrue(log.is_symlink())
+
+    def test_all_output_destinations_are_checked_before_any_cleanup(self):
+        names = ['swift-mutations.json', 'baseline.log',
+                 *(m['name'] + '.log' for m in runner.MUTATIONS)]
+        for name in names:
+            for kind in ['symlink', 'hardlink', 'directory', 'fifo']:
+                with self.subTest(name=name, kind=kind), tempfile.TemporaryDirectory() as tmp:
+                    root = Path(tmp)
+                    package = self.make_package(root)
+                    source = package / 'Package.swift'
+                    original = source.read_bytes()
+                    output = root / 'evidence'; output.mkdir()
+                    target = output / name
+                    if kind == 'symlink': target.symlink_to(source)
+                    elif kind == 'hardlink': target.hardlink_to(source)
+                    elif kind == 'directory': target.mkdir()
+                    else: os.mkfifo(target)
+                    before = target.lstat()
+                    receipt = output / 'swift-mutations.json'
+                    if name != receipt.name: receipt.write_text('prior success')
+                    with patch.object(runner, 'invoke', return_value=(0, 'Build complete!')) as invoke:
+                        with self.assertRaisesRegex(ValueError, 'unshared regular'):
+                            runner.run(package, output, 'swift', 10)
+                        invoke.assert_not_called()
+                    self.assertEqual(source.read_bytes(), original)
+                    after = target.lstat()
+                    self.assertEqual((after.st_ino, after.st_mode, after.st_nlink),
+                                     (before.st_ino, before.st_mode, before.st_nlink))
+                    if name != receipt.name: self.assertEqual(receipt.read_text(), 'prior success')
+
+    def test_output_cannot_traverse_source_even_when_final_directory_is_outside(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = self.make_package(root)
+            outside = root / 'outside'; outside.mkdir()
+            (package / 'escape').symlink_to(outside, target_is_directory=True)
+            with patch.object(runner, 'invoke') as invoke:
+                with self.assertRaisesRegex(ValueError, 'outside the source'):
+                    runner.run(package, package / 'escape' / 'evidence', 'swift', 10)
+                invoke.assert_not_called()
+            self.assertFalse((outside / 'evidence').exists())
+            self.assertTrue((package / 'escape').is_symlink())
+
+    def test_safe_output_alias_retries_clear_receipt_and_all_prior_logs(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = self.make_package(root)
+            output = root / 'evidence'; output.mkdir()
+            alias = root / 'outside-alias'; alias.symlink_to(output, target_is_directory=True)
+            names = ['swift-mutations.json', 'baseline.log',
+                     *(m['name'] + '.log' for m in runner.MUTATIONS)]
+            for name in names: (output / name).write_text('prior result')
+            with patch.object(runner, 'invoke', return_value=(0, 'Build complete!')):
+                with self.assertRaisesRegex(ValueError, 'execute and pass every named regression'):
+                    runner.run(package, alias, 'swift', 10)
+            self.assertTrue(all(not (output / name).exists() for name in names))
+            def recovered(copy, swift, arguments, log, timeout):
+                with log.open('x') as stream: stream.write('new execution')
+                if not arguments: return 0, self.baseline()
+                mutation = next(m for m in runner.MUTATIONS if m['test'] == arguments[-1])
+                return 1, self.output(mutation)
+            with patch.object(runner, 'invoke', side_effect=recovered):
+                self.assertEqual(len(runner.run(package, alias, 'swift', 10)), 3)
+            self.assertTrue(all((output / name).is_file() for name in names))
+            self.assertTrue(alias.is_symlink())
+
+    def test_invoke_does_not_replace_an_output_created_after_preflight(self):
+        for kind in ['regular', 'symlink', 'hardlink']:
+            with self.subTest(kind=kind), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                source = root / 'source'; source.write_text('retained source')
+                log = root / 'baseline.log'
+                if kind == 'regular': log.write_text('another execution')
+                elif kind == 'symlink': log.symlink_to(source)
+                else: log.hardlink_to(source)
+                before = log.read_bytes()
+                with patch.object(runner.subprocess, 'run') as execute:
+                    with self.assertRaises(FileExistsError):
+                        runner.invoke(root, 'swift', [], log, 10)
+                    execute.assert_not_called()
+                self.assertEqual(log.read_bytes(), before)
+                self.assertEqual(source.read_text(), 'retained source')
+
+    def test_receipt_does_not_follow_an_alias_created_during_execution(self):
+        with tempfile.TemporaryDirectory() as tmp:
+            root = Path(tmp)
+            package = self.make_package(root)
+            source = package / 'Package.swift'; original = source.read_bytes()
+            output = root / 'evidence'
+            def intercepted(copy, swift, arguments, log, timeout):
+                if not arguments: return 0, self.baseline()
+                mutation = next(m for m in runner.MUTATIONS if m['test'] == arguments[-1])
+                if mutation == runner.MUTATIONS[-1]:
+                    (output / 'swift-mutations.json').symlink_to(source)
+                return 1, self.output(mutation)
+            with patch.object(runner, 'invoke', side_effect=intercepted):
+                with self.assertRaises(FileExistsError):
+                    runner.run(package, output, 'swift', 10)
+            self.assertEqual(source.read_bytes(), original)
+            self.assertTrue((output / 'swift-mutations.json').is_symlink())
 
 
 if __name__ == '__main__':
