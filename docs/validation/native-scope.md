@@ -100,7 +100,7 @@ library/history recovery. Its surrounding-input pins include this selector and
 regression update plus the five literal job-name additions. Every native job body,
 action pin and command remains identical to that accepted base.
 
-The current record explicitly refreshes that audit to accepted main
+The first refresh updated that audit to accepted main
 `13e67df89309289b42fd9302c5908041739d9d11`. The intervening accepted work adds
 the frozen quality reader and resources, strict Core raw-JSON admission and its
 raw-vector replay, bounded Catalog loading, and the stricter XCTest evidence
@@ -109,13 +109,34 @@ the five package manifests and app project/scheme remain byte-identical, so the
 dependency matrix is unchanged. Core, Transfer and Catalog receive new complete
 package-tree pins; Data and UI retain their existing pins.
 
-The surrounding audit now contains 38 leaves. It includes the added raw-vector
+That surrounding audit contained 38 leaves. It includes the added raw-vector
 helper, its contract-preparation workflow step, the accepted mutation qualifier
 and tests, and the foreground-maintenance fixture correction below. All other
 surrounding pins are unchanged. The selector algorithm, documentation allowlist
 and five literal job-name workflow additions are unchanged. This explicit refresh
 does not treat earlier native executions as evidence for the newer tree; all
 native jobs are allocated for the audit change itself.
+
+The current record carries accepted main
+`074ae4bffec6066d3fe6e6a5fe47ab429dde54ed`: #268 reconciles the accepted #32
+record in two documents, and #257 adds the separately reviewed dependency-policy
+workflow, its bounded helpers, controlled regressions and evidence documents.
+The new workflow invokes only its own security helpers; the five native workflows,
+app sources and conformance input selection are unchanged. The accepted Transfer
+README correction updates that package's complete tree pin; the other four package
+trees and all seven dependency pins remain identical to the first refresh.
+
+The accepted conformance runner also invalidates an earlier success receipt
+before validation and publishes new output atomically. Its new path, link and
+failure regressions preserve the frozen input selection and native commands.
+The complete surrounding set now contains 51 leaves: the earlier 38 paths, with
+new exact runner/harness blobs, plus all 13 accepted dependency-policy leaves,
+including its documents and fixtures. None receives a documentation exemption. The selector, fixture tests,
+allowlist, job closures and five native workflow bodies remain unchanged. The
+completed native executions at source `a650f4039c067a178d725c6c9238b6c660ac6a97`
+retain their exact test-merge `c4cb02f3f3ce97cc6b9ac1463122735f43c91802` and tree
+`34f35205789e36b5fd57413199f6d45d29597742`; this later input refresh allocates
+all five jobs and requires its own current-source checks.
 
 A drift is a safe allocation decision, not a request to refresh hashes blindly.
 Before updating the record, independently inspect the changed native code and

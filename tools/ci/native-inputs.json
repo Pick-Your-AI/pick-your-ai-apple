@@ -67,7 +67,7 @@
       "Packages/PlannerTransfer": [
         "040000",
         "tree",
-        "dad347a9ce149a05b0fec296a4e16938bb302fcc"
+        "63496290d3997d6a7d43868313dcdf95e15c6b68"
       ]
     },
     "native-ui": {
@@ -108,6 +108,11 @@
       "100644",
       "blob",
       "cb9b12a94e0f142968f4195db9220dfe1bc0108e"
+    ],
+    ".github/workflows/dependency-review.yml": [
+      "100644",
+      "blob",
+      "3044312862c8f27cb7d1285c5fe662c8f1f062a7"
     ],
     ".github/workflows/native-ui.yml": [
       "100644",
@@ -189,6 +194,21 @@
       "blob",
       "0df7318f2b539de1862de27a09fb1494c9aa6e0e"
     ],
+    "docs/validation/dependency-review-contract-regression.json": [
+      "100644",
+      "blob",
+      "5fbd69249912a30eecf78831f6a3ad9f4bc1d29d"
+    ],
+    "docs/validation/dependency-review-rehearsal.json": [
+      "100644",
+      "blob",
+      "7245382fca9ef2e0bf01a23b225340585ace6ec4"
+    ],
+    "docs/validation/dependency-review.md": [
+      "100644",
+      "blob",
+      "10764eba904033818727cbfb194e6ebe78367492"
+    ],
     "tools/acceptance/check_map.py": [
       "100644",
       "blob",
@@ -247,7 +267,7 @@
     "tools/conformance/run.py": [
       "100644",
       "blob",
-      "4f71dff04bcee5dcb263abd7c6491f1ffa054fb0"
+      "d43d7ddb0523d5d08eb846eb27b044dc7c2f195b"
     ],
     "tools/conformance/swift_mutations.py": [
       "100644",
@@ -257,7 +277,7 @@
     "tools/conformance/tests/test_harness.py": [
       "100644",
       "blob",
-      "53d77573848d0d58b5db67e2b84e72608a0c9290"
+      "c8f3f3b3bbc7eea38711e83791f3d4d3f513e5e7"
     ],
     "tools/conformance/tests/test_swift_mutations.py": [
       "100644",
@@ -269,12 +289,57 @@
       "blob",
       "d483cec08c647acb88167bc43a2c75187cc1c3c5"
     ],
+    "tools/security/check_dependency_review.py": [
+      "100644",
+      "blob",
+      "41c609480d06c988cf52981a9dffe976da1cceca"
+    ],
+    "tools/security/check_dependency_snapshots.py": [
+      "100644",
+      "blob",
+      "6f25494c6c15afdf2f5d44d9bdd3d8882341360b"
+    ],
+    "tools/security/rehearse_dependency_review.py": [
+      "100644",
+      "blob",
+      "3f1f0700d116338b1076e094ffac6beccfb2e452"
+    ],
+    "tools/security/tests/fixtures/dependency-review-action.LICENSE": [
+      "100644",
+      "blob",
+      "cdfebd4e4322284fde560f21808182055976d9bf"
+    ],
+    "tools/security/tests/fixtures/pinned-action-contract.json": [
+      "100644",
+      "blob",
+      "c88a444273ccb01b60b1f62d7ad395222f02d1e3"
+    ],
+    "tools/security/tests/fixtures/pinned-action-license-gap.json": [
+      "100644",
+      "blob",
+      "54bfaf72578b6986a08b0598750e9cadc1f652b6"
+    ],
+    "tools/security/tests/test_dependency_review.py": [
+      "100644",
+      "blob",
+      "847352010f5204af7b38991c2193d3f96402cdfd"
+    ],
+    "tools/security/tests/test_dependency_snapshots.py": [
+      "100644",
+      "blob",
+      "61b25acd799b160d027e75e5279bf05639522b03"
+    ],
+    "tools/security/tests/test_pinned_dependency_license.py": [
+      "100644",
+      "blob",
+      "ef9669bcf26a00fe69b41c3858d43c722f08c006"
+    ],
     "tools/storage/crash_replay.py": [
       "100644",
       "blob",
       "961c45d1b8dd61f33abb86f255e79a43021c0646"
     ]
   },
-  "source_revision": "13e67df89309289b42fd9302c5908041739d9d11",
+  "source_revision": "074ae4bffec6066d3fe6e6a5fe47ab429dde54ed",
   "version": 1
 }

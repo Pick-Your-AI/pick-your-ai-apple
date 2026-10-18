@@ -1,0 +1,155 @@
+{
+  "cases": [
+    {
+      "accepted": true,
+      "dependency_changes": [],
+      "invalid_license_changes": {
+        "forbidden": [],
+        "unlicensed": [],
+        "unresolved": []
+      },
+      "name": "empty-comparison"
+    },
+    {
+      "accepted": true,
+      "dependency_changes": [
+        {
+          "change_type": "added",
+          "ecosystem": "npm",
+          "license": "MIT",
+          "manifest": "package.json",
+          "name": "Reeuhq",
+          "package_url": "pkg:npm/reeuhq@1.0.2",
+          "scope": "runtime",
+          "source_repository_url": "github.com/some-repo",
+          "version": "1.0.2",
+          "vulnerabilities": []
+        }
+      ],
+      "invalid_license_changes": {
+        "forbidden": [],
+        "unlicensed": [],
+        "unresolved": []
+      },
+      "name": "licensed-addition"
+    },
+    {
+      "accepted": false,
+      "dependency_changes": [
+        {
+          "change_type": "added",
+          "ecosystem": "npm",
+          "license": "MIT",
+          "manifest": "package.json",
+          "name": "Reeuhq",
+          "package_url": "pkg:npm/reeuhq@1.0.2",
+          "scope": "runtime",
+          "source_repository_url": "github.com/some-repo",
+          "version": "1.0.2",
+          "vulnerabilities": []
+        }
+      ],
+      "invalid_license_changes": {
+        "forbidden": [
+          {
+            "change_type": "added",
+            "ecosystem": "npm",
+            "license": "MIT",
+            "manifest": "package.json",
+            "name": "Reeuhq",
+            "package_url": "pkg:npm/reeuhq@1.0.2",
+            "scope": "runtime",
+            "source_repository_url": "github.com/some-repo",
+            "version": "1.0.2",
+            "vulnerabilities": []
+          }
+        ],
+        "unlicensed": [],
+        "unresolved": []
+      },
+      "name": "forbidden-addition"
+    },
+    {
+      "accepted": false,
+      "dependency_changes": [
+        {
+          "change_type": "added",
+          "ecosystem": "npm",
+          "license": "Foo",
+          "manifest": "package.json",
+          "name": "Reeuhq",
+          "package_url": "pkg:npm/reeuhq@1.0.2",
+          "scope": "runtime",
+          "source_repository_url": "github.com/some-repo",
+          "version": "1.0.2",
+          "vulnerabilities": []
+        }
+      ],
+      "invalid_license_changes": {
+        "forbidden": [],
+        "unlicensed": [],
+        "unresolved": [
+          {
+            "change_type": "added",
+            "ecosystem": "npm",
+            "license": "Foo",
+            "manifest": "package.json",
+            "name": "Reeuhq",
+            "package_url": "pkg:npm/reeuhq@1.0.2",
+            "scope": "runtime",
+            "source_repository_url": "github.com/some-repo",
+            "version": "1.0.2",
+            "vulnerabilities": []
+          }
+        ]
+      },
+      "name": "unresolved-addition"
+    },
+    {
+      "accepted": false,
+      "dependency_changes": [
+        {
+          "change_type": "added",
+          "ecosystem": "npm",
+          "license": null,
+          "manifest": "package.json",
+          "name": "Reeuhq",
+          "package_url": "pkg:npm/reeuhq@1.0.2",
+          "scope": "runtime",
+          "source_repository_url": "github.com/some-repo",
+          "version": "1.0.2",
+          "vulnerabilities": []
+        }
+      ],
+      "invalid_license_changes": {
+        "forbidden": [],
+        "unlicensed": [
+          {
+            "change_type": "added",
+            "ecosystem": "npm",
+            "license": null,
+            "manifest": "package.json",
+            "name": "Reeuhq",
+            "package_url": "pkg:npm/reeuhq@1.0.2",
+            "scope": "runtime",
+            "source_repository_url": "github.com/some-repo",
+            "version": "1.0.2",
+            "vulnerabilities": []
+          }
+        ],
+        "unresolved": []
+      },
+      "name": "unlicensed-addition"
+    }
+  ],
+  "provenance": "Protocol fixtures derived from the pinned source schemas, category initialization and upstream license tests; not captured hosted API or advisory results.",
+  "upstream_commit": "907a6e9569212033966bc0b69d32473b046dd66b",
+  "upstream_sha256": {
+    "__tests__/licenses.test.ts": "28b2c9ac19307616d14f7bd7360815ff14fcb3664fae932dc1a01a1521d0027e",
+    "src/dependency-graph.ts": "5294fcada97423200ea5babfd182f0c05357c0e76d3f85561c868955ffe66c24",
+    "src/git-refs.ts": "5a4e05c0d2f0647a25f45ba490e80c90321f6b1ec7e27546b2b00097d45d2837",
+    "src/licenses.ts": "6dd225bd533d6df38c14c5ea8af79473d4e156bb646eefc7bb5b2fc4955de26e",
+    "src/main.ts": "65b2ef3f1cdad47e76fa68c28980d1d427e88d29f2c6e23a8bcdbf5309bcd2b3",
+    "src/schemas.ts": "357af1da7161524295c6656ee57f9157eedf629f83e5ee1256339f25bc641c66"
+  }
+}
