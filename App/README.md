@@ -1,8 +1,8 @@
 # Native local draft preview
 
 This unsigned iPhone/iPad app composes `PlannerUI` and `PlannerData`. It is a local
-editor, with no catalog, evaluation, snapshot export, account, remote sync or release
-configuration. The reserved `invalid.pickyourai.localpreview` bundle ID is for simulator
+editor with a separate read-only imported-build library and reviewed JSON file export.
+It has no catalog UI, evaluation, account, remote sync or release configuration. The reserved `invalid.pickyourai.localpreview` bundle ID is for simulator
 use only; it does not allocate a production application identifier or signing team.
 
 The delegated engineering mandate selects SwiftUI/iOS 17 and the local SQLite actor
@@ -46,3 +46,38 @@ Primary Apple references checked 2026-10-18: [scene phase](https://developer.app
 [file protection](https://developer.apple.com/documentation/foundation/fileprotectiontype/completeuntilfirstuserauthentication).
 Local Linux inspection cannot establish SwiftUI/Xcode correctness. See the PR checks
 for observed hosted results, distinct from device, store or production acceptance.
+
+
+## Files import and reviewed export
+
+The Imported builds screen uses a separate `imported-builds.sqlite` database in the
+same protected Application Support directory. It never treats a canonical build as
+notes-editor payload or converts an incomplete note into a valid snapshot. A local
+version-1 persistence wrapper holds canonical bytes and untrusted fixture metadata;
+unsupported local formats are preserved and refused. Imported builds are read-only.
+
+The system Files picker supplies one JSON URL. Security-scoped access lasts only for
+a bounded background read (512 KiB actual-byte maximum, checked independently of
+metadata); directories and malformed/unsupported/private imports fail without writes.
+A preview is not an import. Explicit confirmation creates a fresh wire build ID,
+local owner reference and local storage row, preserves version locks, and never
+updates the source identity. Imported references are not fetched or rights-approved.
+
+Export requires an explicit public alias, previews the exact projected JSON and asks
+the user to review free text before opening the system file exporter. Private owner,
+notes and extensions are stripped by PlannerTransfer. Allowed text can still be
+sensitive: field filtering is not arbitrary secret detection. Changing the alias or
+selection invalidates the prepared export. Marked synthetic imports retain their
+fixture label across persistence and re-export via the existing web envelope;
+its original source revision is untrusted metadata, not authority. Bare/unmarked
+imports remain visibly unqualified, never presented as production data.
+
+Seven controlled model tests cover preview/cancel without writes, repeated fresh-ID
+forks and durable reopen, fixture-label preservation, explicit alias/projection,
+invalid/oversized files and directories, bounded local-file preview, and preservation
+of future stored formats. The bundled synthetic fixture is copied unchanged from
+PlannerTransfer/Tests/PlannerTransferTests/Fixtures/build.json (its source manifest
+remains authoritative); test projection explicitly removes private fixture settings.
+Hosted exact-head compilation/tests are required. Actual Files-provider interactions,
+accessibility, complete cross-client UI round trips, process interruption and physical
+device/privacy receiving qualification remain unverified. Partial #82/#84/#102 only.

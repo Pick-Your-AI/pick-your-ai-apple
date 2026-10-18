@@ -5,18 +5,26 @@ import PlannerUI
 @main
 struct PlannerApp: App {
     private let store: DraftStore?
+    private let importedStore: DraftStore?
     init() {
         do {
             let root = try FileManager.default.url(for: .applicationSupportDirectory, in: .userDomainMask, appropriateFor: nil, create: true)
                 .appendingPathComponent("LocalDrafts", isDirectory: true)
             try FileManager.default.createDirectory(at: root, withIntermediateDirectories: true,
                 attributes: [.protectionKey: FileProtectionType.completeUntilFirstUserAuthentication])
-            store = try DraftStore(url: root.appendingPathComponent("drafts.sqlite"))
-        } catch { store = nil }
+            let draftStore = try DraftStore(url: root.appendingPathComponent("drafts.sqlite"))
+            let buildStore = try DraftStore(url: root.appendingPathComponent("imported-builds.sqlite"))
+            store = draftStore; importedStore = buildStore
+        } catch { store = nil; importedStore = nil }
     }
     var body: some Scene {
         WindowGroup {
-            if let store { DraftLibraryView(store: store) }
+            if let store, let importedStore {
+                TabView {
+                    DraftLibraryView(store: store).tabItem { Label("Notes", systemImage: "note.text") }
+                    ImportedBuildLibraryView(store: importedStore).tabItem { Label("Imported builds", systemImage: "doc.badge.plus") }
+                }
+            }
             else {
                 ContentUnavailableView("Local storage unavailable", systemImage: "externaldrive.badge.exclamationmark",
                     description: Text("Your existing data has not been reset. Unlock the device, check available storage, and reopen the app."))
