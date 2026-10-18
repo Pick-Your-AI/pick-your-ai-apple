@@ -5,7 +5,7 @@ let package = Package(
     products: [.library(name: "PlannerUI", targets: ["PlannerUI"])],
     dependencies: [.package(path: "../PlannerData"), .package(path: "../PlannerCatalog"), .package(path: "../PlannerTransfer")],
     targets: [.target(name: "PlannerUI", dependencies: ["PlannerData", "PlannerCatalog", "PlannerTransfer"],
-                     resources: [.process("Resources")]),
+                     resources: [.process("Resources"), .process("PrivacyInfo.xcprivacy")]),
               .testTarget(name: "PlannerUITests", dependencies: ["PlannerUI", "PlannerData", "PlannerCatalog", "PlannerTransfer"], resources: [.process("Fixtures")])],
     swiftLanguageModes: [.v6]
 )

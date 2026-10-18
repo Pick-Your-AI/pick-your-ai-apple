@@ -166,6 +166,15 @@ PROFILES["comparison-catalog-source-ui"] = (110, {
         PROFILES["catalog-source-ui"][1]["PlannerUITests.CatalogSourceReviewModelTests"],
 })
 
+# The package privacy declaration requires an actual production-bundle read.
+# Retain the earlier 110-case profile for its own source and execution receipts.
+PROFILES["comparison-catalog-source-privacy-ui"] = (111, {
+    **PROFILES["comparison-catalog-source-ui"][1],
+    "PlannerUITests.PlannerUIPrivacyManifestTests": (
+        "testPackagedManifestDeclaresOwnAppPreferencesReason",
+    ),
+})
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE
