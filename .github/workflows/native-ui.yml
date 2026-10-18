@@ -25,6 +25,8 @@ jobs:
         run: python3 -m unittest discover -s tools/ci/tests -p 'test_native_scope.py' -v
       - name: Test Swift execution evidence guards
         run: python3 -m unittest discover -s tools/ci/tests -p 'test_swift_test_results.py' -v
+      - name: Test native cost rendering receipt guards
+        run: python3 -m unittest discover -s tools/ci/tests -p 'test_cost_rendering_results.py' -v
       - name: Inspect complete exact Git comparison
         id: scope
         env:
@@ -53,7 +55,7 @@ jobs:
           set -o pipefail
           python3 - <<'PY' | tee .build/native-evidence/empty-caches.txt
           from pathlib import Path
-          for name in ("native-package-cache", "native-swift-tests", "native-source-packages", "native"):
+          for name in ("native-package-cache", "native-swift-tests", "native-source-packages", "native", "cost-native"):
               path = Path(".build") / name
               if path.exists():
                   raise SystemExit(f"Expected an empty clean-checkout cache at {path}; use a fresh checkout without restored caches.")
@@ -107,6 +109,19 @@ jobs:
             grep -E "Test Case .*DraftLibraryModelTests.*${name}.* passed" .build/native-evidence/model-tests.txt
           done
           python3 tools/ci/require_swift_test_results.py comparison-catalog-source-privacy-cost-ui .build/native-evidence/model-tests.txt
+      - name: Inspect actual cost views through macOS UI automation
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/cost-rendering"
+          xcodebuild test -project tools/cost-rendering/CostHarness.xcodeproj -scheme CostHarness \
+            -sdk macosx -destination "platform=macOS,arch=$(uname -m)" \
+            -parallel-testing-enabled NO \
+            -only-testing:PlannerCostUITests/CostRenderingTests \
+            -derivedDataPath .build/cost-native \
+            -resultBundlePath "$RUNNER_TEMP/cost-rendering/cost-macos.xcresult" \
+            CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES \
+            2>&1 | tee .build/native-evidence/cost-macos-test.log
+          python3 tools/cost-rendering/qualify.py .build/native-evidence/cost-macos-test.log
       - name: Build unsigned simulator app
         run: |
           set -o pipefail
@@ -126,6 +141,8 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: native-local-drafts-evidence
-          path: .build/native-evidence
+          path: |
+            .build/native-evidence
+            ${{ runner.temp }}/cost-rendering/
           if-no-files-found: error
           retention-days: 14
