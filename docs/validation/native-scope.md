@@ -9,7 +9,7 @@ conservative, explicitly pinned proof for unchanged package jobs.
 
 ## Exact scope decision
 
-The five native/package workflows still trigger on the same pull-request events
+The native/package workflows still trigger on the same pull-request events
 and main pushes. A read-only Ubuntu job runs the scope regressions and
 [`native_scope.py`](../../tools/ci/native_scope.py) before allocating macOS:
 
@@ -49,7 +49,7 @@ filter or a paginated API file list to decide that native inputs are unchanged.
 
 ## Audited package inputs
 
-Each existing scope step supplies its native job's literal `APPLE_CI_JOB` name.
+Each of the five package scope steps supplies its native job's literal `APPLE_CI_JOB` name.
 The five existing scope context names retain their historical `documentation scope`
 suffix so no required context disappears. An absent or unknown job identity retains
 the original behavior: only the documentation rule can skip native allocation.
@@ -117,7 +117,7 @@ and five literal job-name workflow additions are unchanged. This explicit refres
 does not treat earlier native executions as evidence for the newer tree; all
 native jobs are allocated for the audit change itself.
 
-The current record carries accepted main
+The second refresh carried accepted main
 `074ae4bffec6066d3fe6e6a5fe47ab429dde54ed`: #268 reconciles the accepted #32
 record in two documents, and #257 adds the separately reviewed dependency-policy
 workflow, its bounded helpers, controlled regressions and evidence documents.
@@ -129,14 +129,45 @@ trees and all seven dependency pins remain identical to the first refresh.
 The accepted conformance runner also invalidates an earlier success receipt
 before validation and publishes new output atomically. Its new path, link and
 failure regressions preserve the frozen input selection and native commands.
-The complete surrounding set now contains 51 leaves: the earlier 38 paths, with
+That complete surrounding set contained 51 leaves: the earlier 38 paths, with
 new exact runner/harness blobs, plus all 13 accepted dependency-policy leaves,
-including its documents and fixtures. None receives a documentation exemption. The selector, fixture tests,
-allowlist, job closures and five native workflow bodies remain unchanged. The
+including its documents and fixtures. None received a documentation exemption.
+The selector, fixture tests, allowlist, job closures and five native workflow
+bodies remained unchanged at that refresh. The
 completed native executions at source `a650f4039c067a178d725c6c9238b6c660ac6a97`
 retain their exact test-merge `c4cb02f3f3ce97cc6b9ac1463122735f43c91802` and tree
-`34f35205789e36b5fd57413199f6d45d29597742`; this later input refresh allocates
-all five jobs and requires its own current-source checks.
+`34f35205789e36b5fd57413199f6d45d29597742`; the later input refresh allocated
+all five jobs and required its own current-source checks.
+
+The current record carries accepted main
+`d0537ace2cb0a14cdbb5f316a79e972e427ae63c`. Accepted #279 adds the separate
+[submission SDK workflow](submission-sdk.md), its verifier and rejection tests,
+and exact Xcode/SDK pins. It also records the generated native app metadata and
+updates the app project's generated orientations and explicit header-search
+setting. The project dependency pin therefore changes, while all five package
+manifests, complete package roots, shared scheme and dependency closures remain
+unchanged. Accepted #283 reconciles two historical toolchain receipt documents;
+those documents add no executable input.
+
+The new aggregate `submission-sdk` scope step deliberately supplies no
+`APPLE_CI_JOB`. It retains the conservative documentation-only decision: every
+non-document change runs its five package suites and app builds under the
+separately pinned toolchain. No package-specific skip rule is added for that lane.
+The accepted policy/SDK guides join the documentation allowlist only as
+explanatory material; the verifier reads the JSON pins and built product
+metadata, not those guides.
+
+The full surrounding audit now contains 56 leaves. Its five additions are the
+submission workflow, verifier, verifier tests and two JSON pins. Six existing
+entries change: the app project, native UI workflow, selector, scope regressions,
+obsolete-run helper and its regressions. These retain the accepted metadata
+capture, two documentation exemptions and exact submission-workflow retirement
+support; no other scheduling algorithm or job dependency changes. This input
+refresh itself allocates all six native jobs. Completed observations at source
+`9b5a10b5097292a1544b29c088c430d66f771eb1`, prepared merge
+`46ad9e8704599307564440bbd299fb79066727a1` and tree
+`84bb94356310b671b8d009cdac695ff03be2e78e` retain that earlier scope, and do not
+constitute execution of this later combined tree.
 
 A drift is a safe allocation decision, not a request to refresh hashes blindly.
 Before updating the record, independently inspect the changed native code and

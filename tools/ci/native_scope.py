@@ -53,6 +53,7 @@ DOCUMENTATION_PATHS = {
     "docs/validation/ci-concurrency.md", "docs/validation/pricebook-boundary.md",
     "docs/validation/issue-98-data-threats.md", "docs/validation/obsolete-pr-checks.md",
     "docs/validation/runtime-configuration.md", "docs/validation/native-scope.md",
+    "docs/validation/issue-113-policy.md", "docs/validation/submission-sdk.md",
     "docs/security/local-draft-threat-model.md",
 }
 
