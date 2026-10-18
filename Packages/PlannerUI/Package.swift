@@ -6,6 +6,6 @@ let package = Package(
     dependencies: [.package(path: "../PlannerData"), .package(path: "../PlannerCatalog"), .package(path: "../PlannerTransfer")],
     targets: [.target(name: "PlannerUI", dependencies: ["PlannerData", "PlannerCatalog", "PlannerTransfer"],
                      resources: [.process("Resources")]),
-              .testTarget(name: "PlannerUITests", dependencies: ["PlannerUI", "PlannerData", "PlannerCatalog", "PlannerTransfer"])],
+              .testTarget(name: "PlannerUITests", dependencies: ["PlannerUI", "PlannerData", "PlannerCatalog", "PlannerTransfer"], resources: [.process("Fixtures")])],
     swiftLanguageModes: [.v6]
 )

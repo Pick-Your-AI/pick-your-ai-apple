@@ -20,8 +20,8 @@ Local filter preferences survive model recreation and process relaunch. They
 contain only query, kind selections and sort in a bounded versioned envelope;
 opaque page tokens never persist. Invalid preferences fall back to default
 filters without altering unrelated settings. The browser has no draft store,
-selection writer, network origin or production-data switch. Notes remain in their
-own first tab. Explicit build selection is a later integration criterion.
+selection writer, network origin or production-data switch. Notes and Imported builds retain their original tabs, off-main startup
+and editor behavior. Demo catalog is a separate third tab. Explicit build selection is a later integration criterion.
 
 ## State and recovery
 
@@ -68,9 +68,20 @@ storage. The native editor model suite and unsigned iOS app build must run on th
 exact proposed tree. Existing native checks and pinned source validators remain
 required; local whitespace/reference checks are not Swift execution evidence.
 
+An additional XCUITest journey exercises the actual browser query, Accelerator
+kind and kind ordering, process relaunch with persisted filters, exact pinned
+component details, clear-all, 25-to-29 pagination and empty search. It then restores
+default preferences through the UI and returns to Notes. The existing owned
+simulator runner retains the original notes journey and now requires both exact
+tests to pass on each pinned iPhone and iPad; one completed or any skipped test
+fails the summary gate. Its 18 portable runner regressions pass locally, including
+this stricter count and the unchanged ownership, timeout and evidence guards.
+These are runner checks only. Actual execution of the added Swift UI journey is
+pending and must be read from the exact proposed commit's retained xcresult bundles.
+
 The following parts of #59 remain separate and must not be reported complete
-from package tests: actual search/filter/sort UI interaction on the pinned iPhone
-and iPad, physical VoiceOver/Dynamic Type and keyboard qualification, service
+from package or runner tests: successful execution of the new actual UI journey,
+physical VoiceOver/Dynamic Type and keyboard qualification, service
 pagination failure, a qualified real-data catalog, compatibility-aware known/
 unknown/incompatible result presentation, and explicit selection into a full
 build while preserving its editing context. No complete #59 receiving receipt,
@@ -86,3 +97,7 @@ git diff --check
 On the pinned Xcode/macOS host, run the full UI-model suite and app build using
 the checked-in native workflow. Inspect the eight `CatalogBrowserModelTests`
 results in its retained logs before accepting the model/source gate.
+
+The [native UI journey record](../../App/UI_JOURNEY.md) describes the exact controls,
+strict two-test summary and scoped simulator ownership. Current main toolchain and
+conservative documentation-scope CI behavior are preserved in the combined candidate.

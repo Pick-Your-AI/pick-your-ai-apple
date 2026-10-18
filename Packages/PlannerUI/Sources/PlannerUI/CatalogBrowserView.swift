@@ -105,6 +105,7 @@ public struct CatalogBrowserView: View {
                     }
                 }
             }
+            .accessibilityIdentifier("catalogList")
             .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Demo catalog")
             .toolbar {
@@ -147,6 +148,7 @@ private struct CatalogPreviewDetails: View {
                     LabeledContent("Captured", value: row.snapshot.capturedAt)
                 }
             }
+            .accessibilityIdentifier("catalogDetailsForm")
             .navigationTitle("Component details")
             .toolbar { Button("Done") { dismiss() } }
         }
