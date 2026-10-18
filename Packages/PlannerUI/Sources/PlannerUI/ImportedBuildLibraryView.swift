@@ -96,6 +96,23 @@ public struct ImportedBuildLibraryView: View {
                         Text("Compatibility: unknown. Pricing: unknown. Imported analysis is not current.")
                         Text(snapshot.id).font(.caption).textSelection(.enabled)
                     }
+                    Section("Local fork lineage") {
+                        if let lineage = model.lineage {
+                            Text("Recorded copies, nearest source first. These local records do not authenticate source ownership or make inherited evidence current. Earlier history may be unavailable.")
+                            ForEach(Array(lineage.enumerated()), id: \.offset) { index, source in
+                                DisclosureGroup("Source \(index + 1): revision \(source.revision)") {
+                                    Text(source.buildID).textSelection(.enabled)
+                                    Text("Snapshot SHA-256: " + source.snapshotSHA256)
+                                        .font(.caption.monospaced()).textSelection(.enabled)
+                                    Text("The fingerprint records normalized snapshot bytes captured at copying. It is not a signature.")
+                                        .font(.caption)
+                                }
+                            }
+                            Text("Lineage remains in this local library and is excluded from exported files.")
+                        } else {
+                            Text("No local lineage was recorded for this older entry. Its earlier source identity is unknown.")
+                        }
+                    }
                     Section("Compare configurations") {
                         Button("Use selected build as baseline") {
                             comparisonBaseline = snapshot; baselineSynthetic = model.markedSynthetic

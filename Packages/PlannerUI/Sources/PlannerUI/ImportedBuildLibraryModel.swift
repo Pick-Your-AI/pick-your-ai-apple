@@ -5,30 +5,58 @@ import PlannerTransfer
 
 /// Local persistence wrapper only; this is not a shared wire format or evidence claim.
 struct ImportedBuildRecord: Codable, Sendable {
+    static let maximumLineage = 32
     let storageVersion: Int
     let snapshot: Data
     let markedSynthetic: Bool
     let sourceRevision: String?
-    init(snapshot: BuildSnapshot, markedSynthetic: Bool, sourceRevision: String?) throws {
+    /// Nearest copied snapshot first. Nil denotes a legacy entry with no record.
+    let lineage: [LocalForkSource]?
+    init(snapshot: BuildSnapshot, markedSynthetic: Bool, sourceRevision: String?,
+         lineage: [LocalForkSource]? = nil) throws {
         let bytes = try snapshot.encoded()
         // A fresh identity/timestamp can increase the byte count after ingress.
         // Revalidate the exact persisted bytes so every acknowledged fork reopens.
         _ = try BuildTransfer.snapshot(fromDraftJSON: bytes)
-        storageVersion = 1; self.snapshot = bytes
+        storageVersion = lineage == nil ? 1 : 2; self.snapshot = bytes
         self.markedSynthetic = markedSynthetic; self.sourceRevision = sourceRevision
+        self.lineage = lineage
+        try validateLineage(snapshotID: snapshot.id)
     }
     func validatedSnapshot() throws -> BuildSnapshot {
-        guard storageVersion == 1 else { throw TransferError.unsupportedVersion }
-        return try BuildTransfer.snapshot(fromDraftJSON: snapshot)
+        let result = try BuildTransfer.snapshot(fromDraftJSON: snapshot)
+        try validateLineage(snapshotID: result.id)
+        return result
+    }
+    private func validateLineage(snapshotID: String) throws {
+        if storageVersion == 1 {
+            guard lineage == nil else { throw TransferError.unsupportedVersion }
+            return
+        }
+        guard storageVersion == 2, let lineage, !lineage.isEmpty,
+              lineage.count <= Self.maximumLineage,
+              Set(lineage.map(\.buildID)).count == lineage.count,
+              !lineage.contains(where: { $0.buildID == snapshotID }) else {
+            throw TransferError.unsupportedVersion
+        }
+        for source in lineage { try source.validate() }
     }
     static func decode(_ data: Data) throws -> (wrapper: Self, snapshot: BuildSnapshot) {
         let fields = try JSONSerialization.jsonObject(with: data) as? [String: Any]
         let keys = Set(fields?.keys.map { $0 } ?? [])
-        guard keys.isSubset(of: ["storageVersion", "snapshot", "markedSynthetic", "sourceRevision"]),
+        guard keys.isSubset(of: ["storageVersion", "snapshot", "markedSynthetic", "sourceRevision", "lineage"]),
               keys.isSuperset(of: ["storageVersion", "snapshot", "markedSynthetic"]) else {
             throw TransferError.unsupportedVersion
         }
         let wrapper = try JSONDecoder().decode(Self.self, from: data)
+        if wrapper.storageVersion == 1 {
+            guard !keys.contains("lineage") else { throw TransferError.unsupportedVersion }
+        } else {
+            guard let entries = fields?["lineage"] as? [[String: Any]],
+                  entries.allSatisfy({ Set($0.keys) == ["buildID", "revision", "snapshotSHA256"] }) else {
+                throw TransferError.unsupportedVersion
+            }
+        }
         if let revision = wrapper.sourceRevision {
             guard revision.range(of: #"\A[0-9a-f]{40}\z"#, options: .regularExpression) != nil else {
                 throw TransferError.unsupportedVersion
@@ -47,6 +75,7 @@ public final class ImportedBuildLibraryModel: ObservableObject {
     @Published public private(set) var selected: DraftRecord?
     @Published public private(set) var snapshot: BuildSnapshot?
     @Published public private(set) var markedSynthetic = false
+    @Published public private(set) var lineage: [LocalForkSource]?
     @Published public private(set) var preview: ImportPreview?
     @Published public private(set) var notice: String?
     @Published public private(set) var libraryNotice: String?
@@ -165,13 +194,17 @@ public final class ImportedBuildLibraryModel: ObservableObject {
         }, onCancel: { task.cancel() })
     }
     nonisolated private static func prepareFork(
-        _ preview: ImportPreview, markedSynthetic: Bool, sourceRevision: String?
-    ) throws -> (snapshot: BuildSnapshot, payload: Data) {
+        _ preview: ImportPreview, markedSynthetic: Bool, sourceRevision: String?,
+        priorLineage: [LocalForkSource]? = nil
+    ) throws -> (snapshot: BuildSnapshot, payload: Data, lineage: [LocalForkSource]) {
+        let retained = priorLineage ?? []
+        guard retained.count < ImportedBuildRecord.maximumLineage else { throw LocalForkError.lineageLimit }
+        let lineage = [try LocalForkSource.capture(preview.snapshot)] + retained
         let fork = try preview.fork(localOwner: "local." + UUID().uuidString.lowercased(),
                                     timestamp: ISO8601DateFormatter().string(from: Date()))
         let wrapper = try ImportedBuildRecord(snapshot: fork, markedSynthetic: markedSynthetic,
-                                              sourceRevision: sourceRevision)
-        return (fork, try JSONEncoder().encode(wrapper))
+                                              sourceRevision: sourceRevision, lineage: lineage)
+        return (fork, try JSONEncoder().encode(wrapper), lineage)
     }
     private func current(_ record: DraftRecord) async throws -> (row: DraftRecord, wrapper: ImportedBuildRecord, snapshot: BuildSnapshot) {
         let fresh = try await store.read(id: record.id)
@@ -198,7 +231,7 @@ public final class ImportedBuildLibraryModel: ObservableObject {
                                            payload: prepared.payload)
             self.preview = nil
             adopt(row, snapshot: prepared.snapshot, markedSynthetic: preview.usesSyntheticData == true,
-                  sourceRevision: preview.sourceRevision)
+                  sourceRevision: preview.sourceRevision, lineage: prepared.lineage)
             await reloadAfterMutation("The new local fork was saved.", offset: 0)
         } catch { notice = "The local fork could not be saved. No source build was updated. You can retry." }
     }
@@ -210,7 +243,7 @@ public final class ImportedBuildLibraryModel: ObservableObject {
             let fresh = try await store.read(id: record.id)
             let decoded = try await Self.offMain { try ImportedBuildRecord.decode(fresh.payload) }
             adopt(fresh, snapshot: decoded.snapshot, markedSynthetic: decoded.wrapper.markedSynthetic,
-                  sourceRevision: decoded.wrapper.sourceRevision)
+                  sourceRevision: decoded.wrapper.sourceRevision, lineage: decoded.wrapper.lineage)
         } catch { notice = "This imported build could not be opened. Its stored bytes were preserved." }
     }
     /// A local label is revisioned library metadata; immutable wire bytes stay pinned.
@@ -226,7 +259,7 @@ public final class ImportedBuildLibraryModel: ObservableObject {
             let row = try await store.rename(id: record.id, expectedRevision: record.revision, title: title)
             if selected?.id == record.id {
                 adopt(row, snapshot: prior.snapshot, markedSynthetic: prior.wrapper.markedSynthetic,
-                      sourceRevision: prior.wrapper.sourceRevision)
+                      sourceRevision: prior.wrapper.sourceRevision, lineage: prior.wrapper.lineage)
             } else { notice = nil }
             await reloadAfterMutation("The local label was saved.", offset: offset)
         } catch { notice = "The local label could not be saved. Reopen the entry and retry; existing revisions were preserved." }
@@ -242,13 +275,16 @@ public final class ImportedBuildLibraryModel: ObservableObject {
             let prepared = try await Self.offMain {
                 let preview = try BuildTransfer.preview(prior.wrapper.snapshot)
                 return try Self.prepareFork(preview, markedSynthetic: prior.wrapper.markedSynthetic,
-                                            sourceRevision: prior.wrapper.sourceRevision)
+                                            sourceRevision: prior.wrapper.sourceRevision,
+                                            priorLineage: prior.wrapper.lineage)
             }
             let row = try await store.duplicate(id: record.id, expectedRevision: record.revision,
                                                title: prior.row.title, payload: prepared.payload)
             adopt(row, snapshot: prepared.snapshot, markedSynthetic: prior.wrapper.markedSynthetic,
-                  sourceRevision: prior.wrapper.sourceRevision)
+                  sourceRevision: prior.wrapper.sourceRevision, lineage: prepared.lineage)
             await reloadAfterMutation("The duplicate local fork was saved.", offset: 0)
+        } catch LocalForkError.lineageLimit {
+            notice = "This entry already records 32 copied snapshots. It cannot be duplicated without losing lineage. The source was preserved."
         } catch { notice = "The selected revision could not be duplicated. Reopen the entry and retry; the source was preserved." }
     }
     /// Confirmation carries the exact row/revision, even if another row is selected.
@@ -261,14 +297,16 @@ public final class ImportedBuildLibraryModel: ObservableObject {
             try await store.delete(id: record.id, expectedRevision: record.revision)
             lastDeletedID = record.id
             if selected?.id == record.id {
-                selected = nil; snapshot = nil; markedSynthetic = false; sourceRevision = nil; clearExport()
+                selected = nil; snapshot = nil; markedSynthetic = false; sourceRevision = nil; lineage = nil; clearExport()
             }
             notice = nil
             await reloadAfterMutation("The selected local entry was deleted.", offset: offset)
         } catch { notice = "The selected revision could not be deleted. Reopen the entry and retry; existing records were preserved." }
     }
-    private func adopt(_ record: DraftRecord, snapshot: BuildSnapshot, markedSynthetic: Bool, sourceRevision: String?) {
+    private func adopt(_ record: DraftRecord, snapshot: BuildSnapshot, markedSynthetic: Bool,
+                       sourceRevision: String?, lineage: [LocalForkSource]?) {
         selected = record; self.snapshot = snapshot; self.markedSynthetic = markedSynthetic; self.sourceRevision = sourceRevision
+        self.lineage = lineage
         clearExport(); notice = nil
     }
     /// Capture intent before a queued Task can observe a different alias or row.

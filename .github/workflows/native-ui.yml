@@ -44,6 +44,16 @@ jobs:
           do
             grep -E "Test Case .*ImportedBuildLibraryTests.*${name}.* passed" .build/native-evidence/model-tests.txt
           done
+          for name in \
+            testImportedForkRecordsItsExactSourceAndPreservesExistingEntry \
+            testForkOfForkRetainsLineageAfterAncestorRenameDeleteAndReopen \
+            testLegacyEntryReopensUnchangedAndForkStartsOnlyKnownLineage \
+            testMalformedLineageIsPreservedWithoutOverwritingSelectionOrCreatingForks \
+            testLineageLimitRejectsAnotherForkWithoutTruncatingOrChangingStorage \
+            testExportExcludesLocalLineageAndReimportCannotAssertItsPriorHistory
+          do
+            grep -E "Test Case .*LocalForkLineageTests.*${name}.* passed" .build/native-evidence/model-tests.txt
+          done
       - name: Build unsigned simulator app
         run: |
           set -o pipefail

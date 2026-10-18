@@ -105,8 +105,10 @@ and [Task cancellation](https://developer.apple.com/documentation/swift/task).
 The Imported builds screen uses a separate `imported-builds.sqlite` database in the
 same protected Application Support directory. It never treats a canonical build as
 notes-editor payload or converts an incomplete note into a valid snapshot. A local
-version-1 persistence wrapper holds canonical bytes and untrusted fixture metadata;
-unsupported local formats are preserved and refused. Imported builds are read-only.
+versioned persistence wrapper holds canonical bytes and untrusted fixture metadata.
+Version 1 entries reopen without rewriting; newly confirmed or duplicated forks use
+version 2 to record local source lineage. Unsupported local formats are preserved
+and refused. Imported builds are read-only.
 Each library opens independently. If either database is corrupt or unsupported,
 only that tab reports an unavailable library; the other tab remains usable. Two
 regression tests corrupt each database in turn and verify that the healthy database
@@ -168,6 +170,19 @@ deletion carries the exact selected row/revision; another selected entry is pres
 After a successful deletion, any baseline pinned from that local row and its prepared
 comparison are cleared. A failed deletion cannot acknowledge that invalidation.
 
+Each new fork records the immediate source build ID, pinned wire revision and SHA-256
+of the normalized snapshot bytes captured before copying. A duplicate also retains
+the source entry's recorded ancestors, nearest source first. The selected fork shows
+the entire bounded lineage; renaming or deleting another local entry cannot rewrite
+it. Older entries explicitly report unknown earlier lineage. Their first duplicate
+records only the snapshot that is actually available, without inferring missing
+ancestors. At 32 retained sources, another duplicate fails visibly and preserves the
+source instead of truncating history. Lineage is local metadata, not authenticated
+ownership or current evidence, and is excluded from exports. Reimporting an export
+starts a new record from the received snapshot and cannot assert its private prior
+history. See the [local fork validation record](../docs/validation/local-fork-lineage.md).
+Account-backed continuity remains disabled under the selected #24 scope.
+
 Pages contain at most 20 stored rows. Stored-snapshot decoding and fork preparation
 run off the main actor. Malformed or unsupported stored wrappers are preserved and
 counted alongside unreadable database rows. Page offsets count both kinds, including
@@ -191,6 +206,12 @@ cases and all 28 storage tests to pass. Existing PlannerData tests
 separately exercise actual malformed SQLite rows, storage exhaustion and migration.
 Actual Files-provider/cross-client journeys, unavailable/revoked remote references,
 VoiceOver and physical-device behavior retain their own unverified acceptance gates.
+
+Six further real-store regressions cover exact captured source identity/bytes, chains
+after ancestor rename/delete/reopen, unchanged legacy rows, malformed local lineage,
+the explicit history bound, and privacy-preserving export/reimport. Native CI requires
+all six named tests to pass alongside the existing imported-library cases. Source
+preparation does not establish their execution or close #84.
 
 Native confirmation data follows Apple's
 [alert presentation](https://developer.apple.com/documentation/swiftui/view/alert(_:ispresented:presenting:actions:message:)-8584l)
