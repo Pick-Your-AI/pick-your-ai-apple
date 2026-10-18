@@ -58,8 +58,39 @@ A zero exit status requires all baseline checks and all three mutations to pass.
 Any failure exits nonzero and does not write a new report; do not treat an old
 output file as evidence of a new run.
 
-No Swift consumer, generated native models, supported historical migration,
-rollback implementation, approved executable policy, service parity, native
-build, simulator/device result or receiving acceptance is claimed. These issues
-stay open until their full criteria and receiving review are met. This tool only
-rejects unsupported schema versions; rejection is not successful migration.
+## Shared report vectors and native regression detection
+
+`export_swift_vectors.py` verifies the frozen manifest and exports 45 report
+payloads with canonical schema expectations to the Swift test resource. Payloads
+are JSON strings so the Swift test passes their exact UTF-8 bytes to the decoder.
+The cases cover required fields, nulls, incompatible versions, unknown properties,
+invalid enums and every outcome/severity combination with absent, null and literal
+`unknown` evidence. Valid reports round-trip without collapsing outcome/severity.
+
+```sh
+python tools/conformance/export_swift_vectors.py \
+  --contract-root "$CONTRACT_ROOT" \
+  --output Packages/PlannerCore/Tests/PlannerCoreTests/Fixtures/evaluation-vectors.json \
+  --check
+```
+
+Omit `--check` only to regenerate the checked-in resource after reviewing changes.
+The check also verifies the original Swift report fixture hash. Python CI fails on
+any generated-byte drift. Swift tests consume the resource in Debug and Release;
+neither hand-edited expected results nor a passing Python run establishes Swift
+parity. Require both checks for the same commit. This is partial #32/#37/#104
+coverage for evaluation reports only, not all 29 catalog kinds or service parity.
+The decoder's documented number/depth/timestamp exclusions remain client limits.
+
+`swift_mutations.py --package Packages/PlannerCore --output-dir /tmp/swift-mutations`
+first runs the unmodified Swift suite, then changes required-field handling,
+decimal ordering and request-generation acceptance in separate disposable copies.
+Each mutation must trigger its named regression assertion and normal failed test
+completion. Compile errors, crashes, timeouts and changed anchors do not qualify.
+The source package is never changed. CI retains the logs and success receipt.
+This supplements the existing deliberate XCTest failure probe and Python reference
+mutations for #30/#104; it does not prove branch protection is enforced.
+
+Supported historical migration, rollback, approved executable policy, actual
+service parity, simulator execution, device results and receiving acceptance are
+still unverified. Rejection of unsupported versions is not successful migration.

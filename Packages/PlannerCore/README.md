@@ -49,6 +49,11 @@ does not infer global acceptance or add a freshness TTL.
 ## Run and qualify
 
 From this directory, run `swift test`. There are no third-party package dependencies.
+Also run `swift test -c release` to exercise optimized behavior. The shared report
+resource is generated and verified against the same pinned canonical schema as the
+Python reference checks; see [conformance reproduction](../../tools/conformance/README.md).
+CI requires both implementations to agree on 45 identical report payloads and
+checks that semantic mutations trigger the existing Swift regression assertions.
 Linux Swift 6.0.3 validates portable logic only. The checked-in workflow selects
 Xcode 16.4 build 16F6 on `macos-15`, verifies that exact toolchain is installed,
 runs the package tests on macOS, and builds the package for the iOS Simulator SDK
@@ -74,7 +79,7 @@ Refer to the delivering PR and its exact Actions runs for observed results.
 | #47, #75 | Request/response identity and generation gates; deterministic races, cancellation, wrong-response and reconnect tests | Real service adapters, actual UI visible-revision integration and receiving acceptance |
 | #77, #78 | Exact decimal arithmetic, complete-versus-partial coverage and budget guards | Canonical service scenario parity, actual line-item rounding and UI cost/coverage presentation |
 | #36, #42 | Evidence display grades, capture dates and retained-snapshot recheck state | Catalog/service adapters, actual source inspection and acceptance receipts, UI integration and source-use gates |
-| #104 | Swift boundary, decimal and concurrency regressions alongside existing reference mutation tests | Complete app/domain regression coverage and receiving disposition |
+| #37, #104 | Shared report vectors, Debug/Release Swift regressions and semantic mutation checks alongside reference checks | All-kind/service parity, historical migration, complete app/domain coverage and receiving disposition |
 
 Product and service receiving decisions do not block these bounded library changes.
 Actual integration needs the canonical endpoints, authority and versioned service
