@@ -190,7 +190,14 @@ final class EvidenceRenderingTests: XCTestCase {
                 break
             }
             #if os(macOS)
-            content.scroll(byDeltaX: 0, deltaY: -450)
+            // The report's vertical viewport can cover the harness's horizontal
+            // viewport. Keep collecting all content, but scroll the owning view.
+            let reports = content.scrollViews.matching(identifier: "evaluation-report")
+            let reportCount = reports.count
+            XCTAssertLessThanOrEqual(reportCount, 1,
+                "The native fixture must expose at most one evaluation-report scroll view.", file: file, line: line)
+            let scrollTarget = reportCount == 1 ? reports.element : content
+            scrollTarget.scroll(byDeltaX: 0, deltaY: -450)
             #else
             content.swipeUp(velocity: .slow)
             #endif

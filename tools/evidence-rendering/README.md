@@ -144,6 +144,35 @@ path remain unchanged. Current-source execution must still pass all four
 rendering methods on macOS, iPhone and iPad. This setup does not qualify default
 launch restoration or any production application lifecycle.
 
+At source `013acc542acdd83b18091a881ca6e2e744174c91`, prepared checkout
+`c21ad8add3600f5b101453be8290c4c120e660a8` / tree
+`76cc800bf73d79e33ec764be3b80f711aa6245d8`, the next
+[macOS run 39165618810 / job 117787856614](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39165618810/job/117787856614)
+passed all 23 editor-model methods and three rendering methods. The shared-vector
+method reached its first case with the exact identity, position and native text,
+then failed its first scroll: XCTest could not find a hit point for
+`evidence-harness-content`. That case and the remaining shared sequence did not
+pass. The original artifact `12151996974` is 98,849,242 bytes, SHA-256
+`0bc69fdef4ce9ea1276189e5c187a2c74b88127672dd02f3306b23a45cbb6c39`.
+The decoded original session diagnostic is 7,528,538 bytes, SHA-256
+`7f24413d2e2abead6ec0ed2572f58a7183c8c5829351ed9252618ac948c0c650`.
+It explicitly records the outer horizontal viewport as occluded by its child
+`evaluation-report` vertical ScrollView; both visible frames are
+`{{12.0, 134.0}, {1000.0, 575.0}}` in the failed shared case. The narrower
+820-point report also appears as that named descendant in the passing width test.
+
+The macOS scan now sends vertical scrolling to that existing named report
+ScrollView when present, and to the original content viewport when no nested
+report exists. Multiple matching report scroll views fail the scan.
+The selected fixture's content container remains the collection boundary for
+every positive and negative assertion. Target selection happens anew after each
+iteration's native text query, following the existing case, position and content
+checks. This changes no production view,
+host, identifier, fixture, scan limit, settling requirement or iOS gesture.
+The separate [Core/iPhone/iPad and Transfer receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/277#issuecomment-6255698998)
+belongs to its original `c21ad8ad` checkout. Fresh macOS, iPhone and iPad rendering
+execution is still required for the scrolling correction.
+
 The earlier local native-host preparation used Swift 6.1.2 syntax parsing for both new Swift
 files; it did not compile an Apple SDK. The exact `jsonschema[format]` 4.25.1
 reference environment passed all 30 conformance methods in 28.833 seconds, including both
