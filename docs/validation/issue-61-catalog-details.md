@@ -103,13 +103,21 @@ the test that reads the real bundle qualifies those bytes.
 
 The native workflows also require executed-result evidence with
 [`require_swift_test_results.py`](../../tools/ci/require_swift_test_results.py).
-For this candidate the transfer suite must contain exactly 42 distinct passing
-XCTest cases, including all six named detail projection regressions; the UI model
+For the original published #240 stack, the transfer suite must contain exactly
+42 distinct passing XCTest cases, including all six named detail projection regressions; the UI model
 suite must contain exactly 68, including all eight named detail regressions.
 Each log must end its complete XCTest run with one matching successful All tests
 summary. Compilation, missing results, duplicate identities, wrong suites,
 skips, failures and incompatible result formats fail the gate. Swift's separate
 Testing framework footer with zero tests cannot satisfy the XCTest count.
+
+The subsequent [catalog/editor receiving composition](catalog-editor-receiving.md)
+preserves canonical #198 and accepted main `8ca1099`, adding their serializer,
+comparison and history-recovery cases. Its separate receiving profiles require
+exactly 48 transfer and 87 UI-model cases, retaining every original detail case
+and the other imported feature identities. The 42/68 profiles remain available
+to qualify their actual stacked source; they do not establish execution of the
+larger receiving composition.
 
 Eight portable guard regressions pass locally, alongside all 46 existing CI
 helper tests. The guard was also replayed against the actual retained 36-case
@@ -129,8 +137,9 @@ slice does not inject a source, seed a store or weaken a journey assertion.
 
 The earlier reviewed details and execution guards remain recoverable at checkpoint
 `131db90958750e2ab247b4839020e571d3b4d595`, tree
-`2e01913834781c9b4965a609346f0aba134bd5c3`. This work is now stacked in an isolated
-checkout above the active #211 browser candidate at
+`2e01913834781c9b4965a609346f0aba134bd5c3`. The first published #240 details draft,
+`04ab44f6469c553ae90a1713b19690aa157dae5a`, was stacked above the #211 browser
+candidate at
 `f4fdbcba214bac4be641eefc5079b7ed1a3f3d54`, preserving its independently reviewed
 kind-filter sheet, switch/restoration assertions, adaptive navigation, editor
 focus dismissal and exact system paste-education handling. The two sheets retain
@@ -138,14 +147,23 @@ their separate state: kind selection updates the browser's existing filters;
 item details receive the exact selected row and qualified source. Canonical Python
 fixture validation and the portable runner tests can
 run on the available Linux host; Swift and Xcode execution are unavailable there.
-Swift test execution, both actual UI journeys, exact-head independent review,
-normal signed integration and the receiving composition with canonical #198
-remain required before delivery. Preserve its concurrent editor, Home/Files
-journeys and exact test-count requirements during integration. No unexecuted
-test is a passing test. Recalculate and review the complete receiving suite totals
-when those distinct cases are integrated; retain their required case identities
-alongside these detail guards. Exact published-source results belong in the
-delivery PR.
+Its [actual hosted transfer result](catalog-editor-receiving.md#actual-stacked-transfer-result)
+executes all 42 cases, including all six new detail projections, and passes the
+unsigned boundary build on the verified PR merge tree. The receiving composition
+now incorporates canonical #198's later exact tutorial handling, editor and Files
+behavior while retaining both full current journey names. Its
+[actual stacked native result](catalog-editor-receiving.md#actual-stacked-native-result-and-switch-correction)
+also executes all 68 model cases, including the eight new detail regressions, but
+the full device gate fails at the kind switch on both devices and the older paste
+helper on iPad. The receiving correction preserves the switch's accessible label,
+intrinsic hit frame and all actual control assertions. Complete receiving UI-model
+execution, both actual UI journeys, exact-head independent review and normal signed
+integration of the larger current-main composition remain required before delivery.
+Preserve separately contributed Home/Files journeys and their exact case requirements
+when those cases enter the source. No unexecuted test is a passing test. Recalculate
+and review the complete suite totals after further integrations; retain their named
+identities alongside these detail guards. Exact published-source results belong
+in the delivery PR.
 
 | #61 criterion | Implemented boundary | Remaining evidence |
 | --- | --- | --- |

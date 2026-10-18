@@ -11,33 +11,89 @@ from pathlib import Path
 import re
 
 
+TRANSFER_DETAILS = {
+    "PlannerTransferTests.CatalogItemDetailsTests": (
+        "testEveryCanonicalKindUsesItsExactSchemaFieldsAndPreservesItemIdentity",
+        "testMissingFalseZeroAndEmptyTextRemainDifferent",
+        "testUnknownAndIncompleteCollectionsRetainTheirExactRecordedContents",
+        "testProvenanceRetainsContradictionsAndRawStatusWithoutCreatingAnEvidenceGrade",
+        "testAbsentOptionalDeclarationsDoNotAcquireDefaultsOrAuthority",
+        "testDistinctVersionsAndExactDecimalValuesDoNotCollapseOrChangeDuringProjection",
+    ),
+}
+UI_DETAILS = {
+    "PlannerUITests.CatalogDetailsModelTests": (
+        "testBundledDetailsResolveAllExactKindsWithoutInvalidatingAnIssuedPage",
+        "testBundledDetailsRejectForgedRowsAndChangedCatalogPins",
+        "testFailureAndRetryKeepTheExactSelectedPin",
+        "testMismatchedResolvedIdentityOrHashCannotBecomeVisible",
+        "testDismissalRejectsALateCancellationIgnoringResultAndRetiredActions",
+        "testSourcePaginationRetainsEveryRecordAndNeverChangesTheItemPin",
+        "testLiteralDisplayEscapesInvisibleControlsAndBoundsCompleteUnicodeScalars",
+        "testSheetIdentityIncludesTheCatalogReleaseAndCompleteRow",
+    ),
+}
+
+# The stacked details candidate and the editor receiving composition have
+# different exact inventories. Retain both profiles without treating either
+# candidate's historical output as execution of the other composition.
 PROFILES = {
-    "catalog-details-transfer": (
-        42,
-        "PlannerTransferTests.CatalogItemDetailsTests",
-        (
-            "testEveryCanonicalKindUsesItsExactSchemaFieldsAndPreservesItemIdentity",
-            "testMissingFalseZeroAndEmptyTextRemainDifferent",
-            "testUnknownAndIncompleteCollectionsRetainTheirExactRecordedContents",
-            "testProvenanceRetainsContradictionsAndRawStatusWithoutCreatingAnEvidenceGrade",
-            "testAbsentOptionalDeclarationsDoNotAcquireDefaultsOrAuthority",
-            "testDistinctVersionsAndExactDecimalValuesDoNotCollapseOrChangeDuringProjection",
+    "catalog-details-transfer": (42, TRANSFER_DETAILS),
+    "catalog-details-ui": (68, UI_DETAILS),
+    "catalog-editor-transfer": (48, {
+        **TRANSFER_DETAILS,
+        "PlannerTransferTests.BuildTransferTests": (
+            "testLocalSnapshotEncodingPreservesPrivateFieldsAndReopensExactly",
+            "testSnapshotEncodingRejectsExpansionPastItsDecodeLimit",
         ),
-    ),
-    "catalog-details-ui": (
-        68,
-        "PlannerUITests.CatalogDetailsModelTests",
-        (
-            "testBundledDetailsResolveAllExactKindsWithoutInvalidatingAnIssuedPage",
-            "testBundledDetailsRejectForgedRowsAndChangedCatalogPins",
-            "testFailureAndRetryKeepTheExactSelectedPin",
-            "testMismatchedResolvedIdentityOrHashCannotBecomeVisible",
-            "testDismissalRejectsALateCancellationIgnoringResultAndRetiredActions",
-            "testSourcePaginationRetainsEveryRecordAndNeverChangesTheItemPin",
-            "testLiteralDisplayEscapesInvisibleControlsAndBoundsCompleteUnicodeScalars",
-            "testSheetIdentityIncludesTheCatalogReleaseAndCompleteRow",
+        "PlannerTransferTests.BuildComparisonTests": (
+            "testFieldLikeSelectionIDsKeepPublicSettingChanges",
+            "testAddedAndRemovedFieldLikeSelectionIDsRetainPublicFields",
+            "testFieldLikeLinkIDsKeepChangesAdditionsAndRemovals",
+            "testFieldLikeIDsDoNotDisableNestedPrivateFieldRedaction",
         ),
-    ),
+    }),
+    "catalog-editor-ui": (87, {
+        **UI_DETAILS,
+        "PlannerUITests.CatalogBrowserModelTests": (
+            "testBundledPreviewValidatesAllKindsAndRemainsVisiblySynthetic",
+            "testConcurrentPreviewLoadsPreserveBothIssuedPageTokens",
+            "testCombinedFiltersSortCountsAndDistinctVersionPinsPersistAcrossRecreation",
+            "testFailedNextPageRetainsRowsCountFiltersAndCursorUntilRetrySucceeds",
+            "testLateCancellationIgnoringResponseCannotReplaceNewerFiltersOrRows",
+            "testChangedCatalogResetsWholePageCollectionAndRetryKeepsFilters",
+            "testInvalidStoredAndEditedFiltersNeverReachSourceOrOverwriteLastValidPreferences",
+            "testUnavailableFirstPageAndEmptyResultsAreDifferentStates",
+        ),
+        "PlannerUITests.ImportedBuildLibraryTests": (
+            "testLocalRenamePreservesSnapshotAndHistoryAcrossRestart",
+            "testDuplicateCreatesFreshForkAndRetainsSyntheticQualificationAndLocks",
+            "testStaleRenameDuplicateAndDeleteCannotMutateNewerRevision",
+            "testConfirmedDeleteTargetsCapturedEntryAndPreservesDifferentSelection",
+            "testLargeLibraryRetainsCorruptWrapperAndUnrelatedMetadataAfterRenameDeleteAndRestart",
+            "testEntireUnreadablePageStillReachesLaterValidBuild",
+            "testMalformedQualificationCannotBeOpenedMutatedOrSilentlyDropped",
+            "testPreviewPreparationLeavesMainActorResponsive",
+            "testCancelledPreviewPreparationCannotPublishOrWrite",
+            "testExportPreparationLeavesMainActorResponsiveAndPreservesQualification",
+            "testClearedExportRejectsLateBytesAndErrorsAndRetryUsesNewAlias",
+            "testInvalidatedQueuedExportNeverEntersPreparation",
+            "testCancelledExportPreparationCannotPublishOrWrite",
+        ),
+        "PlannerUITests.ComparisonFieldTextTests": (
+            "testUserTextCannotImpersonateMissingPrivateEmptyOrTypedValues",
+            "testOriginalSentinelStringsRemainExplicitText",
+            "testMultilineTextIsPreservedWithoutTruncation",
+        ),
+        "PlannerUITests.DraftLibraryModelTests": (
+            "testSuccessfulRefreshClearsLibraryFailureAndLoadsCurrentRecords",
+            "testLibraryFailureAndRecoveryPreserveConflictGuidanceAndUnsavedInput",
+            "testPageRetryClearsItsFailureWithoutReplacingRowsOnFailedRead",
+            "testHistoryPageFailureKeepsContextAndSuccessfulRetryClearsItsNotice",
+            "testHistoryRecoveryPreservesIndependentConflictNotice",
+            "testHistoryRecoveryDoesNotClearOutstandingLibraryFailure",
+        ),
+    }),
 }
 
 CASE = re.compile(
@@ -72,13 +128,14 @@ def main() -> int:
     parser.add_argument("profile", choices=PROFILES)
     parser.add_argument("log", type=Path)
     args = parser.parse_args()
-    total, suite, names = PROFILES[args.profile]
+    total, groups = PROFILES[args.profile]
+    required = {(suite, name) for suite, names in groups.items() for name in names}
     try:
-        verify(args.log.read_text(encoding="utf-8"), total, {(suite, name) for name in names})
+        verify(args.log.read_text(encoding="utf-8"), total, required)
     except (OSError, UnicodeError, ValueError) as error:
         parser.exit(1, f"Swift execution evidence rejected: {error}\n")
     print(f"Verified {total} distinct executed XCTest cases, all passed; "
-          f"all {len(names)} required {suite} cases executed.")
+          f"all {len(required)} required cases across {len(groups)} XCTest classes executed.")
     return 0
 
 

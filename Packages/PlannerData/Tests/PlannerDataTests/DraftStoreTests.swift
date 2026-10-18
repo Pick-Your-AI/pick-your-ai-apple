@@ -87,6 +87,71 @@ final class DraftStoreTests: XCTestCase, @unchecked Sendable {
         let kept = try await store.read(id: id); XCTAssertEqual(kept, original)
         let history = try await store.history(id: copy.id); XCTAssertTrue(history.records.isEmpty)
     }
+    func testPreparedDuplicatePersistsDistinctPayloadAndPreservesSourceHistory() async throws {
+        let url = try location(); let store = try DraftStore(url: url); let id = UUID(); let newID = UUID()
+        try await store.save(id: id, expectedRevision: nil, title: "original", payload: empty)
+        let source = try await store.save(id: id, expectedRevision: 1, title: "source label",
+                                          payload: Data("{\"wireID\":\"source\",\"locks\":{\"catalog\":\"v1\"}}".utf8))
+        let sourceHistory = try await store.history(id: id)
+        let prepared = Data("{\"wireID\":\"fresh fork\",\"locks\":{\"catalog\":\"v1\"}}".utf8)
+        let copy = try await store.duplicate(id: id, expectedRevision: source.revision, newID: newID,
+                                             title: "fork label", payload: prepared)
+        XCTAssertEqual(copy.id, newID); XCTAssertNotEqual(copy.id, id)
+        XCTAssertEqual(copy.revision, 1); XCTAssertEqual(copy.title, "fork label")
+        XCTAssertEqual(copy.payload, prepared); XCTAssertNotEqual(copy.payload, source.payload)
+        XCTAssertNil(copy.restoredFrom); XCTAssertFalse(copy.analysisIsCurrent)
+
+        let reopened = try DraftStore(url: url)
+        let retained = try await reopened.read(id: id); XCTAssertEqual(retained, source)
+        let retainedHistory = try await reopened.history(id: id)
+        XCTAssertEqual(retainedHistory.records, sourceHistory.records)
+        let persisted = try await reopened.read(id: newID); XCTAssertEqual(persisted, copy)
+        let copyHistory = try await reopened.history(id: newID)
+        XCTAssertEqual(copyHistory.records, [copy]); XCTAssertEqual(copyHistory.unreadableCount, 0)
+    }
+    func testPreparedDuplicateRejectsSourceChangedAfterPreparation() async throws {
+        let url = try location(); let store = try DraftStore(url: url); let id = UUID(); let newID = UUID()
+        let captured = try await store.save(id: id, expectedRevision: nil, title: "captured", payload: empty)
+        let prepared = Data("{\"forkOfCapturedRevision\":1}".utf8)
+        // Preparation is complete before an independent connection changes the source.
+        let writer = try DraftStore(url: url)
+        let edited = try await writer.save(id: id, expectedRevision: captured.revision, title: "newer",
+                                          payload: Data("{\"newerEdit\":true}".utf8))
+        do {
+            _ = try await store.duplicate(id: id, expectedRevision: captured.revision, newID: newID,
+                                          title: captured.title, payload: prepared)
+            XCTFail("A prepared fork must not outlive its captured source revision")
+        } catch { XCTAssertEqual(error as? DraftStoreError, .conflict) }
+        let reopened = try DraftStore(url: url)
+        let page = try await reopened.list(); XCTAssertEqual(page.records, [edited])
+        XCTAssertEqual(page.unreadableCount, 0)
+        let history = try await reopened.history(id: id)
+        XCTAssertEqual(history.records, [edited, captured])
+        let rejectedHistory = try await reopened.history(id: newID)
+        XCTAssertTrue(rejectedHistory.records.isEmpty)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM drafts"), 1)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM revisions"), 2)
+    }
+    func testPreparedDuplicateRejectsSourceDeletedAfterPreparation() async throws {
+        let url = try location(); let store = try DraftStore(url: url); let id = UUID(); let newID = UUID()
+        let captured = try await store.save(id: id, expectedRevision: nil, title: "captured", payload: empty)
+        let prepared = Data("{\"forkOfCapturedRevision\":1}".utf8)
+        // Deletion happens after preparation and must be observed inside the insert transaction.
+        try await DraftStore(url: url).delete(id: id, expectedRevision: captured.revision)
+        do {
+            _ = try await store.duplicate(id: id, expectedRevision: captured.revision, newID: newID,
+                                          title: captured.title, payload: prepared)
+            XCTFail("A prepared fork must not be inserted after its source is deleted")
+        } catch { XCTAssertEqual(error as? DraftStoreError, .missing) }
+        let reopened = try DraftStore(url: url)
+        let page = try await reopened.list(); XCTAssertTrue(page.records.isEmpty)
+        XCTAssertEqual(page.unreadableCount, 0)
+        let rejectedHistory = try await reopened.history(id: newID)
+        XCTAssertTrue(rejectedHistory.records.isEmpty)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM drafts"), 0)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM revisions"), 0)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM retired_drafts"), 1)
+    }
     func testRenameCreatesRevisionAndStaleDeleteFails() async throws {
         let store = try DraftStore(url: location()); let id = UUID()
         try await store.save(id: id, expectedRevision: nil, title: "old", payload: empty)

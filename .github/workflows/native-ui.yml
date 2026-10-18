@@ -73,7 +73,31 @@ jobs:
         run: |
           set -euo pipefail
           swift test --package-path Packages/PlannerUI --cache-path "$PWD/.build/native-package-cache" --scratch-path "$PWD/.build/native-swift-tests" 2>&1 | tee .build/native-evidence/model-tests.txt
-          python3 tools/ci/require_swift_test_results.py catalog-details-ui .build/native-evidence/model-tests.txt
+          for name in \
+            testLocalRenamePreservesSnapshotAndHistoryAcrossRestart \
+            testDuplicateCreatesFreshForkAndRetainsSyntheticQualificationAndLocks \
+            testStaleRenameDuplicateAndDeleteCannotMutateNewerRevision \
+            testConfirmedDeleteTargetsCapturedEntryAndPreservesDifferentSelection \
+            testLargeLibraryRetainsCorruptWrapperAndUnrelatedMetadataAfterRenameDeleteAndRestart \
+            testEntireUnreadablePageStillReachesLaterValidBuild \
+            testMalformedQualificationCannotBeOpenedMutatedOrSilentlyDropped \
+            testPreviewPreparationLeavesMainActorResponsive \
+            testCancelledPreviewPreparationCannotPublishOrWrite \
+            testExportPreparationLeavesMainActorResponsiveAndPreservesQualification \
+            testClearedExportRejectsLateBytesAndErrorsAndRetryUsesNewAlias \
+            testInvalidatedQueuedExportNeverEntersPreparation \
+            testCancelledExportPreparationCannotPublishOrWrite
+          do
+            grep -E "Test Case .*ImportedBuildLibraryTests.*${name}.* passed" .build/native-evidence/model-tests.txt
+          done
+          for name in \
+            testHistoryPageFailureKeepsContextAndSuccessfulRetryClearsItsNotice \
+            testHistoryRecoveryPreservesIndependentConflictNotice \
+            testHistoryRecoveryDoesNotClearOutstandingLibraryFailure
+          do
+            grep -E "Test Case .*DraftLibraryModelTests.*${name}.* passed" .build/native-evidence/model-tests.txt
+          done
+          python3 tools/ci/require_swift_test_results.py catalog-editor-ui .build/native-evidence/model-tests.txt
       - name: Build unsigned simulator app
         run: |
           set -o pipefail

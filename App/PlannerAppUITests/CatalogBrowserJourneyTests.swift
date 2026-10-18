@@ -33,7 +33,9 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         tap(app.buttons["catalogKinds"])
         let accelerator = app.switches["catalogKind-accelerator"]
         XCTAssertTrue(accelerator.waitForExistence(timeout: 10))
+        XCTAssertEqual(accelerator.label, "Accelerator")
         XCTAssertEqual(accelerator.value as? String, "0")
+        retainScreenshot(app, name: "Component-kind switch before selection")
         tap(accelerator)
         XCTAssertEqual(accelerator.value as? String, "1")
         tap(app.buttons["catalogKindFiltersDone"])
@@ -55,6 +57,7 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         reveal(app.buttons["catalogKinds"], in: app, towardTop: true)
         tap(app.buttons["catalogKinds"])
         XCTAssertTrue(accelerator.waitForExistence(timeout: 10))
+        XCTAssertEqual(accelerator.label, "Accelerator")
         XCTAssertEqual(accelerator.value as? String, "1", "The reopened filter control must retain its selected state")
         tap(app.buttons["catalogKindFiltersDone"])
         wait(accelerator, matching: "exists == false")

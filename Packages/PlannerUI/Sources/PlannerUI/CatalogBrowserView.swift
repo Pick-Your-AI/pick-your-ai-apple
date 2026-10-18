@@ -121,11 +121,19 @@ public struct CatalogBrowserView: View {
                     List {
                         Section {
                             ForEach(model.visibleKinds, id: \.self) { kind in
-                                Toggle(Self.kindTitle(kind), isOn: Binding(
-                                    get: { model.filters.kinds.contains(kind) },
-                                    set: { model.setKind(kind, included: $0) }))
-                                    .toggleStyle(.switch)
-                                    .accessibilityIdentifier("catalogKind-\(kind)")
+                                HStack {
+                                    Text(Self.kindTitle(kind))
+                                        .accessibilityHidden(true)
+                                    Spacer()
+                                    // Keep the switch's hit frame intrinsic and its label accessible.
+                                    Toggle(Self.kindTitle(kind), isOn: Binding(
+                                        get: { model.filters.kinds.contains(kind) },
+                                        set: { model.setKind(kind, included: $0) }))
+                                        .toggleStyle(.switch)
+                                        .labelsHidden()
+                                        .fixedSize()
+                                        .accessibilityIdentifier("catalogKind-\(kind)")
+                                }
                             }
                         } footer: {
                             Text("Choose one or more kinds. When none are selected, all component kinds are included. Changes apply immediately.")
