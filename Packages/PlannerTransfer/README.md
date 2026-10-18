@@ -37,3 +37,47 @@ Implementation uses Foundation JSONDecoder only for individual JSON strings and 
 ## Remaining acceptance
 
 Independent code review and hosted macOS/iOS compilation are required before integration. A cross-package SQLite integration test now saves an empty draft, rejects snapshot export and malicious import, reopens the store, and verifies identical payload, locks, revision and history. PlannerData is a test-only dependency; the library remains independent. macOS 14 is the package testing floor; iOS 17 remains the product floor. #32 still needs broader catalog/model payload coverage and receiving contract review; this package covers build and selection settings, not every top-level contract. #33 still needs durable autosave-to-export UI integration with PlannerData. #82 still needs actual Files/share-sheet flows, cross-client UI round trips and approved privacy/source-use review. #102 still needs server cross-user access, capability guessing and Universal Link/device tests against the real service and signed app. These are partial issue deliverables, not issue-closure evidence. No hardware, signing, release or production claims are made.
+
+
+## Local configuration comparison
+
+`BuildComparison.compare(before, after)` advances Apple [#81](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/81)
+using two immutable snapshots from the existing frozen-v1 boundary. It compares
+objectives, version locks, policy, selection settings/roles/versions/enabled state,
+and relationships. Selection/link IDs define the match; reordering those arrays
+is immaterial. Each row preserves before/after values and the selection kind with
+its T0–T6 display group from the canonical
+[contract mapping](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/afa7513bd278791ffd7e751fb11f9869549ecd13/docs/CONTRACT_MAPPING.md).
+Missing values stay absent, distinct from zero, false and empty values. Decimal
+strings remain exact. The comparison cannot edit, restore, export or save either input.
+
+A duplicate selection/link ID is rejected even when the frozen JSON Schema admits
+it. Different content claiming one build ID/revision is rejected; merely reordering
+selections/links is permitted. At most 2,048 difference rows are returned; exceeding
+that bound fails explicitly and yields no misleading truncated comparison.
+
+Private owner references, notes and extension contents are excluded. Known private
+infrastructure and credential-reference values are replaced by a hidden marker,
+without retaining their bytes in the result or error. Free-text build names and
+other allowed setting values are local display content, not automatically safe to
+share. This API is not an export projection.
+
+Imported lifecycle labels and extension measurements have no authority here.
+Quality, capacity, compatibility and cost remain explicitly unqualified: this
+comparison neither accepts measurements nor computes a price difference. Qualified
+outcome/estimate comparison requires separate exact-build evidence with matching
+workload, locks, units, conditions and source approval. An unknown result is never
+rendered as zero or an endorsement.
+
+Twelve synthetic regression tests cover exact setting/lock differences, absent
+workload inputs, added/removed/disabled selections, decimal strings, relationships,
+deterministic ordering, ambiguous IDs, conflicting revision identity, privacy,
+foreign extension measurements, fork identity and bounds. Native UI selection,
+qualified outcomes/costs and physical accessibility review remain separate #81
+acceptance work. Hosted macOS/iOS checks are required before merge; a Linux run
+does not establish native UI or device behavior.
+
+Local validation on 2026-10-18: official Swift 6.0.3 for Ubuntu 24.04 with system
+SQLite 3.45.1 passed all 24 PlannerTransfer tests, including the twelve comparison
+cases and the existing canonical/transfer/durable-draft cases. The temporary Linux
+toolchain and development headers are not repository dependencies or release inputs.
