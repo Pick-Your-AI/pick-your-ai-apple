@@ -23,3 +23,12 @@ for case in cases:
     actual = validator.is_valid(case['payload'])
     assert actual == case['valid'], case['name']
 print(f'Verified {len(manifest["files"])} source hashes and {len(cases)} canonical conformance cases.')
+
+from resource_estimate_vectors import encoded_vectors as encoded_resource_vectors
+resource_cases_path = FIXTURES / 'resource-estimate-conformance.json'
+assert resource_cases_path.read_text() == encoded_resource_vectors(), 'Stale resource estimate vectors'
+resource_cases = json.loads(resource_cases_path.read_text())
+validator = Draft202012Validator(schemas['resource-estimate.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in resource_cases:
+    assert validator.is_valid(json.loads(case['json'])) == case['canonicalValid'], case['name']
+print(f'Verified {len(resource_cases)} canonical resource estimate cases; no capacity, quality or tuple acceptance is inferred.')
