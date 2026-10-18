@@ -160,6 +160,42 @@ complete lane, in a fresh checkout with the documented empty cache paths. In CI,
 the verifier appends the validated directory for subsequent steps through
 `--github-env "$GITHUB_ENV"`; an already set default is never accepted as proof.
 
+## Prefix-error test portability after the e9 native attempt
+
+The original [current-source SDK job117817854392](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39175703589/job/117817854392)
+ran source `e9e758e8371cf53768b542ec866b6844445f12e1` as signed prepared
+`9f5ba533b756c3c21ec5919b726c55e51ccf359d`, tree
+`a36a55bb79a5e4e76ca9e5bb5817acaf5455e757`. Its 40 Python methods finished
+with 39 passes and one error in 12.318 seconds. The unknown-prefix-error control
+patched `Path.stat`, while the production prefix walk calls `Path.lstat`.
+The intended synthetic EACCES/EIO therefore did not reach that boundary.
+The test instead observed the controlled ENOTDIR rejection. Later SDK probes,
+Swift suites and unsigned builds were skipped; that job remains failed.
+
+The exact runner-image inventory lists Python 3.14.7. In
+[CPython 3.14's source](https://github.com/python/cpython/blob/v3.14.0/Lib/pathlib/__init__.py),
+`Path.lstat` calls `os.lstat` directly; the locally observed Python 3.12.14
+implementation delegates to `Path.stat`. The corrected test patches the
+actual `Path.lstat` boundary and delegates unaffected paths to its original
+implementation. Both EACCES/EIO expectations and the retained receipt byte
+assertion stay unchanged. All production helper, workflow, pin and other test
+bytes remain exact.
+
+A controlled replay on Python 3.12.14 used the verified direct `os.lstat`
+implementation for this one boundary. The unchanged e9 test reproduced the
+same SetupError in one failing method; the corrected method passed. This is
+a bounded compatibility replay, not execution of Python 3.14 or macOS.
+The corrected complete 40-method App suite separately passed in 18.514 seconds,
+with zero failures, errors or skips, on Python 3.12.14.
+
+The original hosted e9 case fixture explicitly reported **physical alias;
+both protected paths rejected** and passed. Its success belongs to e9; it does
+not turn the failed aggregate into a pass. The original 2,253-byte artifact
+`12155530626` has uploader SHA-256
+`d4f54bf60ade7b9b7044ab04bd6b0a360811fb87ae7ce877968cde671e20f52a`.
+The corrected source still requires its own applicable native SDK execution
+and complete current-main receiving qualification.
+
 ## Acceptance boundary
 
 Local portable tests establish guard behavior only. This lane's actual native

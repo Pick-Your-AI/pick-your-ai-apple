@@ -816,14 +816,14 @@ class SubmissionSDKTests(unittest.TestCase):
         # Unexpected prefix inspection errors must not justify invalidation.
         receipt = self.root / "ordinary-receipt.json"
         receipt.write_bytes(b"synthetic earlier success\n")
-        original_stat = Path.stat
+        original_lstat = Path.lstat
         for code in (errno.EACCES, errno.EIO):
             def inspection(path, *args, **kwargs):
                 if path == prefix:
                     raise OSError(code, "SYNTHETIC_PREFIX_INSPECTION_DETAIL")
-                return original_stat(path, *args, **kwargs)
+                return original_lstat(path, *args, **kwargs)
 
-            with patch.object(Path, "stat", inspection):
+            with patch.object(Path, "lstat", inspection):
                 with self.assertRaises(OSError):
                     submission.prepare_receipt(receipt, (prefix / "child", app))
             self.assertEqual(receipt.read_bytes(), b"synthetic earlier success\n")
