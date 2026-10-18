@@ -32,14 +32,17 @@ final class CatalogDetailsModel: ObservableObject {
     @Published private(set) var isLoading = false
     @Published private(set) var unavailable = false
     @Published private(set) var provenanceLimit = 8
+    @Published private(set) var sourceReview: CatalogSourceReview?
     private let source: any CatalogDetailSource
+    private let sourceLinkPolicy: CatalogSourceLinkPolicy
     private var active = true
     private var attempted = false
     private var requestID = UUID()
     private(set) var pendingRequest: Task<Void, Never>?
 
-    init(row: CatalogBrowserRow, source: any CatalogDetailSource) {
-        self.row = row; self.source = source
+    init(row: CatalogBrowserRow, source: any CatalogDetailSource,
+         sourceLinkPolicy: CatalogSourceLinkPolicy = .denyAll) {
+        self.row = row; self.source = source; self.sourceLinkPolicy = sourceLinkPolicy
     }
 
     func loadIfNeeded() {
@@ -55,6 +58,44 @@ final class CatalogDetailsModel: ObservableObject {
     func loadMoreSources() {
         guard active, let result else { return }
         provenanceLimit = min(result.details.provenance.count, provenanceLimit + 8)
+    }
+
+    func inspectSource(at index: Int) {
+        guard active, let result, index >= 0,
+              index < min(provenanceLimit, result.details.provenance.count) else { return }
+        let state: CatalogSourceReviewState
+        if let raw = result.details.provenance[index].sourceURI {
+            switch sourceLinkPolicy.inspect(raw) {
+            case .candidate(let link): state = .confirmation(link)
+            case .rejected(let reason): state = .rejected(reason)
+            }
+        } else { state = .missing }
+        sourceReview = CatalogSourceReview(id: UUID(), sourceIndex: index, state: state)
+    }
+
+    func closeSourceReview(id: UUID) {
+        guard active, sourceReview?.id == id else { return }
+        sourceReview = nil
+    }
+
+    /// Consume one active confirmation. The same recorded URI is checked again
+    /// before handing a URL to the view; retained buttons cannot dispatch twice.
+    func sourceToOpen(reviewID: UUID) -> CatalogSourceOpening? {
+        guard active, let review = sourceReview, review.id == reviewID,
+              case .confirmation(let shown) = review.state, let result,
+              result.details.provenance.indices.contains(review.sourceIndex),
+              let raw = result.details.provenance[review.sourceIndex].sourceURI else { return nil }
+        guard case .candidate(let current) = sourceLinkPolicy.inspect(raw), current == shown else { return nil }
+        sourceReview = CatalogSourceReview(id: review.id, sourceIndex: review.sourceIndex, state: .opening)
+        return CatalogSourceOpening(id: review.id, url: current.url)
+    }
+
+    /// System acceptance is a handoff receipt, not evidence that content loaded,
+    /// remained on the original host or supports any catalog claim.
+    func completeSourceOpen(reviewID: UUID, accepted: Bool) {
+        guard active, let review = sourceReview, review.id == reviewID, review.state == .opening else { return }
+        sourceReview = CatalogSourceReview(id: review.id, sourceIndex: review.sourceIndex,
+                                           state: accepted ? .handedOff : .unavailable)
     }
 
     private func load() {
@@ -82,7 +123,7 @@ final class CatalogDetailsModel: ObservableObject {
     }
 
     func close() {
-        active = false; requestID = UUID(); pendingRequest?.cancel(); isLoading = false
+        active = false; requestID = UUID(); pendingRequest?.cancel(); isLoading = false; sourceReview = nil
     }
 
     func waitForCurrentRequest() async { await pendingRequest?.value }

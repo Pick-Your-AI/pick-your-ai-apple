@@ -57,6 +57,13 @@ missing `rated_power_w`, and the retained source's `user_supplied` declaration,
 check date, missing URL and fictional qualification. These assertions read normal
 detail controls after its visible loaded summary; no alternate source is injected.
 
+The source-review follow-up uses that unchanged missing-URI specimen's normal
+Review source link and Close source review controls. It checks the complete gap
+message, absence of an Open action and unchanged source declaration/date after
+dismissal. This negative journey does not exercise an external handoff or approve
+a source host; the [source-navigation receipt](../docs/validation/catalog-source-navigation.md)
+separates the model/policy and remaining native evidence scopes.
+
 Clear filters restores the first bounded page; Load more components must reach
 29-of-29. A unique unmatched query must show a successful zero count and an empty
 state without a failure notice. The test restores default filters through the UI

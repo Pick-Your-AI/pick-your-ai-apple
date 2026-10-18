@@ -82,9 +82,12 @@ to 2,048 UTF-8 bytes at complete Unicode-scalar boundaries. A visible truncation
 notice distinguishes shortened display from the retained source value. Literal
 backslashes remain distinguishable from escaped control characters. JSON field
 values preserve exact decimals, arrays, false and zero without Markdown parsing.
-The view exposes no Link, web view or URL-opening action. A reviewed safe-link
-policy, confirmation/rejection behavior and real navigation tests remain a
-separate acceptance gate; source URLs are currently inspectable text only.
+The view exposes no automatic Link or web view. The separate
+[explicit source review](catalog-source-navigation.md) now checks a bounded URI
+against immutable approved hosts before a one-use confirmation can hand it to the
+system. This fictional preview approves no hosts. Missing/denied states preserve
+the exact record; production host/source-use approval and actual native handoff
+evidence remain separate acceptance work.
 
 ## Verification and delivery status
 
@@ -168,7 +171,7 @@ in the delivery PR.
 | #61 criterion | Implemented boundary | Remaining evidence |
 | --- | --- | --- |
 | Every material claim has inspectable evidence or an explicit gap. | Native typed fields, all original provenance, exact item/catalog pins, and explicit missing/unassessed facts. | Executed current-source native journeys, accepted evidence intake and source-use coverage, UX/catalog consumer review. |
-| Stale or contradictory specifications and unsafe URLs expose limitations and permit only validated navigation. | Original dates and conflicting notes remain available; invisible controls are escaped and URLs are bounded text; no unchecked navigation exists. | Reviewed safe-link policy, explicit confirmation and rejection UI, actual native negative/recovery and accessibility journeys. |
+| Stale or contradictory specifications and unsafe URLs expose limitations and permit only validated navigation. | Original dates and conflicting notes remain available; URLs remain bounded literal text, and explicit source review checks exact approved HTTPS hosts before one-use consent. The fictional preview approves no hosts. | Current-source policy/model execution, native review/recovery and accessibility journeys, approved host/source-use intake, and installed positive handoff evidence. |
 | Criterion results, versions, limitations and receiving disposition are linked. | This scoped consumer receipt records the source boundaries and meaningful projection, model and UI regressions. | Published exact commit, executed checks, independent receiving review and accepted delivery composition. |
 
 Variant selection/replacement, active builder context, screen-reader traversal,
