@@ -34,7 +34,9 @@ final class CatalogCacheTests: XCTestCase, @unchecked Sendable {
     }
 
     private func cache(_ directory: URL, limit: Int = 8 * 1_024 * 1_024) throws -> CatalogCache {
-        try CatalogCache(directory: directory, maximumArtifactBytes: limit, validateContract: { _, _ in })
+        // Keep the original reader's exact configured cap for its existing boundary cases.
+        try CatalogCache(directory: directory, maximumArtifactBytes: limit,
+                         maximumCacheBytes: limit * 3 + 2_097_152, validateContract: { _, _ in })
     }
 
     func testMissingCacheIsUnavailable() async throws {
@@ -249,9 +251,11 @@ final class CatalogCacheTests: XCTestCase, @unchecked Sendable {
         try await store.refresh(manifest, mode: .syntheticPreview) { data[$0]! }
         let file = url.appendingPathComponent("active-preview-v1.json")
         var json = try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: file)) as? [String: Any])
-        var artifacts = try XCTUnwrap(json["artifacts"] as? [String: String])
+        var records = try XCTUnwrap(json["records"] as? [[String: Any]])
+        var artifacts = try XCTUnwrap(records[0]["artifacts"] as? [String: String])
         artifacts["catalog"] = Data("tampered".utf8).base64EncodedString()
-        json["artifacts"] = artifacts
+        records[0]["artifacts"] = artifacts
+        json["records"] = records
         try JSONSerialization.data(withJSONObject: json).write(to: file)
         do {
             _ = try await cache(url).load(mode: .syntheticPreview)
