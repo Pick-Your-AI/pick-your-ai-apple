@@ -23,7 +23,7 @@ final class DraftLibraryModelTests: XCTestCase {
         model.close()
         let second = DraftLibraryModel(store: store)
         await second.refresh()
-        second.open(try XCTUnwrap(second.records.first))
+        await second.open(try XCTUnwrap(second.records.first))
         XCTAssertEqual(second.notes, "Offline notes")
         let original = try await store.read(id: id)
         await second.duplicate(original)
@@ -45,13 +45,21 @@ final class DraftLibraryModelTests: XCTestCase {
         XCTAssertEqual(model.title, "My unsaved edit")
         XCTAssertTrue(model.dirty)
         XCTAssertTrue(model.notice?.contains("newer revision") == true)
+        model.close()
+        await model.open(try XCTUnwrap(model.records.first))
+        XCTAssertEqual(model.selected?.revision, original.revision + 1)
+        XCTAssertEqual(model.title, "Concurrent edit")
+        model.notes = "Recovered edit"
+        await model.save()
+        XCTAssertFalse(model.dirty)
+        XCTAssertEqual(model.selected?.revision, original.revision + 2)
     }
     func testUnknownEditorPayloadIsPreserved() async throws {
         let (store, model, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let id = UUID()
         let record = try await store.save(id: id, expectedRevision: nil, title: "Future", payload: Data("{\"editorVersion\":2,\"notes\":\"future\"}".utf8))
-        model.open(record)
+        await model.open(record)
         XCTAssertNil(model.selected)
         XCTAssertNotNil(model.notice)
         let unchanged = try await store.read(id: id)
@@ -62,7 +70,7 @@ final class DraftLibraryModelTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: folder) }
         let record = try await store.save(id: UUID(), expectedRevision: nil, title: "Extended",
             payload: Data("{\"editorVersion\":1,\"notes\":\"known\",\"futureField\":true}".utf8))
-        model.open(record)
+        await model.open(record)
         XCTAssertNil(model.selected)
         XCTAssertNotNil(model.notice)
         let unchanged = try await store.read(id: record.id)
@@ -97,6 +105,7 @@ private actor ControlledStorage: DraftLibraryStorage {
         await withCheckedContinuation { entered = $0 }
     }
     func resumeSave() { waiting?.resume(); waiting = nil }
+    func read(id: UUID) async throws -> DraftRecord { try await store.read(id: id) }
     func list(limit: Int, offset: Int) async throws -> DraftPage {
         if failRefresh { throw DraftStoreError.database(10) }
         return try await store.list(limit: limit, offset: offset)
@@ -198,5 +207,29 @@ extension DraftLibraryModelTests {
         await deleting.value
         XCTAssertNil(model.selected)
         XCTAssertTrue(model.records.isEmpty)
+    }
+}
+
+
+extension DraftLibraryModelTests {
+    func testLibraryKeepsOnlyOneBoundedPage() async throws {
+        let (store, model, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        for index in 0..<45 {
+            _ = try await store.save(id: UUID(), expectedRevision: nil, title: "Draft \(index)",
+                payload: JSONEncoder().encode(EditorPayload(notes: String(repeating: "x", count: 32_768))))
+        }
+        await model.refresh()
+        XCTAssertEqual(model.records.count, DraftLibraryModel.pageSize)
+        XCTAssertTrue(model.hasNextPage)
+        let firstIDs = Set(model.records.map(\.id))
+        await model.changePage(forward: true)
+        XCTAssertEqual(model.records.count, DraftLibraryModel.pageSize)
+        XCTAssertTrue(firstIDs.isDisjoint(with: model.records.map(\.id)))
+        await model.changePage(forward: true)
+        XCTAssertEqual(model.records.count, 5)
+        XCTAssertFalse(model.hasNextPage)
+        await model.changePage(forward: false)
+        XCTAssertEqual(model.records.count, DraftLibraryModel.pageSize)
     }
 }

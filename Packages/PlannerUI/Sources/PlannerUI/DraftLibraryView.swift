@@ -21,9 +21,15 @@ public struct DraftLibraryView: View {
                         .accessibilityIdentifier("corruptionNotice")
                 }
                 Section("Drafts") {
+                    if model.pageOffset > 0 {
+                        Button("Previous drafts") { Task { await model.changePage(forward: false) } }
+                    }
+                    if model.hasNextPage {
+                        Button("More drafts") { Task { await model.changePage(forward: true) } }
+                    }
                     if model.records.isEmpty { Text("No local drafts yet") }
                     ForEach(model.records, id: \.id) { record in
-                        Button { model.open(record); restoredID = model.selected?.id.uuidString ?? "" } label: {
+                        Button { Task { await model.open(record) } } label: {
                             VStack(alignment: .leading) {
                                 Text(record.title.isEmpty ? "Untitled draft" : record.title)
                                 Text("Local revision \(record.revision)").font(.caption).foregroundStyle(.secondary)
@@ -53,7 +59,7 @@ public struct DraftLibraryView: View {
             .sheet(isPresented: Binding(get: { model.selected != nil }, set: { if !$0 { model.close(); restoredID = "" } })) { editor }
             .task {
                 await model.refresh()
-                if let record = model.records.first(where: { $0.id.uuidString == restoredID }) { model.open(record) }
+                if let id = UUID(uuidString: restoredID) { await model.open(id: id) }
             }
             .onChange(of: scenePhase) { _, phase in
                 if phase != .active { Task { await model.save() } }
