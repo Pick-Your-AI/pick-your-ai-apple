@@ -73,6 +73,25 @@ so that container selection is ambiguous. The editor Form now has the exact
 All persistence, revision, dirty-discard and destination assertions remain mandatory.
 This correction requires a fresh successful run on both destinations.
 
+The combined 68-case source `460f9a833277a0601ba11ab774f64ee371baa555` in
+[native run 39107785886](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39107785886/job/117617303097)
+passed all 68 model cases, the unsigned app build and both launch smokes. Its iPad
+journey passed in 230.667 seconds. The iPhone journey failed in 69.661 seconds at
+the first history reveal after a title edit: six upward swipes targeted the exact
+editor Form, but `loadRevisions` remained absent. The retained screen recording
+shows the focused title's software keyboard obscuring the lower Form, with no
+visible scroll movement across those six gestures. Both result summaries contain
+one executed test and zero skips; both owned-simulator deletions succeeded.
+
+The editor now gives both title and notes a normal **Done editing** keyboard
+control. It clears only text focus; the production autosave and all dirty-state
+rules continue unchanged. Before revealing an editor control, the journey uses
+that visible button when the software keyboard is present and requires the
+keyboard to disappear. It then performs the same bounded scroll within the exact
+Form and requires the target to exist and be hittable. No history or persistence
+assertion is replaced with a coordinate tap. This focused correction has no new
+native pass yet; the complete journey must pass on both pinned destinations.
+
 A try/finally scope protects every verified creation, including later evidence-writing
 or test failures. Cleanup shuts down and deletes only the verified ID created by this
 invocation, retaining both command outcomes; it never uses blanket shutdown, erase or
@@ -115,6 +134,8 @@ remain separate; this is not the complete discover/build/evaluate/share journey.
 Primary Apple references checked 2026-10-18:
 [XCUIApplication process control](https://developer.apple.com/documentation/xcuiautomation/xcuiapplication),
 [XCUIElement queries and input](https://developer.apple.com/documentation/xcuiautomation/xcuielement),
+[keyboard toolbar placement](https://developer.apple.com/documentation/swiftui/toolbaritemplacement/keyboard),
+[explicit focus state](https://developer.apple.com/documentation/swiftui/focusstate),
 [the general pasteboard](https://developer.apple.com/documentation/uikit/uipasteboard/general),
 [running tests and result bundles](https://developer.apple.com/documentation/xcode/running-tests-and-interpreting-results),
 and [Xcode 16.3 xcresulttool commands](https://developer.apple.com/documentation/xcode-release-notes/xcode-16_3-release-notes).

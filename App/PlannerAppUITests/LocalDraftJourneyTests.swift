@@ -224,6 +224,13 @@ final class LocalDraftJourneyTests: XCTestCase {
 
     @MainActor
     private func reveal(_ element: XCUIElement, in app: XCUIApplication, towardTop: Bool) {
+        // Finish text entry through the editor's normal keyboard control before
+        // asking the Form to reveal content that the software keyboard obscures.
+        let keyboard = app.keyboards.firstMatch
+        if keyboard.exists {
+            tap(app.buttons["finishDraftEditing"])
+            wait(keyboard, matching: "exists == false")
+        }
         // The library List remains in the hierarchy behind the editor sheet.
         // Scroll only this editor Form, never the first hittable collection.
         let container = app.descendants(matching: .any).matching(identifier: "draftEditorForm").firstMatch

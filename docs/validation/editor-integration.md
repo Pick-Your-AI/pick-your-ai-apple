@@ -92,6 +92,29 @@ changes. The failed source did not execute its model suite; the same test bytes 
 the first combined `29e4055cbdc23a27732059550639d2140b28653a` candidate also require
 this correction before its 68 declared cases can compile and execute.
 
+The corrected combined head `460f9a833277a0601ba11ab774f64ee371baa555` subsequently
+executed all **68 model cases with zero failures** in 26.935 seconds in
+[run 39107785886 / job 117617303097](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39107785886/job/117617303097).
+Its unsigned app build and both launch smokes passed. iPad completed the full
+production-autosave/undo/redo/discard/deletion journey in 230.667 seconds; iPhone
+failed in 69.661 seconds at `LocalDraftJourneyTests.swift:236`, because six upward
+swipes of the exact `draftEditorForm` did not reveal `loadRevisions`. The iPhone
+had already reopened the exact durable notes after process relaunch. Frames before
+and after the swipes show the same focused title, software keyboard and obscured
+lower Form. This is a different failure from the earlier invalid startup geometry.
+Both destinations executed one test with zero skips, and both owned deletions
+returned exit code zero. Artifact `12130423258` is 87,422,438 bytes; its downloaded
+archive matches SHA-256
+`94dcec95d6d25bebf6bdcf7d9eda2f5e32cf67b1820cebfd2ae18430f12f439b`.
+
+The focused follow-up adds a visible **Done editing** keyboard control for both
+editor fields and makes the UI journey use it, requiring the software keyboard to
+disappear before scrolling the Form. Clearing focus neither calls Save nor changes
+the model's text, history or discard rules. All 68 model names, production debounce,
+durable revision assertions, owned cleanup, native pins and both destination gates
+remain. The changed view and UI journey still require fresh native execution;
+the 460 result is retained failure evidence, not acceptance of this correction.
+
 The original #198 source package contains 52 XCTest cases: 22 editor/library model,
 13 controlled autosave, two bounded history, seven imported-build, six startup and
 two independent-store cases. [Run 39100534357 / job 117595708300](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39100534357/job/117595708300)

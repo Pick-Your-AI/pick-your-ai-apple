@@ -7,6 +7,8 @@ public struct DraftLibraryView: View {
     @SceneStorage("localDraftSelection") private var restoredID = ""
     @State private var pendingDelete: DraftRecord?
     @State private var pendingRestore: DraftRecord?
+    @FocusState private var focusedEditorField: EditorField?
+    private enum EditorField: Hashable { case title, notes }
     public init(store: DraftStore) { _model = StateObject(wrappedValue: DraftLibraryModel(store: store)) }
     public var body: some View {
         NavigationStack {
@@ -72,11 +74,13 @@ public struct DraftLibraryView: View {
             Form {
                 Section("Draft name") {
                     TextField("Draft name", text: $model.title).accessibilityIdentifier("draftTitle")
+                        .focused($focusedEditorField, equals: .title)
                         .disabled(!model.canEdit)
                 }
                 Section("Planning notes") {
                     TextEditor(text: $model.notes).frame(minHeight: 160)
                         .accessibilityLabel("Planning notes").accessibilityIdentifier("draftNotes")
+                        .focused($focusedEditorField, equals: .notes)
                         .disabled(!model.canEdit)
                 }
                 Section("Edit history") {
@@ -129,6 +133,11 @@ public struct DraftLibraryView: View {
             .accessibilityIdentifier("draftEditorForm")
             .navigationTitle("Edit local draft")
             .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done editing") { focusedEditorField = nil }
+                        .accessibilityIdentifier("finishDraftEditing")
+                }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") {
                         model.requestClose()
