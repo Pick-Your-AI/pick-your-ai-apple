@@ -25,8 +25,19 @@ jobs:
           xcrun simctl list runtimes | tee .build/native-evidence/runtimes.txt
       - name: Test native editor model
         run: |
-          set -o pipefail
+          set -euo pipefail
           swift test --package-path Packages/PlannerUI 2>&1 | tee .build/native-evidence/model-tests.txt
+          for name in \
+            testLocalRenamePreservesSnapshotAndHistoryAcrossRestart \
+            testDuplicateCreatesFreshForkAndRetainsSyntheticQualificationAndLocks \
+            testStaleRenameDuplicateAndDeleteCannotMutateNewerRevision \
+            testConfirmedDeleteTargetsCapturedEntryAndPreservesDifferentSelection \
+            testLargeLibraryRetainsCorruptWrapperAndUnrelatedMetadataAfterRenameDeleteAndRestart \
+            testEntireUnreadablePageStillReachesLaterValidBuild \
+            testMalformedQualificationCannotBeOpenedMutatedOrSilentlyDropped
+          do
+            grep -E "Test Case .*ImportedBuildLibraryTests.*${name}.* passed" .build/native-evidence/model-tests.txt
+          done
       - name: Build unsigned simulator app
         run: |
           set -o pipefail

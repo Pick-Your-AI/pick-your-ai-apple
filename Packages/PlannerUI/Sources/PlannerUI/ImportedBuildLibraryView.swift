@@ -32,6 +32,7 @@ public struct ImportedBuildLibraryView: View {
     @State private var pendingDelete: DraftRecord?
     @State private var deleting = false
     @State private var comparisonBaseline: BuildSnapshot?
+    @State private var baselineRecordID: UUID?
     @State private var baselineSynthetic = false
     @State private var comparison: PreparedBuildComparison?
     @State private var comparisonNotice: String?
@@ -98,12 +99,13 @@ public struct ImportedBuildLibraryView: View {
                     Section("Compare configurations") {
                         Button("Use selected build as baseline") {
                             comparisonBaseline = snapshot; baselineSynthetic = model.markedSynthetic
+                            baselineRecordID = model.selected?.id
                             comparison = nil; comparisonNotice = nil
                         }.accessibilityIdentifier("pinComparisonBaseline")
                         if let baseline = comparisonBaseline {
                             Text("Baseline: " + baseline.name)
                             Text(baseline.id).font(.caption).textSelection(.enabled)
-                            Text("Choose another imported build above, then compare. The baseline stays pinned until you replace or clear it.")
+                            Text("Choose another imported build above, then compare. The baseline stays pinned until you replace or clear it, or delete its local entry.")
                             Button("Compare baseline with selected build") {
                                 comparison = nil; comparisonNotice = nil
                                 do {
@@ -116,7 +118,7 @@ public struct ImportedBuildLibraryView: View {
                                 }
                             }.accessibilityIdentifier("compareSelectedBuilds")
                             Button("Clear comparison baseline", role: .cancel) {
-                                comparisonBaseline = nil; comparison = nil; comparisonNotice = nil
+                                clearBaseline()
                             }.accessibilityIdentifier("clearComparisonBaseline")
                         }
                         if let comparisonNotice { Text(comparisonNotice).fixedSize(horizontal: false, vertical: true) }
@@ -149,6 +151,9 @@ public struct ImportedBuildLibraryView: View {
             .onChange(of: alias) { _, _ in reviewed = false; model.clearExport() }
             .onChange(of: model.selected?.id) { _, _ in alias = ""; reviewed = false }
             .onChange(of: model.snapshot) { _, _ in comparison = nil; comparisonNotice = nil }
+            .onChange(of: model.lastDeletedID) { _, deletedID in
+                if let deletedID, baselineRecordID == deletedID { clearBaseline() }
+            }
             .alert("Rename local label", isPresented: $renaming, presenting: pendingRename) { record in
                 TextField("Local label", text: $localLabel)
                 Button("Save label") {
@@ -178,6 +183,10 @@ public struct ImportedBuildLibraryView: View {
                 reviewed = false; model.clearExport()
             }
         }
+    }
+    private func clearBaseline() {
+        comparisonBaseline = nil; baselineRecordID = nil; baselineSynthetic = false
+        comparison = nil; comparisonNotice = nil
     }
     private func revisionText(_ snapshot: BuildSnapshot) -> String {
         guard case .object(let fields) = snapshot.value, case .number(let revision)? = fields["revision"] else {

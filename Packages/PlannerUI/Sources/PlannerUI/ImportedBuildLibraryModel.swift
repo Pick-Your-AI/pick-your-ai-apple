@@ -50,6 +50,8 @@ public final class ImportedBuildLibraryModel: ObservableObject {
     @Published public private(set) var preview: ImportPreview?
     @Published public private(set) var notice: String?
     @Published public private(set) var libraryNotice: String?
+    /// Set only after the exact row's deletion transaction commits.
+    @Published public private(set) var lastDeletedID: UUID?
     @Published public private(set) var busy = false
     @Published public private(set) var unreadableCount = 0
     @Published public private(set) var offset = 0
@@ -233,6 +235,7 @@ public final class ImportedBuildLibraryModel: ObservableObject {
         do {
             _ = try await current(record)
             try await store.delete(id: record.id, expectedRevision: record.revision)
+            lastDeletedID = record.id
             if selected?.id == record.id {
                 selected = nil; snapshot = nil; markedSynthetic = false; sourceRevision = nil; exportData = nil
             }
