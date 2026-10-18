@@ -1,6 +1,7 @@
 import SwiftUI
 import UniformTypeIdentifiers
 import PlannerData
+import PlannerTransfer
 
 private struct ExportBuildDocument: FileDocument {
     static var readableContentTypes: [UTType] { [.json] }
@@ -13,12 +14,28 @@ private struct ExportBuildDocument: FileDocument {
     func fileWrapper(configuration: WriteConfiguration) throws -> FileWrapper { FileWrapper(regularFileWithContents: data) }
 }
 
+private struct PreparedBuildComparison {
+    let result: BuildComparison
+    let beforeSynthetic: Bool
+    let afterSynthetic: Bool
+}
+
 public struct ImportedBuildLibraryView: View {
     @StateObject private var model: ImportedBuildLibraryModel
     @State private var importing = false
     @State private var exporting = false
     @State private var alias = ""
     @State private var reviewed = false
+    @State private var pendingRename: DraftRecord?
+    @State private var renaming = false
+    @State private var localLabel = ""
+    @State private var pendingDelete: DraftRecord?
+    @State private var deleting = false
+    @State private var comparisonBaseline: BuildSnapshot?
+    @State private var baselineRecordID: UUID?
+    @State private var baselineSynthetic = false
+    @State private var comparison: PreparedBuildComparison?
+    @State private var comparisonNotice: String?
     public init(store: DraftStore) { _model = StateObject(wrappedValue: ImportedBuildLibraryModel(store: store)) }
     public var body: some View {
         NavigationStack {
@@ -26,6 +43,7 @@ public struct ImportedBuildLibraryView: View {
                 Section {
                     Text("Imported builds are read-only local forks. Schema validation does not establish source rights, ownership, compatibility, pricing, or current evidence.")
                     if let notice = model.notice { Text(notice).foregroundStyle(.red) }
+                    if let notice = model.libraryNotice { Text(notice).foregroundStyle(.red) }
                 }
                 if let preview = model.preview {
                     Section("Review import") {
@@ -40,24 +58,76 @@ public struct ImportedBuildLibraryView: View {
                 Section("Imported builds") {
                     Button("Choose JSON file") { importing = true }
                         .accessibilityIdentifier("chooseBuildImport")
+                    Button("Refresh builds") { Task { await model.refresh(offset: model.offset) } }
+                        .accessibilityIdentifier("refreshImportedBuilds")
                     if model.offset > 0 {
                         Button("Previous builds") { Task { await model.refresh(offset: model.offset - ImportedBuildLibraryModel.pageSize) } }
                     }
                     if model.hasNext {
                         Button("More builds") { Task { await model.refresh(offset: model.offset + ImportedBuildLibraryModel.pageSize) } }
                     }
-                    if model.records.isEmpty { Text("No imported builds on this page") }
+                    if model.records.isEmpty { Text("No readable imported builds on this page") }
                     if model.unreadableCount > 0 { Text("\(model.unreadableCount) unreadable records were preserved.") }
                     ForEach(model.records, id: \.id) { record in
-                        Button(record.title) { Task { await model.open(record) } }
+                        Button { Task { await model.open(record) } } label: {
+                            VStack(alignment: .leading) {
+                                Text(record.title)
+                                Text("Local revision \(record.revision)").font(.caption)
+                                Text("Evidence: not revalidated").font(.caption).foregroundStyle(.secondary)
+                            }
+                        }.accessibilityIdentifier("importedBuild.\(record.id.uuidString)")
                     }
                 }
                 if let snapshot = model.snapshot {
                     Section("Selected local fork") {
-                        Text(snapshot.name)
+                        if let record = model.selected {
+                            Text("Local label: " + record.title)
+                            Text("Local revision \(record.revision)")
+                            Button("Rename local label") { localLabel = record.title; pendingRename = record; renaming = true }
+                                .accessibilityIdentifier("renameImportedBuild")
+                            Button("Duplicate as new local fork") { Task { await model.duplicate(record) } }
+                                .accessibilityIdentifier("duplicateImportedBuild")
+                            Button("Delete local entry", role: .destructive) { pendingDelete = record; deleting = true }
+                                .accessibilityIdentifier("deleteImportedBuild")
+                        }
+                        Text("Pinned snapshot: " + snapshot.name)
+                        Text("Pinned snapshot revision: " + revisionText(snapshot))
                         Text(model.markedSynthetic ? "Marked synthetic fixture" : "Data qualification unknown")
                         Text("Compatibility: unknown. Pricing: unknown. Imported analysis is not current.")
                         Text(snapshot.id).font(.caption).textSelection(.enabled)
+                    }
+                    Section("Compare configurations") {
+                        Button("Use selected build as baseline") {
+                            comparisonBaseline = snapshot; baselineSynthetic = model.markedSynthetic
+                            baselineRecordID = model.selected?.id
+                            comparison = nil; comparisonNotice = nil
+                        }.accessibilityIdentifier("pinComparisonBaseline")
+                        if let baseline = comparisonBaseline {
+                            Text("Baseline: " + baseline.name)
+                            Text(baseline.id).font(.caption).textSelection(.enabled)
+                            Text("Choose another imported build above, then compare. The baseline stays pinned until you replace or clear it, or delete its local entry.")
+                            Button("Compare baseline with selected build") {
+                                comparison = nil; comparisonNotice = nil
+                                do {
+                                    comparison = PreparedBuildComparison(
+                                        result: try BuildComparison.compare(baseline, snapshot),
+                                        beforeSynthetic: baselineSynthetic, afterSynthetic: model.markedSynthetic)
+                                }
+                                catch {
+                                    comparisonNotice = "These builds could not be compared completely. Their identities may be ambiguous or conflicting, or the number of differences exceeds the supported limit. Both builds were preserved."
+                                }
+                            }.accessibilityIdentifier("compareSelectedBuilds")
+                            Button("Clear comparison baseline", role: .cancel) {
+                                clearBaseline()
+                            }.accessibilityIdentifier("clearComparisonBaseline")
+                        }
+                        if let comparisonNotice { Text(comparisonNotice).fixedSize(horizontal: false, vertical: true) }
+                        if let comparison {
+                            NavigationLink("View configuration differences (\(comparison.result.differences.count))") {
+                                BuildComparisonView(comparison: comparison.result, beforeSynthetic: comparison.beforeSynthetic,
+                                                    afterSynthetic: comparison.afterSynthetic)
+                            }.accessibilityIdentifier("viewBuildComparison")
+                        }
                     }
                     Section("Prepare export") {
                         TextField("Public owner alias", text: $alias)
@@ -80,6 +150,28 @@ public struct ImportedBuildLibraryView: View {
             .task { await model.refresh() }
             .onChange(of: alias) { _, _ in reviewed = false; model.clearExport() }
             .onChange(of: model.selected?.id) { _, _ in alias = ""; reviewed = false }
+            .onChange(of: model.snapshot) { _, _ in comparison = nil; comparisonNotice = nil }
+            .onChange(of: model.lastDeletedID) { _, deletedID in
+                if let deletedID, baselineRecordID == deletedID { clearBaseline() }
+            }
+            .alert("Rename local label", isPresented: $renaming, presenting: pendingRename) { record in
+                TextField("Local label", text: $localLabel)
+                Button("Save label") {
+                    let title = localLabel
+                    Task { await model.rename(record, to: title) }
+                }.disabled(localLabel.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty)
+                Button("Cancel", role: .cancel) {}
+            } message: { _ in
+                Text("The label organizes this library entry separately from its pinned snapshot.")
+            }
+            .confirmationDialog("Delete this local entry and its revision history?", isPresented: $deleting, presenting: pendingDelete) { record in
+                Button("Delete local entry", role: .destructive) {
+                    Task { await model.delete(record) }
+                }
+                Button("Cancel", role: .cancel) {}
+            } message: { record in
+                Text("Delete “" + record.title + "” at local revision \(record.revision)?")
+            }
             .fileImporter(isPresented: $importing, allowedContentTypes: [.json], allowsMultipleSelection: false) { result in
                 switch result {
                 case .success(let urls): if let url = urls.first { Task { await model.previewFile(url) } }
@@ -91,5 +183,15 @@ public struct ImportedBuildLibraryView: View {
                 reviewed = false; model.clearExport()
             }
         }
+    }
+    private func clearBaseline() {
+        comparisonBaseline = nil; baselineRecordID = nil; baselineSynthetic = false
+        comparison = nil; comparisonNotice = nil
+    }
+    private func revisionText(_ snapshot: BuildSnapshot) -> String {
+        guard case .object(let fields) = snapshot.value, case .number(let revision)? = fields["revision"] else {
+            return "Unavailable"
+        }
+        return NSDecimalNumber(decimal: revision).stringValue
     }
 }

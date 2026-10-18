@@ -1,0 +1,119 @@
+import Foundation
+
+/// A display projection supplied only AFTER the receiver validates canonical catalog
+/// records. These are local view fields, not a new publisher schema or API protocol.
+public struct CatalogSearchEntry: Equatable, Sendable {
+    public let id: String
+    public let version: String
+    public let kind: String
+    public let title: String
+    public init(id: String, version: String, kind: String, title: String) {
+        self.id = id; self.version = version; self.kind = kind; self.title = title
+    }
+}
+
+public enum CatalogSearchError: Error, Equatable, Sendable {
+    case invalidSnapshot, invalidQuery, snapshotUnavailable, stalePage, mismatchedPage
+    case immutableIdentityConflict
+}
+
+/// Opaque in-process pagination state. It is neither persisted nor accepted from a
+/// remote service; only the issuing index can create valid tokens.
+public struct CatalogPageToken: Sendable {
+    fileprivate let generation: UUID
+    fileprivate let offset: Int
+    fileprivate let query: String
+    fileprivate let kinds: Set<String>
+    fileprivate let limit: Int
+}
+
+public struct CatalogSearchPage: Sendable {
+    public let identity: ArtifactIdentity
+    public let entries: [CatalogSearchEntry]
+    public let totalCount: Int
+    public let next: CatalogPageToken?
+}
+
+/// One bounded, immutable snapshot is searched at a time. Refresh invalidates old
+/// tokens instead of appending results from different releases. This actor has no
+/// network, cache promotion, persistence, evidence grading, or compatibility logic.
+public actor CatalogSearchIndex {
+    private struct EntryKey: Hashable {
+        let id: String
+        let version: String
+        init(_ entry: CatalogSearchEntry) { id = entry.id; version = entry.version }
+    }
+    private struct IndexedEntry: Sendable {
+        let entry: CatalogSearchEntry
+        let search: String
+        let title: String
+    }
+    private var identity: ArtifactIdentity?
+    private var entries: [IndexedEntry] = []
+    private var generation = UUID()
+    public init() {}
+
+    public func install(identity: ArtifactIdentity, entries: [CatalogSearchEntry]) throws {
+        guard identity.schemaVersion == "1.0.0", identity.revision >= 1,
+              !identity.id.isEmpty, identity.id.utf8.count <= 256,
+              !identity.capturedAt.isEmpty, identity.capturedAt.utf8.count <= 128,
+              entries.count <= 10_000, Set(entries.map(EntryKey.init)).count == entries.count,
+              entries.allSatisfy({ entry in
+                  !entry.id.isEmpty && entry.id.utf8.count <= 256 &&
+                  !entry.version.isEmpty && entry.version.utf8.count <= 128 &&
+                  !entry.kind.isEmpty && entry.kind.utf8.count <= 64 &&
+                  !entry.title.isEmpty && entry.title.utf8.count <= 1_024
+              }) else { throw CatalogSearchError.invalidSnapshot }
+        let indexed = entries.map { entry in
+            IndexedEntry(entry: entry, search: Self.normalize(entry.title + " " + entry.id + " " + entry.kind),
+                         title: Self.normalize(entry.title))
+        }.sorted { a, b in
+            if a.title != b.title { return a.title < b.title }
+            if a.entry.kind != b.entry.kind { return a.entry.kind < b.entry.kind }
+            if a.entry.id != b.entry.id { return a.entry.id < b.entry.id }
+            return a.entry.version < b.entry.version
+        }
+        if let current = self.identity, current.id == identity.id, current.revision == identity.revision {
+            guard current == identity, self.entries.map(\.entry) == indexed.map(\.entry) else {
+                throw CatalogSearchError.immutableIdentityConflict
+            }
+            return // Idempotent receipt of the same release preserves valid cursors.
+        }
+        self.identity = identity
+        self.entries = indexed
+        generation = UUID()
+    }
+
+    public func clear() {
+        identity = nil; entries = []; generation = UUID()
+    }
+
+    public func search(query: String = "", kinds: Set<String> = [], limit: Int = 50,
+                       after token: CatalogPageToken? = nil) throws -> CatalogSearchPage {
+        guard query.utf8.count <= 1_024, (1...100).contains(limit), kinds.count <= 64,
+              kinds.allSatisfy({ !$0.isEmpty && $0.utf8.count <= 64 }) else {
+            throw CatalogSearchError.invalidQuery
+        }
+        guard let identity else { throw CatalogSearchError.snapshotUnavailable }
+        let query = Self.normalize(query.trimmingCharacters(in: .whitespacesAndNewlines))
+        if let token {
+            guard token.generation == generation else { throw CatalogSearchError.stalePage }
+            guard token.query == query, token.kinds == kinds, token.limit == limit else {
+                throw CatalogSearchError.mismatchedPage
+            }
+        }
+        let matching = entries.filter { item in
+            (kinds.isEmpty || kinds.contains(item.entry.kind)) && (query.isEmpty || item.search.contains(query))
+        }
+        let start = token?.offset ?? 0
+        let end = min(start + limit, matching.count)
+        let next = end < matching.count ? CatalogPageToken(generation: generation, offset: end,
+            query: query, kinds: kinds, limit: limit) : nil
+        return CatalogSearchPage(identity: identity, entries: matching[start..<end].map(\.entry),
+                                 totalCount: matching.count, next: next)
+    }
+
+    private static func normalize(_ value: String) -> String {
+        value.folding(options: [.caseInsensitive, .diacriticInsensitive], locale: Locale(identifier: "en_US_POSIX"))
+    }
+}

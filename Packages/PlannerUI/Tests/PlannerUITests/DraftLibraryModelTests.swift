@@ -93,12 +93,14 @@ private actor ControlledStorage: DraftLibraryStorage {
     var failRefresh = false
     var pauseNextSave = false
     var pauseNextDelete = false
+    var pauseNextRestore = false
+    var pauseNextHistory = false
     var waiting: CheckedContinuation<Void, Never>?
     var entered: CheckedContinuation<Void, Never>?
     var saveEntered = false
     init(store: DraftStore) { self.store = store }
-    func configure(failRefresh: Bool = false, pause: Bool = false, pauseDelete: Bool = false) {
-        self.failRefresh = failRefresh; pauseNextSave = pause; pauseNextDelete = pauseDelete
+    func configure(failRefresh: Bool = false, pause: Bool = false, pauseDelete: Bool = false, pauseRestore: Bool = false, pauseHistory: Bool = false) {
+        self.failRefresh = failRefresh; pauseNextSave = pause; pauseNextDelete = pauseDelete; pauseNextRestore = pauseRestore; pauseNextHistory = pauseHistory
     }
     func waitForSave() async {
         if saveEntered { return }
@@ -106,6 +108,24 @@ private actor ControlledStorage: DraftLibraryStorage {
     }
     func resumeSave() { waiting?.resume(); waiting = nil }
     func read(id: UUID) async throws -> DraftRecord { try await store.read(id: id) }
+    func history(id: UUID, limit: Int, offset: Int) async throws -> DraftPage {
+        if pauseNextHistory {
+            pauseNextHistory = false
+            await withCheckedContinuation { continuation in
+                waiting = continuation; saveEntered = true; entered?.resume(); entered = nil
+            }
+        }
+        return try await store.history(id: id, limit: limit, offset: offset)
+    }
+    func restore(id: UUID, revision: Int, expectedRevision: Int) async throws -> DraftRecord {
+        if pauseNextRestore {
+            pauseNextRestore = false
+            await withCheckedContinuation { continuation in
+                waiting = continuation; saveEntered = true; entered?.resume(); entered = nil
+            }
+        }
+        return try await store.restore(id: id, revision: revision, expectedRevision: expectedRevision)
+    }
     func list(limit: Int, offset: Int) async throws -> DraftPage {
         if failRefresh { throw DraftStoreError.database(10) }
         return try await store.list(limit: limit, offset: offset)
@@ -231,5 +251,148 @@ extension DraftLibraryModelTests {
         XCTAssertFalse(model.hasNextPage)
         await model.changePage(forward: false)
         XCTAssertEqual(model.records.count, DraftLibraryModel.pageSize)
+    }
+}
+
+
+extension DraftLibraryModelTests {
+    func testRestoreAppendsHistoryAndReopensWithoutCurrentAnalysis() async throws {
+        let (store, model, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        await model.create()
+        model.notes = "Earlier"; await model.save()
+        let earlier = try XCTUnwrap(model.selected)
+        model.notes = "Later"; await model.save()
+        await model.restore(earlier)
+        XCTAssertEqual(model.selected?.revision, 4)
+        XCTAssertEqual(model.selected?.restoredFrom, 2)
+        XCTAssertEqual(model.notes, "Earlier")
+        XCTAssertFalse(model.dirty)
+        XCTAssertFalse(try XCTUnwrap(model.selected).analysisIsCurrent)
+        let history = try await store.history(id: earlier.id)
+        XCTAssertEqual(history.records.map(\.revision), [4, 3, 2, 1])
+        XCTAssertEqual(try JSONDecoder().decode(EditorPayload.self, from: history.records[1].payload).notes, "Later")
+        let reopened = DraftLibraryModel(store: store)
+        await reopened.open(id: earlier.id)
+        XCTAssertEqual(reopened.notes, "Earlier")
+        XCTAssertEqual(reopened.selected?.restoredFrom, 2)
+    }
+    func testRestoreCannotDiscardDirtyOrConcurrentSavedEdits() async throws {
+        let (store, model, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        await model.create()
+        let earlier = try XCTUnwrap(model.selected)
+        model.notes = "Later"; await model.save()
+        model.notes = "Unsaved"
+        await model.restore(earlier)
+        XCTAssertEqual(model.notes, "Unsaved")
+        XCTAssertEqual(model.selected?.revision, 2)
+        await model.save()
+        _ = try await store.rename(id: earlier.id, expectedRevision: 3, title: "Other scene")
+        await model.restore(earlier)
+        XCTAssertEqual(model.status, "Not restored")
+        XCTAssertTrue(model.notice?.contains("newer revision") == true)
+        let durable = try await store.read(id: earlier.id)
+        XCTAssertEqual(durable.revision, 4)
+        XCTAssertEqual(durable.title, "Other scene")
+    }
+    func testEditsDuringRestorationRemainDirtyAndCanBeSaved() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled)
+        await model.create()
+        let earlier = try XCTUnwrap(model.selected)
+        model.notes = "Later"; await model.save()
+        await controlled.configure(pauseRestore: true)
+        let restoring = Task { await model.restore(earlier) }
+        await controlled.waitForSave()
+        model.notes = "Newest input"
+        model.title = "Newest name"
+        await controlled.resumeSave()
+        await restoring.value
+        XCTAssertEqual(model.selected?.revision, 3)
+        XCTAssertEqual(model.notes, "Newest input")
+        XCTAssertEqual(model.title, "Newest name")
+        XCTAssertTrue(model.dirty)
+        await model.save()
+        XCTAssertEqual(model.selected?.revision, 4)
+        XCTAssertFalse(model.dirty)
+    }
+    func testHistoryIsBoundedAndClearedAcrossDrafts() async throws {
+        let (_, model, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        await model.create()
+        for index in 1...24 { model.notes = "Revision \(index)"; await model.save() }
+        await model.loadHistory()
+        XCTAssertEqual(model.revisions.count, 20)
+        XCTAssertEqual(model.revisions.first?.revision, 25)
+        XCTAssertTrue(model.hasOlderRevisions)
+        await model.loadHistory(offset: 20)
+        XCTAssertEqual(model.revisions.count, 5)
+        XCTAssertFalse(model.hasOlderRevisions)
+        model.close()
+        XCTAssertTrue(model.revisions.isEmpty)
+        await model.create()
+        XCTAssertTrue(model.revisions.isEmpty)
+    }
+    func testUnsupportedHistoryCannotBeRestoredFromEditor() async throws {
+        let (store, model, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let id = UUID()
+        let unsupported = try await store.save(id: id, expectedRevision: nil, title: "Future", payload: Data("{}".utf8))
+        _ = try await store.save(id: id, expectedRevision: 1, title: "Current", payload: JSONEncoder().encode(EditorPayload(notes: "Supported")))
+        await model.open(id: id)
+        await model.restore(unsupported)
+        XCTAssertEqual(model.selected?.revision, 2)
+        XCTAssertEqual(model.notes, "Supported")
+        let durable = try await store.read(id: id)
+        XCTAssertEqual(durable.revision, 2)
+    }
+}
+
+
+extension DraftLibraryModelTests {
+    func testLifecycleSaveDuringHistoryReadIsDrainedWithLatestEdits() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled)
+        await model.create()
+        let id = try XCTUnwrap(model.selected?.id)
+        model.notes = "Pending when history opens"
+        await controlled.configure(pauseHistory: true)
+        let reading = Task { await model.loadHistory() }
+        await controlled.waitForSave()
+        await model.save() // Same entry point as scene-phase background autosave.
+        model.notes = "Latest before history completes"
+        await controlled.resumeSave()
+        await reading.value
+        XCTAssertFalse(model.dirty)
+        XCTAssertEqual(model.selected?.revision, 2)
+        let durable = try await store.read(id: id)
+        XCTAssertEqual(try JSONDecoder().decode(EditorPayload.self, from: durable.payload).notes, "Latest before history completes")
+    }
+    func testLifecycleSaveDuringRestoreUsesNewRevisionAndLatestEdits() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled)
+        await model.create()
+        let earlier = try XCTUnwrap(model.selected)
+        model.notes = "Later"; await model.save()
+        await controlled.configure(pauseRestore: true)
+        let restoring = Task { await model.restore(earlier) }
+        await controlled.waitForSave()
+        model.notes = "New input during restoration"
+        await model.save()
+        await controlled.resumeSave()
+        await restoring.value
+        XCTAssertFalse(model.dirty)
+        XCTAssertEqual(model.selected?.revision, 4)
+        XCTAssertEqual(model.notes, "New input during restoration")
+        let history = try await store.history(id: earlier.id)
+        XCTAssertEqual(history.records.map(\.revision), [4, 3, 2, 1])
+        XCTAssertEqual(history.records[1].restoredFrom, 1)
     }
 }
