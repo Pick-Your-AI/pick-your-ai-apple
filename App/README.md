@@ -55,6 +55,11 @@ same protected Application Support directory. It never treats a canonical build 
 notes-editor payload or converts an incomplete note into a valid snapshot. A local
 version-1 persistence wrapper holds canonical bytes and untrusted fixture metadata;
 unsupported local formats are preserved and refused. Imported builds are read-only.
+Each library opens independently. If either database is corrupt or unsupported,
+only that tab reports an unavailable library; the other tab remains usable. Two
+regression tests corrupt each database in turn and verify that the healthy database
+still reopens its saved records (including note history) and corrupt bytes remain
+unchanged. These tests exercise real SQLite initialization, not mocked success.
 
 The system Files picker supplies one JSON URL. Security-scoped access lasts only for
 a bounded background read (512 KiB actual-byte maximum, checked independently of
