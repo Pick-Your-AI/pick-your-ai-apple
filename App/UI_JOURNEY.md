@@ -51,6 +51,9 @@ Accelerator kind and kind ordering, then terminates and relaunches the process.
 The recreated browser must restore those preferences and return the exact
 `cat.accelerator.fixture` item at `2026.10-demo`. Its detail must identify the
 pinned `catalog.fixture.1` source and explicitly unknown assessment.
+The detail query matches the complete native labeled values inside the exact
+detail Form, including separate `Compatibility, Unknown` and
+`Price estimate, Unknown` labels; one generic Unknown cannot satisfy both gaps.
 The detail consumer also requires the exact source SHA-256, all eight accelerator
 specification fields in its loaded summary, recorded `vram_gb` of 24, an explicit
 missing `rated_power_w`, and the retained source's `user_supplied` declaration,

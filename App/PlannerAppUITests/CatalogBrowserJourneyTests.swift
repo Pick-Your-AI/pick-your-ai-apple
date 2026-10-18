@@ -79,16 +79,22 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         tap(candidate)
         XCTAssertTrue(app.staticTexts["catalogDetailReady"].waitForExistence(timeout: 10))
         XCTAssertEqual(app.staticTexts["catalogDetailReady"].label, "Specifications: 8 · Source records: 1")
-        let identifier = app.staticTexts["cat.accelerator.fixture"]
-        reveal(identifier, in: app, towardTop: false, containerID: "catalogDetailsForm")
-        XCTAssertTrue(identifier.exists)
-        XCTAssertTrue(app.staticTexts["2026.10-demo"].exists)
-        let unknown = app.staticTexts.matching(identifier: "Unknown").firstMatch
-        reveal(unknown, in: app, towardTop: false, containerID: "catalogDetailsForm")
-        XCTAssertTrue(unknown.exists)
-        let source = app.staticTexts["catalog.fixture.1"]
-        reveal(source, in: app, towardTop: false, containerID: "catalogDetailsForm")
-        XCTAssertTrue(source.exists)
+        let detailForm = app.descendants(matching: .any).matching(identifier: "catalogDetailsForm").firstMatch
+        // LabeledContent exposes each caption and value as one exact label in
+        // the observed native snapshot. Require both assessment gaps separately.
+        for expected in [
+            "Version, 2026.10-demo",
+            "Identifier, cat.accelerator.fixture",
+            "Compatibility, Unknown",
+            "Price estimate, Unknown",
+            "Catalog, catalog.fixture.1"
+        ] {
+            let matches = detailForm.staticTexts.matching(NSPredicate(format: "label == %@", expected))
+            let value = matches.element
+            reveal(value, in: app, towardTop: false, containerID: "catalogDetailsForm")
+            XCTAssertEqual(matches.count, 1, "The detail must expose one exact labeled value: \(expected)")
+            XCTAssertEqual(value.label, expected)
+        }
         retainScreenshot(app, name: "Exact fictional component and pinned catalog details")
         let hash = app.staticTexts["catalogDetailHash"]
         reveal(hash, in: app, towardTop: false, containerID: "catalogDetailsForm")

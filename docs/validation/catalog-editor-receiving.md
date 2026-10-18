@@ -262,6 +262,54 @@ comparison-worker checkpoint have their own expanded inventories. They must be
 composed and reviewed with new exact profiles before final main delivery;
 their tests are not removed or represented by this historical 87/48 result.
 
+## Exact labeled detail locator after the c8 result
+
+Candidate `c8fa65c79b7f02a39f5a03e85a69a81d4d4d2694` ran as prepared checkout
+`85eb9f485c919384211aee6696e2b1117c3cd933`, tree
+`99ab352371ff44028ad15851b01e33df66ca7022`, in
+[native run 39128932354 / job 117680054390](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39128932354/job/117680054390).
+All 87 model cases passed. Both Notes journeys passed, in 215.533 seconds on
+iPhone and 245.354 seconds on iPad. Both catalog journeys failed: iPhone after
+151.693 seconds at the detail reveal, and iPad after 88.758 seconds at the
+post-tap switch value. Each destination executed two cases, one pass and one
+failure, with zero skips and successful owned simulator deletion.
+
+The complete 187,223,227-byte artifact
+[12139555896](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39128932354/artifacts/12139555896)
+was independently downloaded and hashes to
+`d720d4900d985530ff2ce0f4383aed1fa0b621886f81289de1844f0fc87c0834`.
+Its iPhone app diagnostic object
+`data.0~fllEyqC1nRyfk9C4SJe3Lso5nrQoSGaQxpFjMnrQF3pwyfFMR_Hv8s4pwoeGexU1CfAPCfgjG1O9USQGQBVkgg==`
+decodes to 29,470,748 bytes, SHA-256
+`8f954ee7d6858630949cc2358b082c2330fbbcdf762fd4b239c77bc62e90a18e`.
+Its actual StaticText labels combine each LabeledContent caption and value:
+
+- `Version, 2026.10-demo`
+- `Identifier, cat.accelerator.fixture`
+- `Compatibility, Unknown`
+- `Price estimate, Unknown`
+- `Catalog, catalog.fixture.1`
+
+The old bare-value queries do not match these labels. The focused test correction
+queries each complete exact label within `catalogDetailsForm`, requires one
+matching element, and retains the existing bounded reveal and hittability gate.
+Both separate assessment gaps are required. The identified hash, specification
+and provenance fields retain their original queries and exact-value assertions;
+the same actual diagnostic exposes those identifiers and expected values.
+No application source, data, scroll bound, timeout, runner or native profile is
+changed. This source correction is not a new native pass.
+
+The iPad failure remains distinct and unresolved by these locators. Its retained
+runner diagnostic hashes to
+`1d4e58df9607f251a7bf0977d63f4de58b175ea2d3ffaa6410a03a6edff8a269`.
+The ordinary touch at `(644.5, 400)` is inside the sole native switch frame
+`(619, 384.5, 51, 31)`. Touch completion and app-idle replies precede a fresh query
+that still reports value `0`. No later successful transition was observed in this
+review; a timing or binding cause is not established. The exact off/on,
+restoration, result-count and remaining journey checks remain mandatory. A
+reviewed correction and successful complete native execution on both pinned
+destinations are still required before receiving delivery.
+
 ## Remaining delivery gates
 
 The published #211 prepared merge `28ce66310245f81f2a92f77a7cc7a1f23cc603aa`
