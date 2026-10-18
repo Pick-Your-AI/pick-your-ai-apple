@@ -1,0 +1,58 @@
+{
+  "format": "apple-journey-source-manifest/v1",
+  "repository": "Pick-Your-AI/pick-your-ai-research",
+  "commit": "7acbefbf4e4e700231e88be272bc89e3a73dde15",
+  "verification_date_utc": "2026-10-18",
+  "verification_method": "SHA-256 of exact committed file bytes retrieved through the GitHub Contents API at the pinned commit and base64-decoded. No newline conversion.",
+  "scope": "Immutable repository files referenced by source register S1-S7. This does not validate external citations, historical live issue status, customer claims, rights, or participant behavior.",
+  "sources": [
+    {
+      "path": "contracts/v1/ADOPTION.md",
+      "url": "https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/contracts/v1/ADOPTION.md",
+      "sha256": "15d7a9a7eaea1ff1f6cfdaded564db1fa9503c1db9da2ae7ee5035a5be881d4f",
+      "size_bytes": 3087
+    },
+    {
+      "path": "contracts/v1/schemas/build.schema.json",
+      "url": "https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/contracts/v1/schemas/build.schema.json",
+      "sha256": "1beacb0b01fcdea0b8b47357cdf2e99d80a10b8a4218aaac9e3b6af55391b42a",
+      "size_bytes": 5121
+    },
+    {
+      "path": "contracts/v1/schemas/selection.schema.json",
+      "url": "https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/contracts/v1/schemas/selection.schema.json",
+      "sha256": "f8f189c6555fec41e616c32f081d06fab9f966b0fa4891ddca55580f577d51a8",
+      "size_bytes": 27630
+    },
+    {
+      "path": "research/market/customer-validation.md",
+      "url": "https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/research/market/customer-validation.md",
+      "sha256": "6994b0a945dee6e8c86f6990b5fb8ca5d6774787ed4abf5c7b1604e2390a1269",
+      "size_bytes": 21353
+    },
+    {
+      "path": "research/market/customers.md",
+      "url": "https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/research/market/customers.md",
+      "sha256": "f07065693ced2d4d6a0468679c5158843b74c79afa673f46135ba12cf7ffb78f",
+      "size_bytes": 24688
+    },
+    {
+      "path": "research/market/mvp-analysis.md",
+      "url": "https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/research/market/mvp-analysis.md",
+      "sha256": "14776e47c596ffd02aa7213629a62076d6570888d8f1dfafe7dcb7d2480c6244",
+      "size_bytes": 18468
+    },
+    {
+      "path": "research/market/pcpartpicker.md",
+      "url": "https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/research/market/pcpartpicker.md",
+      "sha256": "48a4f22464c988d94a16dd6ce6f9c1477eef08163edddd4b8f5f0679bdd4a515",
+      "size_bytes": 10423
+    },
+    {
+      "path": "research/market/substitute-validation.md",
+      "url": "https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/research/market/substitute-validation.md",
+      "sha256": "fc302884f69ab6b6b5f831edc60c819fbcc7dcdb6bf187d6c2610d7716c7dc88",
+      "size_bytes": 6200
+    }
+  ]
+}
