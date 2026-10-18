@@ -197,6 +197,34 @@ PROFILES["graph-resource-quality-catalog-editor-transfer"] = (71, {
     ),
 })
 
+# Accepted placement conformance adds four methods to the complete Graph/editor
+# receiver. Preserve the 71-case profile and every earlier source receipt.
+PROFILES["placement-graph-resource-quality-catalog-editor-transfer"] = (75, {
+    **PROFILES["graph-resource-quality-catalog-editor-transfer"][1],
+    "PlannerTransferTests.PlacementRelationshipTests": (
+        "testSharedPlacementVectorsPreserveTransportAndRejectUnsupportedFields",
+        "testMixedAccessPathsRolesAndDirectedLinksAreNotCollapsed",
+        "testMemoryFactsCountsAndContextQuantitiesRemainSeparateAndAbsent",
+        "testRejectedPlacementAndVersionInputsPreserveThePriorSnapshotAndRecovery",
+    ),
+})
+
+# Accepted synthetic-fixture admission contributes eight actual Apple-lane
+# methods. A skipped hash-dependent method cannot qualify this receiving source.
+PROFILES["fixture-placement-graph-resource-quality-catalog-editor-transfer"] = (83, {
+    **PROFILES["placement-graph-resource-quality-catalog-editor-transfer"][1],
+    "PlannerTransferTests.SyntheticFixtureAdmissionTests": (
+        "testCanonicalFixtureBytesMatchFrozenInventory",
+        "testCanonicalArtifactsKeepShapePinsAndSyntheticLabels",
+        "testMalformedFullFixturesFailTheirExistingBoundariesAndOriginalsRemainValid",
+        "testProductionRejectsFullCanonicalPairBeforeAnyDownload",
+        "testProductionReadCannotPromotePersistedPreviewAndPreviewStillReopens",
+        "testChangedPriceBytesDoNotReplacePreviewAndExactRetryRecovers",
+        "testCancellationDuringFullPairDownloadPreservesPreviewAndRetryRecovers",
+        "testSyntheticResponseCannotEnterLiveEnvironmentOrCreatePreviewEndpoint",
+    ),
+})
+
 # The package privacy declaration requires an actual production-bundle read.
 # Retain the earlier 110-case profile for its own source and execution receipts.
 PROFILES["comparison-catalog-source-privacy-ui"] = (111, {

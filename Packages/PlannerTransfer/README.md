@@ -16,6 +16,16 @@ This portable Swift 6 package implements part of Apple [#32](https://github.com/
 
 The package deliberately uses immutable schema-validated `JSONValue` with a typed `CatalogKind` discriminator instead of claiming generated per-field Codable DTO coverage for every catalog kind. Catalog decoding reuses the existing parser and validator without introducing a second schema engine or changing PlannerCore dependencies. `CatalogItem.encoded()` retains all supported fields for local serialization; it does not sanitize content or grant redistribution rights. `BuildSnapshot.encoded()` is an internal/private persistence serialization, **not** a sanitized sharing API; use `BuildTransfer.export` for Files/share sheets.
 
+## Placement and relationship conformance (#35)
+
+The [placement/relationship mapping and unsupported-tuple vectors](PLACEMENT_RELATIONSHIPS.md)
+record this client's frozen-v1 preservation boundary. The 98 shared Swift/reference
+cases retain roles, directed links, hybrid labels and separate memory/context facts,
+while rejecting undocumented fields and preserving unresolved binding, allocation
+and route-budget semantics. The record pins exact inputs, typed negative/recovery
+cases and the receiving disposition; structural acceptance does not establish
+runtime compatibility or pooled memory.
+
 ## Privacy and input limits
 
 `BuildSnapshot.encoded()` reparses its exact normalized output and verifies the
@@ -218,13 +228,119 @@ canonical schema acceptance. `CatalogSnapshotTests` replays the same corpus and
 adds aggregate byte/node/depth, duplicate/escaped-key, identity-preservation and
 serialization-expansion regressions.
 
-Observed local evidence for this envelope slice: all seven source hashes, the
+Original preparation evidence for this envelope slice: all seven source hashes, the
 existing 129 build/selection cases, 1,635 item cases and 77 envelope cases passed
-the Python reference verifier. Swift/Xcode are absent in this workspace; the six
-new Swift tests require the hosted transfer workflow before integration. The
-accepted #32 receiving conformance record above governs that completed issue
-and its model strategy; this supplemental envelope boundary retains its own
-source and hosted integration gates.
+the Python reference verifier. Swift/Xcode were absent in that implementation
+workspace. The later actual native executions below supersede that tooling gap;
+the envelope remains a separate top-level artifact boundary rather than an added
+criterion for the accepted all-kind report in #32.
+
+### Receiving evidence after catalog delivery (2026-10-18)
+
+The tooling observations above describe the original implementation slices.
+The catalog prerequisite is now delivered on signed main through [#227](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/227),
+commit `0ece6114ae2d639992346e8c1bb3ae239dbb1999`. Its actual receiving
+[transfer job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39112613078/job/117631807159)
+passed 32 Swift tests, six source hashes, 129 build/selection cases, 1,635 item
+cases and unsigned iOS Simulator SDK compilation.
+
+The original envelope candidate also completed actual Xcode 16.4 / Swift 6.1.2
+[native validation](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/182#issuecomment-6246002448):
+36 Swift tests, all seven hashes and the 129 + 1,635 + 77 reference cases passed,
+followed by unsigned iOS Simulator SDK compilation. That source-stage result
+predates the two later serialization regressions retained from accepted main.
+
+The #182 receiving candidate `412d6d01083cc5f8e8627635da7fd11cad92d9cd` preserved
+every executable, schema, fixture, test and tool input from the separately executed
+Swift 6.1.2 Linux composition:
+38 XCTest cases passed with zero failures or skips in 5.068 seconds after a
+6.34-second build. Its retained 12,928-byte log has SHA-256
+`9e0c2166eb6788e18ecc1586f197054cd28034bc53089080fe67d78f13b51a94`.
+That source identity check did not rerun those inputs or turn the portable result
+into Apple execution.
+
+The later actual [#182 transfer job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39116407061/job/117643015395)
+checked out `e625080eb80d49693d445293ed6adb581b289230`, tree
+`a73fb503726e7d3a0275c4dce3a4cfabd137a683`, with ordered parents accepted catalog
+main `0ece6114ae2d639992346e8c1bb3ae239dbb1999` and that receiving candidate.
+Xcode 16.4 / 16F6 and Apple Swift 6.1.2 passed all seven source hashes,
+129 build/selection + 1,635 catalog-item + 77 envelope cases, all 38 XCTest cases
+with zero failures/skips, and unsigned iOS Simulator SDK compilation. All eleven
+source checks completed successfully. Normal reviewed squash produced verified
+signed `94f436653f46421a8bb983224df055b3fd05241a` with that exact tree and sole
+accepted parent `0ece6114ae2d639992346e8c1bb3ae239dbb1999`.
+
+These are source/signing-stage results. Later main compositions retain their own
+actual receiving checks; this record does not relabel those 38 cases as execution
+of additional comparison, UI or contract changes. Catalog activation, source-use
+rights, physical-device behavior and production release remain separate outcomes.
+
+The subsequently accepted [#252 conformance record](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/252),
+delivered on signed main `971e8ea6500c52a5be0493c7686ffc7dc7792cb4`, governs #32's
+three literal all-kind boundary criteria and accepted immutable model strategy.
+Earlier preparation statements grouping generated per-field DTOs, other top-level
+artifacts and migration under #32 are superseded by that criterion-specific
+disposition. The envelope's separate delivery does not add a new #32 closure gate
+or claim completion of other work packages.
+
+### Envelope and accepted quality composition (2026-10-18)
+
+The later [#256 transfer job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124016445/job/117665292496)
+executed `4d753248943f73b03d6fffe31323503b7b8b3b31`, tree
+`be2d7d62090499f1b58efb8f48ca65dbcd2dada2`, with ordered parents accepted
+`f636afb24b8ecc1324a361aa2a7d2caa3a2481d7` and reviewed envelope composition
+`c2fbf1e7a19edbeca3ec84328de32f4798eeb6b2`. Xcode 16.4 / 16F6 and Swift 6.1.2
+passed all 42 XCTest cases, seven source hashes, 129 build/selection cases,
+1,635 item cases and 77 envelope cases, then built the unsigned simulator SDK
+target. This result includes the four accepted comparison regressions; it does
+not include the later quality source.
+
+In the historical #256 composition, QualityEvaluationRun had separately been delivered through [#249](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/249)
+on signed `549543abed6f75d7eef4401584b4922c1f7f59ca`. That composition
+retained both complete immutable boundaries, their exact schema/fixture bytes,
+both verifier loops and the union of nine canonical source hashes. Its combined
+reference corpora contained 129 + 1,635 + 202 + 77 cases, and the package declared
+51 XCTest methods. These counts describe the combined inputs; the earlier
+42-case run does not establish execution of the 51-case composition. Current
+receiving and signed-main checks retain their own artifact identities and results.
+
+### Resource and envelope composition (2026-10-18)
+
+The immutable ResourceEstimate parser was delivered through
+[#276](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/276) on verified signed
+main `51952c75f2280d57891491903e495fb822b83bfd`. This composition preserves that
+accepted parser alongside the complete reviewed catalog envelope from signed
+`5ff0c6c55695afac9b28d44e436715a60069c7e9`. Both validation entries and both complete
+reference replay blocks remain unchanged. The manifest contains their eleven
+nonconflicting canonical pins; none of the schemas, fixtures or Swift tests changes.
+
+Actual local verification of source tree
+`f50d61f6c6bccd93e98f51eb2c041e078905195c` used Python 3.12.14 with
+`jsonschema[format]==4.26.0`: all eleven hashes and **2,266** cases passed
+(129 build/selection, 1,635 item, 202 quality, 223 resource, 77 envelope).
+Swift 6.1.2 for `x86_64-unknown-linux-gnu` then executed **59 distinct XCTest
+methods**, with matching starts/passes and zero failures or skips: 16 comparison,
+13 build, six item, six envelope, one durable-transfer, nine quality and eight
+resource tests. Test execution took 13.56 seconds; the successful incremental
+build took 4.67 seconds. The 17,431-byte log has SHA-256
+`5072bb1c752293a6cd20d36f56dd55ffb3409fb5c8dbba6390206d569fdd4b9a`.
+The separate Swift Testing zero-test footer is not included in that count.
+
+The first setup attempt compiled the sources but failed before test execution
+because the extracted SQLite development package's library symlink had no runtime
+target. The successful attempt used the existing local SQLite runtime link with
+the same private headers and retained the package-config warnings; both logs are
+preserved separately. No repository source changed between these attempts.
+
+These are portable composition results. The earlier completed #285 Apple jobs
+retain their actual `4444994c` / `66182949` checkout, including 51 Transfer tests,
+228 submission-SDK package tests and 23 UI model tests with two simulator launch
+smokes. They do not establish execution of this later Resource/envelope union.
+Its expected submission-SDK inventory is 236 package methods until an actual
+receiving run proves otherwise. Current Apple receiving and signed-main gates
+remain; #214 continues to require actual envelope delivery. No catalog activation,
+current-tuple qualification, service authority or broader work-package acceptance
+is inferred from either set of results.
 
 ## Remaining acceptance
 

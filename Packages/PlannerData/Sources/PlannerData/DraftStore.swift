@@ -36,6 +36,14 @@ private final class Connection: @unchecked Sendable {
             if let db { sqlite3_close(db) }
             throw DraftStoreError.database(result)
         }
+        // Schema reads must allow ordinary hot-journal recovery, but closing a
+        // rejected future WAL database must not checkpoint its committed pages.
+        // Set this before any read; a failed configuration closes an unread handle.
+        let configuration = planner_sqlite_disable_checkpoint_on_close(db)
+        guard configuration == SQLITE_OK else {
+            sqlite3_close(db)
+            throw DraftStoreError.database(configuration)
+        }
         handle = db
         sqlite3_busy_timeout(handle, 2_000)
     }
@@ -72,6 +80,10 @@ public actor DraftStore {
     package init(url: URL, maximumPages: Int? = nil, fault: @escaping @Sendable (StorageFaultPoint) throws -> Void) throws {
         guard url.isFileURL else { throw DraftStoreError.invalidDraft }
         let db = try Connection(path: url.path)
+        // SQLite first restores any hot rollback journal, then supplies the
+        // committed version (including WAL pages). Do not reconfigure a future DB.
+        let existingVersion = try db.scalar("PRAGMA user_version")
+        guard (0...3).contains(existingVersion) else { throw DraftStoreError.unsupportedSchema(existingVersion) }
         // DELETE journal plus FULL sync: no untracked WAL sidecars to forget during backup.
         try db.exec("PRAGMA foreign_keys = ON; PRAGMA journal_mode = DELETE; PRAGMA synchronous = FULL;")
         try db.exec("BEGIN IMMEDIATE")

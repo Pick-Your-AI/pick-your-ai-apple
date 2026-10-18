@@ -309,6 +309,161 @@ class PrivacyInventoryTests(unittest.TestCase):
         self.assertEqual(json.loads(output.read_text())["manifestCount"], 2)
         self.assertEqual(list(output.parent.glob(".privacy-inventory-*")), [])
 
+    def test_real_cli_hidden_link_target_ancestry_cannot_escape_the_product(self):
+        outside = self.root / "outside"
+        outside.mkdir()
+        escape = self.app / "escape"
+        escape.symlink_to(outside, target_is_directory=True)
+        selected_alias = self.root / "Alias.app"
+        selected_alias.symlink_to(self.app, target_is_directory=True)
+        targets = {
+            "hidden-absolute": escape,
+            "hidden-relative": Path(self.app.name) / escape.name,
+            "hidden-nested": Path("hidden-relative"),
+            "hidden-dotdot-absolute": self.app / ".." / outside.name,
+            "hidden-dotdot-relative": Path(self.app.name) / ".." / outside.name,
+            "hidden-dotdot-nested": Path("hidden-dotdot-relative"),
+        }
+        for name, target in targets.items():
+            (self.root / name).symlink_to(target, target_is_directory=True)
+        inputs = {self.app / relative: (self.app / relative).read_bytes()
+                  for relative in ["Planner", "Info.plist", *inventory.EXPECTED]}
+        retained = outside / "retained.json"
+        sentinel = b"OWNED_SYNTHETIC_RECEIPT\n"
+        for selected in (self.app, selected_alias):
+            for name in targets:
+                for existing in (True, False):
+                    with self.subTest(selected=selected.name, target=name, existing=existing):
+                        if existing:
+                            retained.write_bytes(sentinel)
+                        else:
+                            retained.unlink(missing_ok=True)
+                        result = subprocess.run(
+                            [sys.executable, str(SCRIPT), "--app", str(selected),
+                             "--output", str(self.root / name / retained.name)],
+                            capture_output=True, text=True, timeout=10,
+                        )
+                        self.assertEqual(result.returncode, 2, result.stderr)
+                        self.assertEqual(result.stdout, "")
+                        self.assertIn("evidence must be outside the inspected product", result.stderr)
+                        self.assertNotIn("Traceback", result.stderr)
+                        self.assertEqual(retained.exists(), existing)
+                        if existing:
+                            self.assertEqual(retained.read_bytes(), sentinel)
+                        for path, before in inputs.items():
+                            self.assertEqual(path.read_bytes(), before)
+                        self.assertEqual(escape.readlink(), outside)
+                        self.assertEqual(selected_alias.readlink(), self.app)
+                        for link, target in targets.items():
+                            self.assertEqual((self.root / link).readlink(), target)
+
+    def test_real_cli_safe_link_targets_can_create_receipts_and_retry(self):
+        outside = self.root / "outside"
+        outside.mkdir()
+        retained = self.root / "unrelated.json"
+        retained.write_bytes(b"OWNED_UNRELATED_RECEIPT\n")
+        manifest = self.app / next(iter(inventory.EXPECTED))
+        original = manifest.read_bytes()
+        for route in ("absolute", "relative", "nested", "dotdot-absolute",
+                      "dotdot-relative", "dotdot-nested"):
+            with self.subTest(route=route):
+                destination = self.root / ("new-" + route) / "evidence"
+                self.assertFalse(destination.exists())
+                destination.parent.mkdir()
+                target = destination.parent if route == "absolute" else destination.parent.relative_to(self.root)
+                if route.startswith("dotdot"):
+                    target = outside / ".." / destination.parent.relative_to(self.root)
+                    if route != "dotdot-absolute":
+                        target = target.relative_to(self.root)
+                alias = self.root / ("safe-" + route)
+                targets = {alias: target}
+                if route.endswith("nested"):
+                    inner = self.root / ("inner-" + route)
+                    inner.symlink_to(target, target_is_directory=True)
+                    targets[inner] = target
+                    target = Path(inner.name)
+                    targets[alias] = target
+                alias.symlink_to(target, target_is_directory=True)
+                output = alias / destination.name / "privacy.json"
+                command = [sys.executable, str(SCRIPT), "--app", str(self.app),
+                           "--output", str(output)]
+                good = subprocess.run(command, capture_output=True, text=True, timeout=10)
+                self.assertEqual((good.returncode, good.stderr), (0, ""))
+                self.assertEqual(json.loads(output.read_text()), json.loads(good.stdout))
+                self.assertEqual(json.loads(good.stdout)["manifestCount"], 2)
+                self.assertEqual(output.resolve(), destination / output.name)
+                manifest.unlink()
+                failed = subprocess.run(command, capture_output=True, text=True, timeout=10)
+                self.assertEqual(failed.returncode, 2, failed.stderr)
+                self.assertEqual(failed.stdout, "")
+                self.assertIn("missing", failed.stderr)
+                self.assertFalse(output.exists())
+                manifest.write_bytes(original)
+                recovered = subprocess.run(command, capture_output=True, text=True, timeout=10)
+                self.assertEqual((recovered.returncode, recovered.stderr), (0, ""))
+                self.assertEqual(json.loads(output.read_text()), json.loads(good.stdout))
+                self.assertEqual(list(destination.glob(".privacy-inventory-*")), [])
+                self.assertEqual(retained.read_bytes(), b"OWNED_UNRELATED_RECEIPT\n")
+                for link, expected in targets.items():
+                    self.assertEqual(link.readlink(), expected)
+
+    def test_real_cli_invalid_output_traversal_preserves_inputs_and_existing_receipts(self):
+        outside = self.root / "outside"
+        outside.mkdir()
+        retained = outside / "retained.json"
+        ordinary = outside / "ordinary-file"
+        ordinary.write_bytes(b"OWNED_ORDINARY_INPUT\n")
+        missing = outside / "missing-directory"
+        targets = {"loop": Path("loop"), "cycle-first": Path("cycle-second"),
+                   "cycle-second": outside / "cycle-first"}
+        parents = [outside / "loop" / "..", outside / "cycle-first" / ".."]
+        for prefix in (ordinary, missing):
+            parents.append(prefix / "..")
+            for route in ("absolute", "relative", "nested"):
+                name = prefix.name + "-" + route
+                target = prefix / ".."
+                if route == "relative":
+                    target = Path(prefix.name) / ".."
+                elif route == "nested":
+                    target = Path(prefix.name + "-relative")
+                targets[name] = target
+                parents.append(outside / name)
+        for name, target in targets.items():
+            (outside / name).symlink_to(target, target_is_directory=True)
+        inputs = {self.app / relative: (self.app / relative).read_bytes()
+                  for relative in ["Planner", "Info.plist", *inventory.EXPECTED]}
+        inputs[ordinary] = ordinary.read_bytes()
+        sentinel = b"OWNED_SYNTHETIC_RECEIPT\n"
+        for parent in parents:
+            for existing in (True, False):
+                with self.subTest(parent=parent, existing=existing):
+                    # Keep every baseline regression independent if an older
+                    # helper created this originally missing temporary prefix.
+                    if missing.exists():
+                        missing.rmdir()
+                    self.assertFalse(missing.exists())
+                    if existing:
+                        retained.write_bytes(sentinel)
+                    else:
+                        retained.unlink(missing_ok=True)
+                    result = subprocess.run(
+                        [sys.executable, str(SCRIPT), "--app", str(self.app),
+                         "--output", str(parent / retained.name)],
+                        capture_output=True, text=True, timeout=10,
+                    )
+                    self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                    self.assertEqual(result.stdout, "")
+                    self.assertNotIn("Traceback", result.stderr)
+                    self.assertTrue(result.stderr.startswith("Privacy inventory rejected: "))
+                    self.assertEqual(retained.exists(), existing)
+                    if existing:
+                        self.assertEqual(retained.read_bytes(), sentinel)
+                    self.assertFalse(missing.exists())
+                    for path, before in inputs.items():
+                        self.assertEqual(path.read_bytes(), before)
+                    for name, target in targets.items():
+                        self.assertEqual((outside / name).readlink(), target)
+
 
 if __name__ == "__main__":
     unittest.main()

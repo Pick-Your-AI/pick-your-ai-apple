@@ -98,7 +98,7 @@ jobs:
             grep -E 'Test Case .*DraftStoreTests.*testRestoreRejectsFutureHistoryWithoutChangingReadableDrafts.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Test Case .*DraftStoreTests.*testPreparedDuplicateRejectsSourceChangedAfterPreparation.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Test Case .*DraftStoreTests.*testPreparedDuplicateRejectsSourceDeletedAfterPreparation.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
-            grep -E 'Executed 29 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Executed 34 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
           done < "$GITHUB_WORKSPACE/storage-simulator-selection.tsv"
       - name: Retain storage evidence
         if: always()

@@ -108,6 +108,31 @@ def inspect_app(app, source_root=ROOT):
     }
 
 
+def output_ancestors(path):
+    """Retain ancestry hidden inside directory-link targets, including before '..'."""
+    pending = list(path.absolute().parents)
+    seen = set()
+    while pending:
+        parent = pending.pop()
+        if parent in seen:
+            continue
+        seen.add(parent)
+        try:
+            info = parent.stat()
+        except FileNotFoundError as error:
+            if parent.name == "..":
+                raise InventoryError("evidence '..' traversal requires an existing directory") from error
+        else:
+            if not stat.S_ISDIR(info.st_mode):
+                raise InventoryError("evidence parent components must be directories")
+        yield parent.resolve()
+        if parent.is_symlink():
+            target = parent.readlink()
+            if not target.is_absolute():
+                target = parent.parent.resolve() / target
+            pending.extend((target, *target.parents))
+
+
 def prepare_output(path, app):
     # A failed retry must not leave a previous success in the uploaded evidence.
     lexical_app = Path(os.path.abspath(app))
@@ -120,10 +145,10 @@ def prepare_output(path, app):
         info = None
     if info is not None and not stat.S_ISREG(info.st_mode):
         raise InventoryError("evidence destination must be a regular file")
-    output_locations = {lexical_output, path.resolve()}
-    # An ancestor alias can enter the product before a later link escapes it.
-    # Check each supplied parent before allowing any existing receipt removal.
-    output_locations.update(parent.resolve() for parent in path.absolute().parents)
+    try:
+        output_locations = {lexical_output, path.resolve(), *output_ancestors(path)}
+    except RuntimeError as error:
+        raise InventoryError("evidence paths must resolve without directory-link loops") from error
     app_locations = {lexical_app}
     app_loop = False
     try:

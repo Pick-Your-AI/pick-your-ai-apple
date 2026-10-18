@@ -204,6 +204,96 @@ inventories remain fresh receiving gates. The original `bbc5e829` privacy failur
 and each earlier passing package result remain separately attributed. This
 composition changes no model, journey assertion, manifest pin or store boundary.
 
+## Receiving accepted placement, report, recovery and fixture checks
+
+Accepted main `791c355812bfbbf8003941b59734118011d4734a` delivers the
+placement/relationship conformance source from #286 after canonical Graph/editor
+head `f4a35dadbe733e20d35e78f60c622c8c649ae3e2` was published. The latter's
+signed prepared checkout `bee8391622a768f6451c58a68d57e52d88cec6c9` and its
+349-case inventory retain their exact source attribution. Later accepted main
+`1ff2907ad851737fd11f344734a84c487cd59c54` adds the typed report adapter
+from #312, and `c23050050c9ce46f35aee73e2f80b7b638cba159` adds the WAL
+admission and hot-journal recovery correction from #306. Accepted
+`cd098e8e19f5e4a1d90112379bc8ca089d81ec93` adds the eight synthetic-fixture
+admission methods from #275. This receiving
+preparation preserves these accepted sources and adds four placement methods,
+seven report-admission methods, five storage-recovery methods and eight fixture
+methods to the complete Graph/editor suites. Its declared inventory is **100 Core,
+34 Data, 83 Transfer, 45 Catalog and 111 UI: 373 distinct source identities**.
+
+The additive `placement-graph-resource-quality-catalog-editor-transfer` profile
+requires exactly 75 passing identities, including all 35 previously required
+identities and all four class-qualified placement methods, for 39 required
+identities across seven classes. Every earlier profile remains unchanged; padded
+71-case evidence or another class cannot establish the four added cases.
+
+The selected `fixture-placement-graph-resource-quality-catalog-editor-transfer`
+profile extends that complete 75-case profile to exactly 83 passes, with all 47
+required identities across eight classes. All eight accepted fixture methods are
+required by their actual class identity. The complete fixture, hash pins and
+test-only Core/Catalog dependencies remain exact accepted main. A skipped
+CryptoKit-dependent method, a substituted class or a padded older profile cannot
+satisfy the current receiving gate. This adds no production data or permission.
+
+The reference verifier retains all thirteen frozen input hashes and the complete
+build, item, snapshot, quality, resource and Graph replays. It appends the exact
+accepted 98-case placement replay without changing any production decoder,
+fixture, graph policy or assertion. Structural placement preservation does not
+establish allocation, binding or executable compatibility semantics.
+
+The storage workflow requires all 34 methods on each selected iPhone and iPad.
+The original restoration and interrupted-migration witnesses, both prepared-copy
+race witnesses, the actual process-termination replay and its seven Python guard
+methods remain required. The storage source combines the accepted no-checkpoint
+admission with the complete editor preparation operations; the typed report
+adapter preserves its exact accepted source and all seven regression methods.
+
+This is a separate source preparation, not a new native result or an update to
+the running canonical head. Before receiving delivery, the actual composition
+requires all applicable package checks, both complete Notes/Catalog journeys on
+each pinned iPhone and iPad, both unsigned products and both built-product privacy
+inventories. Earlier native and portable receipts retain their original source
+and scope.
+
+## Receiving correction for ancestry hidden inside link targets
+
+The original `f4a35dadbe733e20d35e78f60c622c8c649ae3e2` SDK job successfully
+executed its thirteen privacy tests and inspected both unsigned built products.
+Those receipts do not cover a later reproduced output-path boundary: a supplied
+parent link can target `Planner.app/escape` or `Planner.app/../outside` while
+every supplied parent's resolved endpoint remains outside the selected app.
+The actual original CLI returned failure after deleting an existing, freshly
+created synthetic outside receipt in all three initial absolute, relative and
+internal-`..` reproductions. No actual product or user file was used.
+
+The receiving helper now retains each directory-link target and its ancestry,
+including prefixes before an internal `..`, before allowing receipt removal.
+Existing parent components must be directories, and `..` cannot discard a
+missing directory prefix. Unresolvable output paths fail through the ordinary
+CLI rejection boundary. Final-file link rejection, exact source pins, app
+scanning, stale-success invalidation for valid outside outputs, atomic receipt
+publication and the earlier app-loop retry behavior are unchanged.
+
+Three additive actual-CLI methods cover absolute, relative, nested and internal
+`..` link targets, canonical and aliased app selections, existing and absent
+receipts, invalid prefixes and link loops. Safe outside aliases still create
+missing tail directories, publish, remove stale success after a failed app
+read, and recover on retry. Every test uses owned temporary synthetic inputs.
+All thirteen earlier method bodies remain exact. Against the unchanged helper,
+the new negative methods produced 24 hidden-target and two missing-prefix
+failures; the safe-alias method passed. With this correction, all sixteen
+privacy methods pass in normal and optimized Python 3.12.14, and the complete
+App script suite passes all 59 methods with no failures or skips.
+
+This three-file continuation is applied to the independently reviewed
+`faede0f32449aedcff3383c8bc1ae3515e5cf712` receiving tree. Its 373 Swift source
+identities, every production Swift file, the exact privacy-manifest bytes,
+all frozen inputs and all native workflows/profiles remain unchanged. These
+portable results are additional source evidence; the new privacy helper still
+requires the actual receiving SDK and UI built-product gates before main
+delivery. The running f4 source and its original native receipts retain their
+own identity.
+
 ## Remaining integration and acceptance
 
 This composition retains the independently reviewed and delivered PlannerCatalog
