@@ -59,14 +59,37 @@ target ancestry is checked before receipt invalidation, including relative and
 nested targets and prefixes before an internal `..`. A path through a protected
 bundle is rejected even if a later link or `..` escapes it. Existing parent
 components must be directories; a `..` traversal cannot discard a missing
-directory prefix. These checks and unresolvable link loops fail before any
-earlier receipt is removed. Missing tail directories and outside directory aliases
+directory prefix. These checks and unresolvable output link loops fail before any
+earlier receipt is removed. A recognized unusable selected-input path (a link
+loop, non-directory prefix or overlong name) is deferred until all other input
+boundaries and the output itself have been
+checked. A safely separate ordinary earlier receipt is then invalidated, and the
+input failure is reported before pin loading, probes, environment writes or
+publication. All supplied and available resolved input boundaries remain
+protected. Supplied and resolved input prefixes are inspected without following
+a final symlink before its target is expanded. Absolute, relative and nested
+targets retain every prefix, including those before an internal `..`. Observed
+non-directory input prefixes retain device/inode identity, so they cannot be
+removed as the receipt through an alias or different case spelling. Repeated
+expansion is bounded by physical symlink and containing-directory identity.
+Unrelated access, unexpected I/O or resolution failures remain
+conservative and do not clear the output. The narrow classifier follows
+[Python's named path errors](https://docs.python.org/3.12/library/errno.html)
+and retains the [older link-loop RuntimeError behavior](https://docs.python.org/3.13/library/pathlib.html#pathlib.Path.resolve).
+Missing tail directories and outside directory aliases
 remain usable and retain the same failure/retry behavior. Existing path components
 also match against protected device/inode identities: [Apple volumes can be case insensitive](https://developer.apple.com/documentation/technologyoverviews/files-and-directories),
 and [filesystem identity](https://docs.python.org/3.12/library/os.path.html#os.path.samestat)
 distinguishes a different spelling of an input from a separate directory. The
-filesystem-dependent regression exercises the available case behavior; Linux
-execution does not claim a macOS case-alias result. Use an ordinary file
+filesystem-dependent regression exercises the available case behavior and emits
+which branch actually passed: physical-alias rejection or distinct-directory
+acceptance. That observation is retained in `pin-tests.txt`; a macOS runner label
+alone does not identify the branch. Linux execution does not claim a macOS
+case-alias result. The protected-input regressions cover actual pin/app CLI
+failure and repair/retry for loops and invalid components, a cyclic CI
+environment path, retained unsafe outputs and ordinary input prefixes,
+hidden target prefixes, a cyclic relative target, and controlled
+loop/path/access/I/O-error variants. Use an ordinary file
 beneath `.build/submission-evidence` and a separate path for each operation, as the
 workflow does.
 

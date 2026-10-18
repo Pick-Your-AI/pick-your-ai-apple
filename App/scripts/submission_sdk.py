@@ -2,6 +2,7 @@
 """Verify the separate submission SDK pin and unsigned build-product metadata."""
 
 import argparse
+import errno
 import json
 from pathlib import Path
 import plistlib
@@ -116,6 +117,65 @@ def receipt_ancestors(path):
             pending.extend((target, *target.parents))
 
 
+def invalid_input_path_reason(error):
+    """Recognize unusable selected paths, not access or unexpected I/O errors."""
+    if isinstance(error, OSError):
+        return {
+            errno.ELOOP: "contains a link loop",
+            errno.ENOTDIR: "contains a non-directory prefix",
+            errno.ENAMETOOLONG: "contains an overlong name",
+        }.get(error.errno)
+    if isinstance(error, RuntimeError):
+        cause = error.__cause__ or error.__context__
+        if ((isinstance(cause, OSError) and cause.errno == errno.ELOOP)
+                or str(error).startswith("Symlink loop from ")):
+            return "contains a link loop"
+    return None
+
+
+def input_prefix_identities(paths):
+    """Retain ordinary input prefixes, including those hidden by link targets."""
+    pending = [prefix for path in paths for prefix in (path, *path.parents)]
+    seen = set()
+    expanded_links = set()
+    identities = set()
+    failure = None
+    while pending:
+        prefix = pending.pop()
+        if prefix in seen:
+            continue
+        seen.add(prefix)
+        try:
+            metadata = prefix.lstat()
+        except FileNotFoundError:
+            continue
+        except OSError as error:
+            reason = invalid_input_path_reason(error)
+            if reason is None:
+                raise
+            failure = failure or reason
+            continue
+        if stat.S_ISLNK(metadata.st_mode):
+            # lstat establishes a traversable parent without following this
+            # final link. Relative targets belong to that actual directory.
+            parent = prefix.parent.resolve()
+            parent_metadata = parent.stat()
+            identity = (metadata.st_dev, metadata.st_ino,
+                        parent_metadata.st_dev, parent_metadata.st_ino)
+            if identity in expanded_links:
+                continue
+            expanded_links.add(identity)
+            target = prefix.readlink()
+            if not target.is_absolute():
+                target = parent / target
+            # Do not resolve away a non-directory prefix before an internal
+            # '..'. Physical link+parent identity bounds cyclic expansion.
+            pending.extend((target, *target.parents))
+        elif not stat.S_ISDIR(metadata.st_mode):
+            identities.add((metadata.st_dev, metadata.st_ino))
+    return identities, failure
+
+
 def prepare_receipt(path, protected_paths):
     """Invalidate earlier success without removing input files or following links."""
     if path is None:
@@ -124,24 +184,52 @@ def prepare_receipt(path, protected_paths):
         # Resolve directory aliases, but never follow the final output component.
         output = path.parent.resolve() / path.name
         traversed = [output, *receipt_ancestors(path)]
-        boundaries = [protected.resolve() for protected in protected_paths]
     except RuntimeError as error:
         # Python versions that report link loops as RuntimeError still use the
         # ordinary CLI failure boundary, before any earlier receipt is removed.
         raise toolchain.SetupError("Receipt paths must resolve without directory-link loops.") from error
+    boundaries = []
+    identities = set()
+    input_failure = None
+    for protected in protected_paths:
+        # Even an input that cannot resolve retains its supplied-path boundary.
+        locations = [protected.absolute()]
+        boundaries.extend(locations)
+        try:
+            boundary = protected.resolve()
+            boundaries.append(boundary)
+            locations.append(boundary)
+            try:
+                metadata = boundary.stat()
+            except FileNotFoundError:
+                metadata = None
+        except (RuntimeError, OSError) as error:
+            # Path.resolve reports ELOOP as RuntimeError on older Python;
+            # newer versions can leave it for the following stat to detect.
+            reason = invalid_input_path_reason(error)
+            if reason is None:
+                if isinstance(error, RuntimeError):
+                    raise toolchain.SetupError("Cannot establish protected input boundaries before changing the receipt.") from error
+                raise
+            input_failure = input_failure or reason
+        else:
+            if metadata is not None:
+                identities.add((metadata.st_dev, metadata.st_ino))
+        # An invalid child can name a real file through a hidden link target.
+        # Inspect both supplied and available resolved paths even when resolve
+        # normalized away a non-directory prefix before an internal '..'.
+        try:
+            prefix_identities, prefix_failure = input_prefix_identities(locations)
+        except RuntimeError as error:
+            raise toolchain.SetupError("Cannot establish protected input prefixes before changing the receipt.") from error
+        identities.update(prefix_identities)
+        input_failure = input_failure or prefix_failure
     for boundary in boundaries:
         if any(candidate.is_relative_to(boundary) for candidate in traversed):
             raise toolchain.SetupError("Receipt output must be separate from source, pin, product and CI environment inputs.")
     # Path spelling is not filesystem identity on case-insensitive volumes.
     # Keep lexical checks for missing paths and inspect the final component
     # without following it, just as the receipt validity check below does.
-    identities = set()
-    for boundary in boundaries:
-        try:
-            metadata = boundary.stat()
-        except FileNotFoundError:
-            continue
-        identities.add((metadata.st_dev, metadata.st_ino))
     for candidate in traversed:
         try:
             metadata = candidate.lstat()
@@ -152,10 +240,13 @@ def prepare_receipt(path, protected_paths):
     try:
         existing = output.lstat()
     except FileNotFoundError:
-        return output
-    if not stat.S_ISREG(existing.st_mode) or existing.st_nlink != 1:
-        raise toolchain.SetupError("Receipt output must be an unshared regular file (no links or directories).")
-    output.unlink()
+        existing = None
+    if existing is not None:
+        if not stat.S_ISREG(existing.st_mode) or existing.st_nlink != 1:
+            raise toolchain.SetupError("Receipt output must be an unshared regular file (no links or directories).")
+        output.unlink()
+    if input_failure is not None:
+        raise toolchain.SetupError(f"A selected source, pin, product or CI environment input {input_failure}.")
     return output
 
 

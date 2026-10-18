@@ -1,5 +1,6 @@
 import copy
 from contextlib import redirect_stderr, redirect_stdout
+import errno
 import importlib.util
 import io
 import json
@@ -237,6 +238,20 @@ class SubmissionSDKTests(unittest.TestCase):
                 self.assertEqual(recovered.returncode, 0, recovered.stderr)
                 self.assertEqual(json.loads(receipt.read_text()), json.loads(recovered.stdout))
                 self.assertEqual(list(receipt.parent.glob(".submission-sdk-*.tmp")), [])
+
+    def test_actual_cli_environment_loop_clears_only_the_ordinary_receipt(self):
+        environment = self.root / "github-env"
+        environment.symlink_to(environment.name)
+        receipt = self.root / "receipt.json"
+        receipt.write_bytes(b"synthetic earlier verification receipt\n")
+        failed = self.run_cli("verify", "--github-env", environment, "--output", receipt)
+        self.assertEqual(failed.returncode, 2, failed.stderr)
+        self.assertEqual(failed.stdout, "")
+        self.assertIn("input contains a link loop", failed.stderr)
+        self.assertNotIn("Traceback", failed.stderr)
+        self.assertFalse(receipt.exists())
+        self.assertTrue(environment.is_symlink())
+        self.assertEqual(environment.readlink(), Path(environment.name))
 
     def test_actual_cli_invalid_pin_removes_the_previous_receipt_before_loading_inputs(self):
         app = self.write_product(self.product_info("iphoneos"))
@@ -577,6 +592,7 @@ class SubmissionSDKTests(unittest.TestCase):
                             submission.prepare_receipt(parent / retained.name, (app,))
                         invalidate.assert_not_called()
                     self.assertEqual(retained.read_bytes(), b"synthetic retained bytes\n")
+            print("SDK receipt case-alias regression passed: physical alias; both protected paths rejected", flush=True)
         else:
             # A case-sensitive volume must not reject a genuinely separate path.
             alternate.mkdir()
@@ -585,6 +601,313 @@ class SubmissionSDKTests(unittest.TestCase):
             result = self.run_cli("inspect", "--sdk", "iphoneos", "--app", app, "--output", receipt)
             self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
             self.assertEqual(json.loads(receipt.read_text()), json.loads(result.stdout))
+            print("SDK receipt case-alias regression passed: distinct directory; ordinary receipt accepted", flush=True)
+
+    def test_actual_cli_protected_input_loops_clear_success_and_repair_retry(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        receipt = self.root / "receipt.json"
+        arguments = ("inspect", "--sdk", "iphoneos", "--app", app, "--output", receipt)
+        for protected in (self.xcode_file, self.sdk_file, app):
+            with self.subTest(protected=protected.name):
+                good = self.run_cli(*arguments)
+                self.assertEqual(good.returncode, 0, good.stderr)
+                self.assertEqual(json.loads(receipt.read_text()), json.loads(good.stdout))
+                retained = protected.with_name(protected.name + ".retained")
+                protected.rename(retained)
+                protected.symlink_to(protected.name, target_is_directory=retained.is_dir())
+                try:
+                    failed = self.run_cli(*arguments)
+                    self.assertEqual(failed.returncode, 2, failed.stderr)
+                    self.assertEqual(failed.stdout, "")
+                    self.assertIn("input contains a link loop", failed.stderr)
+                    self.assertNotIn("Traceback", failed.stderr)
+                    self.assertFalse(receipt.exists())
+                    self.assertTrue(protected.is_symlink())
+                    self.assertEqual(protected.readlink(), Path(protected.name))
+                    self.assertTrue(retained.exists())
+                    # The same failure with no old receipt creates no output.
+                    absent = self.run_cli(*arguments)
+                    self.assertEqual(absent.returncode, 2, absent.stderr)
+                    self.assertEqual(absent.stdout, "")
+                    self.assertFalse(receipt.exists())
+                finally:
+                    protected.unlink()
+                    retained.rename(protected)
+                recovered = self.run_cli(*arguments)
+                self.assertEqual(recovered.returncode, 0, recovered.stderr)
+                self.assertEqual(json.loads(receipt.read_text()), json.loads(recovered.stdout))
+                self.assertEqual(list(receipt.parent.glob(".submission-sdk-*.tmp")), [])
+
+    def test_protected_input_loops_still_check_later_boundaries_and_unsafe_receipts(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        cycle = self.root / "cycle"
+        cycle.symlink_to(cycle.name)
+        retained = self.root / "retained.json"
+        retained.write_bytes(b"synthetic ordinary receipt\n")
+        linked = self.root / "linked.json"
+        linked.symlink_to(retained.name)
+        shared = self.root / "shared.json"
+        shared.hardlink_to(retained)
+        directory = self.root / "directory"
+        directory.mkdir()
+        for output in (self.sdk_file, app / "Info.plist", linked, shared, directory):
+            with self.subTest(output=output.name):
+                before = {path: path.read_bytes() for path in (self.sdk_file, app / "Info.plist", retained)}
+                with patch.object(Path, "unlink") as invalidate:
+                    with self.assertRaises(submission.toolchain.SetupError):
+                        submission.prepare_receipt(output, (cycle, self.sdk_file, app))
+                    invalidate.assert_not_called()
+                for path, contents in before.items():
+                    self.assertEqual(path.read_bytes(), contents)
+                self.assertTrue(linked.is_symlink())
+                self.assertEqual(retained.stat().st_nlink, 2)
+                self.assertTrue(directory.is_dir())
+        with patch.object(Path, "unlink") as invalidate:
+            with self.assertRaises((submission.toolchain.SetupError, OSError)):
+                submission.prepare_receipt(cycle / "receipt.json", (cycle, app))
+            invalidate.assert_not_called()
+
+    def test_protected_input_error_variants_defer_only_recognized_path_failures(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        receipt = self.root / "receipt.json"
+        original_resolve = Path.resolve
+        for error, reason in ((OSError(errno.ELOOP, "SYNTHETIC_LOOP_DETAIL"), "link loop"),
+                              (RuntimeError("Symlink loop from synthetic input"), "link loop"),
+                              (NotADirectoryError(errno.ENOTDIR, "SYNTHETIC_PREFIX_DETAIL"), "non-directory prefix"),
+                              (OSError(errno.ENAMETOOLONG, "SYNTHETIC_NAME_DETAIL"), "overlong name"),
+                              (PermissionError(errno.EACCES, "SYNTHETIC_ACCESS_DETAIL"), None),
+                              (OSError(errno.EIO, "SYNTHETIC_IO_DETAIL"), None),
+                              (RuntimeError("SYNTHETIC_UNEXPECTED_RESOLUTION_ERROR"), None)):
+            with self.subTest(error=type(error).__name__, message=str(error)):
+                receipt.write_bytes(b"synthetic earlier success\n")
+
+                def resolution(path, *args, **kwargs):
+                    if path == self.sdk_file:
+                        raise error
+                    return original_resolve(path, *args, **kwargs)
+
+                with patch.object(Path, "resolve", resolution):
+                    if reason is None:
+                        expected = type(error) if isinstance(error, OSError) else submission.toolchain.SetupError
+                        with self.assertRaises(expected):
+                            submission.prepare_receipt(receipt, (self.sdk_file, app))
+                        self.assertEqual(receipt.read_bytes(), b"synthetic earlier success\n")
+                    else:
+                        with self.assertRaisesRegex(submission.toolchain.SetupError, reason):
+                            submission.prepare_receipt(receipt, (self.sdk_file, app))
+                        self.assertFalse(receipt.exists())
+        # A later unrelated access error must stop cleanup after any recognized
+        # unusable input, including a loop or invalid path components.
+        cycle = self.root / "cycle"
+        cycle.symlink_to(cycle.name)
+        prefix = self.root / "ordinary-file"
+        prefix.write_bytes(b"synthetic input prefix\n")
+
+        def denied(path, *args, **kwargs):
+            if path == app:
+                raise PermissionError(errno.EACCES, "SYNTHETIC_ACCESS_DETAIL")
+            return original_resolve(path, *args, **kwargs)
+
+        for unusable in (cycle, prefix / "child", self.root / ("n" * 4096)):
+            with self.subTest(unusable=unusable.name[:20]):
+                receipt.write_bytes(b"synthetic earlier success\n")
+                with patch.object(Path, "resolve", denied):
+                    with self.assertRaises(PermissionError):
+                        submission.prepare_receipt(receipt, (unusable, app))
+                self.assertEqual(receipt.read_bytes(), b"synthetic earlier success\n")
+
+        # A runtime whose non-strict resolve leaves a loop for stat has the
+        # same outcome; a permission error at that stage remains conservative.
+        original_stat = Path.stat
+        for code in (errno.ELOOP, errno.ENOTDIR, errno.ENAMETOOLONG, errno.EACCES, errno.EIO):
+            with self.subTest(stat_errno=code):
+                receipt.write_bytes(b"synthetic earlier success\n")
+
+                def inspection(path, *args, **kwargs):
+                    if path == self.sdk_file:
+                        raise OSError(code, "SYNTHETIC_STAT_DETAIL")
+                    return original_stat(path, *args, **kwargs)
+
+                with patch.object(Path, "resolve", lambda path, *a, **k: path.absolute()), patch.object(Path, "stat", inspection):
+                    if code in (errno.ELOOP, errno.ENOTDIR, errno.ENAMETOOLONG):
+                        with self.assertRaisesRegex(submission.toolchain.SetupError, "input contains"):
+                            submission.prepare_receipt(receipt, (self.sdk_file, app))
+                        self.assertFalse(receipt.exists())
+                    else:
+                        with self.assertRaises(OSError):
+                            submission.prepare_receipt(receipt, (self.sdk_file, app))
+                        self.assertEqual(receipt.read_bytes(), b"synthetic earlier success\n")
+
+    def test_actual_cli_invalid_input_components_clear_success_and_repair_retry(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        receipt = self.root / "receipt.json"
+        prefix = self.root / "ordinary-file"
+        prefix.write_bytes(b"synthetic input prefix\n")
+        invalid_paths = ((prefix / "child", errno.ENOTDIR, "non-directory prefix"),
+                         (self.root / ("n" * 4096), errno.ENAMETOOLONG, "overlong name"))
+        for invalid, code, reason in invalid_paths:
+            with self.assertRaises(OSError) as observed:
+                invalid.stat()
+            self.assertEqual(observed.exception.errno, code)
+            for selected in ("sdk", "app"):
+                with self.subTest(error=code, selected=selected):
+                    def invoke(use_invalid):
+                        return subprocess.run([
+                            sys.executable, str(SCRIPT), "--toolchain-pin", str(self.xcode_file),
+                            "--sdk-pin", str(invalid if use_invalid and selected == "sdk" else self.sdk_file),
+                            "inspect", "--sdk", "iphoneos",
+                            "--app", str(invalid if use_invalid and selected == "app" else app),
+                            "--output", str(receipt),
+                        ], capture_output=True, text=True, timeout=10, check=False)
+
+                    good = invoke(False)
+                    self.assertEqual(good.returncode, 0, good.stderr)
+                    self.assertEqual(json.loads(receipt.read_text()), json.loads(good.stdout))
+                    for attempt in range(2):
+                        failed = invoke(True)
+                        self.assertEqual(failed.returncode, 2, failed.stderr)
+                        self.assertEqual(failed.stdout, "")
+                        self.assertIn(reason, failed.stderr)
+                        self.assertNotIn("Traceback", failed.stderr)
+                        self.assertFalse(receipt.exists())
+                        self.assertEqual(prefix.read_bytes(), b"synthetic input prefix\n")
+                    recovered = invoke(False)
+                    self.assertEqual(recovered.returncode, 0, recovered.stderr)
+                    self.assertEqual(json.loads(receipt.read_text()), json.loads(recovered.stdout))
+                    self.assertEqual(list(receipt.parent.glob(".submission-sdk-*.tmp")), [])
+
+    def test_invalid_input_components_preserve_unsafe_outputs_and_input_prefix_identity(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        prefix = self.root / "ordinary-file"
+        prefix.write_bytes(b"synthetic input prefix\n")
+        alias = self.root / "prefix-alias"
+        alias.symlink_to(prefix.name)
+        for invalid in (prefix / "child", alias / "child"):
+            with self.subTest(invalid=invalid.parent.name):
+                with patch.object(Path, "unlink") as invalidate:
+                    with self.assertRaises(submission.toolchain.SetupError):
+                        submission.prepare_receipt(prefix, (invalid, app))
+                    invalidate.assert_not_called()
+                self.assertEqual(prefix.read_bytes(), b"synthetic input prefix\n")
+                self.assertTrue(alias.is_symlink())
+
+        retained = self.root / "retained.json"
+        retained.write_bytes(b"synthetic ordinary receipt\n")
+        linked = self.root / "linked.json"
+        linked.symlink_to(retained.name)
+        shared = self.root / "shared.json"
+        shared.hardlink_to(retained)
+        directory = self.root / "directory"
+        directory.mkdir()
+        for invalid in (prefix / "child", self.root / ("n" * 4096)):
+            for output in (self.sdk_file, app / "Info.plist", linked, shared, directory):
+                with self.subTest(invalid=invalid.name[:20], output=output.name):
+                    before = {p: p.read_bytes() for p in (prefix, self.sdk_file, app / "Info.plist", retained)}
+                    with patch.object(Path, "unlink") as invalidate:
+                        with self.assertRaises(submission.toolchain.SetupError):
+                            submission.prepare_receipt(output, (invalid, self.sdk_file, app))
+                        invalidate.assert_not_called()
+                    for path, contents in before.items():
+                        self.assertEqual(path.read_bytes(), contents)
+                    self.assertTrue(linked.is_symlink())
+                    self.assertEqual(retained.stat().st_nlink, 2)
+                    self.assertTrue(directory.is_dir())
+
+        # Unexpected prefix inspection errors must not justify invalidation.
+        receipt = self.root / "ordinary-receipt.json"
+        receipt.write_bytes(b"synthetic earlier success\n")
+        original_stat = Path.stat
+        for code in (errno.EACCES, errno.EIO):
+            def inspection(path, *args, **kwargs):
+                if path == prefix:
+                    raise OSError(code, "SYNTHETIC_PREFIX_INSPECTION_DETAIL")
+                return original_stat(path, *args, **kwargs)
+
+            with patch.object(Path, "stat", inspection):
+                with self.assertRaises(OSError):
+                    submission.prepare_receipt(receipt, (prefix / "child", app))
+            self.assertEqual(receipt.read_bytes(), b"synthetic earlier success\n")
+
+    def test_actual_cli_preserves_input_prefixes_hidden_in_link_targets(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        prefix = self.root / "ordinary-input-prefix"
+        paths = []
+        absolute = self.root / "absolute-link"
+        absolute.symlink_to(prefix / "nested")
+        paths.append(absolute / "sdk.json")
+        relative = self.root / "relative-link"
+        relative.symlink_to(Path(prefix.name) / "nested")
+        paths.append(relative / "sdk.json")
+        nested = self.root / "nested-link"
+        nested.symlink_to(relative.name)
+        paths.append(nested / "sdk.json")
+        dotdot = self.root / "dotdot-link"
+        dotdot.symlink_to(Path(prefix.name) / ".." / "outside")
+        paths.append(dotdot / "sdk.json")
+        # Also inspect a target introduced by the final selected link itself.
+        paths.append(absolute)
+
+        for invalid in paths:
+            with self.subTest(invalid=invalid.parent.name + "/" + invalid.name):
+                good = self.run_cli("inspect", "--sdk", "iphoneos", "--app", app, "--output", prefix)
+                self.assertEqual(good.returncode, 0, good.stderr)
+                before = prefix.read_bytes()
+                identity = (prefix.stat().st_dev, prefix.stat().st_ino)
+                failed = subprocess.run([
+                    sys.executable, str(SCRIPT), "--toolchain-pin", str(self.xcode_file),
+                    "--sdk-pin", str(invalid), "inspect", "--sdk", "iphoneos",
+                    "--app", str(app), "--output", str(prefix),
+                ], capture_output=True, text=True, timeout=10, check=False)
+                self.assertEqual(failed.returncode, 2, failed.stderr)
+                self.assertEqual(failed.stdout, "")
+                self.assertNotIn("Traceback", failed.stderr)
+                self.assertEqual(prefix.read_bytes(), before)
+                self.assertEqual((prefix.stat().st_dev, prefix.stat().st_ino), identity)
+                self.assertTrue(all(path.is_symlink() for path in (absolute, relative, nested, dotdot)))
+
+        # A separate ordinary output can still be invalidated for each of the
+        # same unusable inputs; preserving an input prefix is not a blanket
+        # refusal to clear unrelated earlier success.
+        receipt = self.root / "separate-receipt.json"
+        for invalid in paths:
+            with self.subTest(separate_output_input=invalid.parent.name + "/" + invalid.name):
+                good = self.run_cli("inspect", "--sdk", "iphoneos", "--app", app, "--output", receipt)
+                self.assertEqual(good.returncode, 0, good.stderr)
+                failed = subprocess.run([
+                    sys.executable, str(SCRIPT), "--toolchain-pin", str(self.xcode_file),
+                    "--sdk-pin", str(invalid), "inspect", "--sdk", "iphoneos",
+                    "--app", str(app), "--output", str(receipt),
+                ], capture_output=True, text=True, timeout=10, check=False)
+                self.assertEqual(failed.returncode, 2, failed.stderr)
+                self.assertEqual(failed.stdout, "")
+                self.assertFalse(receipt.exists())
+                self.assertTrue(prefix.is_file())
+
+    def test_actual_cli_relative_input_loop_is_bounded_and_invalidates_safe_receipt(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        receipt = self.root / "receipt.json"
+        arguments = ("inspect", "--sdk", "iphoneos", "--app", app, "--output", receipt)
+        good = self.run_cli(*arguments)
+        self.assertEqual(good.returncode, 0, good.stderr)
+        retained = self.sdk_file.with_suffix(".retained")
+        self.sdk_file.rename(retained)
+        directory = self.root / "existing-directory"
+        directory.mkdir()
+        self.sdk_file.symlink_to(Path(directory.name) / ".." / self.sdk_file.name)
+        try:
+            failed = self.run_cli(*arguments)
+            self.assertEqual(failed.returncode, 2, failed.stderr)
+            self.assertEqual(failed.stdout, "")
+            self.assertIn("input contains a link loop", failed.stderr)
+            self.assertFalse(receipt.exists())
+            self.assertTrue(self.sdk_file.is_symlink())
+            self.assertTrue(retained.is_file())
+        finally:
+            self.sdk_file.unlink()
+            retained.rename(self.sdk_file)
+        recovered = self.run_cli(*arguments)
+        self.assertEqual(recovered.returncode, 0, recovered.stderr)
+        self.assertEqual(json.loads(receipt.read_text()), json.loads(recovered.stdout))
 
 
 if __name__ == "__main__":
