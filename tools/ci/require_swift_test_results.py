@@ -96,6 +96,31 @@ PROFILES = {
     }),
 }
 
+
+# Source-link review adds fourteen executed cases while retaining every required
+# identity from the separately qualified 87-case receiving source.
+PROFILES["catalog-source-ui"] = (101, {
+    **PROFILES["catalog-editor-ui"][1],
+    "PlannerUITests.CatalogSourceLinkPolicyTests": (
+        "testApprovedHTTPSDestinationsPreserveTheCompleteURLAndHost",
+        "testUnreviewedAndConfusableAuthoritiesCannotBecomeCandidates",
+        "testMalformedAndNonHTTPSInputCannotBeRepairedIntoNavigation",
+        "testTheURLByteLimitIsExactAndCannotBeConfiguredAbove4096",
+        "testConfigurationRequiresExplicitBoundedASCIIDNSNames",
+        "testDiagnosticDescriptionsRedactSourceAddressesAndOpeningIDs",
+    ),
+    "PlannerUITests.CatalogSourceReviewModelTests": (
+        "testSourceReviewRequiresLoadedVisibleRecordAndExactConfirmation",
+        "testDefaultPolicyAndMissingOrUnsafeSourcesNeverOfferAnOpening",
+        "testSourceReviewReplacementAndClosureRetireCapturedActionsAndCallbacks",
+        "testRejectedSystemHandoffRequiresFreshExplicitReviewToRetry",
+        "testClosingDetailsRetiresAllNavigationAndRetainsThePinnedRecord",
+        "testSourcePaginationOnlyExposesOrderedRecordsWithoutChangingConsentOrPins",
+        "testStaleContradictoryProvenanceNeverBecomesVerifiedByAnAcceptedHandoff",
+        "testARecreatedVersionCannotUseThePreviousDetailReviewOrHandoff",
+    ),
+})
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

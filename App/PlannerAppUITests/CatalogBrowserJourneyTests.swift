@@ -116,6 +116,25 @@ final class CatalogBrowserJourneyTests: XCTestCase {
         reveal(sourceNotes, in: app, towardTop: false, containerID: "catalogDetailsForm")
         XCTAssertEqual(sourceNotes.label, "FICTIONAL TEST FIXTURE. Not vendor specification or commercial pricing.")
         retainScreenshot(app, name: "Retained source declaration, date, missing URL and fictional qualification")
+
+        // The bundled specimen has no source URL. Its normal review control
+        // must explain that gap without offering or requesting navigation.
+        let reviewSource = app.buttons["catalogSourceReview-0"]
+        reveal(reviewSource, in: app, towardTop: false, containerID: "catalogDetailsForm")
+        tap(reviewSource)
+        let sourceGap = app.staticTexts["catalogSourceReviewMissing"]
+        reveal(sourceGap, in: app, towardTop: false, containerID: "catalogDetailsForm")
+        XCTAssertEqual(sourceGap.label, "This source record has no URL. No external navigation is available.")
+        XCTAssertFalse(app.buttons["catalogSourceConfirm"].exists)
+        retainScreenshot(app, name: "Explicit source review retains the missing-URL boundary")
+        let closeSource = app.buttons["catalogSourceClose"]
+        reveal(closeSource, in: app, towardTop: false, containerID: "catalogDetailsForm")
+        tap(closeSource)
+        wait(sourceGap, matching: "exists == false")
+        XCTAssertTrue(reviewSource.exists)
+        XCTAssertEqual(missingSource.label, "Source URL not recorded")
+        XCTAssertEqual(checked.label, "2026-10-16T09:00:00Z")
+        XCTAssertEqual(declaredStatus.label, "user_supplied")
         tap(app.buttons["Done"])
 
         // Clear-all restores the first bounded page. Loading the continuation

@@ -2,10 +2,12 @@ import SwiftUI
 import PlannerTransfer
 
 /// A stacked, read-only consumer of the exact selected fixture item. Provenance
-/// URLs use verbatim Text, never Link, Markdown, a web view or an openURL action.
+/// URLs use verbatim Text. A separate explicit review revalidates the same
+/// destination before a one-use system handoff; the preview approves no hosts.
 struct CatalogPreviewDetails: View {
     @StateObject private var model: CatalogDetailsModel
     @Environment(\.dismiss) private var dismiss
+    @Environment(\.openURL) private var openURL
 
     init(row: CatalogBrowserRow, source: any CatalogDetailSource) {
         _model = StateObject(wrappedValue: CatalogDetailsModel(row: row, source: source))
@@ -126,7 +128,7 @@ struct CatalogPreviewDetails: View {
             if let uri = source.sourceURI {
                 Text("Source URL (text)")
                 literal(uri, identifier: "catalogDetailSourceURI-\(index)")
-                Text("External navigation is unavailable in this sample.").font(.footnote)
+                Text("Source hosts require separate review before navigation.").font(.footnote)
             } else {
                 Text("Source URL not recorded").accessibilityIdentifier("catalogDetailSourceMissing-\(index)")
             }
@@ -134,8 +136,59 @@ struct CatalogPreviewDetails: View {
                 if notes.isEmpty { Text("Empty source notes recorded") }
                 else { literal(notes, identifier: "catalogDetailSourceNotes-\(index)") }
             } else { Text("Source notes not recorded") }
+            Button("Review source link") { model.inspectSource(at: index) }
+                .accessibilityIdentifier("catalogSourceReview-\(index)")
+            if let review = model.sourceReview, review.sourceIndex == index {
+                sourceReview(review)
+            }
         }
         .frame(maxWidth: .infinity, alignment: .leading)
+    }
+
+    @ViewBuilder
+    private func sourceReview(_ review: CatalogSourceReview) -> some View {
+        VStack(alignment: .leading, spacing: 8) {
+            Text("Source link review").font(.headline).accessibilityAddTraits(.isHeader)
+            switch review.state {
+            case .missing:
+                Text("This source record has no URL. No external navigation is available.")
+                    .accessibilityIdentifier("catalogSourceReviewMissing")
+            case .rejected:
+                Text("This address cannot be opened under the current source-link policy. Only explicitly reviewed HTTPS hosts are eligible; this fictional preview has no approved source hosts.")
+                    .accessibilityIdentifier("catalogSourceReviewRejected")
+            case .confirmation(let link):
+                Text("Review the exact destination before leaving this preview.")
+                Text(verbatim: link.host).font(.headline).textSelection(.enabled)
+                // Policy input is bounded to 4,096 bytes in the app. Unlike the
+                // ordinary field preview, a confirmation shows the complete URL.
+                Text(verbatim: link.url.absoluteString).fixedSize(horizontal: false, vertical: true)
+                    .textSelection(.enabled).accessibilityIdentifier("catalogSourceDestination")
+                Text("The system may use your browser or an associated app. The destination may redirect. Opening a link does not verify its content or grant source-use rights.")
+                Button("Open source") {
+                    guard let opening = model.sourceToOpen(reviewID: review.id) else { return }
+                    let receiver = model
+                    openURL(opening.url) { accepted in
+                        Task { @MainActor [weak receiver] in
+                            receiver?.completeSourceOpen(reviewID: opening.id, accepted: accepted)
+                        }
+                    }
+                }.accessibilityIdentifier("catalogSourceConfirm")
+            case .opening:
+                ProgressView("Requesting system handoff…")
+            case .unavailable:
+                Text("The system could not open this source. Your component and browsing state are preserved.")
+                    .accessibilityIdentifier("catalogSourceUnavailable")
+                Button("Review again") { model.inspectSource(at: review.sourceIndex) }
+                    .accessibilityIdentifier("catalogSourceRetry")
+            case .handedOff:
+                Text("The system accepted the request. Loading or inspecting the source content has not been verified.")
+                    .accessibilityIdentifier("catalogSourceHandedOff")
+            }
+            Button(review.state.isConfirmation ? "Cancel source opening" : "Close source review") {
+                model.closeSourceReview(id: review.id)
+            }.accessibilityIdentifier("catalogSourceClose")
+        }
+        .padding(.vertical, 8)
     }
 
     private func literal(_ value: String, identifier: String? = nil) -> some View {
@@ -155,5 +208,12 @@ struct CatalogPreviewDetails: View {
                     .font(.footnote).foregroundStyle(.secondary)
             }
         }
+    }
+}
+
+private extension CatalogSourceReviewState {
+    var isConfirmation: Bool {
+        if case .confirmation = self { return true }
+        return false
     }
 }
