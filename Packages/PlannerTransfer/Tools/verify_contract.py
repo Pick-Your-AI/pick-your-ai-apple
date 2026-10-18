@@ -62,3 +62,21 @@ validator = Draft202012Validator(schemas['resource-estimate.schema.json'], regis
 for case in resource_cases:
     assert validator.is_valid(json.loads(case['json'])) == case['canonicalValid'], case['name']
 print(f'Verified {len(resource_cases)} canonical resource estimate cases; no capacity, quality or tuple acceptance is inferred.')
+
+# Placement vectors document existing transport and explicit v1 representation gaps.
+# A schema-valid unresolved tuple is not a compatibility pass or a memory allocation.
+from collections import Counter
+from placement_vectors import apply_vector as apply_placement_vector, encoded_vectors as encoded_placement_vectors
+placement_cases_path = FIXTURES / 'placement-conformance.json'
+assert placement_cases_path.read_text() == encoded_placement_vectors(), 'Stale placement vectors'
+placement_cases = json.loads(placement_cases_path.read_text())
+build = json.loads((FIXTURES / 'build.json').read_text())
+for case in placement_cases:
+    is_build = case['fixture'] == 'build'
+    original = build if is_build else items[case['fixture']]
+    schema = schemas['build.schema.json' if is_build else 'catalog-item.schema.json']
+    validator = Draft202012Validator(schema, registry=registry, format_checker=FormatChecker())
+    payload = apply_placement_vector(original, case)
+    assert validator.is_valid(payload) == case['canonicalValid'], case['name']
+    assert case['canonicalValid'] == case['clientValid'], case['name']
+print(f'Verified {len(placement_cases)} canonical placement cases: {dict(Counter(case["disposition"] for case in placement_cases))}; unresolved semantics remain explicit.')

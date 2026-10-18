@@ -140,6 +140,8 @@ class DependencyReviewTests(unittest.TestCase):
             "DEPENDENCY_CHANGES", "INVALID_LICENSE_CHANGES"
         }}
         env["DEPENDENCY_CHANGES"] = json.dumps([dependency(name=marker)])
+        env["DEPENDENCY_REVIEW_OUTCOME"] = "success"
+        env["DEPENDENCY_SNAPSHOT_OUTCOME"] = "success"
         missing = subprocess.run([sys.executable, str(SCRIPT)], env=env, capture_output=True, text=True)
         self.assertEqual(missing.returncode, 1)
         self.assertNotIn(marker, missing.stdout + missing.stderr)

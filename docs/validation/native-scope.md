@@ -61,14 +61,15 @@ objects for the following dependency closure, including test targets:
 | --- | --- |
 | `macos-core` | `PlannerCore` |
 | `macos-storage` | `PlannerData` |
-| `macos-transfer` | `PlannerTransfer`, `PlannerData` |
+| `macos-transfer` | `PlannerTransfer`, `PlannerData`, `PlannerCore`, `PlannerCatalog` |
 | `macos-catalog-cache` | `PlannerCatalog` |
 | `native-ui` | `PlannerUI`, `PlannerData` |
 
 These are entire package trees, including sources, tests, fixtures, resources,
-tools and metadata. Transfer's durable boundary test imports PlannerData even
-though its library target does not. PlannerUI and the app also depend on
-PlannerData. Core and Catalog declare no sibling package dependencies. A future
+tools and metadata. Transfer's durable boundary test imports PlannerData, and
+its synthetic fixture admission tests import Core and Catalog, even though its
+library target does not. PlannerUI and the app also depend on PlannerData.
+Core and Catalog declare no sibling package dependencies. A future
 test that reads another package's fixture without changing `Package.swift` still
 changes its own package tree, so that job remains allocated until explicitly
 reviewed again. Source additions, deletions and renames participate in the same
@@ -227,7 +228,7 @@ in this input update. Every native job remains required for the audit update
 itself. Earlier 2f78 resource/privacy Python checks and c069/e4 native receipts
 retain their original trees and do not execute this new restoration composition.
 
-The current record carries accepted main
+The seventh input refresh carried accepted main
 `71db949333d94958d7d7909a1dd16c51c2421e2e`, which adds only the reviewed hosted
 dependency-drill record and its explanatory guide. Both complete documentation
 changes were inspected for input interaction. They retain their historical
@@ -243,6 +244,86 @@ given a documentation exemption. The selector, its 32-method fixture and all fiv
 native workflows remain unchanged. This audit update still requires all six
 native jobs; earlier source, Python and native receipts retain their original
 trees and do not execute this documentation/input composition.
+
+The eighth input refresh carried accepted main
+`c23050050c9ce46f35aee73e2f80b7b638cba159`. This batches the separately accepted
+dependency/SDK receipt corrections, optimized crash-driver guards, placement
+conformance, typed evaluation identity and WAL/schema admission changes. Their
+actual source, test and input-reader changes were inspected; this input refresh
+does not repeat their underlying acceptance decisions or relabel their native
+receipts as execution of this composition.
+
+All seven dependency pins and all five job closures remain unchanged. Three
+complete package trees change. Core's typed `EvaluationReport` admission derives
+the existing input identity within that package; its tests read Core's declared
+fixture bundle. Data's existing CSQLite bridge disables checkpoint-on-close before
+schema admission; its new WAL and hot-journal tests use synthetic files within the
+existing package test target. The complete Data tree remains in the same Storage,
+Transfer-test and UI closures. Transfer's placement generator, 98-vector fixture,
+four Swift methods and appended reference checks read only its own declared
+resources and fixtures. No new sibling package, app input or external resource is
+introduced. Catalog and UI package trees stay exact.
+
+The surrounding map now contains 62 leaves: four additions and ten updated
+entries against the seventh refresh. The additions are the two accepted immutable
+Transfer-license fixtures, their test module and the seven-method crash-driver
+fixture. Updated pins cover the dependency workflow/guard/rehearsal and existing
+tests, its conservatively pinned explanatory guide, SDK receipt helper/tests,
+and the composed storage workflow and crash driver. The SDK helper preserves its
+separate pin/product inputs and invalidates stale receipts before new verification.
+The dependency workflow's mandatory final guard still requires the original action
+and complete snapshot outcomes; this refresh does not install or execute its
+reviewed installer artifact or re-audit its license.
+
+The storage workflow preserves the accepted seven portable driver controls,
+interrupted-migration and restoration guards, and 31 required simulator cases.
+Its sole selector difference from accepted main remains the original literal
+`APPLE_CI_JOB` entry. The other four package workflow bodies, selector algorithm,
+32-method fixture, documentation allowlist and native context names are unchanged.
+The separate aggregate SDK lane still has no package-job identity and therefore
+retains native for every non-document change. No new scheduling exemption is
+introduced; this audit change allocates all six native jobs.
+
+The completed source-stage receipt at prepared
+`c417639382a427ba449588168cbb83f30f149f3d`, tree
+`2f3cd050e5d2c7158ff189b51fb2278145481c4f`, belongs to the seventh refresh and
+its normally signed child `930cf4c5a920f4af043ec3aaf51b9f78f4fa96f8`.
+Those nine portable and six native results remain precisely scoped there. They
+do not execute this later package/input composition, its 31-case Data suite or
+new placement and typed-identity cases. That audit requires its own
+independent input review and applicable hosted gates before final main delivery.
+
+The ninth input refresh carries accepted main
+`cd098e8e19f5e4a1d90112379bc8ca089d81ec93`. Accepted #275 adds the canonical
+pricebook test fixture, its synthetic admission suite and a dated fixture inventory.
+Its Transfer test target explicitly adds local Core and Catalog products alongside
+Data. The tests use those existing decoders/cache APIs and their own declared
+fixture bundle. They add no external service, app data or unpinned resource reader.
+
+Transfer's dependency closure therefore expands to all four complete Transfer,
+Data, Core and Catalog package trees. The other four job closures remain unchanged.
+Only the Transfer package-manifest pin and its complete package-tree pin change
+from the eighth refresh; the other six dependency pins and four package trees are
+preserved. The surrounding map has 63 leaves: the new fixture-inventory document
+is conservatively pinned, and the selector and its two added regression methods
+receive new pins. The other 60 surrounding entries stay unchanged. No documentation
+exemption, workflow command, native context, comparison bound or fallback changes.
+
+Before this refresh, the changed manifest already conservatively allocates every
+native job. Refreshing that manifest pin while retaining the former two-tree
+Transfer closure would incorrectly permit a Core or Catalog change to skip its
+Transfer test job. A real-Git regression reproduced both wrong skips against the
+unchanged selector using that incomplete refreshed record. The expanded closed
+footprint rejects that legacy record. The complete 25 job/package matrix and
+added/deleted Core and Catalog resource cases also retain the intended selective
+behavior with a correct record. These 34 Python regression methods are scheduling
+evidence; they do not compile or execute the new Swift admission tests.
+
+This selector and audit correction allocates all six native jobs and requires its
+own exact-source gates. The reviewed eighth-refresh tree
+`88239a9a583512ba5b77fdf58bd95e9c5575292e`, its 32-method local run and the older
+signed `930cf4c5` native receipts remain at their original identities. None is
+reported as execution of this new dependency closure or receiving composition.
 
 A drift is a safe allocation decision, not a request to refresh hashes blindly.
 Before updating the record, independently inspect the changed native code and
@@ -263,7 +344,7 @@ reported as an executed Swift test, SDK build or device journey. No required-che
 setting or repository protection is changed. Future branch-protection setup must
 include meaningful preparation/scope checks and retain the native job names.
 
-The [32 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
+The [34 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
 PR test merges and main comparisons, a 3,006-file mixed change, source deletion and
 rename, unknown Markdown/fixtures, executable files, indirect symlink/submodule
 inputs, newline paths, invalid identities, divergent history, empty changes and the
@@ -303,7 +384,7 @@ with `--no-detach`, and zero detach regions. Fresh hosted scope results remain
 required for delivery.
 
 That 15-method lifetime receipt belongs to the linked editor checkpoint. The
-selector's 32-method suite shares the same corrected setup across its original
+selector's current 34-method suite shares the same corrected setup across its original
 and audited-package classes; no assertion or cleanup error is suppressed.
 
 This change schedules future runs. It neither cancels existing main/current-head
