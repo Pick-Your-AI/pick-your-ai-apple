@@ -5,7 +5,10 @@ let package = Package(
     platforms: [.macOS(.v13), .iOS(.v17)],
     products: [.library(name: "PlannerCatalog", targets: ["PlannerCatalog"])],
     targets: [
-        .target(name: "PlannerCatalog"),
+        .target(
+            name: "PlannerCatalog",
+            resources: [.process("PrivacyInfo.xcprivacy")]
+        ),
         .testTarget(name: "PlannerCatalogTests", dependencies: ["PlannerCatalog"])
     ],
     swiftLanguageModes: [.v6]

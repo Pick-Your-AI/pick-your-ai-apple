@@ -1,4 +1,4 @@
-# Frozen-v1 catalog, quality-record, snapshot and transfer boundaries
+# Frozen-v1 catalog, resource, quality-record, snapshot and transfer boundaries
 
 This portable Swift 6 package implements part of Apple [#32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32), [#33](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/33), [#49](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/49), [#82](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/82) and [#102](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/102). It has no storage, network, credential or UI authority. A successful parse establishes schema validity only, never compatibility, ownership, deployment readiness or source-use rights.
 
@@ -6,6 +6,7 @@ This portable Swift 6 package implements part of Apple [#32](https://github.com/
 
 - `CatalogItem.decode(_:)` validates a single frozen-v1 catalog item, preserves its exact `CatalogKind` identity and every supported field, and returns an immutable value. Kind-specific specs and their required tier are checked against the unchanged canonical schema. No missing optional fact is filled in and no catalog item becomes a user selection.
 - `QualityEvaluationRun.decode(_:)` validates a frozen-v1 quality record and retains the supplied build/suite identities, timestamps, recorded status and measurements. Typed views preserve exact supported decimals, optional absence and array order. This structural boundary performs no evaluation, evidence authentication or current-build binding.
+- `ResourceEstimate.decode(_:)` validates a frozen-v1 resource estimate artifact while preserving its exact decimal strings, ordered declarations and optional source absence. Parsing performs no capacity evaluation, dimensional qualification or current-build binding.
 - `BuildTransfer.snapshot(fromDraftJSON:)` validates a complete frozen-v1 BuildSnapshot and returns an immutable value. Missing fields and fewer than two selections fail; no defaults, locks or synthetic values are inserted. Keep editor drafts in PlannerData even when this transition fails.
 - `BuildTransfer.preview(_:)` accepts a bare snapshot or the existing web `pickyour.ai/build-export` version-1 envelope. Envelope provenance is untrusted metadata, not a verified catalog activation. `usesSyntheticData` is nil for bare imports; do not interpret that as production evidence.
 - `ImportPreview.fork(localOwner:timestamp:)` explicitly creates a new UUID-based build identity, revision 1 and draft lifecycle. Source owner is replaced by the caller's local identity. Every lock, selection and link is retained. This API cannot overwrite an existing record; the integration must insert the returned value as a new draft only after user confirmation.
@@ -30,7 +31,7 @@ Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. D
 
 ## Pinned inputs and validation
 
-`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/quality-evaluation-run schemas and synthetic build/catalog/quality fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. Swift and Python Draft202012Validator with FormatChecker replay exactly the same JSON corpus. Synthetic fixtures are not real catalog or installed-application evidence.
+`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/quality-evaluation-run/resource-estimate schemas and synthetic build/catalog/quality/resource-estimate fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared build corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. The additional CatalogItem, QualityEvaluationRun and ResourceEstimate corpora are described below. Swift and Python Draft202012Validator with FormatChecker replay the same concrete payloads. Synthetic fixtures are not real catalog or installed-application evidence.
 
 Run:
 
@@ -277,18 +278,72 @@ identifiers, two unbounded positive integers, twelve measurement numeric cases a
 one IP-literal URI. Swift inserts the raw replacement JSON before decoding so its
 test helper cannot round a numeric token through `Double` or Foundation bridging.
 
-Local reference validation on 2026-10-18 passed eight source hashes, the existing
+Original local reference validation on 2026-10-18 passed eight source hashes, the existing
 129 transfer and 1,635 catalog cases, and all 202 quality cases using Python 3.12.14
 with `jsonschema[format]==4.26.0`, including active URI and date-time format checking.
 Nine new Swift tests are declared for typed preservation, shared vectors, absence,
 uninterpreted labels, exact numbers, duplicate keys, resource bounds, sanitized
-errors and normalized-output rejection. Swift/Xcode execution is unavailable in
-this local environment; actual hosted macOS Swift and unsigned iOS SDK results are
-required before delivery and must be recorded separately.
+errors and normalized-output rejection. Swift/Xcode execution was unavailable in
+that preparation environment; subsequent actual hosted macOS Swift and unsigned
+iOS SDK results retain their own exact-commit receipts.
 
 This advances #32 transport coverage and #49 quality-record preparation. It does
 not establish qualified evaluation execution, exact-current-workload evidence,
 resource-estimate binding, live service/fault handling, UI delivery or receiving
 acceptance. The existing #49 prerequisites (Apple #44, Apple #34 and Android #79)
-and the remaining #32/#49 criteria remain open. Frozen contracts, service ownership
-and other active artifact-boundary implementations are unchanged.
+and its remaining criteria remain open. The separate #32 all-kind boundary
+disposition is recorded above. Frozen contracts, service ownership and other active
+artifact-boundary implementations are unchanged.
+
+## External resource estimate artifact boundary
+
+`ResourceEstimate.decode(_:)` validates the complete frozen-v1 resource-estimate
+artifact and returns an immutable `JSONValue` plus its ordered `estimates`. The
+public identity accessors retain `id`, `build_id`, `build_revision` and
+`generated_at`. Each estimate retains its metric, exact decimal **string**, unit,
+estimator ID/version, declared confidence, assumptions, selection IDs and optional
+source URI. No numeric value passes through binary floating point. Omitted sources
+stay absent, partial metric coverage stays partial, and repeated estimates remain
+present in their original order.
+
+The schema and complete two-estimate synthetic example are copied byte-for-byte
+from research `7acbefbf4e4e700231e88be272bc89e3a73dde15`. Their SHA-256 values are
+`39ab5d061f9021ce14e1f987717441cff04d1a40f76db5582d343d599a5d876c` and
+`41469a377c0b428e779c269eb052fa8f455b4768e2add3c137b5e465a79a362f`, respectively.
+The unchanged default validator still loads build/selection/common; the immutable
+resource decoder selects only its resource-estimate/common schemas.
+
+The public decoder applies the same 512 KiB, depth, node, numeric and duplicate-key
+limits to the whole artifact before validating every entry. A malformed later
+entry rejects the entire artifact. Duplicate selection IDs within an entry fail
+the frozen schema's uniqueness rule. `encoded()` reparses the exact normalized
+bytes under the same limits and requires value equality, so expanding string
+escapes cannot produce a representation that the decoder cannot reopen.
+
+`Tools/resource_estimate_vectors.py` deterministically creates **223** exact
+JSON-text cases: **112 canonical-positive / 111 canonical-negative**, with
+**106 client-positive** results. It covers all five metrics, four units and four
+declared confidence values, required/unknown fields, decimal types and spelling,
+identities, revisions, timestamps, selection uniqueness, optional source syntax,
+and a malformed final entry. Six canonical-positive inputs are deliberately outside
+the existing client representation: a large numeric revision; an IP-literal source
+URI; and the terminal-newline exceptions in the ID, build ID, selection ID and
+decimal-string dollar-anchored patterns. The corpus records each distinction.
+
+Eight Swift tests replay that shared corpus and separately check complete fixture
+round trips, arbitrary integer-length decimal strings with twelve fractional digits,
+source absence, preserved foreign/partial/repeated declarations, escaped duplicate
+keys and selection aliases, aggregate bounds, output expansion and payload-free
+rejection. The normal transfer workflow verifies all ten pinned inputs and Python
+expectations before actual macOS tests and the unsigned iOS SDK build. Local Linux
+execution and hosted Apple results require their own exact-commit receipts.
+
+Parsing preserves a declaration; it does not make it an accepted estimate. Frozen
+v1 enumerates metric and unit independently, so structurally admitted combinations
+still require a dimensional policy. Declared `verified` confidence is not an
+independent receiving receipt. Build/revision and selection references are preserved
+without checking the current model/runtime/context/concurrency tuple or freshness.
+This API computes neither capacity nor measured quality, accepts no source rights,
+and sends no requests. #49's service, exact-tuple rejection, UI and receiving
+conformance requirements remain open. The separate #32 all-kind boundary
+disposition is recorded above.

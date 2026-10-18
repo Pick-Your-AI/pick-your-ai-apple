@@ -13,7 +13,7 @@
     "Packages/PlannerCatalog/Package.swift": [
       "100644",
       "blob",
-      "3086208eb94bc1d66e1202ecb6cc3556f0d25757"
+      "1afe2c5ee1eb35e0ce589061dd350c3661a4e46b"
     ],
     "Packages/PlannerCore/Package.swift": [
       "100644",
@@ -41,7 +41,7 @@
       "Packages/PlannerCatalog": [
         "040000",
         "tree",
-        "3b19d0a21e95ba1a727f7729cb56e7456793028d"
+        "95d4ca5098801a2e8dc35bcf83e25923267b8b5c"
       ]
     },
     "macos-core": {
@@ -55,26 +55,26 @@
       "Packages/PlannerData": [
         "040000",
         "tree",
-        "1e3ab6300750957ff832abe41ee512e9746debb8"
+        "33c3234880ec0763bec9e7116b119706f5907eb5"
       ]
     },
     "macos-transfer": {
       "Packages/PlannerData": [
         "040000",
         "tree",
-        "1e3ab6300750957ff832abe41ee512e9746debb8"
+        "33c3234880ec0763bec9e7116b119706f5907eb5"
       ],
       "Packages/PlannerTransfer": [
         "040000",
         "tree",
-        "63496290d3997d6a7d43868313dcdf95e15c6b68"
+        "d1a70b72785b7ec629e6ee3ec11bbb294919cb03"
       ]
     },
     "native-ui": {
       "Packages/PlannerData": [
         "040000",
         "tree",
-        "1e3ab6300750957ff832abe41ee512e9746debb8"
+        "33c3234880ec0763bec9e7116b119706f5907eb5"
       ],
       "Packages/PlannerUI": [
         "040000",
@@ -137,7 +137,7 @@
     ".github/workflows/swift-storage.yml": [
       "100644",
       "blob",
-      "23c1fe6d314b2f404fe4f28e429f0d7e8ed1a39a"
+      "7e983b09f12050bf30481c07dc85cb5c4746fa6e"
     ],
     ".github/workflows/swift-transfer.yml": [
       "100644",
@@ -224,6 +224,11 @@
       "blob",
       "5fbd69249912a30eecf78831f6a3ad9f4bc1d29d"
     ],
+    "docs/validation/dependency-review-hosted-drill.json": [
+      "100644",
+      "blob",
+      "c2aa57f53add2ad56e1603e303be79bb21f8ab48"
+    ],
     "docs/validation/dependency-review-rehearsal.json": [
       "100644",
       "blob",
@@ -232,7 +237,12 @@
     "docs/validation/dependency-review.md": [
       "100644",
       "blob",
-      "10764eba904033818727cbfb194e6ebe78367492"
+      "ccceb6189ba5cd80b583c04924f9447ce18099a7"
+    ],
+    "docs/validation/issue-101-privacy.md": [
+      "100644",
+      "blob",
+      "512d8a8884239e106812aaed8ab9a2ec9c02ba26"
     ],
     "tools/acceptance/check_map.py": [
       "100644",
@@ -365,6 +375,6 @@
       "961c45d1b8dd61f33abb86f255e79a43021c0646"
     ]
   },
-  "source_revision": "d0537ace2cb0a14cdbb5f316a79e972e427ae63c",
+  "source_revision": "71db949333d94958d7d7909a1dd16c51c2421e2e",
   "version": 1
 }

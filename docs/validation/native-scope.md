@@ -139,7 +139,7 @@ retain their exact test-merge `c4cb02f3f3ce97cc6b9ac1463122735f43c91802` and tre
 `34f35205789e36b5fd57413199f6d45d29597742`; the later input refresh allocated
 all five jobs and required its own current-source checks.
 
-The current record carries accepted main
+The third refresh carried accepted main
 `d0537ace2cb0a14cdbb5f316a79e972e427ae63c`. Accepted #279 adds the separate
 [submission SDK workflow](submission-sdk.md), its verifier and rejection tests,
 and exact Xcode/SDK pins. It also records the generated native app metadata and
@@ -157,7 +157,7 @@ The accepted policy/SDK guides join the documentation allowlist only as
 explanatory material; the verifier reads the JSON pins and built product
 metadata, not those guides.
 
-The full surrounding audit now contains 56 leaves. Its five additions are the
+That surrounding audit contains 56 leaves. Its five additions are the
 submission workflow, verifier, verifier tests and two JSON pins. Six existing
 entries change: the app project, native UI workflow, selector, scope regressions,
 obsolete-run helper and its regressions. These retain the accepted metadata
@@ -168,6 +168,81 @@ refresh itself allocates all six native jobs. Completed observations at source
 `46ad9e8704599307564440bbd299fb79066727a1` and tree
 `84bb94356310b671b8d009cdac695ff03be2e78e` retain that earlier scope, and do not
 constitute execution of this later combined tree.
+
+A fourth input refresh was reviewed against accepted main
+`51952c75f2280d57891491903e495fb822b83bfd`. Accepted #276 adds the frozen
+ResourceEstimate structural reader, its schema and example, deterministic raw
+vectors and native/reference tests inside `PlannerTransfer`. The shared validator,
+source manifest, reference runner and package README retain the accepted resource
+entry points. The complete reader and test inputs were inspected: native resources
+come from that package's declared bundles, and the reference generator and runner
+read its own pinned schemas and fixtures. No sibling package, app or surrounding
+repository input is introduced. Only Transfer's complete package-tree pin changes;
+all seven dependency pins, the five job closures, four other package trees and
+56 surrounding leaves remain identical to the third refresh. The accepted #289
+service-decision handoff changes three explanatory documents without adding an
+executable input or modifying a native gate.
+
+That resource refresh requires all six native jobs. Executions at source
+`c069a02da98c56c3a019292e51821fcd909df66b`, prepared merge
+`22016874005cdf3a54594ba3d44cbf8732700972` and tree
+`e4b67127d22b4d4939aa590867135a7c22a21fe2` retain that earlier source scope;
+they do not execute that resource/input refresh.
+
+A fifth input refresh was reviewed against accepted main
+`bcf4c771641e62b30812e67bff86cf6b221c92cb`. Accepted #284 declares Catalog's
+privacy manifest as a processed SwiftPM resource and adds a test that reads the
+built package bundle through `Bundle.module`. The complete manifest, package
+declaration, test and explanatory documents were inspected for input selection.
+The resource and generated bundle access stay within `PlannerCatalog`; no sibling
+package or new app input is introduced. Catalog's package-manifest dependency pin
+and complete package-tree pin change. The other six dependency pins, four package
+trees and all five job closures remain unchanged from the resource refresh.
+
+The surrounding audit now contains 57 leaves. Its sole addition is the accepted
+`docs/validation/issue-101-privacy.md` blob; the previous 56 entries are unchanged.
+This new document receives no documentation exemption. The selector, its 32-test
+fixture and the five package workflow bodies remain unchanged. This bounded input
+review does not requalify the accepted privacy inventory or establish app-bundle,
+network, release or store evidence. The audit update allocates all six native jobs
+and requires fresh checks for this combined tree; the earlier `c069a02d` execution
+identities above do not execute this later resource and privacy input refresh.
+
+The sixth input refresh additionally carried accepted main
+`9c744450d689690f66ab6a28aa146a1318917464`. Accepted #298 rejects a corrupt
+restoration source newer than the current draft head, before either head or
+history writes, while preserving normal save, rename and duplicate behavior.
+Its full restore/write/transaction/decode context and focused regression were
+inspected. This changes only the complete `PlannerData` tree within the existing
+storage, Transfer-test and UI closures; all seven dependency pins, four other
+package trees and the five dependency relationships remain unchanged.
+
+The accepted storage workflow requires the new named restoration regression and
+26 successful simulator cases while retaining its interrupted-migration gate.
+The selector's original literal `APPLE_CI_JOB` entry remains its only change
+against that accepted workflow. The complete surrounding set still has 57 leaves;
+only this composed storage-workflow pin changes from the fifth refresh. No other
+selector, fixture, documentation allowance, native job identity or command changes
+in this input update. Every native job remains required for the audit update
+itself. Earlier 2f78 resource/privacy Python checks and c069/e4 native receipts
+retain their original trees and do not execute this new restoration composition.
+
+The current record carries accepted main
+`71db949333d94958d7d7909a1dd16c51c2421e2e`, which adds only the reviewed hosted
+dependency-drill record and its explanatory guide. Both complete documentation
+changes were inspected for input interaction. They retain their historical
+workflow, package, failure/recovery and remaining-acceptance identities; this
+input refresh does not re-audit those hosted receipts or grant broader dependency,
+credential, device or release acceptance.
+
+All seven dependency pins, five complete package trees and five job closures
+remain unchanged from the restoration refresh. The surrounding set now contains
+58 leaves: the new `dependency-review-hosted-drill.json` is added and the existing
+`dependency-review.md` pin is updated. Both are conservatively pinned rather than
+given a documentation exemption. The selector, its 32-method fixture and all five
+native workflows remain unchanged. This audit update still requires all six
+native jobs; earlier source, Python and native receipts retain their original
+trees and do not execute this documentation/input composition.
 
 A drift is a safe allocation decision, not a request to refresh hashes blindly.
 Before updating the record, independently inspect the changed native code and
