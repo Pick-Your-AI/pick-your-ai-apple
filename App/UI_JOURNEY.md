@@ -118,7 +118,7 @@ line number:
 | Observed failure | Evidence and scoped correction |
 | --- | --- |
 | iPad: `app.tabBars.buttons["Demo catalog"]` never exists. | The retained hierarchy exposes the visible top navigation as nested Buttons under Other, with no TabBar. The test now finds the exact visible navigation label among buttons on both layouts and still performs a normal hittable/enabled tap. The Notes return uses the same query. |
-| iPhone: the kind menu never opens before waiting for `catalogKind-accelerator`. | The outer List button covers `(16,369,343,44)` while the actual inner menu button covers `(32,381,199,20.5)`. XCTest's retained tap was `(50.3,373.4)`, outside that inner control, and the recording shows no open menu. The Menu now requests the borderless button style, following the existing editor's use of that style for independent controls; the test must still open the menu and select the real Accelerator action. |
+| iPhone: the kind menu never opens before waiting for `catalogKind-accelerator`. | The outer List button covers `(16,369,343,44)` while the actual inner menu button covers `(32,381,199,20.5)`. XCTest's retained tap was `(50.3,373.4)`, outside that inner control, and the recording shows no open menu. Candidate `aba37` requested the borderless button style; its later actual result below shows that this did not correct the nested activation target. |
 | iPhone: six Form swipes never reveal `loadRevisions`. | Each retained swipe starts at `(187.5,453.5)` while the visible keyboard starts at y=407. The recording shows an unchanged editor and keyboard throughout. Title and notes now share explicit focus state and a visible Done editing keyboard action. The test uses that action and requires the keyboard to disappear before its unchanged identified-Form scrolling. After the first dismissal it also reasserts the exact amended title and complete notes before reading durable history. |
 
 The focus action only ends text entry; it does not save, discard or close the draft.
@@ -129,11 +129,43 @@ control and cold deletion assertions are unchanged. No extra swipes, arbitrary
 coordinate taps, storage injection, skipped test or destination fallback were added.
 Failure messages identify the requested control rather than only a shared helper.
 
-These source corrections still require a fresh native run of both exact journeys
-on both pinned devices. The separately reviewed finite-window-geometry correction
+The separately reviewed finite-window-geometry correction
 and the canonical editor candidate's additional model/Home/Files tests are distinct
 work and must be preserved when the branches are reconciled; this receipt does not
 claim they have been applied or executed here.
+
+Candidate `aba37bb980f49e0e6772f11bcfaa8023a34d4839` in
+[native run 39111714464](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39111714464/job/117629098778)
+passed all 60 model tests, the unsigned build and both smoke launches. The complete
+iPhone notes journey passed in 258.729 seconds. Its catalog journey failed in
+83.791 seconds; iPad catalog failed in 97.477 seconds and notes in 162.826 seconds.
+Both destinations executed the exact two tests with zero skips, and both owned
+simulator deletions succeeded. Artifact `12131547131` is 211,972,207 bytes and its
+downloaded ZIP matches SHA-256
+`9e11bdda7ab52f620eb42b6ef797027e45f50c754c7194d2f8136f4b892af294`.
+
+Both catalog recordings still show a closed kind menu. The iPhone retains the
+same outer/inner frames and synthesized tap; iPad now reaches that same nested
+menu after successful adaptive navigation. A normal row button now opens a
+component-kind sheet with visibly labeled switch Toggles and an explicit Done
+action. Each toggle uses the existing exact kind binding; no search, sorting,
+source identity, preference or pagination semantics change. The actual journey
+requires off/on switch values, the same one-result Accelerator filter and its
+selected state after process relaunch before continuing to details and pagination.
+
+The iPad notes failure occurs later, after its standard oversized-title Paste:
+the retained recording shows the OS **Copy and Paste** first-use education panel
+with its **Continue** button covering the keyboard toolbar. `finishDraftEditing`
+exists but is not hittable behind that panel. This is separate from editor focus.
+The paste helper dismisses only that exact observed education heading through its
+normal visible Continue action, waits for the heading to disappear and reasserts
+the complete over-limit title value. The actual autosave rejection, unsaved notes,
+mandatory discard and durable reopening remain required. No production focus
+change, arbitrary coordinate, longer timeout or simulator-state injection is added.
+
+These follow-up controls still require fresh exact-source execution of both full
+journeys on both pinned destinations. The one passing iPhone notes result is
+retained source-specific evidence, not acceptance of the combined native gate.
 
 A try/finally scope protects every verified creation, including later evidence-writing
 or test failures. Cleanup shuts down and deletes only the verified ID created by this
@@ -186,3 +218,6 @@ The control correction also uses Apple's documented
 [focus state](https://developer.apple.com/documentation/swiftui/focusstate),
 [keyboard toolbar placement](https://developer.apple.com/documentation/swiftui/toolbaritemplacement/keyboard),
 and [borderless button style](https://developer.apple.com/documentation/swiftui/borderlessbuttonstyle).
+The kind-selection follow-up uses standard
+[bound toggles](https://developer.apple.com/documentation/swiftui/toggle) and
+[a scoped sheet with explicit dismissal](https://developer.apple.com/design/human-interface-guidelines/sheets).

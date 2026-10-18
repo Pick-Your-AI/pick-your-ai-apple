@@ -6,6 +6,7 @@ import PlannerCatalog
 public struct CatalogBrowserView: View {
     @StateObject private var model: CatalogBrowserModel
     @State private var inspected: CatalogBrowserRow?
+    @State private var choosingKinds = false
     @FocusState private var searchFocused: Bool
 
     public init() {
@@ -36,20 +37,13 @@ public struct CatalogBrowserView: View {
                     }
                     .pickerStyle(.segmented)
                     .accessibilityIdentifier("catalogSort")
-                    Menu {
-                        ForEach(model.visibleKinds, id: \.self) { kind in
-                            Toggle(Self.kindTitle(kind), isOn: Binding(
-                                get: { model.filters.kinds.contains(kind) },
-                                set: { model.setKind(kind, included: $0) }))
-                                .accessibilityIdentifier("catalogKind-\(kind)")
-                        }
+                    Button {
+                        searchFocused = false
+                        choosingKinds = true
                     } label: {
                         Label(model.filters.kinds.isEmpty ? "All component kinds" : "Kinds: \(model.filters.kinds.count) selected",
                               systemImage: "line.3.horizontal.decrease")
                     }
-                    // Keep the menu's own activation target. The automatic List
-                    // row wrapper can expose a larger, inactive button to AX.
-                    .buttonStyle(.borderless)
                     .accessibilityIdentifier("catalogKinds")
                     if !model.filters.kinds.isEmpty {
                         Text(model.filters.kinds.sorted().map(Self.kindTitle).joined(separator: ", "))
@@ -117,6 +111,31 @@ public struct CatalogBrowserView: View {
             }
             .task { model.loadIfNeeded() }
             .sheet(item: $inspected) { row in CatalogPreviewDetails(row: row) }
+            .sheet(isPresented: $choosingKinds) {
+                NavigationStack {
+                    List {
+                        Section {
+                            ForEach(model.visibleKinds, id: \.self) { kind in
+                                Toggle(Self.kindTitle(kind), isOn: Binding(
+                                    get: { model.filters.kinds.contains(kind) },
+                                    set: { model.setKind(kind, included: $0) }))
+                                    .toggleStyle(.switch)
+                                    .accessibilityIdentifier("catalogKind-\(kind)")
+                            }
+                        } footer: {
+                            Text("Choose one or more kinds. When none are selected, all component kinds are included. Changes apply immediately.")
+                        }
+                    }
+                    .accessibilityIdentifier("catalogKindFilters")
+                    .navigationTitle("Component kinds")
+                    .toolbar {
+                        ToolbarItem(placement: .confirmationAction) {
+                            Button("Done") { choosingKinds = false }
+                                .accessibilityIdentifier("catalogKindFiltersDone")
+                        }
+                    }
+                }
+            }
         }
     }
 
