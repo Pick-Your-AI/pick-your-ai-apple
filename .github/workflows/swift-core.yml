@@ -5,11 +5,38 @@ on:
   push:
     branches: [main]
 
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
 permissions:
   contents: read
 
 jobs:
+  scope:
+    name: macos-core documentation scope
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    outputs:
+      native_required: ${{ steps.scope.outputs.native_required }}
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+          fetch-depth: 0
+      - name: Test conservative scope selection
+        run: python3 -m unittest discover -s tools/ci/tests -p 'test_native_scope.py' -v
+      - name: Inspect complete exact Git comparison
+        id: scope
+        env:
+          APPLE_CI_EVENT: ${{ github.event_name }}
+          APPLE_CI_HEAD: ${{ github.sha }}
+          APPLE_CI_BASE: ${{ github.event.pull_request.base.sha }}
+          APPLE_CI_BEFORE: ${{ github.event.before }}
+        run: python3 tools/ci/native_scope.py
   macos-core:
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
     runs-on: macos-15
     timeout-minutes: 40
     env:

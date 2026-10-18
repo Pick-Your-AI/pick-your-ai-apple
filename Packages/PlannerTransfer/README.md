@@ -15,6 +15,15 @@ The package deliberately uses immutable schema-validated `JSONValue` with a type
 
 ## Privacy and input limits
 
+`BuildSnapshot.encoded()` reparses its exact normalized output and verifies the
+original immutable value before returning bytes for local persistence. Compact
+input can expand when JSON strings are escaped; output beyond the same decoding
+limits fails explicitly instead of returning an unreadable saved representation.
+Private notes/extensions and exact locks remain intact in this local operation.
+Sharing still requires the separate `BuildTransfer.export` projection and review.
+The native transfer suite includes a slash-expansion rejection and private-field
+round-trip regression; only actual hosted results establish Swift execution.
+
 The transfer gate rejects secret references and credential-like property names. It also rejects account references, encryption-key references, approval tickets, index names and endpoint/artifact URLs because they can disclose private infrastructure, signed links or credentials. This is a conservative client transfer subset; it does not redefine the frozen schema. Notes/extensions on import are rejected rather than silently accepted. Export strips them before applying the transfer gate. A schema-valid snapshot containing these fields can remain local but cannot be transferred through this package. This is not arbitrary free-text secret detection: names, aliases and other allowed text require preview and deliberate user review. It provides no remote share capability or server authorization.
 
 Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. Duplicate keys (including escaped aliases), invalid UTF-8, trailing input, wrong types/enums and unknown schema fields fail with payload-free error codes. JSON numeric tokens are restricted to at most 15 numeric digits, magnitude at most 9,007,199,254,740,991, and nonzero magnitude at least 10^-12; larger/smaller values fail explicitly rather than rounding. Money remains the exact schema-constrained decimal string. Leap-second timestamps are unsupported and rejected. URI checking implements an ASCII RFC3986 subset and rejects malformed percent escapes and all IP-literal (IPv6/IPvFuture) hosts; full general-purpose JSON Schema/URI conformance is not claimed.
@@ -126,9 +135,34 @@ new Swift tests require the hosted transfer workflow before integration. This
 remains partial #32 work, with the broader model, migration and receiving-review
 requirements listed below unchanged.
 
+### Receiving evidence after catalog delivery (2026-10-18)
+
+The tooling observations above describe the original implementation slices.
+The catalog prerequisite is now delivered on signed main through [#227](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/227),
+commit `0ece6114ae2d639992346e8c1bb3ae239dbb1999`. Its actual receiving
+[transfer job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39112613078/job/117631807159)
+passed 32 Swift tests, six source hashes, 129 build/selection cases, 1,635 item
+cases and unsigned iOS Simulator SDK compilation.
+
+The original envelope candidate also completed actual Xcode 16.4 / Swift 6.1.2
+[native validation](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/182#issuecomment-6246002448):
+36 Swift tests, all seven hashes and the 129 + 1,635 + 77 reference cases passed,
+followed by unsigned iOS Simulator SDK compilation. That source-stage result
+predates the two later serialization regressions retained from accepted main.
+
+The current receiving package preserves every executable, schema, fixture, test
+and tool input from the separately executed Swift 6.1.2 Linux composition:
+38 XCTest cases passed with zero failures or skips in 5.068 seconds after a
+6.34-second build. Its retained 12,928-byte log has SHA-256
+`9e0c2166eb6788e18ecc1586f197054cd28034bc53089080fe67d78f13b51a94`.
+This source identity check does not rerun those inputs or turn the portable result
+into Apple execution. The current-main composition still requires its applicable
+hosted checks, independent receiving review and normal signed delivery. It does
+not activate production catalog data or close the broader #32 receiving gate.
+
 ## Remaining acceptance
 
-Independent code review and hosted macOS/iOS compilation are required before integration. A cross-package SQLite integration test now saves an empty draft, rejects snapshot export and malicious import, reopens the store, and verifies identical payload, locks, revision and history. PlannerData is a test-only dependency; the library remains independent. macOS 14 is the package testing floor; iOS 17 remains the product floor. #32 still needs generated per-field model coverage, other top-level contracts, supported migration dispositions, native conformance evidence and receiving contract review. The bounded catalog-item slice covers all 29 kind identities/spec validation alongside build and selection settings; it does not close the full work package. #33 still needs durable autosave-to-export UI integration with PlannerData. #82 still needs actual Files/share-sheet flows, cross-client UI round trips and approved privacy/source-use review. #102 still needs server cross-user access, capability guessing and Universal Link/device tests against the real service and signed app. These are partial issue deliverables, not issue-closure evidence. No hardware, signing, release or production claims are made.
+Independent code review and hosted macOS/iOS compilation are required before integration. A cross-package SQLite integration test now saves an empty draft, rejects snapshot export and malicious import, reopens the store, and verifies identical payload, locks, revision and history. PlannerData is a test-only dependency; the library remains independent. macOS 14 is the package testing floor; iOS 17 remains the product floor. #32 still needs generated per-field model coverage, other top-level contracts, supported migration dispositions, native conformance evidence and receiving contract review. The bounded catalog-item slice covers all 29 kind identities/spec validation alongside build and selection settings; it does not close the full work package. #33’s exact draft/snapshot boundary criteria are satisfied by the linked [criterion-specific receipt](../../docs/acceptance/issue-33-draft-snapshot-boundary.md), subject to its recorded receiving disposition; the earlier UI-integration gap is reconciled there. Actual UI autosave/termination remains #69 and Files workflows remain #82. #82 still needs actual Files/share-sheet flows, cross-client UI round trips and approved privacy/source-use review. #102 still needs server cross-user access, capability guessing and Universal Link/device tests against the real service and signed app. These are partial issue deliverables, not issue-closure evidence. No hardware, signing, release or production claims are made.
 
 
 ## Local configuration comparison
