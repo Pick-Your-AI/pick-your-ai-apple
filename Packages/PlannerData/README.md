@@ -38,7 +38,9 @@ retired identities. All pending upgrades execute in one transaction. Unknown
 versions, corrupt databases and failed migrations produce errors without a
 reset. A corrupt record remains in storage; paginated reads return recoverable
 records plus `unreadableCount`. The UI must disclose that count. Missing or corrupt
-heads cannot be overwritten through save. There is no automatic salvage of broken
+heads cannot be overwritten through save. Restore also rejects a corrupt history
+revision newer than the current head before writing, preserving the readable head
+and the original history for recovery. There is no automatic salvage of broken
 SQLite pages or silent replacement of a damaged database.
 
 SQLite is an implementation choice under the user's delegated engineering mandate,
