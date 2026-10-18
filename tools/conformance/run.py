@@ -9,6 +9,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -187,16 +188,48 @@ def run(root):
                                  'Swift/Apple runtime, migrations, device and receiving acceptance unverified'])
 
 
+def prepare_output(root, output):
+    """Invalidate an accepted receipt without unlinking source inputs or link targets."""
+    # Resolve parent aliases, but keep the final component so unlink never follows it.
+    output = output.parent.resolve(strict=True) / output.name
+    if output.is_relative_to(root) or output.is_relative_to(HERE):
+        raise ValueError('Output must be outside the frozen contract and conformance tool directories')
+    try:
+        existing = output.lstat()
+    except FileNotFoundError:
+        return output
+    if not stat.S_ISREG(existing.st_mode) or existing.st_nlink != 1:
+        raise ValueError('Output must be an unshared regular file (no links or directories)')
+    output.unlink()
+    return output
+
+
+def write_report(output, result):
+    contents = json.dumps(result, sort_keys=True, indent=2) + '\n'
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=output.parent,
+                                         prefix='.conformance-', suffix='.tmp', delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(contents)
+        temporary.replace(output)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--contract-root', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     try:
-        result = run(args.contract_root.resolve())
+        root = args.contract_root.resolve()
+        output = prepare_output(root, args.output)
+        result = run(root)
+        write_report(output, result)
     except (ValueError, OSError, subprocess.TimeoutExpired) as error:
         parser.exit(1, f'Conformance failed: {error}\n')
-    args.output.write_text(json.dumps(result, sort_keys=True, indent=2) + '\n')
     print(f"PASS {len(result['schema_results'])} schema vectors, {len(result['domain_results'])} domain checks, "
           f"3 detected mutations; contract {LOCK['contract_version']}; {LOCK['fixture_bundle_version']}")
 
