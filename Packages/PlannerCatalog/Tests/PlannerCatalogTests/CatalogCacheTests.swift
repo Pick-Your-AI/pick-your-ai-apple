@@ -280,6 +280,86 @@ extension CatalogCacheTests {
 }
 
 extension CatalogCacheTests {
+    func testEnvelopeReadDistinguishesExactLimitFromOversizedBytes() async throws {
+        let url = try directory()
+        let file = url.appendingPathComponent("active-preview-v1.json")
+        let store = try cache(url, limit: 1)
+        let envelopeLimit = 3 + 2_097_152
+        for extraByte in 0...1 {
+            // Whitespace is deliberately invalid JSON: exactly-at-limit bytes must
+            // reach decoding, while one extra byte must be rejected before decoding.
+            let bytes = Data(repeating: 0x20, count: envelopeLimit + extraByte)
+            try bytes.write(to: file, options: .atomic)
+            do {
+                _ = try await store.load(mode: .syntheticPreview)
+                XCTFail("Invalid envelope was returned")
+            } catch {
+                XCTAssertEqual(error as? CatalogCacheError,
+                               extraByte == 0 ? .corruptCache : .oversizedRelease)
+            }
+            XCTAssertEqual(try Data(contentsOf: file), bytes)
+        }
+    }
+
+    func testSmallSymlinkCannotBypassEnvelopeReadLimit() async throws {
+        let url = try directory()
+        let file = url.appendingPathComponent("active-preview-v1.json")
+        let target = url.appendingPathComponent("oversized-preview.json")
+        let envelopeLimit = 3 + 2_097_152
+        let bytes = Data(repeating: 0x20, count: envelopeLimit + 1)
+        try bytes.write(to: target)
+        try FileManager.default.createSymbolicLink(at: file, withDestinationURL: target)
+        let destination = try FileManager.default.destinationOfSymbolicLink(atPath: file.path)
+        let attributes = try FileManager.default.attributesOfItem(atPath: file.path)
+        XCTAssertEqual(attributes[.type] as? FileAttributeType, .typeSymbolicLink)
+        XCTAssertLessThan(try XCTUnwrap(attributes[.size] as? NSNumber).intValue, envelopeLimit)
+
+        do {
+            _ = try await cache(url, limit: 1).load(mode: .syntheticPreview)
+            XCTFail("Oversized symlink target was returned")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .oversizedRelease) }
+        XCTAssertEqual(try FileManager.default.destinationOfSymbolicLink(atPath: file.path), destination)
+        XCTAssertEqual(try Data(contentsOf: target), bytes)
+    }
+
+    func testOversizedEnvelopeCanRecoverAfterExplicitValidByteRestoration() async throws {
+        let url = try directory()
+        let file = url.appendingPathComponent("active-preview-v1.json")
+        let target = url.appendingPathComponent("oversized-preview.json")
+        let limit = 1_024
+        let store = try cache(url, limit: limit)
+        let (manifest, data) = try fixture()
+        let date = Date(timeIntervalSince1970: 100)
+        try await store.refresh(manifest, mode: .syntheticPreview, now: date) { data[$0]! }
+        let original = try Data(contentsOf: file)
+        let oversized = Data(repeating: 0x20, count: limit * 3 + 2_097_152 + 1)
+        try oversized.write(to: target)
+        try FileManager.default.removeItem(at: file)
+        try FileManager.default.createSymbolicLink(at: file, withDestinationURL: target)
+        let destination = try FileManager.default.destinationOfSymbolicLink(atPath: file.path)
+
+        do {
+            _ = try await store.load(mode: .syntheticPreview)
+            XCTFail("Oversized replacement was returned")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .oversizedRelease) }
+        XCTAssertEqual(try FileManager.default.destinationOfSymbolicLink(atPath: file.path), destination)
+        XCTAssertEqual(try Data(contentsOf: target), oversized)
+
+        // The cache never deletes or repairs corruption. Explicitly restore the
+        // original complete envelope, then verify a new actor can recover it.
+        try FileManager.default.removeItem(at: file)
+        try original.write(to: file, options: .atomic)
+        let loaded = try await cache(url, limit: limit).load(mode: .syntheticPreview)
+        let restored = try XCTUnwrap(loaded)
+        XCTAssertEqual(restored.manifest, manifest)
+        XCTAssertEqual(restored.artifacts, data)
+        XCTAssertEqual(restored.cachedAt, date)
+        XCTAssertTrue(restored.isSynthetic)
+        if case .unknown = restored.currentChecks {} else { XCTFail("Restoration must not imply current checks passed") }
+        XCTAssertEqual(try Data(contentsOf: file), original)
+        XCTAssertEqual(try Data(contentsOf: target), oversized)
+    }
+
     func testPreviouslyObservedVersionCannotChangeBytesAfterRestart() async throws {
         let url = try directory()
         let (first, firstData) = try fixture()

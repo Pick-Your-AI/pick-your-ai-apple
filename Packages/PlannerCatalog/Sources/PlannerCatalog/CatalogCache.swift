@@ -172,14 +172,9 @@ public actor CatalogCache {
     /// is unavailable (never a partial release); no deletion or automatic promotion occurs.
     public func load(mode: CatalogDataMode) throws -> CachedCatalog? {
         try requirePreview(mode)
-        guard FileManager.default.fileExists(atPath: activeURL.path) else { return nil }
-        let attributes = try FileManager.default.attributesOfItem(atPath: activeURL.path)
-        guard let size = attributes[.size] as? NSNumber,
-              size.intValue <= maximumEnvelopeBytes else {
-            throw CatalogCacheError.oversizedRelease
-        }
+        guard let bytes = try loadEnvelopeBytes() else { return nil }
         let envelope: CacheEnvelope
-        do { envelope = try JSONDecoder().decode(CacheEnvelope.self, from: Data(contentsOf: activeURL)) }
+        do { envelope = try JSONDecoder().decode(CacheEnvelope.self, from: bytes) }
         catch { throw CatalogCacheError.corruptCache }
         guard envelope.synthetic else { throw CatalogCacheError.productionReceiptUnavailable }
         try validateManifest(envelope.manifest)
@@ -207,6 +202,31 @@ public actor CatalogCache {
     private var maximumEnvelopeBytes: Int { maximumArtifactBytes * 3 + 2_097_152 }
 
     private var activeURL: URL { directory.appendingPathComponent("active-preview-v1.json") }
+
+    private func loadEnvelopeBytes() throws -> Data? {
+        let handle: FileHandle
+        do { handle = try FileHandle(forReadingFrom: activeURL) }
+        catch let error as CocoaError where error.code == .fileReadNoSuchFile { return nil }
+        catch { throw CatalogCacheError.corruptCache }
+        defer { try? handle.close() }
+
+        // Read from one open file rather than checking path metadata and reopening it.
+        // The extra byte distinguishes an exact-limit envelope from an oversized one,
+        // including when the file grows or the path refers to a larger symlink target.
+        var bytes = Data()
+        do {
+            while bytes.count <= maximumEnvelopeBytes {
+                let remaining = maximumEnvelopeBytes + 1 - bytes.count
+                guard let chunk = try handle.read(upToCount: min(65_536, remaining)),
+                      !chunk.isEmpty else { break }
+                bytes.append(chunk)
+            }
+        } catch { throw CatalogCacheError.corruptCache }
+        guard bytes.count <= maximumEnvelopeBytes else {
+            throw CatalogCacheError.oversizedRelease
+        }
+        return bytes
+    }
 
     private func requirePreview(_ mode: CatalogDataMode) throws {
         if case .production = mode { throw CatalogCacheError.productionReceiptUnavailable }
