@@ -4,7 +4,7 @@ import PlannerData
 @testable import PlannerUI
 
 // The lock protects probe state; semaphores are used only inside synchronous
-// detached work, never to block the main actor. Timeouts bound a broken regression.
+// workers, never to block the main actor. Timeouts bound a broken regression.
 private final class BlockingOpenProbe: @unchecked Sendable {
     private let entered = DispatchSemaphore(value: 0)
     private let released = DispatchSemaphore(value: 0)
@@ -33,7 +33,13 @@ private final class BlockingOpenProbe: @unchecked Sendable {
     }
 
     func waitUntilEntered() async -> Bool {
-        await Task.detached { self.entered.wait(timeout: .now() + 5) == .success }.value
+        await withCheckedContinuation { continuation in
+            // The bounded blocking wait belongs to a synchronous dispatch worker,
+            // not Swift's cooperative async executor or the main actor.
+            DispatchQueue.global(qos: .userInitiated).async {
+                continuation.resume(returning: self.entered.wait(timeout: .now() + 5) == .success)
+            }
+        }
     }
 
     func release() { released.signal() }
