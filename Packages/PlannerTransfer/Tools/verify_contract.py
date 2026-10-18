@@ -39,3 +39,13 @@ for case in catalog_cases:
     payload = apply_vector(items[case['kind']], case)
     assert validator.is_valid(payload) == case['canonicalValid'], case['name']
 print(f'Verified all 29 catalog kinds and {len(catalog_cases)} canonical catalog cases; client subsets remain explicit.')
+
+from catalog_snapshot_vectors import encoded_vectors as encoded_snapshot_vectors
+snapshot_cases_path = FIXTURES / 'catalog-snapshot-conformance.json'
+assert snapshot_cases_path.read_text() == encoded_snapshot_vectors(), 'Stale catalog snapshot vectors'
+snapshot_cases = json.loads(snapshot_cases_path.read_text())
+validator = Draft202012Validator(schemas['catalog-snapshot.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in snapshot_cases:
+    payload = apply_vector(catalog, case)
+    assert validator.is_valid(payload) == case['canonicalValid'], case['name']
+print(f'Verified {len(snapshot_cases)} canonical catalog snapshot cases; whole-document limits remain explicit.')
