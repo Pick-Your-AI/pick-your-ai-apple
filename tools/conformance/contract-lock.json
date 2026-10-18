@@ -1,0 +1,7 @@
+{
+  "contract_version": "1.0.0",
+  "source_repository": "https://github.com/Pick-Your-AI/pick-your-ai-research",
+  "source_revision": "7acbefbf4e4e700231e88be272bc89e3a73dde15",
+  "import_manifest_sha256": "ef6d5801eec10f3169e2bf84653e7026b33088e305a987991ec52faadcd7f554",
+  "fixture_bundle_version": "apple-contract-preparation-1"
+}
