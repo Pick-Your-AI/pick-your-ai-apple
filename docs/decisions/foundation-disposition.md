@@ -70,3 +70,23 @@ No further routine permission request is needed for the engineering dispositions
 Close #22 after publication and an explicit independent receiving review of the accepted decision content, followed by issue-link/readback verification. All three required content areas are present: selected targets/boundaries; comparison and rejected alternatives recorded before app scaffolding; linked ADR with exact versions, limitations and criterion disposition. The publishing PR and receiving receipt complete the remaining evidence linkage. See the [ADR closure boundary](issue-22-platform.md#closure-boundary-for-this-decision-task). No physical-device, app-runtime or production tuple result is required by #22 itself, and no mandatory human reviewer is named. Other foundation issues retain their distinct unresolved facts; this recommendation does not close them automatically.
 
 Concurrent app implementation: [PR #143](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/143) is open at `12952e97f61e689bc4dc886d5e3516e7218c3cad` at this refresh. Continue that work rather than creating another scaffold; this decision update adds no duplicate application code.
+
+## Subsequent receiving receipts
+
+After PR #145 merged as `f88236ac64d28169a731ff4e8050b29f2afc9123`, the
+coordinator recorded independent delegated receiving acceptance, linked exact
+artifacts and verified issue readback for the following decision tasks. Their
+three acceptance criteria were checked and issues closed. Earlier pending-review
+rows above are the pre-receipt assessment, not the current disposition.
+
+| Issue | Exact accepted artifact revision | Receiving receipt |
+| --- | --- | --- |
+| #20 journey map | `fd58e5223dd51a9b49e9c99123736d0af5248dcc` | [Independent content and eight-source verification](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/20#issuecomment-6244060433) |
+| #22 architecture ADR | `a73a933dceea36bf7af35f95697acff0ab6d8e7f` | [Exact decision acceptance](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/22#issuecomment-6244062120) |
+| #25 criteria/ownership intake | `fd58e5223dd51a9b49e9c99123736d0af5248dcc` | [Independent intake and gate acceptance](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/25#issuecomment-6244063395) |
+
+These are agent receiving reviews under the user's delegated authority, not human
+approvals. They close decision-artifact criteria only. All separate implementation,
+real-data, service, device, signing and release requirements remain in force;
+missing operator assignments and historical intake observations are not invented
+or silently converted into present-day facts.
