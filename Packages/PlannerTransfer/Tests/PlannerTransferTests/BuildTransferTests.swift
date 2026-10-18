@@ -150,3 +150,32 @@ final class BuildTransferTests: XCTestCase {
         XCTAssertThrowsError(try BuildTransfer.preview(publicFixture()).fork(localOwner: "", timestamp: "2026-10-18T00:00:00Z"))
     }
 }
+
+
+extension BuildTransferTests {
+    func testExponentNumbersRemainAcceptedAfterEncoding() throws {
+        for token in ["1e15", "1.23456789e-12", "1000000000000000", "0.00000000000123456789", "1.230000000000000000"] {
+            var parser = try JSONParser(Data(token.utf8))
+            let value = try parser.parse()
+            var reparsed = try JSONParser(JSONEncoder().encode(value))
+            XCTAssertEqual(try reparsed.parse(), value, token)
+        }
+        for token in ["1e-999", "1e999", "1.234567890123456", "0.0000000000001"] {
+            var parser = try JSONParser(Data(token.utf8))
+            XCTAssertThrowsError(try parser.parse(), token)
+        }
+    }
+    func testExponentRevisionSurvivesSnapshotExportAndPreview() throws {
+        var source = try publicSource()
+        source["revision"] = .number(Decimal(1_000_000_000_000_000))
+        let plain = String(decoding: try encode(source), as: UTF8.self)
+        let exponent = plain.replacingOccurrences(of: "1000000000000000", with: "1e15")
+        XCTAssertNotEqual(plain, exponent)
+        let snapshot = try BuildTransfer.snapshot(fromDraftJSON: Data(exponent.utf8))
+        let exported = try BuildTransfer.export(snapshot, publicOwnerAlias: "public.alias")
+        let preview = try BuildTransfer.preview(exported)
+        XCTAssertEqual(preview.snapshot.value.object?["revision"], source["revision"])
+        XCTAssertEqual(try BuildTransfer.preview(BuildTransfer.export(preview.snapshot, publicOwnerAlias: "public.alias")).snapshot.value,
+                       preview.snapshot.value)
+    }
+}
