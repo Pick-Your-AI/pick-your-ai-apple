@@ -85,6 +85,8 @@ public struct CatalogBrowserView: View {
                                     .font(.subheadline).foregroundStyle(.secondary)
                             }
                             .frame(maxWidth: .infinity, alignment: .leading)
+                            // The whole row label is a target, including its trailing empty area.
+                            .contentShape(Rectangle())
                         }
                         .buttonStyle(.plain)
                         .accessibilityIdentifier("catalogItem-\(row.item.id)-\(row.item.version)")

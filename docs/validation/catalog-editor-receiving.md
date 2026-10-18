@@ -6,12 +6,12 @@ editor reconciliation from
 [#198](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/198). It is preparation
 for independent receiving review and native execution, not a completed delivery.
 
-The original receiving candidate now has actual package and full Notes results
-below. Its catalog journey remains failed. The contained-switch selector and
-canonical query-label/fixture-lifetime carry are follow-up source changes that
-require fresh complete execution.
+The original and expanded receiving candidates now have actual package and full
+Notes results below. Their catalog journeys remain failed. The latest correction
+defines the catalog row's interaction area and isolates the source-review
+buttons within their shared form row. It requires fresh complete execution.
 
-## Current comparison, source-review and contract receiving source
+## Reviewed a113 comparison, source-review and contract source
 
 The expanded receiving source preserves canonical candidate
 `c8fa65c79b7f02a39f5a03e85a69a81d4d4d2694`, tree
@@ -39,7 +39,7 @@ with the bounded switch-state hypothesis recorded below, while preserving that
 canonical source-review block. These source changes require fresh execution;
 the failed c8 result remains a separate historical receipt.
 
-This combined source requires **110 PlannerUI cases** and **57 PlannerTransfer
+That combined source requires **110 PlannerUI cases** and **57 PlannerTransfer
 cases**, with respectively **61** and **21** mandatory class-qualified identities.
 The `comparison-catalog-source-ui` and `quality-catalog-editor-transfer` profiles
 enforce those exact inventories. The prior 87/38, 96/47, 101/52 and 48/12 profiles remain
@@ -58,10 +58,119 @@ or native gate was changed to obtain those results.
 
 The canonical editor's later [71-model and two-destination Notes pass](editor-integration.md#completed-corrected-editor-execution)
 is actual evidence for `8e76d0ee`, not this expanded source. Its separate failed
-scope job remains recorded. Fresh complete 110/57 package execution, both exact
-Notes/catalog journeys on each pinned destination, all retained native and scope
-checks, successful owned cleanup and ordinary signed receiving review remain
-required. No current combined Swift or device pass is claimed here.
+scope job remains recorded. The expanded attempt's actual model and Notes results
+below do not establish acceptance of the corrected source or of either full
+catalog journey. The current receiving inventory also includes the accepted
+ResourceEstimate carry described next.
+
+## Current accepted-resource receiving carry
+
+The corrected receiving source preserves signed main
+`51952c75f2280d57891491903e495fb822b83bfd`, tree
+`4023c32ffb985154683993e0077221d59308ce42`. Its ordered parents are signed
+`17e03aa65c6f2b6e0465b4bab48787901fdf0523` and the reviewed ResourceEstimate
+source `80593117e861b6cf2e9b6eece1b4d1719068525c`. The three accepted main17
+service-decision documents remain exact; their recorded design disposition
+does not supply the separate Apple client or operating acceptance.
+
+All eight ResourceEstimate methods, its immutable decoder, schema, example and
+223-vector corpus remain byte-identical to accepted main. The validator retains
+both the existing catalog-snapshot entry point and the new resource entry point;
+the default build/selection/common schema set is unchanged. The reference verifier
+retains every complete build, item, snapshot and quality block before the resource
+block. The source manifest retains all **eleven** exact frozen input hashes.
+The package [boundary record](../../Packages/PlannerTransfer/README.md#external-resource-estimate-artifact-boundary)
+continues to distinguish a preserved declaration from qualified estimation,
+current-build binding, source rights or evidence authority.
+
+This receiving tree requires **110 PlannerUI cases / 61 required identities** and
+**65 PlannerTransfer cases / 29 required identities**. The new
+`resource-quality-catalog-editor-transfer` profile retains all 21 required
+snapshot/editor/quality identities and explicitly names all eight resource cases.
+Every earlier profile, including the 57/21 transfer profile, remains unchanged.
+The portable guard tests cover a padded older 57-case log and an impostor class
+with the right method names; neither can qualify the new receiving source.
+Only the transfer workflow's profile selector changes. Xcode pins, reference
+validation, unsigned SDK build, actual model execution and both complete Notes
+and catalog journeys remain required. These source declarations do not claim
+Swift or native execution of the new 65-case union.
+
+Portable validation of source tree `59ee75d172049f820a13945fb4fc6d9cff2a8c34`
+passed all ten guard methods with no failures or skips. The original guard log
+SHA-256 is `1411eacc43effd377d456b2596410c5660304126678243e51d8660385d458733`.
+The existing Python 3.12.14 environment with exact `jsonschema[format]==4.26.0`
+and active URI/date-time checks passed all eleven source hashes and the complete
+129 build/selection, 1,635 item, 77 snapshot, 202 quality and 223 resource vectors.
+That original reference log SHA-256 is
+`ae38e5234ccf01e778c901dc11166eda4407a9a12b9f45d9d7c26750f026f97c`.
+Only this factual receipt was added afterward. These are portable checks, not
+Swift compilation, new simulator execution or whole-issue acceptance.
+
+## Completed a113 native failure and scoped interaction correction
+
+The expanded source `a113480a595ceb89727a7718fd6ee4d92ecc239a`, tree
+`298a4970f756f6f4850159d85a60f0f4658016f7`, executed in
+[run 39137497033 / job 117704995771](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39137497033/job/117704995771).
+The checkout was verified signed prepared commit
+`7badb374161f7e301faeff21c53a27eed1ca1bf3`, with that exact tree and ordered
+`d0537ace` and `a113480a` parents. Xcode 16.4 / build 16F6 compiled and executed
+all **110 distinct PlannerUI cases**, with zero failures or skips. The strict
+parser also confirmed all **61 required identities across seven XCTest classes**.
+The suite took 43.182 seconds; its original model log SHA-256 is
+`8296aae28fff6aa736b390948797c15d129095c95da02ecb8701a317e7c1b485`.
+The unsigned app build and both launch checks passed.
+
+| Destination | Catalog result | Complete Notes result |
+| --- | --- | --- |
+| iPhone SE, iOS 18.5 | Failed after 159.971 seconds: the source-review message remained after the normal Close source review tap; the existing ten-second disappearance assertion failed at helper line 228 | Passed in 212.610 seconds |
+| iPad (10th generation), iPadOS 18.5 | Failed after 96.614 seconds: the selected row did not display `catalogDetailReady`; the existing ten-second existence assertion failed at line 84 | Passed in 236.488 seconds |
+
+Each destination executed two journeys with one pass, one failure and zero skips.
+The exact selected-kind, result-count and restored-filter assertions preceded
+these failures. Those intermediate successes do not establish either complete
+catalog journey. Both owned simulator deletions returned zero and
+`cleanupSucceeded` is true; both already-Shutdown exit-149 diagnostics remain
+retained. The original 203,809,042-byte artifact `12142147907` was downloaded,
+CRC-checked and independently rehashed to
+`15686a404c35fb26a7ce56c4a98deafa9df0dc9b1d1627d381450677b5db09a8`.
+The iPhone summary SHA-256 is
+`0b8d072cd375478e619e3864cab92e084b0b9d4babd8e1de93413b37ba035389`;
+iPad is `f970a2d25da0cf183ac7dc1e9be535e34f1dabaf818bdc4ca043b5283a663f45`.
+The [contemporaneous failure receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/198#issuecomment-6252053579)
+preserves the failed status and correction ownership.
+
+The iPad runner payload independently decodes to 7,587,211 bytes with SHA-256
+`8ce031dd1c71defd19baba9a1a10bec0fc6825e7bc5c306d3d60b06562872f91`.
+Activity `0074A22B-0FC5-4C15-A82F-7E6E3E708832` records a normal touch down/up
+at `(410, 613.8)` between 15:52:01.308 and 15:52:01.604 UTC. That point is inside
+the advertised row frame `(16, 581.5, 788, 64.5)` but outside both text frames:
+`(32, 592.5, 184, 20.5)` and `(32, 617, 192, 18)`. The subsequent failed hierarchy
+still shows the list and no detail sheet. Its decoded SHA-256 is
+`ca5e23a111ae6c08c940059caeb0342e2a387f29393cf1dd32586c5bf54cf79e`.
+The correction applies `contentShape(Rectangle())` to the existing full-width
+button label. Apple's [content-shape API](https://developer.apple.com/documentation/swiftui/view/contentshape(_:eofill:))
+defines the shape used for hit testing. The unchanged ordinary row tap and exact
+detail assertion will test this interaction region on both destinations.
+
+The source-review controls share one `VStack` within a `Form` row. Their default
+automatic styles leave the row's button behavior implicit. The scoped correction
+applies a borderless button style to that provenance row, so Review, Open, Retry
+and Close retain separate button actions. Apple's
+[borderless style API](https://developer.apple.com/documentation/swiftui/primitivebuttonstyle/borderless)
+supports applying the style to a containing view. The model's UUID, active-lifetime and
+one-use opening checks remain unchanged. The trace establishes the delivered
+Close tap and still-visible review; it does not instrument the Swift closures or
+prove their execution order. Fresh native execution of the unchanged Close and
+disappearance assertions must establish the correction's effect.
+
+Both complete UI test files, all 110 existing UI-model methods, production
+autosave timing, selection/source authority and every UI workflow/runner gate
+remain unchanged. This is a two-view interaction correction supported by actual
+failed regressions, not a passing native receipt. The separate accepted-main
+resource carry expands only the Transfer inventory described above. Full 110/65
+package execution, the additive submission SDK lane, both complete Notes/catalog
+journeys and ordinary signed current-main receiving review remain required. The
+separate PlannerUI privacy checkpoint is not included in this correction.
 
 ## Completed c8 catalog failure and Notes result
 

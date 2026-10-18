@@ -63,3 +63,12 @@ for case in quality_cases:
     payload = apply_quality_vector(quality, case)
     assert validator.is_valid(payload) == case['canonicalValid'], case['name']
 print(f'Verified {len(quality_cases)} canonical quality cases; recorded labels and client subsets remain explicit.')
+
+from resource_estimate_vectors import encoded_vectors as encoded_resource_vectors
+resource_cases_path = FIXTURES / 'resource-estimate-conformance.json'
+assert resource_cases_path.read_text() == encoded_resource_vectors(), 'Stale resource estimate vectors'
+resource_cases = json.loads(resource_cases_path.read_text())
+validator = Draft202012Validator(schemas['resource-estimate.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in resource_cases:
+    assert validator.is_valid(json.loads(case['json'])) == case['canonicalValid'], case['name']
+print(f'Verified {len(resource_cases)} canonical resource estimate cases; no capacity, quality or tuple acceptance is inferred.')
