@@ -47,12 +47,13 @@ cleanup remain mandatory.
 
 The receiving tree was prepared on accepted main
 `0397de2095506440a3516438550cd38289afc31e` and reconciled with signed main
-`7952f0cbedc8b19c03b6491197cf1160054c3cd7`. It keeps the pinned toolchain,
+`86107aaed183b8064ca1f5f0bee1c8a8672ae691`. It keeps the pinned toolchain,
 empty-cache assertions, security and toolchain receipts, bounded obsolete-run
 maintenance, conservative documentation-scope preflights, and the exact reviewed
 catalog sort delivered through [#203](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/203).
 The accepted local serializer's bounded round-trip guard and its two regressions
-also remain alongside the imported-library wrapper validation. The source and
+also remain alongside the imported-library wrapper validation. The accepted
+platform decision is preserved in the reconciled repository scope. The source and
 workflow changes in this candidate still require every native job; a skipped
 documentation job is not execution evidence. It then retains these independently
 reviewed component versions:
@@ -79,6 +80,17 @@ do not establish a combined Swift or UI pass. The frozen final receiving head ne
 independent integration review and actual hosted native execution before delivery.
 
 ## Earlier execution and remaining gates
+
+The retained #208 worker source `16e5e364e2236eb044a6307f498619a562d873f8`
+failed native compilation in
+[run 39102893041 / job 117602617289](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39102893041/job/117602617289).
+Two export tests accessed `JSONValue.object`, which is an internal helper in the
+separate transfer module. The correction destructures the public `.object` enum
+case at both sites, failing explicitly if the exported root is not an object, and
+retains both exact alias assertions. No production API, case name or native gate
+changes. The failed source did not execute its model suite; the same test bytes in
+the first combined `29e4055cbdc23a27732059550639d2140b28653a` candidate also require
+this correction before its 68 declared cases can compile and execute.
 
 The original #198 source package contains 52 XCTest cases: 22 editor/library model,
 13 controlled autosave, two bounded history, seven imported-build, six startup and

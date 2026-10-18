@@ -526,7 +526,10 @@ final class ImportedBuildLibraryTests: XCTestCase {
         assertResponsiveEditor(editor, probe: probe)
         probe.release(); await preparing.value
         let exported = try BuildTransfer.preview(XCTUnwrap(model.exportData))
-        XCTAssertEqual(exported.snapshot.value.object?["owner_ref"], .string("reviewed.public"))
+        guard case .object(let fields) = exported.snapshot.value else {
+            return XCTFail("Exported snapshot must retain an object root")
+        }
+        XCTAssertEqual(fields["owner_ref"], .string("reviewed.public"))
         XCTAssertEqual(exported.snapshot.id, snapshot.id)
         XCTAssertEqual(exported.snapshot.locks, snapshot.locks)
         XCTAssertEqual(exported.usesSyntheticData, true)
@@ -561,7 +564,10 @@ final class ImportedBuildLibraryTests: XCTestCase {
             XCTAssertEqual(model.snapshot, snapshot)
             await model.prepareExport(publicAlias: "new.alias")?.value
             let exported = try BuildTransfer.preview(XCTUnwrap(model.exportData))
-            XCTAssertEqual(exported.snapshot.value.object?["owner_ref"], .string("new.alias"))
+            guard case .object(let fields) = exported.snapshot.value else {
+                return XCTFail("Exported snapshot must retain an object root")
+            }
+            XCTAssertEqual(fields["owner_ref"], .string("new.alias"))
             XCTAssertEqual(probe.observations.calls, 2)
             XCTAssertTrue(probe.observations.offMain)
             XCTAssertFalse(probe.observations.timedOut)
