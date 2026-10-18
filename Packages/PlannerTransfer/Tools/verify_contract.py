@@ -1,5 +1,6 @@
 """Verify pinned resources and replay the shared Swift/Python conformance corpus.
-Requires jsonschema[format]==4.26.0. Read-only; no research checkout or network is needed.
+Install the adjacent requirements.txt into a fresh virtual environment first.
+Validation is read-only; no research checkout or network is needed.
 """
 import hashlib
 import json
@@ -10,7 +11,7 @@ from referencing import Registry, Resource
 ROOT = Path(__file__).resolve().parents[1]
 RESOURCES = ROOT / 'Sources/PlannerTransfer/Resources'
 FIXTURES = ROOT / 'Tests/PlannerTransferTests/Fixtures'
-assert {'date-time', 'uri'} <= FormatChecker().checkers.keys(), 'Install jsonschema[format] to enable canonical format checks'
+assert {'date-time', 'uri'} <= FormatChecker().checkers.keys(), 'Install Tools/requirements.txt to enable canonical format checks'
 manifest = json.loads((ROOT / 'source-manifest.json').read_text())
 for source, digest in manifest['files'].items():
     target = (FIXTURES if source.startswith('examples/') else RESOURCES) / Path(source).name
@@ -23,3 +24,19 @@ for case in cases:
     actual = validator.is_valid(case['payload'])
     assert actual == case['valid'], case['name']
 print(f'Verified {len(manifest["files"])} source hashes and {len(cases)} canonical conformance cases.')
+
+# Catalog cases use compact mutations to avoid duplicating the canonical fixture.
+# The Swift test applies these exact mutations before using the public decoder.
+from catalog_vectors import apply_vector, encoded_vectors
+catalog_cases_path = FIXTURES / 'catalog-conformance.json'
+assert catalog_cases_path.read_text() == encoded_vectors(), 'Stale catalog vectors'
+catalog_cases = json.loads(catalog_cases_path.read_text())
+catalog = json.loads((FIXTURES / 'catalog.json').read_text())
+items = {item['kind']: item for item in catalog['items']}
+assert len(items) == len(catalog['items']) == 29
+assert set(items) == set(schemas['catalog-item.schema.json']['properties']['kind']['enum'])
+validator = Draft202012Validator(schemas['catalog-item.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in catalog_cases:
+    payload = apply_vector(items[case['kind']], case)
+    assert validator.is_valid(payload) == case['canonicalValid'], case['name']
+print(f'Verified all 29 catalog kinds and {len(catalog_cases)} canonical catalog cases; client subsets remain explicit.')
