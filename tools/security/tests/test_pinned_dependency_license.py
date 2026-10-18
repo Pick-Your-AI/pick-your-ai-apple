@@ -6,6 +6,7 @@ import base64
 import copy
 from contextlib import redirect_stderr, redirect_stdout
 import hashlib
+from http.client import BadStatusLine, IncompleteRead, LineTooLong
 import importlib.util
 import io
 import json
@@ -183,6 +184,25 @@ class PinnedDependencyLicenseTests(unittest.TestCase):
         request = Request(URL, headers={"Authorization": f"Bearer {TOKEN}"})
         with self.assertRaises(REVIEW.InvalidReview):
             REVIEW.PinnedLicenseNoRedirects().redirect_request(request, None, 302, "redirect", {}, "https://example.invalid/")
+
+    def test_http_protocol_failures_during_open_or_read_do_not_echo_values(self):
+        marker = "PRIVATE-SYNTHETIC-HTTP-DETAIL"
+        for phase in ("open", "read"):
+            for error in (BadStatusLine(marker), LineTooLong(marker), IncompleteRead(marker.encode())):
+                with self.subTest(phase=phase, error=type(error).__name__):
+                    transport = Transport(error=error if phase == "open" else None)
+                    with patch.object(Response, "read1", side_effect=error) as read:
+                        status, report, diagnostic, transport = execute(transport=transport)
+                    self.assertEqual(status, 1)
+                    self.assertIsNone(report)
+                    self.assertEqual(len(transport.requests), 1)
+                    self.assertEqual(read.call_count, int(phase == "read"))
+                    self.assertEqual(
+                        diagnostic,
+                        "Pinned dependency license could not be verified; no recovery is accepted.\n",
+                    )
+                    self.assertNotIn(marker, diagnostic)
+                    self.assertNotIn(TOKEN, diagnostic)
 
     def test_unsuccessful_http_or_expired_read_deadline_cannot_supply_proof(self):
         with patch.object(Response, "status", 403):

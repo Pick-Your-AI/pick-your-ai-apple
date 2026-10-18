@@ -18,6 +18,7 @@ import os
 import sys
 import time
 from dataclasses import asdict, dataclass, replace
+from http.client import HTTPException
 from urllib.error import URLError
 from urllib.request import build_opener, HTTPRedirectHandler, Request
 
@@ -233,7 +234,7 @@ def main() -> int:
     except (InvalidReview, UnicodeError) as error:
         print(f"Dependency review could not be verified: {error}", file=sys.stderr)
         return 1
-    except (OSError, URLError):
+    except (OSError, URLError, HTTPException):
         print("Pinned dependency license could not be verified; no recovery is accepted.", file=sys.stderr)
         return 1
     print(json.dumps({"accepted": result.accepted, **asdict(result)}, sort_keys=True))
