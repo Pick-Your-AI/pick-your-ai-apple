@@ -36,7 +36,21 @@ The user can explicitly discard edits and reopen to load the current revision. D
 with unsupported editor payloads cannot be opened for editing. Unreadable storage rows
 remain stored and are disclosed by count. Selection restoration opens only committed
 content. Background save is best effort: force termination can lose unacknowledged
-edits. UI revision-history/undo and autosave crash recovery remain work under #69.
+edits. Revision history is paged in bounded groups of 20. Explicit restoration
+requires confirmation and clean current input, appends a new revision, preserves
+later saved history, and rejects stale compare-and-swap revisions or unsupported
+editor payloads. Restored notes never become current compatibility or pricing evidence.
+New binding edits arriving during restoration remain dirty. Lifecycle save requests
+arriving during an operation are drained afterward with the latest editor contents
+and committed revision; they are not silently dropped by the busy flag.
+
+Seven additional model regressions cover restore/reopen/history retention, dirty and
+concurrent edit guards, binding updates during restore, bounded history, unsupported
+history, and background saves during paused history/restore operations. These are
+controlled actor-boundary tests, not simulated OS termination or end-to-end UI taps.
+Undo/redo, timed autosave, process-kill during UI autosave and physical lifecycle
+qualification remain work under #69. Hosted exact-head compilation and model tests
+are required before this slice is accepted.
 
 Storage opens in Application Support under a directory protected until first unlock.
 A failure shows an unavailable screen and never resets the database. Locked-device
@@ -48,6 +62,44 @@ Local Linux inspection cannot establish SwiftUI/Xcode correctness. See the PR ch
 for observed hosted results, distinct from device, store or production acceptance.
 
 
+## Asynchronous local startup
+
+The #86/#29 startup correction builds on the independently available libraries in
+[PR #159](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/159), baseline
+`a8d3ac6c449a483a3373ebfaecc6eab4fa9af861`. Each scene owns a `LocalLibraryStartup`
+model. Its SwiftUI `.task` awaits `LocalLibraryStores.open`; a detached worker prepares
+the same protected Application Support directory and opens/migrates each SQLite
+file. App initialization and the main actor do not perform those blocking operations.
+Each tab shows a loading indicator, then either its library or an explicit unavailable
+state. One failed database still cannot hide the other database's records.
+
+SwiftUI cancellation is forwarded to the detached worker. Synchronous SQLite work
+already in flight is allowed to finish or roll back normally; cancellation is checked
+before directory preparation, between opens and before publishing. Cancelled results
+are discarded, and a generation token prevents an older attempt from replacing a
+newer one even if the older operation ignores cancellation. A reappearing scene can
+retry incomplete startup; a ready scene retains its connections and editor state.
+Separate windows own separate startup lifetimes and use the existing SQLite
+transaction/revision guards when accessing the same files.
+
+`LocalLibraryStartupTests` bounds the controlled opener wait to five seconds and
+checks an editor binding action on the main actor while opening is blocked. It also
+checks off-main directory preparation/opening, cancellation between database opens,
+superseded results, explicit failure/retry, retained ready state and directory errors.
+The timeout is a test deadlock guard, not a responsiveness budget or performance
+measurement. `LocalLibraryStoresTests` continues to exercise both corrupt-file cases
+using real SQLite through the asynchronous factory. Run these with the existing
+`swift test --package-path Packages/PlannerUI` and native UI workflow above.
+
+This is bounded startup/cancellation coverage for #86's #29 prerequisite. Hosted
+exact-head Swift/Xcode tests, simulator launch and receiving review are still required;
+physical-device responsiveness, locked-device and low-storage behavior, and the full
+#29/#86 acceptance criteria are separate. No startup timings or device results are
+inferred from static inspection. Apple references checked 2026-10-18:
+[app responsiveness](https://developer.apple.com/documentation/xcode/improving-app-responsiveness)
+and [Task cancellation](https://developer.apple.com/documentation/swift/task).
+
+
 ## Files import and reviewed export
 
 The Imported builds screen uses a separate `imported-builds.sqlite` database in the
@@ -55,6 +107,11 @@ same protected Application Support directory. It never treats a canonical build 
 notes-editor payload or converts an incomplete note into a valid snapshot. A local
 version-1 persistence wrapper holds canonical bytes and untrusted fixture metadata;
 unsupported local formats are preserved and refused. Imported builds are read-only.
+Each library opens independently. If either database is corrupt or unsupported,
+only that tab reports an unavailable library; the other tab remains usable. Two
+regression tests corrupt each database in turn and verify that the healthy database
+still reopens its saved records (including note history) and corrupt bytes remain
+unchanged. These tests exercise real SQLite initialization, not mocked success.
 
 The system Files picker supplies one JSON URL. Security-scoped access lasts only for
 a bounded background read (512 KiB actual-byte maximum, checked independently of
