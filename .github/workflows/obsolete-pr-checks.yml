@@ -1,0 +1,61 @@
+name: Retire obsolete PR checks
+
+on:
+  pull_request:
+    paths:
+      - '.github/workflows/obsolete-pr-checks.yml'
+      - 'tools/ci/**'
+      - 'docs/validation/obsolete-pr-checks.md'
+  push:
+    branches: [main]
+    paths:
+      - '.github/workflows/obsolete-pr-checks.yml'
+      - 'tools/ci/**'
+      - 'docs/validation/obsolete-pr-checks.md'
+  workflow_run:
+    workflows: ['Contract preparation (Python reference only)']
+    types: [completed]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+
+concurrency:
+  group: obsolete-pr-checks-${{ github.event_name == 'pull_request' && github.event.pull_request.number || 'maintenance' }}
+  cancel-in-progress: false
+
+jobs:
+  safety-tests:
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Exercise cancellation and preservation paths without a token
+        run: python3 -m unittest discover -s tools/ci/tests -v
+
+  retire:
+    needs: safety-tests
+    if: >-
+      github.repository == 'Pick-Your-AI/pick-your-ai-apple' &&
+      github.ref == 'refs/heads/main' &&
+      (github.event_name == 'push' || github.event_name == 'workflow_run' || github.event_name == 'workflow_dispatch')
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: read
+      pull-requests: read
+      actions: write
+    steps:
+      - name: Check out the immutable reviewed main revision
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          ref: ${{ github.sha }}
+          persist-credentials: false
+      - name: Request bounded cancellation of obsolete first-attempt PR checks
+        env:
+          GITHUB_TOKEN: ${{ github.token }}
+        run: python3 tools/ci/retire_obsolete_pr_runs.py --apply
