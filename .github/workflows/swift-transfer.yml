@@ -23,6 +23,8 @@ jobs:
           fetch-depth: 0
       - name: Test conservative scope selection
         run: python3 -m unittest discover -s tools/ci/tests -p 'test_native_scope.py' -v
+      - name: Test Swift execution evidence guards
+        run: python3 -m unittest discover -s tools/ci/tests -p 'test_swift_test_results.py' -v
       - name: Inspect complete exact Git comparison
         id: scope
         env:
@@ -56,7 +58,18 @@ jobs:
           /tmp/transfer-python/bin/pip install 'jsonschema[format]==4.26.0'
           /tmp/transfer-python/bin/python Packages/PlannerTransfer/Tools/verify_contract.py
       - name: Run Swift boundary and adversarial tests
-        run: swift test --package-path Packages/PlannerTransfer
+        run: |
+          set -euo pipefail
+          swift test --package-path Packages/PlannerTransfer 2>&1 | tee transfer-tests.log
+          python3 tools/ci/require_swift_test_results.py quality-catalog-editor-transfer transfer-tests.log
       - name: Compile unsigned iOS Simulator boundary
         working-directory: Packages/PlannerTransfer
         run: xcodebuild -scheme PlannerTransfer -destination 'generic/platform=iOS Simulator' -derivedDataPath /tmp/planner-transfer-derived CODE_SIGNING_ALLOWED=NO build
+      - name: Retain Swift execution evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: transfer-test-evidence
+          path: transfer-tests.log
+          if-no-files-found: warn
+          retention-days: 14

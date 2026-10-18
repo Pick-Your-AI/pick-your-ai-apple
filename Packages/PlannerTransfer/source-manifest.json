@@ -8,6 +8,9 @@
     "schemas/common.schema.json": "0342ce2f1114e7276fc7f6a08ff5b86e8727caadd83ae4f443de9a7e1431c43c",
     "examples/build.json": "26762208769a8cf1012b4f33b1c1608556d275187ce21117d0b9632cdf951864",
     "schemas/catalog-item.schema.json": "81c960c6e7dfe046634062e3f9ce5a1089b1d88adbd9fd45d9a67dcfc0339a25",
-    "examples/catalog.json": "2e9120db823faef3e1e330a7d2e8067b3ab064328e2faed699d15cf41880fbf8"
+    "examples/catalog.json": "2e9120db823faef3e1e330a7d2e8067b3ab064328e2faed699d15cf41880fbf8",
+    "schemas/catalog-snapshot.schema.json": "a5af428386768b698d280a18bf99c0e52364ee397a2075685213b3d0762693a4",
+    "schemas/quality-evaluation-run.schema.json": "ed6b3f60805428e3788ce27fa224fb3d5008998f0637f24723bf65eea546a959",
+    "examples/quality-evaluation-run.json": "bc0abc0b33e2b6bf77fc4609ac88a73981068eac6fabf604c255f58fec954a6d"
   }
 }

@@ -25,6 +25,8 @@ class NativeScopeTests(unittest.TestCase):
         self.command("config", "user.name", "Synthetic CI scope fixture")
         self.command("config", "user.email", "ci-fixture@example.invalid")
         self.command("config", "commit.gpgsign", "false")
+        # Finish fixture-owned maintenance before TemporaryDirectory cleanup.
+        self.command("config", "maintenance.autoDetach", "false")
         self.write("README.md", "Synthetic documentation\n")
         self.write("Sources/Value.swift", "struct Value {}\n")
         self.initial = self.commit()
@@ -50,11 +52,12 @@ class NativeScopeTests(unittest.TestCase):
     def test_regular_documentation_push_skips_native(self):
         for path in ["README.md", "docs/acceptance/issue-33-draft-snapshot-boundary.md",
                      "App/README.md", "App/UI_JOURNEY.md",
-                     "Packages/PlannerData/README.md", "tools/conformance/README.md"]:
+                     "Packages/PlannerData/README.md", "tools/conformance/README.md",
+                     "docs/validation/issue-113-policy.md", "docs/validation/submission-sdk.md"]:
             self.write(path, "Changed synthetic documentation\n")
         result = self.push(self.commit())
         self.assertFalse(result.native_required)
-        self.assertEqual(result.changed_files, 6)
+        self.assertEqual(result.changed_files, 8)
 
     def test_pr_uses_exact_test_merge_against_its_base(self):
         self.write("docs/REPOSITORY_SCOPE.md", "Synthetic PR\n")

@@ -109,6 +109,51 @@ final class ImportedBuildLibraryTests: XCTestCase {
         XCTAssertEqual(history.records, [record])
         XCTAssertEqual(page.records, [record])
     }
+    private func comparisonFixtures(in store: DraftStore) async throws -> [(row: DraftRecord, snapshot: BuildSnapshot)] {
+        let preview = try BuildTransfer.preview(fixture())
+        var fixtures: [(row: DraftRecord, snapshot: BuildSnapshot)] = []
+        for index in 0..<3 {
+            let fork = try preview.fork(localOwner: "local.comparison.\(index)", timestamp: "2026-10-18T00:00:00Z")
+            guard case .object(var fields) = fork.value,
+                  case .object(var objectives)? = fields["objectives"] else { throw TransferError.malformed }
+            fields["name"] = .string("Comparison fixture \(index)")
+            objectives["requests_per_day"] = .number(Decimal((index + 1) * 1000))
+            fields["objectives"] = .object(objectives)
+            let snapshot = try BuildTransfer.snapshot(fromDraftJSON: JSONEncoder().encode(JSONValue.object(fields)))
+            let wrapper = try ImportedBuildRecord(snapshot: snapshot, markedSynthetic: index == 1,
+                sourceRevision: index == 1 ? String(repeating: "e", count: 40) : nil)
+            let row = try await store.save(id: UUID(), expectedRevision: nil, title: snapshot.name,
+                                           payload: JSONEncoder().encode(wrapper))
+            fixtures.append((row, snapshot))
+        }
+        return fixtures
+    }
+    private func comparisonPreparation(_ probe: BlockedBuildPreparation, failFirst: Bool = false) -> ImportedBuildPreparation {
+        ImportedBuildPreparation(preview: ImportedBuildPreparation.live.preview, export: ImportedBuildPreparation.live.export,
+            compare: { before, after in
+                let call = probe.pauseFirst()
+                if call == 1, failFirst { throw BuildComparisonError.tooManyDifferences }
+                return try BuildComparison.compare(before, after)
+            })
+    }
+    private func pinFirstAndSelectSecond(_ model: ImportedBuildLibraryModel,
+                                        fixtures: [(row: DraftRecord, snapshot: BuildSnapshot)]) async {
+        await model.open(fixtures[0].row)
+        model.pinComparisonBaseline()
+        await model.open(fixtures[1].row)
+        XCTAssertEqual(model.comparisonBaseline, fixtures[0].snapshot)
+        XCTAssertEqual(model.snapshot, fixtures[1].snapshot)
+    }
+    private func assertComparisonRowsUnchanged(_ rows: [DraftRecord], in folder: URL) async throws {
+        let reopened = try DraftStore(url: folder.appendingPathComponent("imports.sqlite"))
+        let page = try await reopened.list()
+        XCTAssertEqual(Set(page.records.map(\.id)), Set(rows.map(\.id)))
+        for row in rows {
+            let durable = try await reopened.read(id: row.id), history = try await reopened.history(id: row.id)
+            XCTAssertEqual(durable, row)
+            XCTAssertEqual(history.records, [row])
+        }
+    }
     func testPreviewAndCancelNeverWriteStorage() async throws {
         let (store, model, folder) = try setup()
         defer { try? FileManager.default.removeItem(at: folder) }
@@ -621,6 +666,255 @@ final class ImportedBuildLibraryTests: XCTestCase {
             XCTAssertTrue(probe.observations.offMain)
             XCTAssertFalse(probe.observations.timedOut)
             try await assertUnchanged(selected, in: folder)
+        }
+    }
+    func testComparisonPreparationLeavesMainActorResponsiveAndPreservesInputs() async throws {
+        let probe = BlockedBuildPreparation()
+        defer { probe.release() }
+        let (store, model, folder) = try setup(preparation: comparisonPreparation(probe))
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let fixtures = try await comparisonFixtures(in: store)
+        await pinFirstAndSelectSecond(model, fixtures: fixtures)
+        let editor = try await notesEditor(in: folder)
+        let preparing = try XCTUnwrap(model.prepareComparison())
+        let entered = await probe.waitUntilEntered()
+        XCTAssertTrue(entered)
+        XCTAssertTrue(model.comparing)
+        XCTAssertFalse(model.busy, "Read-only comparison must not serialize ordinary library work")
+        XCTAssertNil(model.prepareComparison(), "Repeated taps must not queue identical in-flight work")
+        XCTAssertNil(model.comparison)
+        assertResponsiveEditor(editor, probe: probe)
+        probe.release(); await preparing.value
+        let comparison = try XCTUnwrap(model.comparison)
+        XCTAssertEqual(comparison.result, try BuildComparison.compare(fixtures[0].snapshot, fixtures[1].snapshot))
+        XCTAssertFalse(comparison.beforeSynthetic)
+        XCTAssertTrue(comparison.afterSynthetic)
+        XCTAssertFalse(model.comparing)
+        XCTAssertNil(model.comparisonNotice)
+        XCTAssertEqual(model.selected, fixtures[1].row)
+        XCTAssertEqual(model.comparisonBaseline, fixtures[0].snapshot)
+        XCTAssertFalse(probe.observations.timedOut)
+        model.cancelComparison() // Detail navigation must retain an already completed result.
+        XCTAssertEqual(model.comparison, comparison)
+        try await assertComparisonRowsUnchanged(fixtures.map { $0.row }, in: folder)
+    }
+    func testNewSelectionComparisonFinishesBeforeCancelledOlderResultOrError() async throws {
+        for failFirst in [false, true] {
+            let probe = BlockedBuildPreparation()
+            defer { probe.release() }
+            let (store, model, folder) = try setup(preparation: comparisonPreparation(probe, failFirst: failFirst))
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let fixtures = try await comparisonFixtures(in: store)
+            await pinFirstAndSelectSecond(model, fixtures: fixtures)
+            let older = try XCTUnwrap(model.prepareComparison())
+            let entered = await probe.waitUntilEntered()
+            XCTAssertTrue(entered)
+            await model.open(fixtures[2].row)
+            let newer = try XCTUnwrap(model.prepareComparison())
+            await newer.value // N+1 completes while the cancelled N worker is still blocked.
+            let current = try XCTUnwrap(model.comparison)
+            XCTAssertEqual(current.result, try BuildComparison.compare(fixtures[0].snapshot, fixtures[2].snapshot))
+            XCTAssertFalse(current.beforeSynthetic)
+            XCTAssertFalse(current.afterSynthetic)
+            XCTAssertFalse(probe.observations.timedOut)
+            probe.release(); await older.value
+            XCTAssertEqual(model.comparison, current)
+            XCTAssertNil(model.comparisonNotice)
+            XCTAssertFalse(model.comparing)
+            XCTAssertEqual(model.selected, fixtures[2].row)
+            XCTAssertEqual(probe.observations.calls, 2)
+            XCTAssertTrue(probe.observations.offMain)
+            try await assertComparisonRowsUnchanged(fixtures.map { $0.row }, in: folder)
+        }
+    }
+    func testCancelledOlderComparisonCannotClearPendingNewerWork() async throws {
+        for failOlder in [false, true] {
+            let olderProbe = BlockedBuildPreparation(), newerProbe = BlockedBuildPreparation()
+            defer { olderProbe.release(); newerProbe.release() }
+            let preparation = ImportedBuildPreparation(preview: ImportedBuildPreparation.live.preview,
+                export: ImportedBuildPreparation.live.export, compare: { before, after in
+                    if after.name == "Comparison fixture 1" {
+                        olderProbe.pauseFirst()
+                        if failOlder { throw BuildComparisonError.tooManyDifferences }
+                    } else { newerProbe.pauseFirst() }
+                    return try BuildComparison.compare(before, after)
+                })
+            let (store, model, folder) = try setup(preparation: preparation)
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let fixtures = try await comparisonFixtures(in: store)
+            await pinFirstAndSelectSecond(model, fixtures: fixtures)
+            let older = try XCTUnwrap(model.prepareComparison())
+            let olderEntered = await olderProbe.waitUntilEntered()
+            XCTAssertTrue(olderEntered)
+            await model.open(fixtures[2].row)
+            let newer = try XCTUnwrap(model.prepareComparison())
+            let newerEntered = await newerProbe.waitUntilEntered()
+            XCTAssertTrue(newerEntered)
+            olderProbe.release(); await older.value // Retired cleanup runs while N+1 still owns the lane.
+            XCTAssertTrue(model.comparing, "The older request cannot clear a newer request's progress state")
+            XCTAssertNil(model.comparison)
+            XCTAssertNil(model.comparisonNotice)
+            XCTAssertEqual(model.selected, fixtures[2].row)
+            XCTAssertFalse(newerProbe.observations.timedOut)
+            newerProbe.release(); await newer.value
+            let current = try XCTUnwrap(model.comparison)
+            XCTAssertEqual(current.result, try BuildComparison.compare(fixtures[0].snapshot, fixtures[2].snapshot))
+            XCTAssertFalse(current.beforeSynthetic)
+            XCTAssertFalse(current.afterSynthetic)
+            XCTAssertFalse(model.comparing)
+            XCTAssertNil(model.comparisonNotice)
+            XCTAssertEqual(olderProbe.observations.calls, 1)
+            XCTAssertEqual(newerProbe.observations.calls, 1)
+            XCTAssertTrue(olderProbe.observations.offMain)
+            XCTAssertTrue(newerProbe.observations.offMain)
+            XCTAssertFalse(olderProbe.observations.timedOut)
+            XCTAssertFalse(newerProbe.observations.timedOut)
+            try await assertComparisonRowsUnchanged(fixtures.map { $0.row }, in: folder)
+        }
+    }
+    func testReplacingBaselineRejectsLateComparisonAndRetainsNewQualification() async throws {
+        for failFirst in [false, true] {
+            let probe = BlockedBuildPreparation()
+            defer { probe.release() }
+            let (store, model, folder) = try setup(preparation: comparisonPreparation(probe, failFirst: failFirst))
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let fixtures = try await comparisonFixtures(in: store)
+            await pinFirstAndSelectSecond(model, fixtures: fixtures)
+            let older = try XCTUnwrap(model.prepareComparison())
+            let entered = await probe.waitUntilEntered()
+            XCTAssertTrue(entered)
+            model.pinComparisonBaseline()
+            await model.prepareComparison()?.value
+            let current = try XCTUnwrap(model.comparison)
+            XCTAssertEqual(current.result.before.id, fixtures[1].snapshot.id)
+            XCTAssertEqual(current.result.after.id, fixtures[1].snapshot.id)
+            XCTAssertTrue(current.result.differences.isEmpty)
+            XCTAssertTrue(current.beforeSynthetic)
+            XCTAssertTrue(current.afterSynthetic)
+            XCTAssertFalse(probe.observations.timedOut)
+            probe.release(); await older.value
+            XCTAssertEqual(model.comparison, current)
+            XCTAssertEqual(model.comparisonBaseline, fixtures[1].snapshot)
+            XCTAssertNil(model.comparisonNotice)
+            XCTAssertFalse(model.comparing)
+            try await assertComparisonRowsUnchanged(fixtures.map { $0.row }, in: folder)
+        }
+    }
+    func testClearedBaselineRejectsLateComparisonAndError() async throws {
+        for failFirst in [false, true] {
+            let probe = BlockedBuildPreparation()
+            defer { probe.release() }
+            let (store, model, folder) = try setup(preparation: comparisonPreparation(probe, failFirst: failFirst))
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let fixtures = try await comparisonFixtures(in: store)
+            await pinFirstAndSelectSecond(model, fixtures: fixtures)
+            let preparing = try XCTUnwrap(model.prepareComparison())
+            let entered = await probe.waitUntilEntered()
+            XCTAssertTrue(entered)
+            model.clearComparisonBaseline()
+            XCTAssertFalse(model.comparing)
+            XCTAssertNil(model.prepareComparison())
+            probe.release(); await preparing.value
+            XCTAssertNil(model.comparisonBaseline)
+            XCTAssertNil(model.comparison)
+            XCTAssertNil(model.comparisonNotice)
+            XCTAssertEqual(model.selected, fixtures[1].row)
+            XCTAssertFalse(probe.observations.timedOut)
+            try await assertComparisonRowsUnchanged(fixtures.map { $0.row }, in: folder)
+        }
+    }
+    func testCancelledComparisonRejectsLateResultAndErrorWithoutClearingPin() async throws {
+        for (leaveView, failFirst) in [(false, false), (false, true), (true, false), (true, true)] {
+            let probe = BlockedBuildPreparation()
+            defer { probe.release() }
+            let (store, model, folder) = try setup(preparation: comparisonPreparation(probe, failFirst: failFirst))
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let fixtures = try await comparisonFixtures(in: store)
+            await pinFirstAndSelectSecond(model, fixtures: fixtures)
+            let preparing = try XCTUnwrap(model.prepareComparison())
+            let entered = await probe.waitUntilEntered()
+            XCTAssertTrue(entered)
+            if leaveView { model.cancelComparison() } else { preparing.cancel() }
+            probe.release(); await preparing.value
+            XCTAssertNil(model.comparison)
+            XCTAssertNil(model.comparisonNotice)
+            XCTAssertFalse(model.comparing)
+            XCTAssertEqual(model.comparisonBaseline, fixtures[0].snapshot)
+            XCTAssertEqual(model.selected, fixtures[1].row)
+            XCTAssertFalse(probe.observations.timedOut)
+            try await assertComparisonRowsUnchanged(fixtures.map { $0.row }, in: folder)
+        }
+    }
+    func testInvalidatedQueuedComparisonNeverEntersWorker() async throws {
+        let probe = BlockedBuildPreparation()
+        defer { probe.release() }
+        let (store, model, folder) = try setup(preparation: comparisonPreparation(probe))
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let fixtures = try await comparisonFixtures(in: store)
+        await pinFirstAndSelectSecond(model, fixtures: fixtures)
+        let preparing = try XCTUnwrap(model.prepareComparison())
+        model.clearComparisonBaseline() // Same actor turn, before the queued task starts.
+        await preparing.value
+        XCTAssertEqual(probe.observations.calls, 0)
+        XCTAssertNil(model.comparisonBaseline)
+        XCTAssertNil(model.comparison)
+        XCTAssertNil(model.comparisonNotice)
+        XCTAssertFalse(model.comparing)
+        try await assertComparisonRowsUnchanged(fixtures.map { $0.row }, in: folder)
+    }
+    func testCommittedBaselineDeletionCancelsPendingComparisonAndPreservesSelection() async throws {
+        for failFirst in [false, true] {
+            let probe = BlockedBuildPreparation()
+            defer { probe.release() }
+            let (store, model, folder) = try setup(preparation: comparisonPreparation(probe, failFirst: failFirst))
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let fixtures = try await comparisonFixtures(in: store)
+            await pinFirstAndSelectSecond(model, fixtures: fixtures)
+            let preparing = try XCTUnwrap(model.prepareComparison())
+            let entered = await probe.waitUntilEntered()
+            XCTAssertTrue(entered)
+            await model.delete(fixtures[0].row)
+            XCTAssertEqual(model.lastDeletedID, fixtures[0].row.id)
+            XCTAssertNil(model.comparisonBaseline)
+            XCTAssertFalse(model.comparing)
+            XCTAssertEqual(model.selected, fixtures[1].row)
+            probe.release(); await preparing.value
+            XCTAssertNil(model.comparison)
+            XCTAssertNil(model.comparisonNotice)
+            XCTAssertFalse(probe.observations.timedOut)
+            try await assertComparisonRowsUnchanged(fixtures.dropFirst().map { $0.row }, in: folder)
+        }
+    }
+    func testRejectedBaselineDeletionPreservesPinAndPendingComparison() async throws {
+        let probe = BlockedBuildPreparation()
+        defer { probe.release() }
+        let (store, model, folder) = try setup(preparation: comparisonPreparation(probe))
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let fixtures = try await comparisonFixtures(in: store)
+        await pinFirstAndSelectSecond(model, fixtures: fixtures)
+        let preparing = try XCTUnwrap(model.prepareComparison())
+        let entered = await probe.waitUntilEntered()
+        XCTAssertTrue(entered)
+        let renamed = try await store.rename(id: fixtures[0].row.id, expectedRevision: fixtures[0].row.revision, title: "Newer local label")
+        await model.delete(fixtures[0].row)
+        XCTAssertNil(model.lastDeletedID)
+        XCTAssertNotNil(model.notice)
+        XCTAssertTrue(model.comparing)
+        XCTAssertEqual(model.comparisonBaseline, fixtures[0].snapshot)
+        probe.release(); await preparing.value
+        XCTAssertEqual(model.comparison?.result, try BuildComparison.compare(fixtures[0].snapshot, fixtures[1].snapshot))
+        XCTAssertNil(model.comparisonNotice)
+        XCTAssertNotNil(model.notice, "A read-only comparison must not clear a storage failure")
+        XCTAssertFalse(model.comparing)
+        XCTAssertFalse(probe.observations.timedOut)
+        let reopened = try DraftStore(url: folder.appendingPathComponent("imports.sqlite"))
+        let baseline = try await reopened.read(id: renamed.id), history = try await reopened.history(id: renamed.id)
+        XCTAssertEqual(baseline, renamed)
+        XCTAssertEqual(history.records, [renamed, fixtures[0].row])
+        for other in fixtures.dropFirst() {
+            let row = try await reopened.read(id: other.row.id), revisions = try await reopened.history(id: other.row.id)
+            XCTAssertEqual(row, other.row)
+            XCTAssertEqual(revisions.records, [other.row])
         }
     }
 }

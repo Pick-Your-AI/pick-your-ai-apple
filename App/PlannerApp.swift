@@ -41,6 +41,8 @@ private struct LocalLibrariesView: View {
                 }
             }
             .tabItem { Label("Imported builds", systemImage: "doc.badge.plus") }
+            CatalogBrowserView()
+                .tabItem { Label("Demo catalog", systemImage: "square.grid.2x2") }
         }
         .task { await startup.load() }
     }

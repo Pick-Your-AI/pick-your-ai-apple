@@ -1,4 +1,4 @@
-# Bounded local-draft UI journey
+# Bounded native notes and catalog UI journeys
 
 [`PlannerAppUITests/LocalDraftJourneyTests.swift`](PlannerAppUITests/LocalDraftJourneyTests.swift)
 is an Xcode UI Testing Bundle, separate from the Swift package's editor-model tests.
@@ -42,6 +42,51 @@ duplicate, forced termination during an unacknowledged save, or restoration of a
 scene. Row lookup still assumes the created record is on the current library page; it
 does not establish pagination across an arbitrarily populated library.
 
+## Catalog browsing journey
+
+[`PlannerAppUITests/CatalogBrowserJourneyTests.swift`](PlannerAppUITests/CatalogBrowserJourneyTests.swift)
+uses the same actual app and ordinary controls to browse the fixed synthetic
+catalog. It verifies the initial 25-of-29 result count, combines a query with the
+Accelerator kind and kind ordering, then terminates and relaunches the process.
+After the normal tap, the native kind control and its identified row must each
+report the exact selected value through the existing ten-second predicate bound;
+both exact value assertions and the later filtered-count/restoration checks remain.
+The recreated browser must restore those preferences and return the exact
+`cat.accelerator.fixture` item at `2026.10-demo`. Its detail must identify the
+pinned `catalog.fixture.1` source and explicitly unknown assessment.
+The detail query matches the complete native labeled values inside the exact
+detail Form, including separate `Compatibility, Unknown` and
+`Price estimate, Unknown` labels; one generic Unknown cannot satisfy both gaps.
+The detail consumer also requires the exact source SHA-256, all eight accelerator
+specification fields in its loaded summary, recorded `vram_gb` of 24, an explicit
+missing `rated_power_w`, and the retained source's `user_supplied` declaration,
+check date, missing URL and fictional qualification. These assertions read normal
+detail controls after its visible loaded summary; no alternate source is injected.
+
+The source-review follow-up uses that unchanged missing-URI specimen's normal
+Review source link and Close source review controls. It checks the complete gap
+message, absence of an Open action and unchanged source declaration/date after
+dismissal. This negative journey does not exercise an external handoff or approve
+a source host; the [source-navigation receipt](../docs/validation/catalog-source-navigation.md)
+separates the model/policy and remaining native evidence scopes.
+
+Clear filters restores the first bounded page; Load more components must reach
+29-of-29. A unique unmatched query must show a successful zero count and an empty
+state without a failure notice. The test restores default filters through the UI
+and returns to the available Notes tab. It never creates, edits, selects, deletes
+or replaces a note or imported build. Screenshots retain combined-filter,
+pinned-detail, pagination and empty states. Both list and detail gestures target
+their explicit accessible containers, and text entry dismisses the keyboard
+through the real field submission handler.
+
+This test does not inject a failing service, invent compatibility assessments or
+select a component into a build. Deterministic model regressions cover unavailable
+pages and cancellation races separately. The added journey still requires actual
+hosted execution on both pinned destinations; its source alone proves no UI or
+physical accessibility result. See the [catalog receipt](../docs/validation/issue-59-catalog-browser.md).
+
+## Shared pinned runner
+
 [`scripts/ui-journey.py`](scripts/ui-journey.py) requires exactly one installed device
 type for `iPhone SE (3rd generation)` and `iPad (10th generation)`, plus the available
 runtime `com.apple.CoreSimulator.SimRuntime.iOS-18-5`. It creates a fresh simulator of
@@ -72,6 +117,8 @@ so that container selection is ambiguous. The editor Form now has the exact
 `draftEditorForm` identifier, and every reveal gesture targets only that container.
 All persistence, revision, dirty-discard and destination assertions remain mandatory.
 This correction requires a fresh successful run on both destinations.
+
+### Canonical editor keyboard receipt
 
 The combined 68-case source `460f9a833277a0601ba11ab774f64ee371baa555` in
 [native run 39107785886](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39107785886/job/117617303097)
@@ -115,6 +162,75 @@ unidentified Continue dialog or configure away system onboarding. App source,
 the real timer, failed-autosave notice, dirty discard, durable reopening and both
 destination gates are unchanged. This test-only correction needs a new native run.
 
+### Control failures observed in the catalog candidate
+
+Candidate `e964f566874ab5f26f7d7499f753316ec97c75c8` in
+[native run 39104693228](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39104693228/job/117608134115)
+compiled and passed all 60 editor/browser model tests, the unsigned simulator build
+and both smoke launches. Its full journeys failed: the iPhone ran both tests and
+failed both; the iPad passed the complete notes journey and failed catalog entry.
+Those results do not qualify either destination's complete two-journey gate.
+
+The retained [native evidence artifact 12129922478](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39104693228/artifacts/12129922478)
+has SHA-256 `41fffea1d09afcb676e34b3cd1b803b8a0888eea0f246007c87628d466a01866`.
+Its actual `xcresult` activity records, accessibility trees and screen recordings
+identify three distinct controls, despite the browser failures sharing one helper
+line number:
+
+| Observed failure | Evidence and scoped correction |
+| --- | --- |
+| iPad: `app.tabBars.buttons["Demo catalog"]` never exists. | The retained hierarchy exposes the visible top navigation as nested Buttons under Other, with no TabBar. The test now finds the exact visible navigation label among buttons on both layouts and still performs a normal hittable/enabled tap. The Notes return uses the same query. |
+| iPhone: the kind menu never opens before waiting for `catalogKind-accelerator`. | The outer List button covers `(16,369,343,44)` while the actual inner menu button covers `(32,381,199,20.5)`. XCTest's retained tap was `(50.3,373.4)`, outside that inner control, and the recording shows no open menu. Candidate `aba37` requested the borderless button style; its later actual result below shows that this did not correct the nested activation target. |
+| iPhone: six Form swipes never reveal `loadRevisions`. | Each retained swipe starts at `(187.5,453.5)` while the visible keyboard starts at y=407. The recording shows an unchanged editor and keyboard throughout. Title and notes now share explicit focus state and a visible Done editing keyboard action. The test uses that action and requires the keyboard to disappear before its unchanged identified-Form scrolling. After the first dismissal it also reasserts the exact amended title and complete notes before reading durable history. |
+
+The focus action only ends text entry; it does not save, discard or close the draft.
+In that earlier browser correction, the title's Done submission also ended
+focus, and interactive scroll dismissal was available above the keyboard. The real production
+autosave, exact revision increments, invalid-title rejection, discard, independent
+control and cold deletion assertions are unchanged. No extra swipes, arbitrary
+coordinate taps, storage injection, skipped test or destination fallback were added.
+Failure messages identify the requested control rather than only a shared helper.
+
+The separately reviewed finite-window-geometry correction
+and the canonical editor candidate's additional model/Home/Files tests are distinct
+work and must be preserved when the branches are reconciled; this receipt does not
+claim they have been applied or executed here.
+
+Candidate `aba37bb980f49e0e6772f11bcfaa8023a34d4839` in
+[native run 39111714464](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39111714464/job/117629098778)
+passed all 60 model tests, the unsigned build and both smoke launches. The complete
+iPhone notes journey passed in 258.729 seconds. Its catalog journey failed in
+83.791 seconds; iPad catalog failed in 97.477 seconds and notes in 162.826 seconds.
+Both destinations executed the exact two tests with zero skips, and both owned
+simulator deletions succeeded. Artifact `12131547131` is 211,972,207 bytes and its
+downloaded ZIP matches SHA-256
+`9e11bdda7ab52f620eb42b6ef797027e45f50c754c7194d2f8136f4b892af294`.
+
+Both catalog recordings still show a closed kind menu. The iPhone retains the
+same outer/inner frames and synthesized tap; iPad now reaches that same nested
+menu after successful adaptive navigation. A normal row button now opens a
+component-kind sheet with visibly labeled switch Toggles and an explicit Done
+action. Each toggle uses the existing exact kind binding; no search, sorting,
+source identity, preference or pagination semantics change. The actual journey
+requires off/on switch values, the same one-result Accelerator filter and its
+selected state after process relaunch before continuing to details and pagination.
+
+The iPad notes failure occurs later, after its standard oversized-title Paste:
+the retained recording shows the OS **Copy and Paste** first-use education panel
+with its **Continue** button covering the keyboard toolbar. `finishDraftEditing`
+exists but is not hittable behind that panel. This is separate from editor focus.
+The paste helper dismisses only that exact observed education heading through its
+normal visible Continue action, waits for the heading to disappear and reasserts
+the complete over-limit title value. The actual autosave rejection, unsaved notes,
+mandatory discard and durable reopening remain required. No production focus
+change, arbitrary coordinate, longer timeout or simulator-state injection is added.
+
+These follow-up controls still require fresh exact-source execution of both full
+journeys on both pinned destinations. The one passing iPhone notes result is
+retained source-specific evidence, not acceptance of the combined native gate.
+
+### Canonical editor query-label evidence
+
 The subsequent `877f8f16447be2698ba43079ff4ef8066f85a2c4` composition in
 [native run 39118569803](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39118569803/job/117649322901)
 passed all 71 model cases, the unsigned build, both launch smokes and the complete
@@ -127,6 +243,20 @@ unrecognized labels. Both result summaries report zero skips and successful owne
 deletion. The [integration receipt](../docs/validation/editor-integration.md) records
 the independently verified archive and decoded payload hashes. This failed run is
 retained evidence; the corrected source still requires both complete journeys.
+
+### Completed canonical Notes correction
+
+The exact `8e76d0ee` source subsequently passed
+[run 39124384850 / job 117666403863](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39124384850/job/117666403863)
+at checkout `1626e530`, tree `d6117678`, which matches the reviewed source.
+All 71 model cases passed. The complete Notes journey passed on the pinned
+iPhone in 279.590 seconds and iPad in 244.912 seconds, each with one passing
+test, zero failures/skips and successful deletion of the run-owned simulator.
+The [complete receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution)
+records the full identities, artifact and summary hashes, and retained shutdown
+diagnostics. The separate scope-cleanup failure remains recorded. This successful
+editor run does not execute the later 96-model/57-transfer composition or its
+catalog journey; those full current-source gates remain required.
 
 A try/finally scope protects every verified creation, including later evidence-writing
 or test failures. Cleanup shuts down and deletes only the verified ID created by this
@@ -150,9 +280,11 @@ timeout; the 40-minute job budget allows both attempts plus existing checks.
 Every run keeps per-device `xcodebuild` commands/logs, `.xcresult` bundles (including
 screenshots), `xcresulttool` JSON summaries, per-device creation/cleanup receipts, and a combined result record under
 `.build/native-evidence/ui-journey`. Both destinations are attempted after an ordinary
-creation/test failure or timeout. A green runner requires a successful `xcodebuild` exit and exactly one
+creation/test failure or timeout. A green runner requires a successful `xcodebuild` exit and exactly two
 passed, zero failed/skipped tests in each result summary and successful owned-simulator
-cleanup; missing results fail closed.
+cleanup; missing results or only one completed journey fail closed. Both specific
+test identifiers are passed through separate `-only-testing` arguments; no whole
+test target, automatic retries or skipped case can substitute for those counts.
 The workflow retains these with the existing native evidence for 14 days, including
 failed-run evidence. For a local rerun, pass a fresh `--evidence-directory` path; existing
 results are not deleted or overwritten. Review result bundles before sharing because
@@ -170,8 +302,38 @@ remain separate; this is not the complete discover/build/evaluate/share journey.
 Primary Apple references checked 2026-10-18:
 [XCUIApplication process control](https://developer.apple.com/documentation/xcuiautomation/xcuiapplication),
 [XCUIElement queries and input](https://developer.apple.com/documentation/xcuiautomation/xcuielement),
-[keyboard toolbar placement](https://developer.apple.com/documentation/swiftui/toolbaritemplacement/keyboard),
-[explicit focus state](https://developer.apple.com/documentation/swiftui/focusstate),
 [the general pasteboard](https://developer.apple.com/documentation/uikit/uipasteboard/general),
 [running tests and result bundles](https://developer.apple.com/documentation/xcode/running-tests-and-interpreting-results),
 and [Xcode 16.3 xcresulttool commands](https://developer.apple.com/documentation/xcode-release-notes/xcode-16_3-release-notes).
+The control correction also uses Apple's documented
+[focus state](https://developer.apple.com/documentation/swiftui/focusstate),
+[keyboard toolbar placement](https://developer.apple.com/documentation/swiftui/toolbaritemplacement/keyboard),
+and [borderless button style](https://developer.apple.com/documentation/swiftui/borderlessbuttonstyle).
+The kind-selection follow-up uses standard
+[bound toggles](https://developer.apple.com/documentation/swiftui/toggle) and
+[a scoped sheet with explicit dismissal](https://developer.apple.com/design/human-interface-guidelines/sheets).
+
+## Combined source receiving gate
+
+The [combined receiving receipt](../docs/validation/catalog-editor-receiving.md)
+records the canonical editor model/worker and bounded serializer union with the
+current catalog/details source. The production editor retains canonical #198
+focus handling; the complete notes journey retains its normal keyboard dismissal,
+exact post-dismissal title/notes assertions and the observed paste-education
+correction. All source-specific results above remain historical. The current
+combined source must execute both exact complete journeys on each pinned device,
+plus its full 110-model and 57-transfer gates, before delivery. The strict profiles
+require all 61 UI and 21 Transfer class-qualified mandatory identities. This union
+retains the fourteen [source-link review cases](../docs/validation/catalog-source-navigation.md)
+and nine [comparison worker cases](../docs/validation/comparison-preparation.md).
+Historical 87/48, 96/57 and 101/48 profiles remain available only for their recorded sources.
+
+The [actual #240 native results and selector correction](../docs/validation/catalog-editor-receiving.md#actual-87-model-and-48-transfer-receiving-result)
+retain both failed catalog transitions. The intrinsic-size change still exposed
+the whole row as the identified Switch, whose normal tap missed the trailing
+native control. The current journey requires exactly one narrower Switch
+descendant inside that row, taps it normally and requires both its value and the
+identified row value to change from off to on. The exact label, restored-on state
+and every count, detail, pagination and empty-state assertion remain. The
+contained-control query is a source-reviewed candidate; both complete catalog
+journeys must pass before it qualifies for delivery.

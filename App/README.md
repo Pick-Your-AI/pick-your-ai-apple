@@ -1,30 +1,41 @@
 # Native local draft preview
 
 This unsigned iPhone/iPad app composes `PlannerUI` and `PlannerData`. It is a local
-editor with a separate read-only imported-build library and reviewed JSON file export.
-It has no catalog UI, evaluation, account, remote sync or release configuration. The reserved `invalid.pickyourai.localpreview` bundle ID is for simulator
+editor with a separate local imported-build library and reviewed JSON file export.
+The Demo catalog tab browses a pinned, explicitly synthetic fixture and its typed
+component details; compatibility and price remain unknown. It has no evaluation,
+account, remote sync or release configuration. The reserved
+`invalid.pickyourai.localpreview` bundle ID is for simulator
 use only; it does not allocate a production application identifier or signing team.
 
-The delegated engineering mandate selects SwiftUI/iOS 17 and the local SQLite actor
-implemented in PlannerData for this executable slice. This advances the proposed
-[#22 ADR](../docs/decisions/issue-22-platform.md); its previous Core Data recommendation
-is superseded for this local store only. Product receiving acceptance stays separate.
+The [accepted #22 ADR](../docs/decisions/issue-22-platform.md) selects SwiftUI with
+native adapters, iPhone/adaptive iPad on iOS/iPadOS 17, and the local SQLite actor
+implemented in PlannerData. Preserve those module boundaries; product, device,
+service and release receiving acceptance retain their separate criteria.
 
 On macOS, use the [pinned toolchain setup and commands](#pinned-toolchain) below.
 
 The workflow records the actual compiler/SDK/runtime and runs model tests, an unsigned
-simulator build, iPhone/iPad launch smoke checks, and a separate XCUITest local-draft
-journey with the actual production autosave, durable undo/redo reads and validated
-discard recovery. It contains no signing secrets. The launch-only smoke script remains a
+simulator build, iPhone/iPad launch smoke checks, and two complete XCUITest journeys
+on each device: local notes with production autosave, durable undo/redo reads and
+validated discard recovery; and catalog filters, pagination, relaunch and exact
+typed details. It contains no signing secrets. The launch-only smoke script remains a
 separate check; see the [UI journey evidence and limits](UI_JOURNEY.md).
+
+The exact canonical editor `8e76d0ee` has an actual 71-model pass and complete
+Notes journey passes on both pinned simulators, with successful owned cleanup;
+see the [completed editor receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution).
+Its separate scope-cleanup failure remains recorded. The expanded comparison,
+catalog and contract source still requires its own full 110/57 package inventories
+and both complete journeys on each destination before delivery.
 
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
 | #26 pinned clean checkout; #30 native CI | Checked-in app/UI-test targets and shared scheme, local packages, explicit Xcode pin, actual CLI missing-pin regression and isolated-cache workflow | Exact-head hosted evidence and receiving review; #30 untrusted-PR and release-secret gates remain separate |
-| #28 restore correct draft | SceneStorage selection, explicit dirty-discard guard, background save attempt; UI test reopens an acknowledged revision after process termination | Hosted UI run pending; cold-link routing, interrupted unacknowledged edits and physical lifecycle qualification |
+| #28 restore correct draft | SceneStorage selection, explicit dirty-discard guard, background save attempt; UI test reopens an acknowledged revision after process termination | Current expanded-source native execution; cold-link routing, interrupted unacknowledged edits and physical lifecycle qualification |
 | #80 local library operations | Notes CRUD and UI save/reopen/discard/delete; imported-build local labels, fresh-fork duplication, confirmed deletion, revision/qualification display and bounded corrupt-wrapper recovery | Exact-head native CRUD/recovery and UI execution, UI duplicate/cross-client journey and receiving review |
 | #87 offline editing | All operations use local storage; unknown compatibility/pricing always explicit | Governed catalog cache and downstream evaluation integration |
-| #105 accessibility | System controls, visible labels, Dynamic Type, editor/action identifiers; bounded XCUITest local-draft journey | Hosted UI run pending; wider complete journeys, VoiceOver, large text and physical device audits |
+| #105 accessibility | System controls, visible labels, Dynamic Type, editor/action identifiers; bounded XCUITest local-draft journey | Current expanded-source native execution; wider complete journeys, VoiceOver, large text and physical device audits |
 
 Save is acknowledged only after storage commits. Failed saves preserve the in-memory
 input and display a retry notice; revision conflicts never overwrite newer revisions.
@@ -52,7 +63,10 @@ full builder journeys and physical lifecycle qualification remain work under #69
 Hosted exact-head compilation and model tests are required before acceptance.
 The [combined editor integration record](../docs/validation/editor-integration.md)
 tracks the stronger delayed-open generation guard, retained lifecycle-save regressions,
-separate library/editor failure notices and the updated real-timer journey. Previously
+separate library/editor failure notices and the updated real-timer journey. The
+later accepted-main carry also retains independent history failure and recovery;
+the [current receiving receipt](../docs/validation/catalog-editor-receiving.md)
+records that composition and its complete test inventory. Previously
 passed source runs are historical evidence; the combined source still requires its
 own native package execution and both pinned UI destinations.
 
@@ -242,6 +256,16 @@ Boolean presentation state.
 
 ## Local configuration comparison
 
+Comparison preparation runs through the existing off-main worker boundary. The
+button captures both immutable snapshots and their synthetic/unknown labels before
+queueing; changing the selected entry or replacing/clearing its pinned baseline
+invalidates the result. A newer comparison may finish while cancelled older work
+is still unwinding. The screen shows progress and a Cancel comparison control;
+leaving the library cancels pending work while opening completed details retains
+their immutable result. Committed deletion of the pinned entry clears its baseline;
+a rejected deletion preserves it. See the [comparison preparation record](../docs/validation/comparison-preparation.md)
+for the nine controlled regressions and required native execution.
+
 Open an imported build, choose **Use selected build as baseline**, open another
 imported build, and explicitly compare. The baseline is an immutable snapshot held
 in memory until replaced or cleared. Preparing a comparison captures both build
@@ -272,3 +296,24 @@ identities, reordered selection/link arrays and the explicit result limit. Nativ
 compilation must pass in the exact-head hosted workflow. Files-picker interaction,
 the complete visible comparison journey, large text, VoiceOver and physical-device
 acceptance still require their own observed evidence.
+
+The [typed component details receipt](../docs/validation/issue-61-catalog-details.md) records exact catalog/item pins, retained source declarations and bounded read-only inspection. The [combined receiving receipt](../docs/validation/catalog-editor-receiving.md) separates this current source from earlier candidate counts and native results.
+
+The separate [comparison-worker composition](../docs/validation/comparison-preparation.md)
+retains that catalog/editor source and adds nine model cases. Its own native profile
+retains its historical 96 UI cases and 47 named identities. The current
+[source-link composition](../docs/validation/catalog-source-navigation.md#comparison-worker-receiving-composition)
+adds fourteen cases and requires all 110 UI cases and 61 named identities. Its current-main carry retains
+the accepted quality boundary, so the Transfer profile requires 57 cases and all
+21 named identities. The catalog/editor receipt preserves its recorded 87/48
+source and historical executions alongside these expanded receiving gates;
+those earlier results do not execute this follow-up.
+
+## Submission SDK compatibility
+
+The separate [unsigned submission SDK lane](../docs/validation/submission-sdk.md)
+selects Xcode 26.3 / 17C529 and verifies device and simulator SDK 26.2 before
+testing all five packages and building both unsigned Release products. The
+existing 16.4 development pin remains a regression baseline. Consult the dated
+[#113 policy matrix](../docs/validation/issue-113-policy.md) for current Apple
+requirements and the signed-artifact, privacy and channel evidence still needed.

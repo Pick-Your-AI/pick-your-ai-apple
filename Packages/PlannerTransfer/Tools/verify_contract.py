@@ -39,3 +39,27 @@ for case in catalog_cases:
     payload = apply_vector(items[case['kind']], case)
     assert validator.is_valid(payload) == case['canonicalValid'], case['name']
 print(f'Verified all 29 catalog kinds and {len(catalog_cases)} canonical catalog cases; client subsets remain explicit.')
+
+from catalog_snapshot_vectors import encoded_vectors as encoded_snapshot_vectors
+snapshot_cases_path = FIXTURES / 'catalog-snapshot-conformance.json'
+assert snapshot_cases_path.read_text() == encoded_snapshot_vectors(), 'Stale catalog snapshot vectors'
+snapshot_cases = json.loads(snapshot_cases_path.read_text())
+validator = Draft202012Validator(schemas['catalog-snapshot.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in snapshot_cases:
+    payload = apply_vector(catalog, case)
+    assert validator.is_valid(payload) == case['canonicalValid'], case['name']
+print(f'Verified {len(snapshot_cases)} canonical catalog snapshot cases; whole-document limits remain explicit.')
+
+# Quality records retain reported results without assigning evidence authority.
+# Swift inserts the raw replacement token before decoding, avoiding a Foundation
+# number conversion that could hide an unsupported precision/exponent input.
+from quality_vectors import apply_vector as apply_quality_vector, encoded_vectors as encoded_quality_vectors
+quality_cases_path = FIXTURES / 'quality-conformance.json'
+assert quality_cases_path.read_text() == encoded_quality_vectors(), 'Stale quality vectors'
+quality_cases = json.loads(quality_cases_path.read_text())
+quality = json.loads((FIXTURES / 'quality-evaluation-run.json').read_text())
+validator = Draft202012Validator(schemas['quality-evaluation-run.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in quality_cases:
+    payload = apply_quality_vector(quality, case)
+    assert validator.is_valid(payload) == case['canonicalValid'], case['name']
+print(f'Verified {len(quality_cases)} canonical quality cases; recorded labels and client subsets remain explicit.')

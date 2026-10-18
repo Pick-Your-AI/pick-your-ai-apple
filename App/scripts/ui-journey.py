@@ -15,7 +15,10 @@ import uuid
 
 RUNTIME = "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
 DESTINATIONS = (("iphone", "iPhone SE (3rd generation)"), ("ipad", "iPad (10th generation)"))
-TEST = "PlannerAppUITests/LocalDraftJourneyTests/testSavedNotesSurviveCloseReopenAndRelaunch"
+TESTS = (
+    "PlannerAppUITests/LocalDraftJourneyTests/testSavedNotesSurviveCloseReopenAndRelaunch",
+    "PlannerAppUITests/CatalogBrowserJourneyTests/testCatalogFiltersPaginationAndPinnedDetailsSurviveRelaunch",
+)
 TEST_TIMEOUT_SECONDS = 15 * 60
 
 
@@ -39,15 +42,15 @@ def test_command(udid, result_path):
         "-destination", f"platform=iOS Simulator,id={udid}", "-destination-timeout", "120",
         "-parallel-testing-enabled", "NO", "-maximum-concurrent-test-simulator-destinations", "1",
         "-derivedDataPath", ".build/native", "-resultBundlePath", str(result_path),
-        f"-only-testing:{TEST}", "CODE_SIGNING_ALLOWED=NO", "ONLY_ACTIVE_ARCH=YES",
+        *[f"-only-testing:{test}" for test in TESTS], "CODE_SIGNING_ALLOWED=NO", "ONLY_ACTIVE_ARCH=YES",
     ]
 
 
 def summary_passed(summary):
     # Fail closed for zero, skipped, failed, expected-failure, or unknown output.
     return (summary.get("result") == "Passed"
-            and summary.get("totalTestCount") == 1
-            and summary.get("passedTests") == 1
+            and summary.get("totalTestCount") == len(TESTS)
+            and summary.get("passedTests") == len(TESTS)
             and summary.get("failedTests") == 0
             and summary.get("skippedTests") == 0
             and summary.get("expectedFailures", 0) == 0)
@@ -102,7 +105,7 @@ def collect_summary(result_path, evidence, label, outcome):
 def run_destination(destination, evidence, existing_ids):
     label = destination["label"]
     result_path = evidence / f"{label}.xcresult"
-    outcome = {"destination": destination, "test": TEST, "verifiedPassed": False, "cleanupSucceeded": False}
+    outcome = {"destination": destination, "tests": list(TESTS), "verifiedPassed": False, "cleanupSucceeded": False}
     owned_udid = None
     try:
         name = f"Planner-UI-{label}-{uuid.uuid4().hex[:12]}"
@@ -157,7 +160,7 @@ def main():
         (evidence / "journey-results.json").write_text(json.dumps(results, indent=2) + "\n")
     if len(results) != len(DESTINATIONS) or not all(r["verifiedPassed"] and r["cleanupSucceeded"] for r in results):
         raise SystemExit("UI journey or owned-simulator cleanup failed on a pinned destination; inspect retained results")
-    print("Verified one UI journey passed on each pinned iPhone/iPad simulator; no physical-device or release claim.")
+    print("Verified both UI journeys passed on each pinned iPhone/iPad simulator; no physical-device or release claim.")
 
 
 if __name__ == "__main__":

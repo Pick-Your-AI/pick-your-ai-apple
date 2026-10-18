@@ -12,7 +12,7 @@ journey = importlib.util.module_from_spec(SPEC)
 SPEC.loader.exec_module(journey)
 PREEXISTING = "ABCDEF01-2345-4678-9ABC-DEF012345678"
 CREATED = ("10000000-0000-0000-0000-000000000001", "20000000-0000-0000-0000-000000000001")
-PASSING = {"result": "Passed", "totalTestCount": 1, "passedTests": 1,
+PASSING = {"result": "Passed", "totalTestCount": 2, "passedTests": 2,
            "failedTests": 0, "skippedTests": 0, "expectedFailures": 0}
 
 
@@ -69,16 +69,21 @@ class UIJourneyRunnerTests(unittest.TestCase):
         command = journey.test_command(CREATED[0], Path("retained.xcresult"))
         self.assertEqual(command[:2], ["xcodebuild", "test"])
         self.assertIn(f"platform=iOS Simulator,id={CREATED[0]}", command)
-        self.assertIn(f"-only-testing:{journey.TEST}", command)
+        self.assertEqual(
+            [arg.removeprefix("-only-testing:") for arg in command if arg.startswith("-only-testing:")],
+            list(journey.TESTS),
+        )
+        self.assertEqual(len(journey.TESTS), 2)
         self.assertIn("CODE_SIGNING_ALLOWED=NO", command)
         self.assertIn("ONLY_ACTIVE_ARCH=YES", command)
         self.assertIn("retained.xcresult", command)
         self.assertNotIn("-allowProvisioningUpdates", command)
         self.assertNotIn("-retry-tests-on-failure", command)
 
-    def test_summary_requires_exactly_one_passed_real_test(self):
+    def test_summary_requires_both_passed_real_tests(self):
         self.assertTrue(journey.summary_passed(PASSING))
         for key, value in (("result", "Failed"), ("totalTestCount", 0), ("passedTests", 0),
+                           ("totalTestCount", 1), ("passedTests", 1), ("totalTestCount", 3),
                            ("failedTests", 1), ("skippedTests", 1), ("expectedFailures", 1)):
             with self.subTest(key=key):
                 self.assertFalse(journey.summary_passed({**PASSING, key: value}))
