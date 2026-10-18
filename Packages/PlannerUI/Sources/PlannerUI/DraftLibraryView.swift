@@ -7,7 +7,8 @@ public struct DraftLibraryView: View {
     @SceneStorage("localDraftSelection") private var restoredID = ""
     @State private var pendingDelete: DraftRecord?
     @State private var pendingRestore: DraftRecord?
-    @State private var confirmDiscard = false
+    @FocusState private var focusedEditorField: EditorField?
+    private enum EditorField: Hashable { case title, notes }
     public init(store: DraftStore) { _model = StateObject(wrappedValue: DraftLibraryModel(store: store)) }
     public var body: some View {
         NavigationStack {
@@ -73,10 +74,26 @@ public struct DraftLibraryView: View {
             Form {
                 Section("Draft name") {
                     TextField("Draft name", text: $model.title).accessibilityIdentifier("draftTitle")
+                        .focused($focusedEditorField, equals: .title)
+                        .submitLabel(.done)
+                        .onSubmit { focusedEditorField = nil }
+                        .disabled(!model.canEdit)
                 }
                 Section("Planning notes") {
                     TextEditor(text: $model.notes).frame(minHeight: 160)
                         .accessibilityLabel("Planning notes").accessibilityIdentifier("draftNotes")
+                        .focused($focusedEditorField, equals: .notes)
+                        .disabled(!model.canEdit)
+                }
+                Section("Edit history") {
+                    HStack {
+                        Button("Undo edit", systemImage: "arrow.uturn.backward") { model.undo() }
+                            .disabled(!model.canUndo).accessibilityIdentifier("undoDraftEdit")
+                        Button("Redo edit", systemImage: "arrow.uturn.forward") { model.redo() }
+                            .disabled(!model.canRedo).accessibilityIdentifier("redoDraftEdit")
+                    }
+                    .buttonStyle(.borderless)
+                    Text("Changes save automatically after you pause typing. Undo and redo apply to this editing session; saved revisions remain available below.")
                 }
                 Section("Revision history") {
                     Button("Load saved revisions") { Task { await model.loadHistory() } }
@@ -94,6 +111,7 @@ public struct DraftLibraryView: View {
                         VStack(alignment: .leading) {
                             Text("Local revision \(revision.revision)")
                             Text(revision.title).font(.caption)
+                                .accessibilityIdentifier("revisionTitle-\(revision.revision)")
                             if let source = revision.restoredFrom {
                                 Text("Restored from local revision \(source)").font(.caption)
                             }
@@ -105,23 +123,34 @@ public struct DraftLibraryView: View {
                     }
                     Text("Restoration creates a new local revision and keeps later saved revisions. Save or discard unsaved changes first. Historical notes are not current compatibility or pricing evidence.")
                 }
+                .disabled(model.busy)
                 Section {
                     Text(model.dirty ? "Unsaved changes" : model.status).accessibilityIdentifier("saveStatus")
                     Text("Compatibility: unknown. Pricing: unknown. Saving notes does not create a validated build.")
-                    if let notice = model.notice { Text(notice).foregroundStyle(.red) }
+                    if let notice = model.notice {
+                        Text(notice).foregroundStyle(.red).accessibilityIdentifier("editorNotice")
+                    }
                 }
             }
-            .disabled(model.busy)
+            .accessibilityIdentifier("draftEditorForm")
+            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Edit local draft")
             .toolbar {
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") {
-                        if model.dirty { confirmDiscard = true } else { model.close(); restoredID = "" }
+                        model.requestClose()
                     }.disabled(model.busy)
                 }
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { Task { await model.save() } }
                         .disabled(!model.dirty || model.busy).accessibilityIdentifier("saveDraft")
+                }
+                ToolbarItemGroup(placement: .keyboard) {
+                    if focusedEditorField != nil {
+                        Spacer()
+                        Button("Done editing") { focusedEditorField = nil }
+                            .accessibilityIdentifier("finishDraftEditing")
+                    }
                 }
             }
             .confirmationDialog("Restore this saved revision as a new local revision?", isPresented: Binding(get: { pendingRestore != nil }, set: { if !$0 { pendingRestore = nil } })) {
@@ -131,8 +160,11 @@ public struct DraftLibraryView: View {
                 }
             }
             .interactiveDismissDisabled(model.dirty || model.busy)
-            .confirmationDialog("Discard unsaved changes?", isPresented: $confirmDiscard) {
-                Button("Discard changes", role: .destructive) { model.close(); restoredID = "" }
+            .confirmationDialog("Discard unsaved changes?", isPresented: Binding(
+                get: { model.awaitingDiscardDecision },
+                set: { if !$0 { model.cancelDiscardDecision() } }
+            )) {
+                Button("Discard changes", role: .destructive) { model.discardChangesAndClose(); restoredID = "" }
             }
         }
     }

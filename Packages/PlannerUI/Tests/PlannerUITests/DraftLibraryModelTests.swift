@@ -8,7 +8,7 @@ final class DraftLibraryModelTests: XCTestCase {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let store = try DraftStore(url: folder.appendingPathComponent("drafts.sqlite"))
-        return (store, DraftLibraryModel(store: store), folder)
+        return (store, DraftLibraryModel(store: store, autosaveWait: nil), folder)
     }
     func testCreateSaveReopenDuplicateAndDelete() async throws {
         let (store, model, folder) = try fixture()
@@ -21,7 +21,7 @@ final class DraftLibraryModelTests: XCTestCase {
         XCTAssertFalse(model.dirty)
         XCTAssertEqual(model.status, "Saved locally")
         model.close()
-        let second = DraftLibraryModel(store: store)
+        let second = DraftLibraryModel(store: store, autosaveWait: nil)
         await second.refresh()
         await second.open(try XCTUnwrap(second.records.first))
         XCTAssertEqual(second.notes, "Offline notes")
@@ -95,19 +95,28 @@ private actor ControlledStorage: DraftLibraryStorage {
     var pauseNextDelete = false
     var pauseNextRestore = false
     var pauseNextHistory = false
+    var pauseNextRead = false
     var waiting: CheckedContinuation<Void, Never>?
     var entered: CheckedContinuation<Void, Never>?
     var saveEntered = false
     init(store: DraftStore) { self.store = store }
-    func configure(failRefresh: Bool = false, pause: Bool = false, pauseDelete: Bool = false, pauseRestore: Bool = false, pauseHistory: Bool = false) {
-        self.failRefresh = failRefresh; pauseNextSave = pause; pauseNextDelete = pauseDelete; pauseNextRestore = pauseRestore; pauseNextHistory = pauseHistory
+    func configure(failRefresh: Bool = false, pause: Bool = false, pauseDelete: Bool = false, pauseRestore: Bool = false, pauseHistory: Bool = false, pauseRead: Bool = false) {
+        self.failRefresh = failRefresh; pauseNextSave = pause; pauseNextDelete = pauseDelete; pauseNextRestore = pauseRestore; pauseNextHistory = pauseHistory; pauseNextRead = pauseRead
     }
     func waitForSave() async {
         if saveEntered { return }
         await withCheckedContinuation { entered = $0 }
     }
     func resumeSave() { waiting?.resume(); waiting = nil }
-    func read(id: UUID) async throws -> DraftRecord { try await store.read(id: id) }
+    func read(id: UUID) async throws -> DraftRecord {
+        if pauseNextRead {
+            pauseNextRead = false
+            await withCheckedContinuation { continuation in
+                waiting = continuation; saveEntered = true; entered?.resume(); entered = nil
+            }
+        }
+        return try await store.read(id: id)
+    }
     func history(id: UUID, limit: Int, offset: Int) async throws -> DraftPage {
         if pauseNextHistory {
             pauseNextHistory = false
@@ -154,11 +163,69 @@ private actor ControlledStorage: DraftLibraryStorage {
 }
 
 extension DraftLibraryModelTests {
+    func testEditsDuringOpenKeepOriginalDraftAndUnsavedInput() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
+        await model.create()
+        let original = try XCTUnwrap(model.selected)
+        let target = try await store.save(id: UUID(), expectedRevision: nil, title: "Other draft",
+            payload: JSONEncoder().encode(EditorPayload(notes: "Other saved notes")))
+        await controlled.configure(pauseRead: true)
+        let opening = Task { await model.open(target) }
+        await controlled.waitForSave()
+        model.title = "My newer title"
+        model.notes = "My newer notes"
+        await controlled.resumeSave()
+        await opening.value
+        XCTAssertEqual(model.selected, original)
+        XCTAssertEqual(model.title, "My newer title")
+        XCTAssertEqual(model.notes, "My newer notes")
+        XCTAssertTrue(model.dirty)
+        XCTAssertFalse(model.busy)
+        let unchangedOriginal = try await store.read(id: original.id)
+        let unchangedTarget = try await store.read(id: target.id)
+        XCTAssertEqual(unchangedOriginal, original)
+        XCTAssertEqual(unchangedTarget, target)
+    }
+
+    func testLifecycleSaveDuringOpenPersistsLatestEditsToOriginalDraft() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
+        await model.create()
+        let original = try XCTUnwrap(model.selected)
+        let target = try await store.save(id: UUID(), expectedRevision: nil, title: "Other draft",
+            payload: JSONEncoder().encode(EditorPayload(notes: "Other saved notes")))
+        await controlled.configure(pauseRead: true)
+        let opening = Task { await model.open(target) }
+        await controlled.waitForSave()
+        model.notes = "Pending lifecycle save"
+        await model.save()
+        model.title = "Latest original title"
+        model.notes = "Latest original notes"
+        await controlled.resumeSave()
+        await opening.value
+        XCTAssertEqual(model.selected?.id, original.id)
+        XCTAssertEqual(model.selected?.revision, original.revision + 1)
+        XCTAssertEqual(model.title, "Latest original title")
+        XCTAssertEqual(model.notes, "Latest original notes")
+        XCTAssertFalse(model.dirty)
+        XCTAssertFalse(model.busy)
+        let durable = try await store.read(id: original.id)
+        XCTAssertEqual(durable.title, "Latest original title")
+        XCTAssertEqual(try JSONDecoder().decode(EditorPayload.self, from: durable.payload).notes, "Latest original notes")
+        let unchangedTarget = try await store.read(id: target.id)
+        XCTAssertEqual(unchangedTarget, target)
+    }
+
     func testEditsArrivingDuringSaveRemainDirty() async throws {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         model.notes = "Submitted"
         await controlled.configure(pause: true)
@@ -178,7 +245,7 @@ extension DraftLibraryModelTests {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         model.title = "Committed"
         await controlled.configure(failRefresh: true)
@@ -187,6 +254,60 @@ extension DraftLibraryModelTests {
         XCTAssertFalse(model.dirty)
         XCTAssertEqual(model.status, "Saved locally")
         XCTAssertTrue(model.notice?.contains("could not refresh") == true)
+        await controlled.configure()
+        await model.refresh()
+        XCTAssertNil(model.notice)
+        XCTAssertEqual(model.selected?.revision, 2)
+        XCTAssertEqual(model.records.first?.title, "Committed")
+        XCTAssertEqual(model.status, "Saved locally")
+        XCTAssertFalse(model.dirty)
+    }
+    func testSuccessfulRefreshClearsLibraryFailureAndLoadsCurrentRecords() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
+        await model.create()
+        let original = try XCTUnwrap(model.selected)
+        model.close()
+        await controlled.configure(failRefresh: true)
+        await model.refresh()
+        XCTAssertNotNil(model.notice)
+        XCTAssertEqual(model.records, [original])
+        XCTAssertFalse(model.busy)
+        let updated = try await store.rename(id: original.id, expectedRevision: original.revision, title: "New durable title")
+        await controlled.configure()
+        await model.refresh()
+        XCTAssertEqual(model.records, [updated])
+        XCTAssertNil(model.notice)
+        XCTAssertFalse(model.busy)
+    }
+    func testLibraryFailureAndRecoveryPreserveConflictGuidanceAndUnsavedInput() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
+        await model.create()
+        let original = try XCTUnwrap(model.selected)
+        let concurrent = try await store.rename(id: original.id, expectedRevision: original.revision, title: "Concurrent edit")
+        model.title = "Unsaved title"; model.notes = "Unsaved notes"
+        await model.save()
+        let conflictNotice = try XCTUnwrap(model.notice)
+        XCTAssertTrue(conflictNotice.contains("newer revision"))
+        await controlled.configure(failRefresh: true)
+        await model.refresh()
+        XCTAssertEqual(model.notice, conflictNotice)
+        await controlled.configure()
+        await model.refresh()
+        XCTAssertEqual(model.notice, conflictNotice)
+        XCTAssertEqual(model.title, "Unsaved title")
+        XCTAssertEqual(model.notes, "Unsaved notes")
+        XCTAssertTrue(model.dirty)
+        XCTAssertEqual(model.status, "Not saved")
+        XCTAssertEqual(model.selected, original)
+        XCTAssertEqual(model.records, [concurrent])
+        let durable = try await store.read(id: original.id)
+        XCTAssertEqual(durable, concurrent)
     }
     func testDirtyNavigationGuardsAndSelectedDeletion() async throws {
         let (_, model, folder) = try fixture()
@@ -213,7 +334,7 @@ extension DraftLibraryModelTests {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         let record = try XCTUnwrap(model.selected)
         await controlled.configure(pauseDelete: true)
@@ -252,6 +373,34 @@ extension DraftLibraryModelTests {
         await model.changePage(forward: false)
         XCTAssertEqual(model.records.count, DraftLibraryModel.pageSize)
     }
+    func testPageRetryClearsItsFailureWithoutReplacingRowsOnFailedRead() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        for index in 0...DraftLibraryModel.pageSize {
+            _ = try await store.save(id: UUID(), expectedRevision: nil, title: "Draft \(index)",
+                payload: JSONEncoder().encode(EditorPayload(notes: "Synthetic page recovery case")))
+        }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
+        await model.refresh()
+        let firstPage = model.records
+        XCTAssertEqual(firstPage.count, DraftLibraryModel.pageSize)
+        await controlled.configure(failRefresh: true)
+        await model.changePage(forward: true)
+        XCTAssertEqual(model.pageOffset, 0)
+        XCTAssertEqual(model.records, firstPage)
+        XCTAssertTrue(model.hasNextPage)
+        XCTAssertNotNil(model.notice)
+        XCTAssertFalse(model.busy)
+        await controlled.configure()
+        await model.changePage(forward: true)
+        XCTAssertEqual(model.pageOffset, DraftLibraryModel.pageSize)
+        XCTAssertEqual(model.records.count, 1)
+        XCTAssertTrue(Set(firstPage.map(\.id)).isDisjoint(with: model.records.map(\.id)))
+        XCTAssertFalse(model.hasNextPage)
+        XCTAssertNil(model.notice)
+        XCTAssertFalse(model.busy)
+    }
 }
 
 
@@ -272,7 +421,7 @@ extension DraftLibraryModelTests {
         let history = try await store.history(id: earlier.id)
         XCTAssertEqual(history.records.map(\.revision), [4, 3, 2, 1])
         XCTAssertEqual(try JSONDecoder().decode(EditorPayload.self, from: history.records[1].payload).notes, "Later")
-        let reopened = DraftLibraryModel(store: store)
+        let reopened = DraftLibraryModel(store: store, autosaveWait: nil)
         await reopened.open(id: earlier.id)
         XCTAssertEqual(reopened.notes, "Earlier")
         XCTAssertEqual(reopened.selected?.restoredFrom, 2)
@@ -300,7 +449,7 @@ extension DraftLibraryModelTests {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         let earlier = try XCTUnwrap(model.selected)
         model.notes = "Later"; await model.save()
@@ -357,7 +506,7 @@ extension DraftLibraryModelTests {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         let id = try XCTUnwrap(model.selected?.id)
         model.notes = "Pending when history opens"
@@ -377,7 +526,7 @@ extension DraftLibraryModelTests {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         let earlier = try XCTUnwrap(model.selected)
         model.notes = "Later"; await model.save()
