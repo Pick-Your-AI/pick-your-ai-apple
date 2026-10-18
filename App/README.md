@@ -81,3 +81,36 @@ remains authoritative); test projection explicitly removes private fixture setti
 Hosted exact-head compilation/tests are required. Actual Files-provider interactions,
 accessibility, complete cross-client UI round trips, process interruption and physical
 device/privacy receiving qualification remain unverified. Partial #82/#84/#102 only.
+
+## Local configuration comparison
+
+Open an imported build, choose **Use selected build as baseline**, open another
+imported build, and explicitly compare. The baseline is an immutable snapshot held
+in memory until replaced or cleared. Preparing a comparison captures both build
+identities and their synthetic/unknown labels together. Selecting a different build
+invalidates the prepared result; it does not silently change the pinned baseline.
+
+The result shows both names, build IDs and revisions, followed by the evidence
+notice and every returned configuration difference. Selection kinds carry their
+canonical T0–T6 display grouping. Before/after values preserve **Not set**, **Hidden
+for privacy**, zero, false, null and empty text as distinct states. Explicit type
+labels prevent user-entered strings such as "Not set" from impersonating absent or
+hidden fields. Three presentation regressions cover these collisions and full
+multiline text. Multiline system
+text and a scrolling list avoid a shortened preview of the result. An ambiguous
+identity, conflicting revision or more than 2,048 differences produces an explicit
+failure message and preserves both builds; no incomplete result is presented.
+
+This screen uses the tested PlannerTransfer comparison boundary without writes or
+service calls. It does not compare outcome, quality, capacity, compatibility or cost:
+each side still needs qualified evidence matching its own component tuple, workload,
+versions, units and conditions. Equal settings do not establish readiness or rights.
+The screen is limited to existing read-only imported local forks; it does not add a
+builder, revision-history editor or cross-client service. Partial #81 only.
+
+The portable comparison tests cover missing/zero distinctions, changed component
+settings and locks, unmatched extension measurements, privacy masking, duplicate
+identities, reordered selection/link arrays and the explicit result limit. Native
+compilation must pass in the exact-head hosted workflow. Files-picker interaction,
+the complete visible comparison journey, large text, VoiceOver and physical-device
+acceptance still require their own observed evidence.
