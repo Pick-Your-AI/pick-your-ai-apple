@@ -150,3 +150,34 @@ These scheduling and identity cases are a partial #29/#81 delivery. Full compari
 UI interactions, physical-device responsiveness and accessibility, matched outcome
 or cost evidence, complete lifecycle acceptance and release qualification remain
 separately evidenced requirements. No issue closes solely from this composition.
+
+## Accepted main protection carry
+
+The published source checkpoint `0914f5edcb4bdf8d9819c6bc2b147ed4232da6c8`, tree
+`7f6e9af4ba9d75cd466d6dd99ba37bb1598c8c83`, preserves the reviewed composition
+above. Its next receiving carry adds all 16 exact files from signed main
+`074ae4bffec6066d3fe6e6a5fe47ab429dde54ed` and its signed parent `1601ec4a`,
+which descends from the recorded `9a3b0fe4` base. There is no source conflict:
+the accepted dependency-review workflow, immutable license/snapshot checks and
+conformance receipt invalidation are retained whole. All application, Swift test,
+native workflow and 96/57 profile bytes remain the reviewed checkpoint's source.
+The added dependency workflow is a further receiving gate.
+
+Actual local execution at tree `28f430c0dacfc532927355d87603ce90f2bf33b0`
+passed all 24 conformance harness/parser tests and all 31 dependency-policy tests,
+with zero failures, errors or skips. The conformance suite used the unchanged
+exact requirements environment and hash-verified Android frozen v1 import. Its
+real CLI case creates a success receipt, rejects a changed source while removing
+that receipt, then recovers to the original result. Protected paths, dependencies
+and partial-write/publication failures retain their negative coverage. The
+existing workflow's root-level output has an existing parent outside both
+protected input directories, so it remains a valid destination.
+
+The complete local log SHA-256 values are
+`24254ad66acb8e2493cad090308990c9d97ffaa678f4b21b5751f6477fc5159c`
+(24 conformance cases) and
+`b6629b4b5bb4d0da392abd6898fc17af97270bb16948e8aecaee47aa6c19fab4`
+(31 policy cases). These are portable execution receipts, not Swift cases or a
+live dependency-service result. This paragraph is a documentation-only addition
+to that tested tree. Fresh current-head dependency review, the complete 96/57
+native inventory and both full journeys on each pinned destination remain required.

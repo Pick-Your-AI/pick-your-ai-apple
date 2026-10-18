@@ -1,0 +1,67 @@
+{
+  "schema_version": 1,
+  "kind": "observed-hosted-dependency-license-gap",
+  "repository": "Pick-Your-AI/pick-your-ai-apple",
+  "source_commit": "915acc89cf135fdb1bda0b3704474c990c61b016",
+  "workflow_run": 39113412122,
+  "run_attempt": 2,
+  "job": 117643998609,
+  "observed_at": "2026-10-18T09:48:05Z",
+  "upstream_commit": "907a6e9569212033966bc0b69d32473b046dd66b",
+  "dependency_changes": [
+    {
+      "change_type": "added",
+      "manifest": ".github/workflows/dependency-review.yml",
+      "ecosystem": "actions",
+      "name": "actions/checkout",
+      "version": "11bd71901bbe5b1630ceea73d27597364c9af683",
+      "package_url": "pkg:githubactions/actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683",
+      "license": null,
+      "source_repository_url": "https://github.com/actions/checkout",
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": ".github/workflows/dependency-review.yml",
+      "ecosystem": "actions",
+      "name": "actions/dependency-review-action",
+      "version": "907a6e9569212033966bc0b69d32473b046dd66b",
+      "package_url": "pkg:githubactions/actions/dependency-review-action@907a6e9569212033966bc0b69d32473b046dd66b",
+      "license": null,
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    }
+  ],
+  "invalid_license_changes": {
+    "unlicensed": [
+      {
+        "change_type": "added",
+        "manifest": ".github/workflows/dependency-review.yml",
+        "ecosystem": "actions",
+        "name": "actions/dependency-review-action",
+        "version": "907a6e9569212033966bc0b69d32473b046dd66b",
+        "package_url": "pkg:githubactions/actions/dependency-review-action@907a6e9569212033966bc0b69d32473b046dd66b",
+        "license": null,
+        "source_repository_url": null,
+        "scope": "runtime",
+        "vulnerabilities": []
+      }
+    ],
+    "unresolved": [],
+    "forbidden": []
+  },
+  "upstream_license": {
+    "path": "LICENSE",
+    "blob": "cdfebd4e4322284fde560f21808182055976d9bf",
+    "sha256": "399ebcd5cf53d2ba8f32e8d7c7aa77a64b959734f662c533f30b0e75d76012a1",
+    "bytes": 1095,
+    "spdx": "MIT",
+    "url": "https://github.com/actions/dependency-review-action/blob/907a6e9569212033966bc0b69d32473b046dd66b/LICENSE"
+  },
+  "limitations": [
+    "The failed output is an actual hosted record; mocked HTTP regressions are not a new hosted action/advisory result.",
+    "The pinned LICENSE identifies this exact Action source; bundled/transitive notices and release obligations retain their separate review."
+  ]
+}
