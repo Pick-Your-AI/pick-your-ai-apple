@@ -91,12 +91,19 @@ the current native-validation disposition.
 
 ## #32 receiving conformance record
 
-Reviewed output: [Apple #32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32),
-the hash-pinned Swift boundary model/validator conformance report, refreshed on
-2026-10-18. This record reconciles the three live acceptance criteria against the
-delivered catalog, build and selection boundaries. Its publishing PR supplies the
-independent receiving disposition for this exact documentation and model strategy;
-issue closure follows reviewed signed-main delivery of the record.
+Accepted output: [Apple #32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32),
+the hash-pinned Swift boundary model/validator conformance report. Normal reviewed
+[#252](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/252) delivered this
+record on 2026-10-18 as verified signed main
+[`971e8ea6500c52a5be0493c7686ffc7dc7792cb4`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/971e8ea6500c52a5be0493c7686ffc7dc7792cb4),
+tree `de2d6f1cd5235bec2bc6bceec7dbf56b8f6fc877`, with sole accepted parent
+`8ca109963bfca3a707b1af8b80aabcd9dd28fd8a`. The
+[source acceptance review](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/248#pullrequestreview-5562609585)
+and [receiving review](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/252#pullrequestreview-5562651805)
+accept all three literal criteria and this exact model strategy. The
+[completed receiving receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32#issuecomment-6249160321)
+records issue closure. The original native results below retain their own source
+and receiving identities; the documentation delivery supplied no new native run.
 
 ### Delivered model strategy
 
@@ -171,7 +178,7 @@ completion is not inferred.
 
 ## Remaining acceptance
 
-Independent code review and hosted macOS/iOS compilation remain required for new code. A cross-package SQLite integration test now saves an empty draft, rejects snapshot export and malicious import, reopens the store, and verifies identical payload, locks, revision and history. PlannerData is a test-only dependency; the library remains independent. macOS 14 is the package testing floor; iOS 17 remains the product floor. #32's delivered all-kind boundary and explicit model/representation limits are reconciled in the [receiving conformance record](#32-receiving-conformance-record); its exact record review and signed publication govern closure. #33’s exact draft/snapshot boundary criteria are satisfied by the linked [criterion-specific receipt](../../docs/acceptance/issue-33-draft-snapshot-boundary.md), subject to its recorded receiving disposition; the earlier UI-integration gap is reconciled there. Actual UI autosave/termination remains #69 and Files workflows remain #82. #82 still needs actual Files/share-sheet flows, cross-client UI round trips and approved privacy/source-use review. #102 still needs server cross-user access, capability guessing and Universal Link/device tests against the real service and signed app. No broader hardware, release or production claims are made.
+Independent code review and hosted macOS/iOS compilation remain required for new code. A cross-package SQLite integration test now saves an empty draft, rejects snapshot export and malicious import, reopens the store, and verifies identical payload, locks, revision and history. PlannerData is a test-only dependency; the library remains independent. macOS 14 is the package testing floor; iOS 17 remains the product floor. #32's accepted all-kind boundary and explicit model/representation limits are reconciled in the [receiving conformance record](#32-receiving-conformance-record) and its completed signed-delivery receipt. #33’s exact draft/snapshot boundary criteria are satisfied by the linked [criterion-specific receipt](../../docs/acceptance/issue-33-draft-snapshot-boundary.md), subject to its recorded receiving disposition; the earlier UI-integration gap is reconciled there. Actual UI autosave/termination remains #69 and Files workflows remain #82. #82 still needs actual Files/share-sheet flows, cross-client UI round trips and approved privacy/source-use review. #102 still needs server cross-user access, capability guessing and Universal Link/device tests against the real service and signed app. No broader hardware, release or production claims are made.
 
 
 ## Local configuration comparison
