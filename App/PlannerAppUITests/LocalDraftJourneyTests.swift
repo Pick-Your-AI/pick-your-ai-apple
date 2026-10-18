@@ -233,6 +233,7 @@ final class LocalDraftJourneyTests: XCTestCase {
         // instructional copy before using Continue; unrelated dialogs still fail.
         let introduction = app.staticTexts.matching(NSPredicate(format: "label IN %@", [
             "Double-tap with three fingers.",
+            "Double-tap with three fingers.\n",
             "Swipe left with three fingers to undo and swipe right to redo.",
             "Pinch and spread with three fingers to copy and paste a selection."
         ])).firstMatch

@@ -104,7 +104,8 @@ Paste, with a Continue button. Both destinations executed one test with zero ski
 both owned-simulator deletions succeeded. The complete failure artifact is retained.
 
 Immediately after the synthetic paste, the journey now recognizes only the three
-exact instructional sentences shown in that tutorial, waits at most three seconds
+instructional sentences shown in that tutorial, including the exact trailing-newline
+variant of the Undo sentence retained in both control captures, waits at most three seconds
 for it to appear, uses its normal Continue button, and requires the tutorial to
 disappear together with that button. It then reasserts the exact pasted title before
 the unchanged strict

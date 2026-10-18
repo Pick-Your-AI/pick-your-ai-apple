@@ -132,7 +132,10 @@ one iPad failure and zero skips. Both owned deletions returned exit zero. Artifa
 
 The focused test-only follow-up identifies those three exact tutorial sentences
 after Paste, uses Continue only for that known introduction, and requires it to
-disappear together with its Continue button. A three-second appearance bound
+disappear together with its Continue button. Both retained accessibility captures
+include a trailing newline in the Undo sentence; the exact membership list includes
+that observed variant alongside the plain sentence. The other two labels match
+without a trailing newline. A three-second appearance bound
 accommodates the first-use overlay;
 unknown dialogs still fail the normal strict control checks. The exact pasted
 title is checked again after dismissal. The product view, all 68 model tests,
