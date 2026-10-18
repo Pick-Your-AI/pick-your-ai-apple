@@ -54,7 +54,10 @@ atomic file replacement after verification and any requested environment write;
 a failed publication removes its temporary file and emits no success JSON.
 Output must be separate from `App/`, the selected pin files, the inspected app
 bundle and `GITHUB_ENV`. Linked, shared or directory outputs are rejected without
-removing their targets. Use an ordinary file beneath `.build/submission-evidence`
+removing their targets. Every supplied output ancestor is checked before receipt
+invalidation, so a path through a protected bundle is rejected even if a later
+directory link escapes it. Outside directory aliases remain usable and retain
+the same failure/retry behavior. Use an ordinary file beneath `.build/submission-evidence`
 and a separate path for each operation, as the workflow does.
 
 The native job then:

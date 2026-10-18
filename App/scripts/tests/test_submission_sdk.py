@@ -333,6 +333,70 @@ class SubmissionSDKTests(unittest.TestCase):
                 self.assertTrue(path.exists())
                 self.assertEqual(target.read_text(), "retained source bytes\n")
 
+    def test_actual_cli_rejects_product_traversal_before_removing_or_creating_receipts(self):
+        app = self.write_product(self.product_info("iphoneos"))
+        outside = self.root / "outside"
+        outside.mkdir()
+        escape = app / "escape"
+        escape.symlink_to(outside, target_is_directory=True)
+        app_alias = self.root / "Alias.app"
+        app_alias.symlink_to(app, target_is_directory=True)
+        parent_alias = self.root / "parent-alias"
+        parent_alias.symlink_to(self.root, target_is_directory=True)
+        inputs = {path: path.read_bytes() for path in
+                  (self.xcode_file, self.sdk_file, app / "Info.plist")}
+        retained = outside / "retained.json"
+        sentinel = b"synthetic retained source bytes\n"
+        product_paths = (app, parent_alias / app_alias.name)
+        output_roots = (app, app_alias, parent_alias / app.name, parent_alias / app_alias.name)
+        for product in product_paths:
+            for output_root in output_roots:
+                for existing in (True, False):
+                    with self.subTest(product=product, output_root=output_root, existing=existing):
+                        if existing:
+                            retained.write_bytes(sentinel)
+                        else:
+                            retained.unlink(missing_ok=True)
+                        result = self.run_cli("inspect", "--sdk", "iphoneos", "--app", product,
+                                              "--output", output_root / "escape" / retained.name)
+                        self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                        self.assertIn("separate", result.stderr)
+                        self.assertEqual(result.stdout, "")
+                        self.assertEqual(retained.exists(), existing)
+                        if existing:
+                            self.assertEqual(retained.read_bytes(), sentinel)
+                        for path, before in inputs.items():
+                            self.assertEqual(path.read_bytes(), before)
+                        for link, destination in ((escape, outside), (app_alias, app),
+                                                  (parent_alias, self.root)):
+                            self.assertTrue(link.is_symlink())
+                            self.assertEqual(link.resolve(), destination.resolve())
+
+    def test_actual_cli_allows_outside_parent_alias_and_preserves_failure_recovery(self):
+        valid = self.product_info("iphoneos")
+        app = self.write_product(valid)
+        parent_alias = self.root / "parent-alias"
+        parent_alias.symlink_to(self.root, target_is_directory=True)
+        receipt = parent_alias / "evidence" / "receipt.json"
+        arguments = ("inspect", "--sdk", "iphoneos", "--app", app, "--output", receipt)
+        first = self.run_cli(*arguments)
+        self.assertEqual(first.returncode, 0, first.stderr)
+        self.assertEqual(json.loads(receipt.read_text()), json.loads(first.stdout))
+
+        self.write_product({**valid, "DTSDKName": "iphoneos18.5"})
+        failed = self.run_cli(*arguments)
+        self.assertEqual(failed.returncode, 2, failed.stdout + failed.stderr)
+        self.assertIn("DTSDKName", failed.stderr)
+        self.assertEqual(failed.stdout, "")
+        self.assertFalse(receipt.exists())
+
+        self.write_product(valid)
+        recovered = self.run_cli(*arguments)
+        self.assertEqual(recovered.returncode, 0, recovered.stderr)
+        self.assertEqual(json.loads(receipt.read_text()), json.loads(first.stdout))
+        self.assertEqual(list(receipt.parent.glob(".submission-sdk-*.tmp")), [])
+        self.assertTrue(parent_alias.is_symlink())
+
 
 if __name__ == "__main__":
     unittest.main()

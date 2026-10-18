@@ -94,8 +94,12 @@ def prepare_receipt(path, protected_paths):
         return None
     # Resolve directory aliases, but inspect the final component without following it.
     output = path.parent.resolve() / path.name
+    # A later escape link can hide that traversal passed through a protected
+    # product. Check every supplied ancestor before invalidating any receipt.
+    traversed = [output, *(ancestor.resolve() for ancestor in path.parents)]
     for protected in protected_paths:
-        if output.is_relative_to(protected.resolve()):
+        boundary = protected.resolve()
+        if any(candidate.is_relative_to(boundary) for candidate in traversed):
             raise toolchain.SetupError("Receipt output must be separate from source, pin, product and CI environment inputs.")
     try:
         existing = output.lstat()
