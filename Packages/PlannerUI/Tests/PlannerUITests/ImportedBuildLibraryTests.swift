@@ -1,7 +1,46 @@
+import Foundation
 import XCTest
 import PlannerData
 import PlannerTransfer
 @testable import PlannerUI
+
+// Blocking belongs only to the synchronous preparation worker. A broken move
+// back to MainActor releases after five seconds and fails rather than deadlocking.
+private final class BlockedBuildPreparation: @unchecked Sendable {
+    private let entered = DispatchSemaphore(value: 0)
+    private let released = DispatchSemaphore(value: 0)
+    private let lock = NSLock()
+    private var calls = 0
+    private var offMain = true
+    private var timedOut = false
+
+    var observations: (calls: Int, offMain: Bool, timedOut: Bool) {
+        lock.lock(); defer { lock.unlock() }
+        return (calls, offMain, timedOut)
+    }
+    @discardableResult
+    func pauseFirst() -> Int {
+        lock.lock()
+        calls += 1
+        let call = calls
+        offMain = offMain && !Thread.isMainThread
+        lock.unlock()
+        if call == 1 {
+            entered.signal()
+            let result = released.wait(timeout: .now() + 5)
+            lock.lock(); timedOut = result == .timedOut; lock.unlock()
+        }
+        return call
+    }
+    func waitUntilEntered() async -> Bool {
+        await withCheckedContinuation { continuation in
+            DispatchQueue.global(qos: .userInitiated).async {
+                continuation.resume(returning: self.entered.wait(timeout: .now() + 5) == .success)
+            }
+        }
+    }
+    func release() { released.signal() }
+}
 
 @MainActor
 final class ImportedBuildLibraryTests: XCTestCase {
@@ -20,11 +59,11 @@ final class ImportedBuildLibraryTests: XCTestCase {
         let clean = try BuildTransfer.snapshot(fromDraftJSON: JSONEncoder().encode(JSONValue.object(build)))
         return try BuildTransfer.export(clean, publicOwnerAlias: "fixture.public")
     }
-    private func setup() throws -> (DraftStore, ImportedBuildLibraryModel, URL) {
+    private func setup(preparation: ImportedBuildPreparation = .live) throws -> (DraftStore, ImportedBuildLibraryModel, URL) {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let store = try DraftStore(url: folder.appendingPathComponent("imports.sqlite"))
-        return (store, ImportedBuildLibraryModel(store: store), folder)
+        return (store, ImportedBuildLibraryModel(store: store, preparation: preparation), folder)
     }
     private func recordID(_ index: Int) -> UUID {
         let tail = String(index, radix: 16)
@@ -34,10 +73,46 @@ final class ImportedBuildLibraryTests: XCTestCase {
         let snapshot = try BuildTransfer.preview(fixture()).snapshot
         return try JSONEncoder().encode(ImportedBuildRecord(snapshot: snapshot, markedSynthetic: false, sourceRevision: nil))
     }
+    private func selectedFixture(_ model: ImportedBuildLibraryModel, store: DraftStore,
+                                 synthetic: Bool = false) async throws -> (DraftRecord, BuildSnapshot) {
+        let snapshot = try BuildTransfer.preview(fixture()).snapshot
+        let wrapper = try ImportedBuildRecord(snapshot: snapshot, markedSynthetic: synthetic,
+            sourceRevision: synthetic ? String(repeating: "e", count: 40) : nil)
+        let record = try await store.save(id: UUID(), expectedRevision: nil, title: "Preparation control",
+                                         payload: JSONEncoder().encode(wrapper))
+        await model.open(record)
+        XCTAssertEqual(model.selected, record)
+        XCTAssertEqual(model.snapshot, snapshot)
+        return (record, snapshot)
+    }
+    private func notesEditor(in folder: URL) async throws -> DraftLibraryModel {
+        let editor = DraftLibraryModel(store: try DraftStore(url: folder.appendingPathComponent("notes.sqlite")))
+        await editor.create()
+        XCTAssertNotNil(editor.selected)
+        return editor
+    }
+    private func assertResponsiveEditor(_ editor: DraftLibraryModel, probe: BlockedBuildPreparation) {
+        editor.notes = "A main-actor edit completed before preparation was released"
+        XCTAssertEqual(editor.notes, "A main-actor edit completed before preparation was released")
+        XCTAssertFalse(probe.observations.timedOut)
+        XCTAssertTrue(probe.observations.offMain)
+        // Discard only this test-owned amendment before any production debounce
+        // can start; this separate editor is the responsiveness witness.
+        editor.close()
+    }
+    private func assertUnchanged(_ record: DraftRecord, in folder: URL) async throws {
+        let reopened = try DraftStore(url: folder.appendingPathComponent("imports.sqlite"))
+        let durable = try await reopened.read(id: record.id)
+        let history = try await reopened.history(id: record.id)
+        let page = try await reopened.list()
+        XCTAssertEqual(durable, record)
+        XCTAssertEqual(history.records, [record])
+        XCTAssertEqual(page.records, [record])
+    }
     func testPreviewAndCancelNeverWriteStorage() async throws {
         let (store, model, folder) = try setup()
         defer { try? FileManager.default.removeItem(at: folder) }
-        try model.preparePreview(fixture())
+        try await model.preparePreview(fixture())
         XCTAssertNotNil(model.preview)
         let before = try await store.list()
         XCTAssertTrue(before.records.isEmpty)
@@ -51,13 +126,13 @@ final class ImportedBuildLibraryTests: XCTestCase {
         defer { try? FileManager.default.removeItem(at: folder) }
         let bytes = try fixture()
         let source = try BuildTransfer.preview(bytes).snapshot
-        try model.preparePreview(bytes); await model.confirmImport()
+        try await model.preparePreview(bytes); await model.confirmImport()
         let first = try XCTUnwrap(model.snapshot)
         let row = try XCTUnwrap(model.selected)
         XCTAssertNotEqual(first.id, source.id)
         XCTAssertEqual(first.locks, source.locks)
         XCTAssertEqual(row.revision, 1)
-        try model.preparePreview(bytes); await model.confirmImport()
+        try await model.preparePreview(bytes); await model.confirmImport()
         XCTAssertNotEqual(model.snapshot?.id, first.id)
         XCTAssertNotEqual(model.selected?.id, row.id)
         let page = try await store.list()
@@ -79,13 +154,13 @@ final class ImportedBuildLibraryTests: XCTestCase {
             "contract": .object(["version": .string("1.0.0"), "sourceSha": .string(sha)]),
             "dataMode": .string("fixture"), "build": snapshot.value
         ])
-        try model.preparePreview(JSONEncoder().encode(envelope)); await model.confirmImport()
+        try await model.preparePreview(JSONEncoder().encode(envelope)); await model.confirmImport()
         let row = try XCTUnwrap(model.selected)
         let secondConnection = try DraftStore(url: folder.appendingPathComponent("imports.sqlite"))
         let reopened = ImportedBuildLibraryModel(store: secondConnection)
         await reopened.open(row)
         XCTAssertTrue(reopened.markedSynthetic)
-        reopened.prepareExport(publicAlias: "public.alias")
+        await reopened.prepareExport(publicAlias: "public.alias")?.value
         let exported = try BuildTransfer.preview(XCTUnwrap(reopened.exportData))
         XCTAssertEqual(exported.usesSyntheticData, true)
         XCTAssertEqual(exported.sourceRevision, sha)
@@ -94,10 +169,10 @@ final class ImportedBuildLibraryTests: XCTestCase {
     func testExportRequiresAliasAndDoesNotExposeLocalOwner() async throws {
         let (_, model, folder) = try setup()
         defer { try? FileManager.default.removeItem(at: folder) }
-        try model.preparePreview(fixture()); await model.confirmImport()
-        model.prepareExport(publicAlias: "")
+        try await model.preparePreview(fixture()); await model.confirmImport()
+        await model.prepareExport(publicAlias: "")?.value
         XCTAssertNil(model.exportData)
-        model.prepareExport(publicAlias: "reviewed.alias")
+        await model.prepareExport(publicAlias: "reviewed.alias")?.value
         let exported = try BuildTransfer.preview(XCTUnwrap(model.exportData)).snapshot
         guard case .object(let fields) = exported.value else { return XCTFail("Missing build") }
         XCTAssertEqual(fields["owner_ref"], .string("reviewed.alias"))
@@ -110,8 +185,11 @@ final class ImportedBuildLibraryTests: XCTestCase {
     func testInvalidAndOversizedFilesCannotCreateRows() async throws {
         let (store, model, folder) = try setup()
         defer { try? FileManager.default.removeItem(at: folder) }
-        try model.preparePreview(fixture())
-        XCTAssertThrowsError(try model.preparePreview(Data("{}".utf8)))
+        try await model.preparePreview(fixture())
+        do {
+            try await model.preparePreview(Data("{}".utf8))
+            XCTFail("Malformed input must fail the same frozen validator")
+        } catch { XCTAssertNil(model.preview) }
         XCTAssertNil(model.preview)
         let file = folder.appendingPathComponent("oversized.json")
         var data = try fixture()
@@ -150,10 +228,10 @@ final class ImportedBuildLibraryTests: XCTestCase {
     func testLocalRenamePreservesSnapshotAndHistoryAcrossRestart() async throws {
         let (_, model, folder) = try setup()
         defer { try? FileManager.default.removeItem(at: folder) }
-        try model.preparePreview(fixture()); await model.confirmImport()
+        try await model.preparePreview(fixture()); await model.confirmImport()
         let original = try XCTUnwrap(model.selected)
         let snapshot = try XCTUnwrap(model.snapshot)
-        model.prepareExport(publicAlias: "reviewed.public")
+        await model.prepareExport(publicAlias: "reviewed.public")?.value
         XCTAssertNotNil(model.exportData)
 
         await model.rename(original, to: "My local label")
@@ -186,7 +264,7 @@ final class ImportedBuildLibraryTests: XCTestCase {
             "contract": .object(["version": .string("1.0.0"), "sourceSha": .string(sha)]),
             "dataMode": .string("fixture"), "build": source.value
         ])
-        try model.preparePreview(JSONEncoder().encode(envelope)); await model.confirmImport()
+        try await model.preparePreview(JSONEncoder().encode(envelope)); await model.confirmImport()
         let imported = try XCTUnwrap(model.selected)
         await model.rename(imported, to: "Organized locally")
         let original = try XCTUnwrap(model.selected)
@@ -208,7 +286,7 @@ final class ImportedBuildLibraryTests: XCTestCase {
         await reopened.open(duplicate)
         XCTAssertEqual(reopened.snapshot, duplicateSnapshot)
         XCTAssertTrue(reopened.markedSynthetic)
-        reopened.prepareExport(publicAlias: "reviewed.public")
+        await reopened.prepareExport(publicAlias: "reviewed.public")?.value
         let exported = try BuildTransfer.preview(XCTUnwrap(reopened.exportData))
         XCTAssertEqual(exported.usesSyntheticData, true)
         XCTAssertEqual(exported.sourceRevision, sha)
@@ -217,7 +295,7 @@ final class ImportedBuildLibraryTests: XCTestCase {
     func testStaleRenameDuplicateAndDeleteCannotMutateNewerRevision() async throws {
         let (store, model, folder) = try setup()
         defer { try? FileManager.default.removeItem(at: folder) }
-        try model.preparePreview(fixture()); await model.confirmImport()
+        try await model.preparePreview(fixture()); await model.confirmImport()
         let stale = try XCTUnwrap(model.selected)
         let newer = try await store.rename(id: stale.id, expectedRevision: stale.revision, title: "Newer label")
         await model.rename(stale, to: "Stale rename")
@@ -241,12 +319,12 @@ final class ImportedBuildLibraryTests: XCTestCase {
     func testConfirmedDeleteTargetsCapturedEntryAndPreservesDifferentSelection() async throws {
         let (store, model, folder) = try setup()
         defer { try? FileManager.default.removeItem(at: folder) }
-        try model.preparePreview(fixture()); await model.confirmImport()
+        try await model.preparePreview(fixture()); await model.confirmImport()
         let pendingDelete = try XCTUnwrap(model.selected)
         await model.duplicate(pendingDelete)
         let selected = try XCTUnwrap(model.selected)
         let selectedSnapshot = model.snapshot
-        model.prepareExport(publicAlias: "reviewed.public")
+        await model.prepareExport(publicAlias: "reviewed.public")?.value
         let export = try XCTUnwrap(model.exportData)
         await model.delete(pendingDelete)
         XCTAssertEqual(model.lastDeletedID, pendingDelete.id, "Only the committed target can invalidate its baseline.")
@@ -359,5 +437,184 @@ final class ImportedBuildLibraryTests: XCTestCase {
         let page = try await store.list()
         XCTAssertEqual(page.records.count, 1)
         XCTAssertNotNil(model.notice)
+    }
+    func testPreviewPreparationLeavesMainActorResponsive() async throws {
+        for fromFile in [false, true] {
+            let probe = BlockedBuildPreparation()
+            defer { probe.release() }
+            let preparation = ImportedBuildPreparation(preview: { data in
+                probe.pauseFirst()
+                return try ImportedBuildPreparation.live.preview(data)
+            }, export: ImportedBuildPreparation.live.export)
+            let (store, model, folder) = try setup(preparation: preparation)
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let (selected, snapshot) = try await selectedFixture(model, store: store)
+            let editor = try await notesEditor(in: folder)
+            let bytes = try fixture(), file = folder.appendingPathComponent("preview.json")
+            try bytes.write(to: file)
+            let preparing = Task {
+                if fromFile { await model.previewFile(file) }
+                else { try await model.preparePreview(bytes) }
+            }
+            let entered = await probe.waitUntilEntered()
+            XCTAssertTrue(entered)
+            XCTAssertTrue(model.busy)
+            XCTAssertNil(model.preview)
+            XCTAssertEqual(model.selected, selected)
+            XCTAssertEqual(model.snapshot, snapshot)
+            assertResponsiveEditor(editor, probe: probe)
+            probe.release(); try await preparing.value
+            XCTAssertFalse(model.busy)
+            XCTAssertEqual(model.preview?.snapshot, snapshot)
+            XCTAssertEqual(probe.observations.calls, 1)
+            XCTAssertFalse(probe.observations.timedOut)
+            try await assertUnchanged(selected, in: folder)
+        }
+    }
+    func testCancelledPreviewPreparationCannotPublishOrWrite() async throws {
+        for (fromFile, failAfterCancellation) in [(false, false), (false, true), (true, false), (true, true)] {
+            let probe = BlockedBuildPreparation()
+            defer { probe.release() }
+            let preparation = ImportedBuildPreparation(preview: { data in
+                probe.pauseFirst() // Deliberately finishes even after cancellation.
+                if failAfterCancellation { throw TransferError.malformed }
+                return try ImportedBuildPreparation.live.preview(data)
+            }, export: ImportedBuildPreparation.live.export)
+            let (store, model, folder) = try setup(preparation: preparation)
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let (selected, snapshot) = try await selectedFixture(model, store: store)
+            let bytes = try fixture(), file = folder.appendingPathComponent("cancelled.json")
+            try bytes.write(to: file)
+            let preparing = Task {
+                if fromFile { await model.previewFile(file) }
+                else { try await model.preparePreview(bytes) }
+            }
+            let entered = await probe.waitUntilEntered()
+            XCTAssertTrue(entered)
+            preparing.cancel()
+            probe.release()
+            var threwCancellation = false
+            do { try await preparing.value }
+            catch is CancellationError { threwCancellation = true }
+            XCTAssertEqual(threwCancellation, !fromFile)
+            XCTAssertFalse(model.busy)
+            XCTAssertNil(model.preview)
+            XCTAssertNil(model.notice)
+            XCTAssertEqual(model.selected, selected)
+            XCTAssertEqual(model.snapshot, snapshot)
+            XCTAssertTrue(probe.observations.offMain)
+            XCTAssertFalse(probe.observations.timedOut)
+            try await assertUnchanged(selected, in: folder)
+        }
+    }
+    func testExportPreparationLeavesMainActorResponsiveAndPreservesQualification() async throws {
+        let probe = BlockedBuildPreparation()
+        defer { probe.release() }
+        let preparation = ImportedBuildPreparation(preview: ImportedBuildPreparation.live.preview, export: { request in
+            probe.pauseFirst()
+            return try ImportedBuildPreparation.live.export(request)
+        })
+        let (store, model, folder) = try setup(preparation: preparation)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (selected, snapshot) = try await selectedFixture(model, store: store, synthetic: true)
+        let editor = try await notesEditor(in: folder)
+        let preparing = try XCTUnwrap(model.prepareExport(publicAlias: "reviewed.public"))
+        let entered = await probe.waitUntilEntered()
+        XCTAssertTrue(entered)
+        XCTAssertTrue(model.busy)
+        XCTAssertNil(model.exportData)
+        assertResponsiveEditor(editor, probe: probe)
+        probe.release(); await preparing.value
+        let exported = try BuildTransfer.preview(XCTUnwrap(model.exportData))
+        XCTAssertEqual(exported.snapshot.value.object?["owner_ref"], .string("reviewed.public"))
+        XCTAssertEqual(exported.snapshot.id, snapshot.id)
+        XCTAssertEqual(exported.snapshot.locks, snapshot.locks)
+        XCTAssertEqual(exported.usesSyntheticData, true)
+        XCTAssertEqual(exported.sourceRevision, String(repeating: "e", count: 40))
+        XCTAssertEqual(model.selected, selected)
+        XCTAssertEqual(model.snapshot, snapshot)
+        XCTAssertFalse(model.busy)
+        XCTAssertFalse(probe.observations.timedOut)
+        try await assertUnchanged(selected, in: folder)
+    }
+    func testClearedExportRejectsLateBytesAndErrorsAndRetryUsesNewAlias() async throws {
+        for failFirst in [false, true] {
+            let probe = BlockedBuildPreparation()
+            defer { probe.release() }
+            let preparation = ImportedBuildPreparation(preview: ImportedBuildPreparation.live.preview, export: { request in
+                let call = probe.pauseFirst()
+                if call == 1, failFirst { throw TransferError.malformed }
+                return try ImportedBuildPreparation.live.export(request)
+            })
+            let (store, model, folder) = try setup(preparation: preparation)
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let (selected, snapshot) = try await selectedFixture(model, store: store)
+            let preparing = try XCTUnwrap(model.prepareExport(publicAlias: "old.alias"))
+            let entered = await probe.waitUntilEntered()
+            XCTAssertTrue(entered)
+            model.clearExport() // The same invalidation used by the alias binding.
+            probe.release(); await preparing.value
+            XCTAssertNil(model.exportData)
+            XCTAssertNil(model.notice, "An invalidated preparation cannot publish a late failure either")
+            XCTAssertFalse(model.busy)
+            XCTAssertEqual(model.selected, selected)
+            XCTAssertEqual(model.snapshot, snapshot)
+            await model.prepareExport(publicAlias: "new.alias")?.value
+            let exported = try BuildTransfer.preview(XCTUnwrap(model.exportData))
+            XCTAssertEqual(exported.snapshot.value.object?["owner_ref"], .string("new.alias"))
+            XCTAssertEqual(probe.observations.calls, 2)
+            XCTAssertTrue(probe.observations.offMain)
+            XCTAssertFalse(probe.observations.timedOut)
+            try await assertUnchanged(selected, in: folder)
+        }
+    }
+    func testInvalidatedQueuedExportNeverEntersPreparation() async throws {
+        let probe = BlockedBuildPreparation()
+        defer { probe.release() }
+        let preparation = ImportedBuildPreparation(preview: ImportedBuildPreparation.live.preview, export: { request in
+            probe.pauseFirst()
+            return try ImportedBuildPreparation.live.export(request)
+        })
+        let (store, model, folder) = try setup(preparation: preparation)
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let (selected, snapshot) = try await selectedFixture(model, store: store)
+        let preparing = try XCTUnwrap(model.prepareExport(publicAlias: "old.alias"))
+        // Both actions occur on this actor turn, before the queued task begins.
+        model.clearExport()
+        await preparing.value
+        XCTAssertEqual(probe.observations.calls, 0)
+        XCTAssertNil(model.exportData)
+        XCTAssertNil(model.notice)
+        XCTAssertFalse(model.busy)
+        XCTAssertEqual(model.selected, selected)
+        XCTAssertEqual(model.snapshot, snapshot)
+        try await assertUnchanged(selected, in: folder)
+    }
+    func testCancelledExportPreparationCannotPublishOrWrite() async throws {
+        for failAfterCancellation in [false, true] {
+            let probe = BlockedBuildPreparation()
+            defer { probe.release() }
+            let preparation = ImportedBuildPreparation(preview: ImportedBuildPreparation.live.preview, export: { request in
+                probe.pauseFirst()
+                if failAfterCancellation { throw TransferError.malformed }
+                return try ImportedBuildPreparation.live.export(request)
+            })
+            let (store, model, folder) = try setup(preparation: preparation)
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let (selected, snapshot) = try await selectedFixture(model, store: store)
+            let preparing = try XCTUnwrap(model.prepareExport(publicAlias: "cancelled.alias"))
+            let entered = await probe.waitUntilEntered()
+            XCTAssertTrue(entered)
+            preparing.cancel()
+            probe.release(); await preparing.value
+            XCTAssertNil(model.exportData)
+            XCTAssertNil(model.notice)
+            XCTAssertFalse(model.busy)
+            XCTAssertEqual(model.selected, selected)
+            XCTAssertEqual(model.snapshot, snapshot)
+            XCTAssertTrue(probe.observations.offMain)
+            XCTAssertFalse(probe.observations.timedOut)
+            try await assertUnchanged(selected, in: folder)
+        }
     }
 }

@@ -34,7 +34,13 @@ jobs:
             testConfirmedDeleteTargetsCapturedEntryAndPreservesDifferentSelection \
             testLargeLibraryRetainsCorruptWrapperAndUnrelatedMetadataAfterRenameDeleteAndRestart \
             testEntireUnreadablePageStillReachesLaterValidBuild \
-            testMalformedQualificationCannotBeOpenedMutatedOrSilentlyDropped
+            testMalformedQualificationCannotBeOpenedMutatedOrSilentlyDropped \
+            testPreviewPreparationLeavesMainActorResponsive \
+            testCancelledPreviewPreparationCannotPublishOrWrite \
+            testExportPreparationLeavesMainActorResponsiveAndPreservesQualification \
+            testClearedExportRejectsLateBytesAndErrorsAndRetryUsesNewAlias \
+            testInvalidatedQueuedExportNeverEntersPreparation \
+            testCancelledExportPreparationCannotPublishOrWrite
           do
             grep -E "Test Case .*ImportedBuildLibraryTests.*${name}.* passed" .build/native-evidence/model-tests.txt
           done

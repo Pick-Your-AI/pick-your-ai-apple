@@ -59,22 +59,35 @@ public final class ImportedBuildLibraryModel: ObservableObject {
     @Published public private(set) var exportData: Data?
     private var sourceRevision: String?
     private let store: DraftStore
+    private let preparation: ImportedBuildPreparation
+    private var exportGeneration: UUID?
     public static let pageSize = 20
-    public init(store: DraftStore) { self.store = store }
+    public convenience init(store: DraftStore) { self.init(store: store, preparation: .live) }
+    init(store: DraftStore, preparation: ImportedBuildPreparation) {
+        self.store = store; self.preparation = preparation
+    }
 
     /// Only the Files picker grants access. The actual read is bounded independently
     /// of advertised file size, and the security-scoped grant ends immediately.
     public func previewFile(_ url: URL) async {
         guard !busy else { return }
-        busy = true; preview = nil; exportData = nil
+        busy = true; preview = nil; clearExport()
         defer { busy = false }
-        let reading = Task.detached(priority: .userInitiated) { try Self.readFile(url) }
+        let preparation = preparation
         do {
-            let bytes = try await withTaskCancellationHandler(operation: { try await reading.value },
-                                                               onCancel: { reading.cancel() })
+            let result = try await Self.offMain {
+                // The file grant ends after the bounded read. Parsing and schema
+                // validation remain on this worker, not on the returning actor.
+                try preparation.preview(Self.readFile(url))
+            }
             try Task.checkCancellation()
-            preview = try BuildTransfer.preview(bytes); notice = nil
-        } catch { notice = "The file could not be previewed. It may be unreadable, unsupported, oversized, or contain private fields." }
+            preview = result; notice = nil
+        } catch is CancellationError {
+            // A cancelled caller cannot publish a preview or a stale failure.
+        } catch {
+            guard !Task.isCancelled else { return }
+            notice = "The file could not be previewed. It may be unreadable, unsupported, oversized, or contain private fields."
+        }
     }
     nonisolated private static func readFile(_ url: URL) throws -> Data {
         let granted = url.startAccessingSecurityScopedResource()
@@ -95,11 +108,21 @@ public final class ImportedBuildLibraryModel: ObservableObject {
         guard bytes.count <= BuildTransfer.maximumBytes else { throw TransferError.oversized }
         return bytes
     }
-    public func preparePreview(_ data: Data) throws {
+    public func preparePreview(_ data: Data) async throws {
         guard !busy else { return }
-        preview = nil; exportData = nil
-        preview = try BuildTransfer.preview(data)
-        notice = nil
+        busy = true; preview = nil; clearExport()
+        defer { busy = false }
+        let preparation = preparation
+        do {
+            let result = try await Self.offMain { try preparation.preview(data) }
+            try Task.checkCancellation()
+            preview = result
+            notice = nil
+        } catch {
+            // Cancellation can also arrive while returning to this actor.
+            try Task.checkCancellation()
+            throw error
+        }
     }
     public func cancelPreview() { if !busy { preview = nil } }
     public func refresh(offset: Int = 0) async {
@@ -135,9 +158,10 @@ public final class ImportedBuildLibraryModel: ObservableObject {
             return try operation()
         }
         return try await withTaskCancellationHandler(operation: {
-            let value = try await task.value
+            // A worker error must not skip the caller's cancellation check.
+            let result = await task.result
             try Task.checkCancellation()
-            return value
+            return try result.get()
         }, onCancel: { task.cancel() })
     }
     nonisolated private static func prepareFork(
@@ -237,7 +261,7 @@ public final class ImportedBuildLibraryModel: ObservableObject {
             try await store.delete(id: record.id, expectedRevision: record.revision)
             lastDeletedID = record.id
             if selected?.id == record.id {
-                selected = nil; snapshot = nil; markedSynthetic = false; sourceRevision = nil; exportData = nil
+                selected = nil; snapshot = nil; markedSynthetic = false; sourceRevision = nil; clearExport()
             }
             notice = nil
             await reloadAfterMutation("The selected local entry was deleted.", offset: offset)
@@ -245,30 +269,46 @@ public final class ImportedBuildLibraryModel: ObservableObject {
     }
     private func adopt(_ record: DraftRecord, snapshot: BuildSnapshot, markedSynthetic: Bool, sourceRevision: String?) {
         selected = record; self.snapshot = snapshot; self.markedSynthetic = markedSynthetic; self.sourceRevision = sourceRevision
-        exportData = nil; notice = nil
+        clearExport(); notice = nil
     }
-    public func prepareExport(publicAlias: String) {
-        exportData = nil
-        guard !busy, let snapshot else { return }
-        do {
-            var data = try BuildTransfer.export(snapshot, publicOwnerAlias: publicAlias)
-            if markedSynthetic {
-                guard let sourceRevision else { throw TransferError.unsupportedVersion }
-                let projected = try BuildTransfer.snapshot(fromDraftJSON: data)
-                let envelope = JSONValue.object([
-                    "format": .string("pickyour.ai/build-export"), "formatVersion": .number(1),
-                    "exportedAt": .string(ISO8601DateFormatter().string(from: Date())),
-                    "contract": .object(["version": .string("1.0.0"), "sourceSha": .string(sourceRevision)]),
-                    "dataMode": .string("fixture"), "build": projected.value
-                ])
-                data = try JSONEncoder().encode(envelope)
-                // Revalidate the final envelope and its total byte bound too.
-                _ = try BuildTransfer.preview(data)
+    /// Capture intent before a queued Task can observe a different alias or row.
+    /// The returned operation permits cancellation/acknowledgement; it never
+    /// authorizes sharing, which still requires review of the resulting bytes.
+    @discardableResult
+    public func prepareExport(publicAlias: String) -> Task<Void, Never>? {
+        guard !busy, let snapshot, let selected else { return nil }
+        clearExport()
+        let generation = UUID()
+        exportGeneration = generation
+        let request = ImportedBuildPreparation.ExportRequest(snapshot: snapshot, publicAlias: publicAlias,
+            markedSynthetic: markedSynthetic, sourceRevision: sourceRevision)
+        let preparation = preparation
+        busy = true
+        return Task { @MainActor [weak self] in
+            guard let self else { return }
+            defer {
+                if self.exportGeneration == generation { self.exportGeneration = nil }
+                self.busy = false
             }
-            exportData = data; notice = nil
+            guard !Task.isCancelled, self.currentExport(generation, selected: selected) else { return }
+            do {
+                let data = try await Self.offMain { try preparation.export(request) }
+                try Task.checkCancellation()
+                guard self.currentExport(generation, selected: selected) else { return }
+                self.exportData = data; self.notice = nil
+            } catch is CancellationError {
+                // Cancellation retains the fork without making bytes shareable.
+            } catch {
+                guard !Task.isCancelled, self.currentExport(generation, selected: selected) else { return }
+                self.notice = "Export could not be prepared. Supply a public alias and remove unsupported or private content."
+            }
         }
-        catch { notice = "Export could not be prepared. Supply a public alias and remove unsupported or private content." }
     }
-    public func clearExport() { exportData = nil }
+    private func currentExport(_ generation: UUID, selected: DraftRecord) -> Bool {
+        exportGeneration == generation && self.selected?.id == selected.id
+            && self.selected?.revision == selected.revision
+    }
+    /// An alias change also invalidates preparation that has not returned yet.
+    public func clearExport() { exportGeneration = nil; exportData = nil }
     public func reportFileFailure() { notice = "The file operation did not finish. Existing local builds were preserved." }
 }
