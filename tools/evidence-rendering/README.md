@@ -30,9 +30,13 @@ the nine rejections and recovery of the prior report.
 
 The test asserts a foreground app, the selected fixture ID and exact sequence
 position, and actual native static-text elements under the content container.
-It collects labels while scrolling, including later materialized content in the
-negative assertions. An empty tree, missing text, wrong case, incomplete sequence
-or content that does not settle within the bounded scan fails. The app uses its
+It collects native text while scrolling, including later materialized content in
+the negative assertions. On macOS the case and position use exact String values;
+content retains both nonempty labels and String values from each static-text
+element. A non-String value or an element with neither form fails instead of
+being silently dropped. iOS continues to use labels. An empty tree, missing text,
+wrong case, incomplete sequence or content that does not settle within the
+bounded scan fails. The app uses its
 normal SwiftUI window/scene lifecycle. There is no private accessibility activation,
 view reflection or host-computed expected text.
 
@@ -73,7 +77,40 @@ assertions remain unchanged. Fresh native execution on the selected macOS,
 iPhone and iPad destinations is still required; the failed build supplies no
 rendering pass or later mutation result.
 
-Local correction preparation used Swift 6.1.2 syntax parsing for both new Swift
+At the next source `fddd221fca5a96fd0746776f6afcff911f8790ea`, prepared
+checkout `e79c39a81305439114831d4ac3de080ce78b4aa2` / tree
+`ce8336ee4464b86afaffe8161f0d1a1f8dde582a`, the original
+[Core/iPhone/iPad receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/277#issuecomment-6253844126)
+qualified all four actual rendering methods on each selected iPhone and iPad.
+The separate [macOS job 117734702792 / run 39147645030](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39147645030/job/117734702792)
+passed all 23 editor-model methods, built the test app and launched all four UI
+methods in the foreground, then failed each first-case `label` predicate. Those
+four failures in 54.044 seconds remain failed evidence; later production-app
+build/launch steps were skipped.
+
+The complete original macOS artifact `12148150605` is 93,703,324 bytes,
+SHA-256 `fe4a70cacfc6e83c811759e71152d12bb8bee3c66d9bd6c3da677123f0ef31a0`.
+Its retained accessibility descriptions expose the case and position as values,
+body strings as values, and some headings as labels. The
+[independent original diagnostic readback](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/277#issuecomment-6254194471)
+records the exact decoded objects and hashes. This reader correction follows
+those actual observations: macOS identity and position stay exact, and body
+text includes both forms in the same positive and negative assertions. It does
+not populate text from expected strings or relax a missing/invalid observation.
+All four method identities, fixtures, scan bounds and forbidden outcome, severity
+and grade checks remain required. Fresh macOS, iPhone and iPad execution on the
+corrected source is still required; the preceding iOS passes belong to their
+original source and prepared checkout.
+
+Local accessibility-reader preparation parsed the corrected test source with
+Swift 6.1.2 for both `arm64-apple-macosx15.0` and
+`arm64-apple-ios17.0-simulator` conditional branches. This was syntax parsing,
+not an Apple SDK compilation. All 30 existing pinned conformance methods passed
+in 10.102 seconds, including both strict rendering-receipt methods and the
+unchanged shared-vector checks. All 15 native-scope methods passed in 1.139
+seconds. These results do not qualify corrected native rendering.
+
+The earlier local native-host preparation used Swift 6.1.2 syntax parsing for both new Swift
 files; it did not compile an Apple SDK. The exact `jsonschema[format]` 4.25.1
 reference environment passed all 30 conformance methods in 28.833 seconds, including both
 updated explicit-module/session receipt methods and the unchanged 37-vector

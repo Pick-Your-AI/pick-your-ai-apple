@@ -52,7 +52,7 @@ final class EvidenceRenderingTests: XCTestCase {
             } else {
                 XCTAssertEqual(vector.id, "evidence/no-findings")
             }
-            let text = assertRendered(app, id: vector.id, index: index, total: accepted.count, contains: expected)
+            let text = try assertRendered(app, id: vector.id, index: index, total: accepted.count, contains: expected)
             for other in ["pass", "fail", "unknown", "skipped"] where other != vector.outcome {
                 XCTAssertFalse(text.contains("Reported rule outcome: \(other)"), vector.id)
             }
@@ -75,12 +75,12 @@ final class EvidenceRenderingTests: XCTestCase {
         let app = launch("report-size")
         defer { app.terminate() }
         for (index, width) in [375, 820].enumerated() {
-            assertRendered(app, id: "reported-pass-width-\(width)", index: index, total: 2, contains: expected)
+            try assertRendered(app, id: "reported-pass-width-\(width)", index: index, total: 2, contains: expected)
             if index == 0 { next(app) }
         }
     }
 
-    func testClaimGradesRequireTheirExistingInspectionAndIndependentSupportInputs() {
+    func testClaimGradesRequireTheirExistingInspectionAndIndependentSupportInputs() throws {
         let inputs = [
             ("not-inspected", "verified", "Unverified", "Source claim has not been inspected."),
             ("support-without-inspection", "verified", "Unverified", "Source claim has not been inspected."),
@@ -94,7 +94,7 @@ final class EvidenceRenderingTests: XCTestCase {
         defer { app.terminate() }
         for (index, input) in inputs.enumerated() {
             let (id, original, grade, source) = input
-            let text = assertRendered(app, id: id, index: index, total: inputs.count, contains: [
+            let text = try assertRendered(app, id: id, index: index, total: inputs.count, contains: [
                 "Evidence quality: \(grade)", "Original recorded status: \(original)", source,
                 "Component: synthetic.component", "Version: 1.0.0", "Retained snapshot: snapshot.retained",
                 "Facts remain pinned to this version."])
@@ -103,7 +103,7 @@ final class EvidenceRenderingTests: XCTestCase {
         }
     }
 
-    func testCorrectionAndFreshnessNoticesPreserveRetainedIdentityAndRequireARecheck() {
+    func testCorrectionAndFreshnessNoticesPreserveRetainedIdentityAndRequireARecheck() throws {
         let common = ["Version: 1.0.0", "Retained snapshot: snapshot.retained", "Current-state facts as of 2024-01-02"]
         let inputs = [
             ("newer-release", ["A newer version is available. The retained selection has not changed."]),
@@ -114,7 +114,7 @@ final class EvidenceRenderingTests: XCTestCase {
         let app = launch("notices")
         defer { app.terminate() }
         for (index, input) in inputs.enumerated() {
-            let text = assertRendered(app, id: input.0, index: index, total: inputs.count, contains: common + input.1)
+            let text = try assertRendered(app, id: input.0, index: index, total: inputs.count, contains: common + input.1)
             if input.0 == "correction" { XCTAssertFalse(text.contains("Evidence quality: Independently verified")) }
             if index + 1 < inputs.count { next(app) }
         }
@@ -132,11 +132,23 @@ final class EvidenceRenderingTests: XCTestCase {
 
     @discardableResult
     private func assertRendered(_ app: XCUIApplication, id: String, index: Int, total: Int,
-                                contains expected: [String], file: StaticString = #filePath, line: UInt = #line) -> String {
+                                contains expected: [String], file: StaticString = #filePath, line: UInt = #line) throws -> String {
         let current = app.staticTexts["evidence-harness-case"]
+        #if os(macOS)
+        let ready = expectation(for: NSPredicate(format: "value == %@", id), evaluatedWith: current)
+        #else
         let ready = expectation(for: NSPredicate(format: "label == %@", id), evaluatedWith: current)
+        #endif
         wait(for: [ready], timeout: 10)
-        XCTAssertEqual(app.staticTexts["evidence-harness-position"].label, "Case \(index + 1) of \(total)", file: file, line: line)
+        let position = app.staticTexts["evidence-harness-position"]
+        #if os(macOS)
+        let rawPosition = position.value
+        let positionText = try XCTUnwrap(rawPosition as? String,
+            "The native case position must have a String value; actual: \(String(describing: rawPosition))", file: file, line: line)
+        #else
+        let positionText = position.label
+        #endif
+        XCTAssertEqual(positionText, "Case \(index + 1) of \(total)", file: file, line: line)
         let content = app.descendants(matching: .any).matching(identifier: "evidence-harness-content").firstMatch
         XCTAssertTrue(content.waitForExistence(timeout: 10), file: file, line: line)
         var labels = Set<String>()
@@ -144,9 +156,11 @@ final class EvidenceRenderingTests: XCTestCase {
         var unchanged = 0
         var settled = false
         // Read the real application's static-text elements. Scroll to materialize
-        // lazy/offscreen report content; no expected label is sent to the host.
+        // lazy/offscreen report content; no expected text is sent to the host.
         for _ in 0..<16 {
-            let currentLabels = Set(content.descendants(matching: .staticText).allElementsBoundByIndex.map(\.label))
+            let currentLabels = Set(try content.descendants(matching: .staticText).allElementsBoundByIndex.flatMap {
+                try renderedStaticText($0, file: file, line: line)
+            })
             labels.formUnion(currentLabels)
             unchanged = currentLabels == previous ? unchanged + 1 : 0
             previous = currentLabels
@@ -170,5 +184,27 @@ final class EvidenceRenderingTests: XCTestCase {
             XCTAssertTrue(text.contains(value), "\(id): missing \(value); actual native text: \(text)", file: file, line: line)
         }
         return text
+    }
+
+    private func renderedStaticText(_ element: XCUIElement, file: StaticString, line: UInt) throws -> [String] {
+        #if os(macOS)
+        // Actual AppKit snapshots expose body strings as values and some
+        // headings as labels. Preserve both observations for all assertions.
+        let label = element.label
+        let rawValue = element.value
+        var strings = label.isEmpty ? [] : [label]
+        if let rawValue {
+            let value = try XCTUnwrap(rawValue as? String,
+                "Static text \(element.identifier) has a non-String value (\(type(of: rawValue))); label: \(label); value: \(rawValue)",
+                file: file, line: line)
+            if !value.isEmpty { strings.append(value) }
+        }
+        _ = try XCTUnwrap(strings.first,
+            "Static text \(element.identifier) has no usable label or String value; label: \(label); value: \(String(describing: rawValue))",
+            file: file, line: line)
+        return strings
+        #else
+        return [element.label]
+        #endif
     }
 }
