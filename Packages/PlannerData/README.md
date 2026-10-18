@@ -83,7 +83,7 @@ from running a UI, simulator lifecycle tests or physical-device qualification.
 | #69 | CAS, appended restoration, stale undo rejection; real crash recovery | Editor autosave wiring, process termination during actual UI edits, analysis-state integration |
 | #80 | Rename/duplicate/delete, paginated large library, corrupt-record isolation and restart | Native library UI, evidence state display, cross-client build round-trip and private projection |
 | #86 | Schema 1/2→3, interrupted upgrade, actual capacity error, rollback/retry, corrupt DB retention | App integration, supported device/OS upgrade matrix and protected-data tests |
-| #98 | Storage threat boundary and redacted errors documented | Full import/link/API/share flows and security receiving review |
+| #98 | [Reviewed data inventory, threat model and mitigation register](../../docs/validation/issue-98-data-threats.md) traces delivered storage and the exact native Files candidate | Imported-build deletion and device/provider/service qualification remain explicit |
 
 These are partial criteria results; no full issue closure follows from a library
 merge. See the [all-issue acceptance map](../../docs/acceptance/README.md) for exact
