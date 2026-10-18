@@ -29,7 +29,7 @@ separate check; see the [UI journey evidence and limits](UI_JOURNEY.md).
 | --- | --- | --- |
 | #26 fresh checkout scaffold; #30 CI | Checked-in app/UI-test targets and shared scheme, local packages, pinned Xcode selection and exact simulator selection | Verify the current commit’s hosted results; no release configuration or signed archive |
 | #28 restore correct draft | SceneStorage selection, explicit dirty-discard guard, background save attempt; UI test reopens an acknowledged revision after process termination | Hosted UI run pending; cold-link routing, interrupted unacknowledged edits and physical lifecycle qualification |
-| #80 local library operations | Create, title edit, duplicate, confirmed delete; real-store model tests and UI save/close/reopen test | Hosted UI run pending; UI duplicate/delete, complete build metadata/organization and receiving review |
+| #80 local library operations | Create, title edit, duplicate, confirmed delete; real-store model tests and UI save/reopen/discard/delete test | Hosted UI run pending; UI duplicate, complete build metadata/organization and receiving review |
 | #87 offline editing | All operations use local storage; unknown compatibility/pricing always explicit | Governed catalog cache and downstream evaluation integration |
 | #105 accessibility | System controls, visible labels, Dynamic Type, editor/action identifiers; bounded XCUITest local-draft journey | Hosted UI run pending; wider complete journeys, VoiceOver, large text and physical device audits |
 

@@ -1,7 +1,7 @@
 import XCTest
 
 final class LocalDraftJourneyTests: XCTestCase {
-    /// Uses only normal UI and a newly created synthetic draft. No launch-time
+    /// Uses only normal UI and newly created synthetic drafts. No launch-time
     /// storage replacement, seeding, reset, uninstall, or pre-existing-row edits.
     @MainActor
     func testSavedNotesSurviveCloseReopenAndRelaunch() {
@@ -16,29 +16,10 @@ final class LocalDraftJourneyTests: XCTestCase {
             XCTAssertFalse(app.buttons["saveDraft"].isEnabled, "An existing draft must be clean")
             tap(app.buttons["Close"])
         }
-        tap(app.buttons["newDraft"])
         let title = "UI-Journey-\(UUID().uuidString)"
         let notes = "Synthetic local draft.\nSaved by the UI journey."
-        let titleField = app.textFields["draftTitle"]
-        XCTAssertTrue(titleField.waitForExistence(timeout: 10))
-        XCTAssertEqual(titleField.value as? String, "Untitled draft")
-        // The new draft's short default title fits in the field. Tap its trailing
-        // edge to put the insertion point after it before deleting that text.
-        titleField.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
-        titleField.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: "Untitled draft".count))
-        titleField.typeText(title)
-        XCTAssertEqual(titleField.value as? String, title)
-        let notesField = app.textViews["draftNotes"]
-        tap(notesField)
-        notesField.typeText(notes)
-        XCTAssertEqual(notesField.value as? String, notes)
-        saveAndClose(app)
-
-        let createdRow = app.buttons.containing(.staticText, identifier: title).firstMatch
-        XCTAssertTrue(createdRow.waitForExistence(timeout: 10))
-        let recordIdentifier = createdRow.identifier
-        XCTAssertTrue(recordIdentifier.hasPrefix("draft-"))
-        tap(createdRow)
+        let recordIdentifier = createDraft(app, title: title, notes: notes)
+        tap(app.buttons[recordIdentifier])
         assertEditor(app, title: title, notes: notes)
         retainScreenshot(app, name: "Saved notes reopened from library")
 
@@ -58,10 +39,84 @@ final class LocalDraftJourneyTests: XCTestCase {
         tap(app.buttons[recordIdentifier])
         assertEditor(app, title: title, notes: revisedNotes)
         retainScreenshot(app, name: "Latest notes reopened after process relaunch")
+
+        // Discard only a new unsaved amendment to our own synthetic record.
+        let unsaved = "\nUnsaved synthetic amendment."
+        app.textViews["draftNotes"].coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.9)).tap()
+        app.textViews["draftNotes"].typeText(unsaved)
+        XCTAssertEqual(app.textViews["draftNotes"].value as? String, revisedNotes + unsaved)
+        wait(app.buttons["saveDraft"], matching: "enabled == true")
         tap(app.buttons["Close"])
-        XCTAssertTrue(app.buttons[recordIdentifier].waitForExistence(timeout: 10))
-        // Leave only this uniquely titled synthetic record. Do not clean the
-        // application container or delete any existing user data.
+        tap(app.buttons["Discard changes"])
+        wait(app.textFields["draftTitle"], matching: "exists == false")
+        tap(app.buttons[recordIdentifier])
+        assertEditor(app, title: title, notes: revisedNotes)
+        retainScreenshot(app, name: "Unsaved amendment discarded, committed notes preserved")
+
+        tap(app.buttons["Close"])
+        // A separately saved control must survive deletion and cold loading.
+        // An empty failed load or filtered corrupt row must never prove deletion.
+        let controlTitle = "UI-Control-\(UUID().uuidString)"
+        let controlNotes = "Synthetic control. Preserve this draft when deleting the other one."
+        let controlIdentifier = createDraft(app, title: controlTitle, notes: controlNotes)
+        XCTAssertNotEqual(controlIdentifier, recordIdentifier)
+        assertLoadedLibrary(app, controlIdentifier: controlIdentifier)
+
+        // Delete only the exact test-created target, never the first row or the
+        // app container. The separately created control remains available.
+        let createdRecord = app.buttons[recordIdentifier]
+        XCTAssertTrue(createdRecord.waitForExistence(timeout: 10))
+        wait(createdRecord, matching: "hittable == true AND enabled == true")
+        createdRecord.press(forDuration: 1.2)
+        tap(app.buttons["Delete"])
+        tap(app.buttons["Delete draft"])
+        wait(createdRecord, matching: "exists == false")
+        assertLoadedLibrary(app, controlIdentifier: controlIdentifier)
+        XCTAssertFalse(createdRecord.exists)
+        retainScreenshot(app, name: "Test-created draft deleted through confirmation")
+        app.terminate()
+        app.launch()
+        assertLoadedLibrary(app, controlIdentifier: controlIdentifier)
+        XCTAssertFalse(app.buttons[recordIdentifier].exists, "Deletion must survive a successful process reload")
+        tap(app.buttons[controlIdentifier])
+        assertEditor(app, title: controlTitle, notes: controlNotes)
+        retainScreenshot(app, name: "Independent control survived deletion and process relaunch")
+        tap(app.buttons["Close"])
+        // The control is removed only with this run's owned simulator cleanup.
+    }
+
+    @MainActor
+    private func createDraft(_ app: XCUIApplication, title: String, notes: String) -> String {
+        tap(app.buttons["newDraft"])
+        let titleField = app.textFields["draftTitle"]
+        XCTAssertTrue(titleField.waitForExistence(timeout: 10))
+        XCTAssertEqual(titleField.value as? String, "Untitled draft")
+        // The short default title fits in the field. Tap its trailing edge to
+        // place the insertion point after it before deleting the default text.
+        titleField.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+        titleField.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: "Untitled draft".count))
+        titleField.typeText(title)
+        XCTAssertEqual(titleField.value as? String, title)
+        let notesField = app.textViews["draftNotes"]
+        tap(notesField)
+        notesField.typeText(notes)
+        XCTAssertEqual(notesField.value as? String, notes)
+        saveAndClose(app)
+        let createdRow = app.buttons.containing(.staticText, identifier: title).firstMatch
+        XCTAssertTrue(createdRow.waitForExistence(timeout: 10))
+        let recordIdentifier = createdRow.identifier
+        XCTAssertTrue(recordIdentifier.hasPrefix("draft-"))
+        return recordIdentifier
+    }
+
+    @MainActor
+    private func assertLoadedLibrary(_ app: XCUIApplication, controlIdentifier: String) {
+        // Positive evidence that the library actually loaded persisted records.
+        XCTAssertTrue(app.buttons[controlIdentifier].waitForExistence(timeout: 10),
+                      "The independently saved control must be loaded")
+        wait(app.buttons["newDraft"], matching: "enabled == true")
+        XCTAssertFalse(app.staticTexts["operationNotice"].exists, "Library operations must not report failure")
+        XCTAssertFalse(app.staticTexts["corruptionNotice"].exists, "Unreadable drafts must not be mistaken for deletion")
     }
 
     @MainActor
