@@ -69,6 +69,12 @@ The requirements file enables [pip hash-checking mode and binary-only installati
 and fixes the index to PyPI. The workflow also passes the security flags explicitly,
 uses pip's isolated configuration mode, keeps dependency resolution enabled, and
 runs `pip check`. No `--no-deps` shortcut can hide a missing transitive pin.
+The workflow allocates a new directory under `RUNNER_TEMP` for every invocation,
+matching the fresh-directory reproduction below. Recreating a virtual environment
+at an existing path preserves installed distributions; hash-checking pip can then
+accept a matching installed version without checking its wheel bytes. A unique
+directory prevents that reuse while preserving the selected Python interpreter,
+pip flags, complete lock and reference-checker arguments.
 Release hashes lock inspected bytes; they do not establish absence of
 vulnerabilities or independently verify publisher attestations. The declared
 licenses are reviewed package metadata, not an audit of every bundled source or
@@ -130,6 +136,16 @@ PY
 ```
 
 ## Actual rejection and recovery evidence
+
+An additional controlled path-reuse check on Python 3.12.14 executed the old and
+corrected workflow shell steps with an owned temporary path, offline inert wheel
+and lock, and marker inspection in place of the reference checker. The repeated
+old `venv` command retained different installed bytes at the same package version;
+the required-hash install exited zero with `Requirement already satisfied`. The
+corrected step created a new environment, installed the reviewed fixture and
+passed `pip check`, while leaving the prior environment unchanged. This checks
+environment allocation and installation behavior; it does not execute the real
+Transfer dependencies, contract corpus, Swift package or hosted native gates.
 
 On 2026-10-18, a new Python 3.12.14 virtual environment with pip 25.0.1 installed
 all nine applicable distributions from the exact required hashes. `pip check`,
