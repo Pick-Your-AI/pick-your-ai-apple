@@ -61,11 +61,36 @@ pin is retained rather than made conditional or removed.
 ## Installation and verification
 
 Follow the [complete preparation commands](README.md#reproduce). The workflow and
-documented install use `python -m pip --isolated install`, an explicit public PyPI
-index, `--require-hashes`, `--only-binary=:all:` and the artifact lock, followed by
-`python -m pip check`. The lock also carries the hash and binary options itself.
-Use a fresh virtual environment when reviewing an update; a preinstalled package
-is not evidence that its download passed the current hash check.
+documented command create a unique fresh virtual environment with the selected
+Python and without inherited system packages. The selected interpreter's pip uses
+its [supported `--python` option](https://pip.pypa.io/en/stable/topics/python-option/)
+to manage the target environment without adding a second pip bootstrap. Installation
+retains `--isolated`, the explicit public PyPI index, `--require-hashes`,
+`--only-binary=:all:` and the artifact lock, followed by an isolated `pip check`
+against that same target. The lock also carries the hash and binary options itself.
+After successful installation and consistency checking, the workflow exports that
+environment's Python path for every subsequent preparation command. A failed
+installation cannot publish that path or proceed to the validation steps.
+
+An actual offline probe with Python 3.12.14 and pip 26.2.1 reproduced the previous
+workflow's gap: two harmless wheels had the same name and version but different
+inert marker strings. After the different wheel was preinstalled, the prior
+hash-required install reported `Requirement already satisfied`, returned success
+and retained the different marker despite a lock for the reviewed wheel. Running
+the locked install in a fresh environment installed the reviewed marker instead.
+Pip's `--isolated` flag isolates its configuration; it does not empty site-packages
+or verify a matching package that the installer considers already satisfied.
+This fixture experiment establishes installer behavior, not contamination of a
+hosted runner or execution of the real conformance/native suites.
+
+The corrected workflow's actual install-step shell was also exercised with only
+its public index and lock inputs replaced by harmless local fixtures. Two runs
+created different environments, installed the reviewed marker, passed dependency
+consistency and excluded the host's different preinstalled fixture. A wrong hash
+and an omitted transitive pin each returned a failure without exporting an
+interpreter. The bootstrap fixture remained unchanged in all four runs. All five
+subsequent preparation commands retain their original arguments and explicitly
+use the verified environment's Python; fresh hosted execution is still required.
 
 Required receiving evidence is a fresh isolated install with all seven exact
 versions, a successful dependency consistency check, and the existing frozen

@@ -23,18 +23,24 @@ requires the exact dependency versions in `requirements.txt` and records the
 actual Python version. Install their reviewed wheel hashes from
 `requirements-lock.txt`; [the environment record](environment-lock.md) lists
 its platform coverage, primary artifact provenance and remaining limits. The
-version manifest and existing runtime check are unchanged. From this repository:
+version manifest and existing runtime check are unchanged. Use a newly created
+virtual environment for each installation so existing same-version packages
+cannot bypass artifact checking. The selected Python's pip manages that environment
+using its [supported `--python` option](https://pip.pypa.io/en/stable/topics/python-option/)
+(pip 22.3 or newer). From this repository:
 
 ```sh
-python3.12 -m venv /tmp/apple-conformance-venv
-/tmp/apple-conformance-venv/bin/python -m pip --isolated install \
+conformance_env=$(mktemp -d "${TMPDIR:-/tmp}/apple-conformance.XXXXXX")
+python3.12 -m venv --without-pip "$conformance_env"
+python3.12 -m pip --python "$conformance_env/bin/python" --isolated install \
   --index-url https://pypi.org/simple --require-hashes --only-binary=:all: \
   -r tools/conformance/requirements-lock.txt
-/tmp/apple-conformance-venv/bin/python -m pip check
+python3.12 -m pip --python "$conformance_env/bin/python" --isolated check
+export APPLE_CONFORMANCE_PYTHON="$conformance_env/bin/python"
 export CONTRACT_ROOT=/path/to/pick-your-ai-research/contracts/v1
-/tmp/apple-conformance-venv/bin/python tools/conformance/run.py \
+"$APPLE_CONFORMANCE_PYTHON" tools/conformance/run.py \
   --contract-root "$CONTRACT_ROOT" --output /tmp/apple-conformance.json
-/tmp/apple-conformance-venv/bin/python -m unittest discover \
+"$APPLE_CONFORMANCE_PYTHON" -m unittest discover \
   -s tools/conformance/tests -v
 ```
 
@@ -87,7 +93,7 @@ invalid enums and every outcome/severity combination with absent, null and liter
 `unknown` evidence. Valid reports round-trip without collapsing outcome/severity.
 
 ```sh
-python tools/conformance/export_swift_vectors.py \
+"$APPLE_CONFORMANCE_PYTHON" tools/conformance/export_swift_vectors.py \
   --contract-root "$CONTRACT_ROOT" \
   --output Packages/PlannerCore/Tests/PlannerCoreTests/Fixtures/evaluation-vectors.json \
   --check
