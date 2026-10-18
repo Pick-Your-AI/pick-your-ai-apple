@@ -6,6 +6,7 @@ public struct DraftLibraryView: View {
     @StateObject private var model: DraftLibraryModel
     @SceneStorage("localDraftSelection") private var restoredID = ""
     @State private var pendingDelete: DraftRecord?
+    @State private var pendingRestore: DraftRecord?
     @State private var confirmDiscard = false
     public init(store: DraftStore) { _model = StateObject(wrappedValue: DraftLibraryModel(store: store)) }
     public var body: some View {
@@ -77,6 +78,33 @@ public struct DraftLibraryView: View {
                     TextEditor(text: $model.notes).frame(minHeight: 160)
                         .accessibilityLabel("Planning notes").accessibilityIdentifier("draftNotes")
                 }
+                Section("Revision history") {
+                    Button("Load saved revisions") { Task { await model.loadHistory() } }
+                        .accessibilityIdentifier("loadRevisions")
+                    if model.historyOffset > 0 {
+                        Button("Newer revisions") { Task { await model.loadHistory(offset: model.historyOffset - DraftLibraryModel.pageSize) } }
+                    }
+                    if model.hasOlderRevisions {
+                        Button("Older revisions") { Task { await model.loadHistory(offset: model.historyOffset + DraftLibraryModel.pageSize) } }
+                    }
+                    if model.unreadableRevisions > 0 {
+                        Text("\(model.unreadableRevisions) unreadable revisions were preserved.")
+                    }
+                    ForEach(model.revisions, id: \.revision) { revision in
+                        VStack(alignment: .leading) {
+                            Text("Local revision \(revision.revision)")
+                            Text(revision.title).font(.caption)
+                            if let source = revision.restoredFrom {
+                                Text("Restored from local revision \(source)").font(.caption)
+                            }
+                            if revision.revision < (model.selected?.revision ?? 0) {
+                                Button("Restore revision \(revision.revision)") { pendingRestore = revision }
+                                    .disabled(model.dirty)
+                            }
+                        }
+                    }
+                    Text("Restoration creates a new local revision and keeps later saved revisions. Save or discard unsaved changes first. Historical notes are not current compatibility or pricing evidence.")
+                }
                 Section {
                     Text(model.dirty ? "Unsaved changes" : model.status).accessibilityIdentifier("saveStatus")
                     Text("Compatibility: unknown. Pricing: unknown. Saving notes does not create a validated build.")
@@ -94,6 +122,12 @@ public struct DraftLibraryView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { Task { await model.save() } }
                         .disabled(!model.dirty || model.busy).accessibilityIdentifier("saveDraft")
+                }
+            }
+            .confirmationDialog("Restore this saved revision as a new local revision?", isPresented: Binding(get: { pendingRestore != nil }, set: { if !$0 { pendingRestore = nil } })) {
+                Button("Restore revision") {
+                    if let revision = pendingRestore { Task { await model.restore(revision) } }
+                    pendingRestore = nil
                 }
             }
             .interactiveDismissDisabled(model.dirty || model.busy)
