@@ -82,8 +82,21 @@ public struct ImportedBuildLibraryView: View {
                         Text("Pinned snapshot: " + snapshot.name)
                         Text("Pinned snapshot revision: " + revisionText(snapshot))
                         Text(model.markedSynthetic ? "Marked synthetic fixture" : "Data qualification unknown")
-                        Text("Compatibility: unknown. Pricing: unknown. Imported analysis is not current.")
+                        Text("Compatibility: unknown. Imported analysis is not current.")
                         Text(snapshot.id).font(.caption).textSelection(.enabled)
+                    }
+                    Section("Cost coverage") {
+                        switch ImportedBuildCostContext(snapshot: snapshot) {
+                        case .available(let input):
+                            // No qualified cost producer is connected to this local library.
+                            CostCoverageView(summary: nil, currentBuildID: input.buildID,
+                                currentBuildRevision: input.buildRevision, monthlyBudget: input.monthlyBudget,
+                                isSynthetic: model.markedSynthetic)
+                        case .unavailable(let reason):
+                            Text("Cost estimate unavailable")
+                                .accessibilityIdentifier("costCoverage.contextUnavailable")
+                            Text(verbatim: reason.explanation)
+                        }
                     }
                     Section("Compare configurations") {
                         Button("Use selected build as baseline") {

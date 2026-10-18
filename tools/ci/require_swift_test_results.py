@@ -234,6 +234,102 @@ PROFILES["comparison-catalog-source-privacy-ui"] = (111, {
     ),
 })
 
+# The selected-snapshot cost context adds 22 UI cases. Pin all 133 exact
+# class-qualified identities, including earlier cases previously guarded only
+# by the total. Historical profiles retain their own source and execution scope.
+PROFILES["comparison-catalog-source-privacy-cost-ui"] = (133, {
+    **PROFILES["comparison-catalog-source-privacy-ui"][1],
+    "PlannerUITests.CostCoveragePresentationTests": (
+        "testRemovingMostExpensiveRateShowsPartialAndNeverWithinBudget",
+        "testAbsentEstimateAndAbsentAmountNeverInventZero",
+        "testLiteralZeroKeepsItsCoverageAndRateConditions",
+        "testContradictoryCompleteCoverageRemainsVisibleAndCannotPass",
+        "testOtherOrInvalidVisibleRevisionSuppressesReceivedAmountAndDetails",
+        "testCurrenciesArePreservedWithoutConversionOrAggregation",
+        "testExactAmountsRetainTrailingZerosAndBeyondBinaryPrecisionBudgetBoundary",
+        "testExpiredUnverifiedAndNonMonthlyEstimatesKeepBudgetUnknown",
+        "testNoBudgetDoesNotCreateAComparison",
+        "testMissingCostDetailsKeepOriginalOrderDuplicatesAndEmptyEntries",
+    ),
+    "PlannerUITests.DraftLibraryModelTests": (
+        *PROFILES["comparison-catalog-source-privacy-ui"][1]["PlannerUITests.DraftLibraryModelTests"],
+        "testCreateSaveReopenDuplicateAndDelete",
+        "testConflictPreservesUnsavedInput",
+        "testUnknownEditorPayloadIsPreserved",
+        "testUnknownPayloadFieldsAreNotSilentlyDiscarded",
+        "testInvalidTitleRetainsEditsAndDoesNotAcknowledgeSave",
+        "testEditsDuringOpenKeepOriginalDraftAndUnsavedInput",
+        "testLifecycleSaveDuringOpenPersistsLatestEditsToOriginalDraft",
+        "testEditsArrivingDuringSaveRemainDirty",
+        "testRefreshFailureDoesNotRevokeDurableAcknowledgement",
+        "testDirtyNavigationGuardsAndSelectedDeletion",
+        "testEditorBindingsCannotChangeDuringDestructiveDelete",
+        "testLibraryKeepsOnlyOneBoundedPage",
+        "testRestoreAppendsHistoryAndReopensWithoutCurrentAnalysis",
+        "testRestoreCannotDiscardDirtyOrConcurrentSavedEdits",
+        "testEditsDuringRestorationRemainDirtyAndCanBeSaved",
+        "testHistoryIsBoundedAndClearedAcrossDrafts",
+        "testUnsupportedHistoryCannotBeRestoredFromEditor",
+        "testLifecycleSaveDuringHistoryReadIsDrainedWithLatestEdits",
+        "testLifecycleSaveDuringRestoreUsesNewRevisionAndLatestEdits",
+    ),
+    "PlannerUITests.EditorAutosaveTests": (
+        "testDebounceSavesOnlyLatestInputAndReopensAcknowledgedRevision",
+        "testDiscardDecisionFreezesCancelledTimerAndLifecycleSaveUntilConfirmed",
+        "testCancellingDiscardDecisionRestartsProductionSavePathForLatestInput",
+        "testDialogBindingDismissalBeforeDiscardActionCannotRearmAWrite",
+        "testQueuedReadsCannotEnterStorageOrBlockDiscardDecision",
+        "testCancelledDraftTimerCannotSaveAnotherDraft",
+        "testAutosaveDuringSuspendedWriteDrainsLatestInput",
+        "testInputReturningToOldBaselineDuringWriteIsAutosavedAfterAcknowledgement",
+        "testDelayedOpenPreservesAndAutosavesNewInputInOriginalDraft",
+        "testRestorationPreservesRevertedLateInputAndAutosavesIt",
+        "testFailedAutosaveRetainsDirtyInputAndCanRetryExplicitly",
+        "testUndoAndRedoAppendRevisionsAndNewEditClearsRedo",
+        "testUndoAfterNewerEditAndRestorationRetainsEveryDurableRevision",
+    ),
+    "PlannerUITests.EditorUndoHistoryTests": (
+        "testBothHistoryDirectionsRemainBounded",
+        "testByteLimitAndOversizedCurrentTextDoNotSilentlyDiscardInput",
+    ),
+    "PlannerUITests.ImportedBuildCostContextTests": (
+        "testExactBudgetDigitsCurrencyAndSnapshotBytesArePreserved",
+        "testAbsentBudgetIsDistinctFromAnExactZeroBudget",
+        "testMissingAndInvalidRevisionDoNotReceiveADefaultOrTruncatedIdentity",
+        "testLargestRepresentableRevisionIsExactAndOverflowIsUnavailable",
+        "testValidFrozenSnapshotWithWideRevisionRemainsReadableButHasNoCostContext",
+        "testIntegralDecimalRevisionAliasesKeepTheirMathematicalIdentity",
+        "testMalformedPresentBudgetIsUnavailableInsteadOfMissingOrZero",
+        "testMissingOrInvalidCurrencyCannotBeInferredEvenWithoutABudget",
+        "testMissingObjectivesAndUnreadableIdentityHaveExplicitUnavailableContexts",
+        "testLocalLabelRevisionDoesNotReplacePinnedWireRevisionOrBudget",
+        "testChangedSelectionUsesOnlyItsOwnWireIdentityBudgetAndCurrency",
+        "testReimportAndDuplicateUseFreshForkIdentityAndKeepCostUnavailable",
+    ),
+    "PlannerUITests.ImportedBuildLibraryTests": (
+        *PROFILES["comparison-catalog-source-privacy-ui"][1]["PlannerUITests.ImportedBuildLibraryTests"],
+        "testPreviewAndCancelNeverWriteStorage",
+        "testConfirmedForksNeverReuseSourceOrLocalIdentity",
+        "testSyntheticLabelSurvivesPersistenceAndExportEnvelope",
+        "testExportRequiresAliasAndDoesNotExposeLocalOwner",
+        "testInvalidAndOversizedFilesCannotCreateRows",
+        "testValidLocalFileCanBePreviewedWithoutImport",
+        "testUnsupportedStoredFormatIsPreserved",
+    ),
+    "PlannerUITests.LocalLibraryStartupTests": (
+        "testMainActorProcessesEditorActionWhileStartupOpenerIsBlocked",
+        "testCancelledSceneDoesNotPublishAndCanRetry",
+        "testCancelledStartupCannotReplaceNewAttempt",
+        "testSupersededStartupCannotReplaceNewAttemptEvenWithoutCancellation",
+        "testFailureIsExplicitAndLaterAppearanceCanRetryWithoutReopeningReadyStores",
+        "testFactoryPropagatesDirectoryPreparationError",
+    ),
+    "PlannerUITests.LocalLibraryStoresTests": (
+        "testCorruptImportedLibraryDoesNotHideSavedNotesOrHistory",
+        "testCorruptNotesDoNotHideExistingImportedLibrary",
+    ),
+})
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

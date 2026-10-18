@@ -89,6 +89,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                         "quality-catalog-editor-transfer", "catalog-source-ui",
                         "comparison-catalog-source-ui", "resource-quality-catalog-editor-transfer",
                         "comparison-catalog-source-privacy-ui",
+                        "comparison-catalog-source-privacy-cost-ui",
                         "graph-resource-quality-catalog-editor-transfer",
                         "placement-graph-resource-quality-catalog-editor-transfer",
                         "fixture-placement-graph-resource-quality-catalog-editor-transfer"):
@@ -117,13 +118,33 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                 ("catalog-editor-ui", "catalog-source-ui"),
                 ("comparison-catalog-editor-ui", "comparison-catalog-source-ui"),
                 ("catalog-source-ui", "comparison-catalog-source-ui"),
-                ("comparison-catalog-source-ui", "comparison-catalog-source-privacy-ui")):
+                ("comparison-catalog-source-ui", "comparison-catalog-source-privacy-ui"),
+                ("comparison-catalog-source-privacy-ui", "comparison-catalog-source-privacy-cost-ui")):
             with self.subTest(stacked=stacked):
                 self.assertEqual(self.run_profile(stacked, self.profile_log(stacked)), 0)
                 padded = self.profile_log(stacked, total=gate.PROFILES[receiving][0])
                 with self.assertRaises(SystemExit) as rejection:
                     self.run_profile(receiving, padded)
                 self.assertEqual(rejection.exception.code, 1)
+
+    def test_cost_profile_requires_every_identity_even_when_the_total_is_preserved(self):
+        profile = "comparison-catalog-source-privacy-cost-ui"
+        total, groups = gate.PROFILES[profile]
+        cases = [(suite, name) for suite, names in groups.items() for name in names]
+        self.assertEqual(total, 133)
+        self.assertEqual(len(cases), 133)
+        self.assertEqual(len(set(cases)), 133)
+        text = self.profile_log(profile)
+        self.assertEqual(self.run_profile(profile, text), 0)
+        for index, (suite, name) in enumerate(cases):
+            # A different passing method preserves the count, class, and final
+            # summary but cannot replace any original or newly added method.
+            original = f"-[{suite} {name}]"
+            self.assertEqual(text.count(original), 1)
+            replaced = text.replace(original, f"-[{suite} testUnrelatedPadding{index}]")
+            with self.subTest(missing_case=(suite, name)), self.assertRaises(SystemExit) as rejection:
+                self.run_profile(profile, replaced)
+            self.assertEqual(rejection.exception.code, 1)
 
 
 if __name__ == "__main__":
