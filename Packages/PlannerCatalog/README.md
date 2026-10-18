@@ -36,3 +36,36 @@ Run `swift test` from this directory on macOS. The dedicated `macos-catalog-cach
 | Issue evidence and receiving disposition | Source identity, test names, limitations and workflow supplied here | Independent engineering review pending; product receiving review and issue closure remain separate |
 
 No physical-device run, power-loss durability measurement, full-disk test, signing, release, publication rights, canonical schema conformance or production receiving approval is claimed by these unit tests.
+
+
+## Bounded public artifact transport
+
+On Apple platforms, `PublicArtifactClient` uses an ephemeral credential-free
+URLSession and `AsyncBytes` to bound received bytes before returning a Data value.
+It accepts HTTPS GETs only on the configured exact host/port, with no URL userinfo,
+query or fragment. Every redirect is refused, even within the same origin. Cookies,
+shared credentials, disk caches and automatic retries are disabled. Status, JSON
+MIME type and advertised size are checked before body consumption; the actual
+stream has an independent byte bound. Error values exclude URLs and server bodies.
+Cancellation and all early exits cancel the underlying transfer.
+
+Pass `client.fetch(artifactURL)` through the cache's downloader closure. The cache
+still validates immutable pins, SHA-256, schema callback and both artifacts before
+activation; the transport neither grants source-use rights nor authenticates data
+by itself. Configure only explicitly authorized artifact URLs. “Public” describes the intended data, not an IP-address filter; this is not an SSRF sandbox for untrusted origins. Query-signed
+URLs, credentials, API writes and production promotion are intentionally unsupported.
+No endpoint is hard-coded or provisioned. No network request occurs on construction.
+
+The eight new Apple-only regression tests cover real URLSession behavior with a
+synthetic URLProtocol, exact/oversized streams, interruption, cancellation, HTTP
+errors, MIME/length rejection, wrong-origin/credential URLs, redirect refusal,
+redacted timeout and subsequent recovery. These are controlled transport fixtures,
+not a live staging/TLS/physical-device receipt. They are excluded on Linux because
+FoundationNetworking lacks the Apple AsyncBytes API. Existing catalog workflow
+runs them on the selected macOS/Xcode toolchain and compiles for iOS. Hosted results
+must pass for the exact PR head before merge. Related partial work: #44, #45, #87,
+#99, #106; pagination, app integration, live services and device gates remain open.
+
+Primary API references checked 2026-10-18:
+[streaming bytes](https://developer.apple.com/documentation/foundation/urlsession/bytes(for:delegate:))
+and [underlying task](https://developer.apple.com/documentation/foundation/urlsession/asyncbytes).
