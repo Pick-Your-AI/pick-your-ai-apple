@@ -53,7 +53,9 @@ jobs:
         run: |
           set -euo pipefail
           python3 -m venv /tmp/transfer-python
-          /tmp/transfer-python/bin/pip install 'jsonschema[format]==4.26.0'
+          /tmp/transfer-python/bin/python --version
+          /tmp/transfer-python/bin/python -m pip --isolated install --require-hashes --only-binary=:all: -r Packages/PlannerTransfer/Tools/requirements.txt
+          /tmp/transfer-python/bin/python -m pip check
           /tmp/transfer-python/bin/python Packages/PlannerTransfer/Tools/verify_contract.py
       - name: Run Swift boundary and adversarial tests
         run: swift test --package-path Packages/PlannerTransfer
