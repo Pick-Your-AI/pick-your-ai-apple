@@ -34,6 +34,23 @@ final class DraftStoreTests: XCTestCase, @unchecked Sendable {
             PRAGMA user_version=1;
             """)
     }
+    /// Capture an idle, uncommitted writer's real spilled pages and hot journal.
+    /// The copy has no live connection or lock and must recover before reading.
+    private func interruptedCopy(_ source: URL, update: String) throws -> URL {
+        var writer: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(source.path, &writer), SQLITE_OK)
+        defer { sqlite3_close(writer) }
+        XCTAssertEqual(sqlite3_exec(writer, "PRAGMA cache_size=1; PRAGMA cache_spill=ON; BEGIN IMMEDIATE; " + update, nil, nil, nil), SQLITE_OK)
+        XCTAssertEqual(sqlite3_db_cacheflush(writer), SQLITE_OK)
+        let journal = URL(fileURLWithPath: source.path + "-journal")
+        let bytes = try Data(contentsOf: journal)
+        XCTAssertGreaterThan(bytes.count, 512)
+        XCTAssertEqual(Array(bytes.prefix(8)), [0xd9, 0xd5, 0x05, 0xf9, 0x20, 0xa1, 0x63, 0xd7])
+        let copy = try location()
+        try FileManager.default.copyItem(at: source, to: copy)
+        try FileManager.default.copyItem(at: journal, to: URL(fileURLWithPath: copy.path + "-journal"))
+        return copy
+    }
     private let empty = Data("{}".utf8)
 
     func testEmptyDraftSurvivesRestartWithoutInventedContractFields() async throws {
@@ -201,6 +218,103 @@ final class DraftStoreTests: XCTestCase, @unchecked Sendable {
         let url = try location(); try sql(url, "CREATE TABLE precious(value TEXT); INSERT INTO precious VALUES('keep'); PRAGMA user_version=99;")
         XCTAssertThrowsError(try DraftStore(url: url)) { XCTAssertEqual($0 as? DraftStoreError, .unsupportedSchema(99)) }
         XCTAssertEqual(try scalar(url, "SELECT count(*) FROM precious"), 1)
+    }
+    func testUnknownWALSchemaPreservesDatabaseBytesAndJournalMode() throws {
+        let url = try location()
+        try sql(url, """
+            PRAGMA journal_mode=WAL;
+            CREATE TABLE precious(value TEXT);
+            INSERT INTO precious VALUES('keep');
+            PRAGMA user_version=99;
+            """)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM pragma_journal_mode WHERE journal_mode='wal'"), 1)
+        let original = try Data(contentsOf: url)
+        XCTAssertThrowsError(try DraftStore(url: url)) {
+            XCTAssertEqual($0 as? DraftStoreError, .unsupportedSchema(99))
+        }
+        XCTAssertEqual(try Data(contentsOf: url), original)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM pragma_journal_mode WHERE journal_mode='wal'"), 1)
+        XCTAssertEqual(try scalar(url, "PRAGMA user_version"), 99)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM precious WHERE value='keep'"), 1)
+    }
+    func testUnknownSchemaInOrphanedWALIsRejectedWithoutCheckpoint() throws {
+        let source = try location()
+        var writer: OpaquePointer?
+        XCTAssertEqual(sqlite3_open(source.path, &writer), SQLITE_OK)
+        defer { sqlite3_close(writer) }
+        XCTAssertEqual(sqlite3_exec(writer, """
+            CREATE TABLE precious(value TEXT);
+            PRAGMA user_version=3;
+            PRAGMA journal_mode=WAL;
+            PRAGMA wal_autocheckpoint=0;
+            INSERT INTO precious VALUES('keep');
+            PRAGMA user_version=99;
+            """, nil, nil, nil), SQLITE_OK)
+        // The writer is idle after committing. Copy only durable files to a new
+        // path; no connection remains open on the database tested below.
+        let url = try location()
+        try FileManager.default.copyItem(at: source, to: url)
+        let walURL = URL(fileURLWithPath: url.path + "-wal")
+        try FileManager.default.copyItem(at: URL(fileURLWithPath: source.path + "-wal"), to: walURL)
+        let original = try Data(contentsOf: url)
+        let originalWAL = try Data(contentsOf: walURL)
+        XCTAssertGreaterThan(originalWAL.count, 32)
+        // The supported-looking main header is stale: version 99 is committed
+        // only in the WAL. Admission must use SQLite's effective version.
+        XCTAssertEqual(Array(original[60..<64]), [0, 0, 0, 3])
+        XCTAssertThrowsError(try DraftStore(url: url)) {
+            XCTAssertEqual($0 as? DraftStoreError, .unsupportedSchema(99))
+        }
+        XCTAssertEqual(try Data(contentsOf: url), original)
+        XCTAssertEqual(try Data(contentsOf: walURL), originalWAL)
+        XCTAssertEqual(try scalar(url, "PRAGMA user_version"), 99)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM precious WHERE value='keep'"), 1)
+    }
+    func testSupportedWALSchemaMigratesAndRemainsWritable() async throws {
+        let url = try location(); let id = UUID()
+        try legacy(url, id: id)
+        try sql(url, "PRAGMA journal_mode=WAL")
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM pragma_journal_mode WHERE journal_mode='wal'"), 1)
+        let store = try DraftStore(url: url)
+        let original = try await store.read(id: id)
+        XCTAssertEqual(original.title, "Legacy")
+        XCTAssertEqual(original.revision, 1)
+        XCTAssertEqual(original.payload, empty)
+        XCTAssertEqual(try scalar(url, "PRAGMA user_version"), 3)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM pragma_journal_mode WHERE journal_mode='delete'"), 1)
+        let updated = try await store.save(id: id, expectedRevision: 1, title: "Recovered", payload: empty)
+        let reopened = try await DraftStore(url: url).read(id: id)
+        XCTAssertEqual(reopened, updated)
+        XCTAssertEqual(reopened.revision, 2)
+        let history = try await store.history(id: id)
+        XCTAssertEqual(history.records.map(\.title), ["Recovered", "Legacy"])
+    }
+    func testSupportedHotJournalRecoversAndRemainsWritable() async throws {
+        let source = try location(); let id = UUID()
+        let original = try await DraftStore(url: source).save(id: id, expectedRevision: nil, title: "Durable", payload: empty)
+        let url = try interruptedCopy(source, update: "UPDATE revisions SET title='Uncommitted', payload=zeroblob(1048576);")
+        let store = try DraftStore(url: url)
+        let recovered = try await store.read(id: id)
+        XCTAssertEqual(recovered, original)
+        XCTAssertEqual(try scalar(url, "PRAGMA user_version"), 3)
+        XCTAssertFalse(FileManager.default.fileExists(atPath: url.path + "-journal"))
+        let updated = try await store.save(id: id, expectedRevision: 1, title: "After recovery", payload: empty)
+        let reopened = try await DraftStore(url: url).read(id: id)
+        XCTAssertEqual(reopened, updated)
+        let history = try await store.history(id: id)
+        XCTAssertEqual(history.records.map(\.title), ["After recovery", "Durable"])
+    }
+    func testUnknownSchemaAfterHotJournalRecoveryRejectsRecoveredVersion() throws {
+        let source = try location()
+        try sql(source, "CREATE TABLE precious(value TEXT); INSERT INTO precious VALUES('keep'); PRAGMA user_version=99;")
+        let url = try interruptedCopy(source, update: "PRAGMA user_version=3; UPDATE precious SET value='Uncommitted';")
+        // Roll back the interrupted version change before checking admission.
+        XCTAssertThrowsError(try DraftStore(url: url)) {
+            XCTAssertEqual($0 as? DraftStoreError, .unsupportedSchema(99))
+        }
+        XCTAssertFalse(FileManager.default.fileExists(atPath: url.path + "-journal"))
+        XCTAssertEqual(try scalar(url, "PRAGMA user_version"), 99)
+        XCTAssertEqual(try scalar(url, "SELECT count(*) FROM precious WHERE value='keep'"), 1)
     }
     func testCorruptDatabaseNeverResetsFile() throws {
         let url = try location(); let original = Data("not a sqlite database".utf8); try original.write(to: url)

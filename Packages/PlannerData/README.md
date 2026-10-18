@@ -43,6 +43,23 @@ revision newer than the current head before writing, preserving the readable hea
 and the original history for recovery. There is no automatic salvage of broken
 SQLite pages or silent replacement of a damaged database.
 
+Before the first database read, the connection disables SQLite's final-close WAL
+checkpoint and checks both the configuration result and effective setting. The
+effective schema version is then read before changing journal mode or starting
+application migrations. This includes committed changes held only in a WAL, even
+when the main database header still looks supported. A WAL database whose version
+is already unsupported when admission reads it retains its database and WAL bytes
+on rejection; temporary shared-memory reader marks are not immutable evidence.
+The normal transactional version check remains in place.
+
+SQLite must restore an interrupted transaction's hot rollback journal before it
+can read a consistent schema version. The connection allows that recovery, which
+may restore database pages and remove the journal. If the recovered version is
+unsupported, initialization rejects it without application schema or data changes.
+This is distinct from a reset or a promise that all interrupted files remain
+byte-identical. The caller still owns the directory and coordinates identity,
+database replacement and other external file-lifecycle changes.
+
 SQLite is an implementation choice under the user's delegated engineering mandate,
 replacing the earlier proposed Core Data default for this local library. Its
 transaction and migration behavior can be exercised on Linux and hosted macOS
@@ -52,7 +69,9 @@ directory, configure backup/file-protection policy, isolate identities, and test
 locked-device behavior. No database files should be attached to public issues.
 
 Primary references checked 2026-10-18: [SQLite transactions](https://www.sqlite.org/transactional.html),
-[PRAGMA configuration](https://www.sqlite.org/pragma.html). Their documented guarantees
+[PRAGMA configuration](https://www.sqlite.org/pragma.html),
+[checkpoint-on-close configuration](https://www.sqlite.org/c3ref/c_dbconfig_defensive.html#sqlitedbconfignockptonclose),
+and [hot-journal recovery](https://www.sqlite.org/lockingv3.html#dealing_with_hot_journals). Their documented guarantees
 are design inputs; the tests below are evidence of this implementation's behavior.
 
 ## Reproduce
@@ -82,6 +101,23 @@ migration. A fresh process checks the original durable revision and integrity.
 These are real abrupt process exits, not physical power cuts or OS kill-on-device
 measurements. All fixtures are synthetic and temporary. The probe is a test utility,
 not an app target or an installation/release artifact.
+
+Five additional storage regressions cover a closed future-schema WAL database,
+a future version committed only in an orphaned WAL, a supported WAL database that
+migrates and remains writable, supported hot-journal recovery, and rejection of an
+unsupported version after rollback recovery. The orphaned WAL and hot journals are
+snapshots of real SQLite output copied while their writers are idle; no connection
+holds the copied database open. The journal fixtures use a small page cache and
+`sqlite3_db_cacheflush` to capture spilled, uncommitted pages with a valid hot journal.
+These deterministic fixture tests run without spawning child processes on iOS.
+
+On 2026-10-18, the closed-future case
+failed against accepted main `51952c75f2280d57891491903e495fb822b83bfd`: the expected
+unsupported-schema error was raised, but database bytes changed and journal mode
+became DELETE. The corrected local Swift 6.1.2/Linux suite passed all 30 methods
+with zero failures or skips and compiler warnings treated as errors.
+These portable results do not substitute
+for the configured macOS/iPhone/iPad receiving runs or device qualification.
 
 The [CI workflow](../../.github/workflows/swift-storage.yml) repeats macOS tests,
 crash replay and an unsigned iOS Simulator SDK compile. Compilation is distinct
