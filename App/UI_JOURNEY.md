@@ -51,6 +51,11 @@ Accelerator kind and kind ordering, then terminates and relaunches the process.
 The recreated browser must restore those preferences and return the exact
 `cat.accelerator.fixture` item at `2026.10-demo`. Its detail must identify the
 pinned `catalog.fixture.1` source and explicitly unknown assessment.
+The detail consumer also requires the exact source SHA-256, all eight accelerator
+specification fields in its loaded summary, recorded `vram_gb` of 24, an explicit
+missing `rated_power_w`, and the retained source's `user_supplied` declaration,
+check date, missing URL and fictional qualification. These assertions read normal
+detail controls after its visible loaded summary; no alternate source is injected.
 
 Clear filters restores the first bounded page; Load more components must reach
 29-of-29. A unique unmatched query must show a successful zero count and an empty
@@ -100,6 +105,50 @@ so that container selection is ambiguous. The editor Form now has the exact
 All persistence, revision, dirty-discard and destination assertions remain mandatory.
 This correction requires a fresh successful run on both destinations.
 
+### Canonical editor keyboard receipt
+
+The combined 68-case source `460f9a833277a0601ba11ab774f64ee371baa555` in
+[native run 39107785886](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39107785886/job/117617303097)
+passed all 68 model cases, the unsigned app build and both launch smokes. Its iPad
+journey passed in 230.667 seconds. The iPhone journey failed in 69.661 seconds at
+the first history reveal after a title edit: six upward swipes targeted the exact
+editor Form, but `loadRevisions` remained absent. The retained screen recording
+shows the focused title's software keyboard obscuring the lower Form, with no
+visible scroll movement across those six gestures. Both result summaries contain
+one executed test and zero skips; both owned-simulator deletions succeeded.
+
+The editor now gives both title and notes a normal **Done editing** keyboard
+control. It clears only text focus; the production autosave and all dirty-state
+rules continue unchanged. Before revealing an editor control, the journey uses
+that visible button when the software keyboard is present and requires the
+keyboard to disappear. It then performs the same bounded scroll within the exact
+Form and requires the target to exist and be hittable. No history or persistence
+assertion is replaced with a coordinate tap. This focused correction has no new
+native acceptance until the complete journey passes on both pinned destinations.
+
+The keyboard-control candidate `8ab4358c1b892db20e20e5876cbb63342186d2eb` in
+[native run 39112764752](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39112764752/job/117632218026)
+passed all 68 model cases with zero failures in 27.478 seconds, the unsigned app
+build and both launch smokes. The entire iPhone journey passed in 231.216 seconds.
+The iPad journey passed durable autosave and undo/redo reopening, then failed in
+213.814 seconds while waiting for the keyboard's `finishDraftEditing` control after
+the oversized paste. Its recording shows the system's first-use gesture tutorial
+covering that control: the pages rotate through Undo, Undo and Redo, and Copy and
+Paste, with a Continue button. Both destinations executed one test with zero skips;
+both owned-simulator deletions succeeded. The complete failure artifact is retained.
+
+Immediately after the synthetic paste, the journey now recognizes only the three
+instructional sentences shown in that tutorial, including the exact trailing-newline
+and trailing-space forms of Undo observed in the raw and query accessibility snapshots,
+waits at most three seconds
+for it to appear, uses its normal Continue button, and requires the tutorial to
+disappear together with that button. It then reasserts the exact pasted title before
+the unchanged strict
+Done editing, keyboard-absence and Form navigation checks. It does not accept an
+unidentified Continue dialog or configure away system onboarding. App source,
+the real timer, failed-autosave notice, dirty discard, durable reopening and both
+destination gates are unchanged. This test-only correction needs a new native run.
+
 ### Control failures observed in the catalog candidate
 
 Candidate `e964f566874ab5f26f7d7499f753316ec97c75c8` in
@@ -122,8 +171,8 @@ line number:
 | iPhone: six Form swipes never reveal `loadRevisions`. | Each retained swipe starts at `(187.5,453.5)` while the visible keyboard starts at y=407. The recording shows an unchanged editor and keyboard throughout. Title and notes now share explicit focus state and a visible Done editing keyboard action. The test uses that action and requires the keyboard to disappear before its unchanged identified-Form scrolling. After the first dismissal it also reasserts the exact amended title and complete notes before reading durable history. |
 
 The focus action only ends text entry; it does not save, discard or close the draft.
-The title's Done submission also ends focus, and interactive scroll dismissal is
-available to a user who begins a gesture above the keyboard. The real production
+In that earlier browser correction, the title's Done submission also ended
+focus, and interactive scroll dismissal was available above the keyboard. The real production
 autosave, exact revision increments, invalid-title rejection, discard, independent
 control and cold deletion assertions are unchanged. No extra swipes, arbitrary
 coordinate taps, storage injection, skipped test or destination fallback were added.
@@ -166,6 +215,21 @@ change, arbitrary coordinate, longer timeout or simulator-state injection is add
 These follow-up controls still require fresh exact-source execution of both full
 journeys on both pinned destinations. The one passing iPhone notes result is
 retained source-specific evidence, not acceptance of the combined native gate.
+
+### Canonical editor query-label evidence
+
+The subsequent `877f8f16447be2698ba43079ff4ef8066f85a2c4` composition in
+[native run 39118569803](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39118569803/job/117649322901)
+passed all 71 model cases, the unsigned build, both launch smokes and the complete
+iPhone journey in 216.071 seconds. iPad failed in 149.385 seconds at the strict Done
+editing check after Paste. Its raw Undo label ends in U+000A, while the actual
+query snapshot at 11:23:30.459 reports the same sentence ending in U+0020. The prior
+list omitted that query form and returned no match while the recording showed Undo.
+The correction adds only that exact observed label; it does not trim or broaden
+unrecognized labels. Both result summaries report zero skips and successful owned
+deletion. The [integration receipt](../docs/validation/editor-integration.md) records
+the independently verified archive and decoded payload hashes. This failed run is
+retained evidence; the corrected source still requires both complete journeys.
 
 A try/finally scope protects every verified creation, including later evidence-writing
 or test failures. Cleanup shuts down and deletes only the verified ID created by this
@@ -221,3 +285,24 @@ and [borderless button style](https://developer.apple.com/documentation/swiftui/
 The kind-selection follow-up uses standard
 [bound toggles](https://developer.apple.com/documentation/swiftui/toggle) and
 [a scoped sheet with explicit dismissal](https://developer.apple.com/design/human-interface-guidelines/sheets).
+
+## Combined source receiving gate
+
+The [combined receiving receipt](../docs/validation/catalog-editor-receiving.md)
+records the canonical editor model/worker and bounded serializer union with the
+current catalog/details source. The production editor retains canonical #198
+focus handling; the complete notes journey retains its normal keyboard dismissal,
+exact post-dismissal title/notes assertions and the observed paste-education
+correction. All source-specific results above remain historical. The current
+combined source must execute both exact complete journeys on each pinned device,
+plus its full 87-model and 48-transfer gates, before delivery.
+
+The [actual #240 native result and observed switch correction](../docs/validation/catalog-editor-receiving.md#actual-stacked-native-result-and-switch-correction)
+record the subsequent 68-model pass and failed device gate. Both kind sheets
+opened, but a normal switch tap targeted the row center and left the trailing
+switch off. The switch now has its own intrinsic frame and retained accessible
+kind label, alongside separately rendered kind text. The actual journey asserts
+the label, off/on transition and restored-on state before continuing every
+existing count and detail assertion. The iPad notes recording shows the exact
+education body already handled by the preserved canonical tutorial supplement.
+Neither correction is accepted as working until the current device journeys pass.

@@ -75,8 +75,6 @@ public struct DraftLibraryView: View {
                 Section("Draft name") {
                     TextField("Draft name", text: $model.title).accessibilityIdentifier("draftTitle")
                         .focused($focusedEditorField, equals: .title)
-                        .submitLabel(.done)
-                        .onSubmit { focusedEditorField = nil }
                         .disabled(!model.canEdit)
                 }
                 Section("Planning notes") {
@@ -133,9 +131,13 @@ public struct DraftLibraryView: View {
                 }
             }
             .accessibilityIdentifier("draftEditorForm")
-            .scrollDismissesKeyboard(.interactively)
             .navigationTitle("Edit local draft")
             .toolbar {
+                ToolbarItemGroup(placement: .keyboard) {
+                    Spacer()
+                    Button("Done editing") { focusedEditorField = nil }
+                        .accessibilityIdentifier("finishDraftEditing")
+                }
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") {
                         model.requestClose()
@@ -144,13 +146,6 @@ public struct DraftLibraryView: View {
                 ToolbarItem(placement: .confirmationAction) {
                     Button("Save") { Task { await model.save() } }
                         .disabled(!model.dirty || model.busy).accessibilityIdentifier("saveDraft")
-                }
-                ToolbarItemGroup(placement: .keyboard) {
-                    if focusedEditorField != nil {
-                        Spacer()
-                        Button("Done editing") { focusedEditorField = nil }
-                            .accessibilityIdentifier("finishDraftEditing")
-                    }
                 }
             }
             .confirmationDialog("Restore this saved revision as a new local revision?", isPresented: Binding(get: { pendingRestore != nil }, set: { if !$0 { pendingRestore = nil } })) {

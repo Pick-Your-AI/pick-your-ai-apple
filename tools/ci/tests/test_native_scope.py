@@ -25,6 +25,8 @@ class NativeScopeTests(unittest.TestCase):
         self.command("config", "user.name", "Synthetic CI scope fixture")
         self.command("config", "user.email", "ci-fixture@example.invalid")
         self.command("config", "commit.gpgsign", "false")
+        # Finish fixture-owned maintenance before TemporaryDirectory cleanup.
+        self.command("config", "maintenance.autoDetach", "false")
         self.write("README.md", "Synthetic documentation\n")
         self.write("Sources/Value.swift", "struct Value {}\n")
         self.initial = self.commit()

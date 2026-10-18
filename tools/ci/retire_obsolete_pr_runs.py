@@ -106,6 +106,27 @@ def same_repository(value):
     )
 
 
+def workflow_path_allowed(value):
+    """Accept GitHub's plain or ref-qualified path, never an unlisted workflow."""
+    if not isinstance(value, str):
+        return False
+    workflow, separator, ref = value.partition("@")
+    if workflow not in WORKFLOWS:
+        return False
+    if not separator:
+        return True
+    # A conservative bounded Git ref subset covers branch/tag/PR refs and SHAs.
+    # Unknown or malformed qualifiers are preserved rather than guessed. The
+    # original full path must still match the final run preflight exactly.
+    return (
+        0 < len(ref) <= 255
+        and re.fullmatch(r"[A-Za-z0-9][A-Za-z0-9._/-]*", ref) is not None
+        and ".." not in ref
+        and all(part and not part.startswith(".") and not part.endswith((".", ".lock"))
+                for part in ref.split("/"))
+    )
+
+
 def run_in_scope(run):
     return (
         isinstance(run, dict)
@@ -115,7 +136,7 @@ def run_in_scope(run):
         and run.get("status") in ACTIVE
         and run.get("conclusion") is None
         and type(run.get("run_attempt")) is int and run["run_attempt"] == 1
-        and isinstance(run.get("path"), str) and run["path"] in WORKFLOWS
+        and workflow_path_allowed(run.get("path"))
         and same_repository(run.get("repository"))
         and same_repository(run.get("head_repository"))
         and valid_sha(run.get("head_sha"))

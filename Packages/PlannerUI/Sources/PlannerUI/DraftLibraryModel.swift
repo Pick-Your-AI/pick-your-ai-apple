@@ -29,8 +29,10 @@ public final class DraftLibraryModel: ObservableObject {
     @Published public private(set) var notice: String?
     /// A successful page read may recover a library failure, but cannot resolve
     /// an editor conflict, unsupported payload, or failed save on the user's behalf.
-    private var actionNotice: String? { didSet { notice = actionNotice ?? libraryNotice } }
-    private var libraryNotice: String? { didSet { notice = actionNotice ?? libraryNotice } }
+    private var actionNotice: String? { didSet { updateNotice() } }
+    private var libraryNotice: String? { didSet { updateNotice() } }
+    private var historyNotice: String? { didSet { updateNotice() } }
+    private func updateNotice() { notice = actionNotice ?? historyNotice ?? libraryNotice }
     @Published public private(set) var selected: DraftRecord?
     @Published private var titleValue = ""
     @Published private var notesValue = ""
@@ -171,6 +173,7 @@ public final class DraftLibraryModel: ObservableObject {
     }
     private func clearHistory() {
         revisions = []; historyOffset = 0; hasOlderRevisions = false; unreadableRevisions = 0
+        historyNotice = nil
     }
     /// Pages replace each other; payload-bearing history never grows without bound.
     public func loadHistory(offset: Int = 0) async {
@@ -180,7 +183,8 @@ public final class DraftLibraryModel: ObservableObject {
             let page = try await store.history(id: selected.id, limit: Self.pageSize, offset: offset)
             revisions = page.records; historyOffset = offset; unreadableRevisions = page.unreadableCount
             hasOlderRevisions = page.records.count + page.unreadableCount == Self.pageSize
-        } catch { report(error) }
+            historyNotice = nil
+        } catch { historyNotice = message(for: error) }
         await finishOperation()
     }
     /// Explicit restoration appends a revision and never carries analysis into notes.

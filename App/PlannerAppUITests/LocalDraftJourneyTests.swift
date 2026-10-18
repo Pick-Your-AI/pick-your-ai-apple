@@ -224,16 +224,30 @@ final class LocalDraftJourneyTests: XCTestCase {
         else { tap(buttonPaste) }
         let pastedTitle = field.value as? String ?? ""
         XCTAssertGreaterThan(pastedTitle.utf8.count, 1_024)
-        // A newly owned iPad can present its observed first-use Copy and Paste
-        // education after the standard Paste action. It covers the keyboard
-        // toolbar; dismiss only that exact visible panel through its own button.
-        let education = app.staticTexts["Copy and Paste"]
-        if education.exists {
-            tap(app.buttons["Continue"])
-            wait(education, matching: "exists == false")
-        }
+        dismissKeyboardGestureIntroductionIfPresent(app)
         XCTAssertEqual(field.value as? String, pastedTitle,
-                       "Dismissing paste education must preserve the complete invalid amendment")
+                       "Dismissing the system introduction must preserve the pasted amendment")
+    }
+
+    @MainActor
+    private func dismissKeyboardGestureIntroductionIfPresent(_ app: XCUIApplication) {
+        // A fresh iPad may cover its keyboard after the first system Paste with
+        // an automatically rotating gesture tutorial. Recognize its exact
+        // instructional copy before using Continue; unrelated dialogs still fail.
+        let introduction = app.staticTexts.matching(NSPredicate(format: "label IN %@", [
+            "Double-tap with three fingers.",
+            "Double-tap with three fingers.\n",
+            // The retained query snapshot exposes the raw newline as one space.
+            "Double-tap with three fingers. ",
+            "Swipe left with three fingers to undo and swipe right to redo.",
+            "Pinch and spread with three fingers to copy and paste a selection."
+        ])).firstMatch
+        guard introduction.waitForExistence(timeout: 3) else { return }
+        retainScreenshot(app, name: "System keyboard gesture introduction after synthetic paste")
+        let continueButton = app.buttons["Continue"]
+        tap(continueButton)
+        wait(continueButton, matching: "exists == false")
+        wait(introduction, matching: "exists == false")
     }
 
     @MainActor
