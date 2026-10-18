@@ -3,7 +3,7 @@
     "App/Planner.xcodeproj/project.pbxproj": [
       "100644",
       "blob",
-      "e4f1cf4ebb612b73e36dfc5b21137d707754e61a"
+      "b7772ca60d87dfa180d7a697091076110c578ff2"
     ],
     "App/Planner.xcodeproj/xcshareddata/xcschemes/Planner.xcscheme": [
       "100644",
@@ -67,7 +67,7 @@
       "Packages/PlannerTransfer": [
         "040000",
         "tree",
-        "dad347a9ce149a05b0fec296a4e16938bb302fcc"
+        "63496290d3997d6a7d43868313dcdf95e15c6b68"
       ]
     },
     "native-ui": {
@@ -109,15 +109,25 @@
       "blob",
       "cb9b12a94e0f142968f4195db9220dfe1bc0108e"
     ],
+    ".github/workflows/dependency-review.yml": [
+      "100644",
+      "blob",
+      "3044312862c8f27cb7d1285c5fe662c8f1f062a7"
+    ],
     ".github/workflows/native-ui.yml": [
       "100644",
       "blob",
-      "3050815705ce7df49329cabed599903dea9a2b89"
+      "5bd9abfd5df84e6be199c7141ac590acef040e05"
     ],
     ".github/workflows/obsolete-pr-checks.yml": [
       "100644",
       "blob",
       "58430fc5b56239052bb3a90aa9eb6437245a5e77"
+    ],
+    ".github/workflows/submission-sdk.yml": [
+      "100644",
+      "blob",
+      "9f31b6acb024932607e82edf51dfa2d22eb8deec"
     ],
     ".github/workflows/swift-core.yml": [
       "100644",
@@ -142,7 +152,7 @@
     "App/Planner.xcodeproj/project.pbxproj": [
       "100644",
       "blob",
-      "e4f1cf4ebb612b73e36dfc5b21137d707754e61a"
+      "b7772ca60d87dfa180d7a697091076110c578ff2"
     ],
     "App/Planner.xcodeproj/xcshareddata/xcschemes/Planner.xcscheme": [
       "100644",
@@ -159,6 +169,16 @@
       "blob",
       "75649e5ac29fe3564d64fdee7ad560d43b3d5ab0"
     ],
+    "App/scripts/submission_sdk.py": [
+      "100644",
+      "blob",
+      "b41cfa081d6ab1c617f0a14cf53a8d869ca60e96"
+    ],
+    "App/scripts/tests/test_submission_sdk.py": [
+      "100644",
+      "blob",
+      "4e7d1e931a6d2c7851537da6dd2c87098f182ce7"
+    ],
     "App/scripts/tests/test_toolchain.py": [
       "100644",
       "blob",
@@ -168,6 +188,16 @@
       "100644",
       "blob",
       "e5cfc15d5a63e8d49a81b71d11e79b24caecc9a9"
+    ],
+    "App/submission-sdk.json": [
+      "100644",
+      "blob",
+      "b1b3e216df45c6c8a13ec0c2eeaa555c7af55fec"
+    ],
+    "App/submission-toolchain.json": [
+      "100644",
+      "blob",
+      "1fbd118cda29be59f264847c28a78a4da9cc4e73"
     ],
     "App/toolchain.json": [
       "100644",
@@ -189,6 +219,21 @@
       "blob",
       "0df7318f2b539de1862de27a09fb1494c9aa6e0e"
     ],
+    "docs/validation/dependency-review-contract-regression.json": [
+      "100644",
+      "blob",
+      "5fbd69249912a30eecf78831f6a3ad9f4bc1d29d"
+    ],
+    "docs/validation/dependency-review-rehearsal.json": [
+      "100644",
+      "blob",
+      "7245382fca9ef2e0bf01a23b225340585ace6ec4"
+    ],
+    "docs/validation/dependency-review.md": [
+      "100644",
+      "blob",
+      "10764eba904033818727cbfb194e6ebe78367492"
+    ],
     "tools/acceptance/check_map.py": [
       "100644",
       "blob",
@@ -197,17 +242,17 @@
     "tools/ci/native_scope.py": [
       "100644",
       "blob",
-      "02bac4d44ca744f92ecac6d6e31c724673cdd5fc"
+      "571d4ab16e8d4f3588426a77efad84472bf158cd"
     ],
     "tools/ci/retire_obsolete_pr_runs.py": [
       "100644",
       "blob",
-      "21fac10cefaa3c383cb499502503331d76d21d71"
+      "90c6b0d360081b33458486f700fdd3e501e7176c"
     ],
     "tools/ci/tests/test_native_scope.py": [
       "100644",
       "blob",
-      "4bedd49a5ed67e65ab0ba9f9b3e59dd8a6bc6882"
+      "42caeec12ea91ebfa6388a7d2fe08369f3d5bd5b"
     ],
     "tools/ci/tests/test_obsolete_workflow.py": [
       "100644",
@@ -217,7 +262,7 @@
     "tools/ci/tests/test_retire_obsolete_pr_runs.py": [
       "100644",
       "blob",
-      "1b93c67b46dcd5aeb0ff3953314c93eb7c9605a7"
+      "7c71f976fd74d8c47274e71e18ef0da32c92f9aa"
     ],
     "tools/conformance/contract-lock.json": [
       "100644",
@@ -247,7 +292,7 @@
     "tools/conformance/run.py": [
       "100644",
       "blob",
-      "4f71dff04bcee5dcb263abd7c6491f1ffa054fb0"
+      "d43d7ddb0523d5d08eb846eb27b044dc7c2f195b"
     ],
     "tools/conformance/swift_mutations.py": [
       "100644",
@@ -257,7 +302,7 @@
     "tools/conformance/tests/test_harness.py": [
       "100644",
       "blob",
-      "53d77573848d0d58b5db67e2b84e72608a0c9290"
+      "c8f3f3b3bbc7eea38711e83791f3d4d3f513e5e7"
     ],
     "tools/conformance/tests/test_swift_mutations.py": [
       "100644",
@@ -269,12 +314,57 @@
       "blob",
       "d483cec08c647acb88167bc43a2c75187cc1c3c5"
     ],
+    "tools/security/check_dependency_review.py": [
+      "100644",
+      "blob",
+      "41c609480d06c988cf52981a9dffe976da1cceca"
+    ],
+    "tools/security/check_dependency_snapshots.py": [
+      "100644",
+      "blob",
+      "6f25494c6c15afdf2f5d44d9bdd3d8882341360b"
+    ],
+    "tools/security/rehearse_dependency_review.py": [
+      "100644",
+      "blob",
+      "3f1f0700d116338b1076e094ffac6beccfb2e452"
+    ],
+    "tools/security/tests/fixtures/dependency-review-action.LICENSE": [
+      "100644",
+      "blob",
+      "cdfebd4e4322284fde560f21808182055976d9bf"
+    ],
+    "tools/security/tests/fixtures/pinned-action-contract.json": [
+      "100644",
+      "blob",
+      "c88a444273ccb01b60b1f62d7ad395222f02d1e3"
+    ],
+    "tools/security/tests/fixtures/pinned-action-license-gap.json": [
+      "100644",
+      "blob",
+      "54bfaf72578b6986a08b0598750e9cadc1f652b6"
+    ],
+    "tools/security/tests/test_dependency_review.py": [
+      "100644",
+      "blob",
+      "847352010f5204af7b38991c2193d3f96402cdfd"
+    ],
+    "tools/security/tests/test_dependency_snapshots.py": [
+      "100644",
+      "blob",
+      "61b25acd799b160d027e75e5279bf05639522b03"
+    ],
+    "tools/security/tests/test_pinned_dependency_license.py": [
+      "100644",
+      "blob",
+      "ef9669bcf26a00fe69b41c3858d43c722f08c006"
+    ],
     "tools/storage/crash_replay.py": [
       "100644",
       "blob",
       "961c45d1b8dd61f33abb86f255e79a43021c0646"
     ]
   },
-  "source_revision": "13e67df89309289b42fd9302c5908041739d9d11",
+  "source_revision": "d0537ace2cb0a14cdbb5f316a79e972e427ae63c",
   "version": 1
 }
