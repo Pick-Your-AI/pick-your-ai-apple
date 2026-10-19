@@ -19,6 +19,22 @@ submission = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(submission)
 
 
+class ReadBudgetProbe(io.BytesIO):
+    """Reject a read request that would consume beyond the input budget."""
+
+    def __init__(self, data, limit):
+        super().__init__(data)
+        self.limit = limit
+        self.bytes_read = 0
+
+    def read(self, size=-1):
+        if size < 0 or size > self.limit + 1 - self.bytes_read:
+            raise AssertionError("input requested an unbounded or over-budget read")
+        data = super().read(size)
+        self.bytes_read += len(data)
+        return data
+
+
 class SubmissionSDKTests(unittest.TestCase):
     def setUp(self):
         self.temp = tempfile.TemporaryDirectory()
@@ -207,6 +223,71 @@ class SubmissionSDKTests(unittest.TestCase):
                 (app / "Info.plist").write_bytes(data)
                 with self.assertRaises(submission.toolchain.SetupError):
                     submission.inspect_product(app, "iphoneos", self.xcode, self.sdks)
+
+    def test_sdk_pin_read_limit_is_enforced_before_consuming_input(self):
+        stream = ReadBudgetProbe(b" " * 4097, 4096)
+        with patch.object(Path, "open", return_value=stream):
+            with self.assertRaisesRegex(submission.toolchain.SetupError, "SDK pin exceeds 4096 bytes"):
+                submission.load_sdk_pin(self.sdk_file)
+        self.assertTrue(stream.closed)
+        self.assertGreater(stream.bytes_read, 0)
+        self.assertLessEqual(stream.bytes_read, 4097)
+
+    def test_product_read_limit_is_enforced_before_consuming_input(self):
+        limit = 1024 * 1024
+        app = self.write_product(self.product_info("iphoneos"))
+        stream = ReadBudgetProbe(b" " * (limit + 1), limit)
+        with patch.object(Path, "open", return_value=stream):
+            with self.assertRaisesRegex(submission.toolchain.SetupError, "built Info.plist exceeds the inspection bound"):
+                submission.inspect_product(app, "iphoneos", self.xcode, self.sdks)
+        self.assertTrue(stream.closed)
+        self.assertGreater(stream.bytes_read, 0)
+        self.assertLessEqual(stream.bytes_read, limit + 1)
+
+    def test_sdk_pin_exact_limit_accepts_and_one_extra_byte_rejects_then_recovers(self):
+        original = self.sdk_file.read_bytes()
+        exact = original.ljust(4096, b" ")
+        self.assertEqual(len(exact), 4096)
+        self.sdk_file.write_bytes(exact)
+        self.assertEqual(submission.load_sdk_pin(self.sdk_file), self.sdks)
+        self.sdk_file.write_bytes(exact + b" ")
+        with self.assertRaisesRegex(submission.toolchain.SetupError, "SDK pin exceeds 4096 bytes"):
+            submission.load_sdk_pin(self.sdk_file)
+        self.sdk_file.write_bytes(original)
+        self.assertEqual(submission.load_sdk_pin(self.sdk_file), self.sdks)
+
+    def test_actual_cli_product_exact_limit_rejects_one_extra_byte_and_recovers_receipt(self):
+        limit = 1024 * 1024
+        for sdk in submission.SDK_PLATFORMS:
+            with self.subTest(sdk=sdk):
+                app = self.write_product(self.product_info(sdk))
+                info_path = app / "Info.plist"
+                original = info_path.read_bytes()
+                exact = original.ljust(limit, b" ")
+                self.assertEqual(len(exact), limit)
+                receipt = self.root / "evidence" / f"bounded-{sdk}.json"
+                arguments = ("inspect", "--sdk", sdk, "--app", app, "--output", receipt)
+                info_path.write_bytes(exact)
+                accepted = self.run_cli(*arguments)
+                self.assertEqual(accepted.returncode, 0, accepted.stderr)
+                expected = json.loads(accepted.stdout)
+                self.assertEqual(json.loads(receipt.read_text()), expected)
+                self.assertEqual(expected["DTSDKName"], sdk + "26.2")
+                self.assertNotIn("UnexpectedAppMetadata", expected)
+
+                info_path.write_bytes(exact + b" ")
+                rejected = self.run_cli(*arguments)
+                self.assertEqual(rejected.returncode, 2, rejected.stdout + rejected.stderr)
+                self.assertIn("built Info.plist exceeds the inspection bound", rejected.stderr)
+                self.assertEqual(rejected.stdout, "")
+                self.assertFalse(receipt.exists())
+
+                info_path.write_bytes(original)
+                recovered = self.run_cli(*arguments)
+                self.assertEqual(recovered.returncode, 0, recovered.stderr)
+                self.assertEqual(json.loads(recovered.stdout), expected)
+                self.assertEqual(json.loads(receipt.read_text()), expected)
+                self.assertEqual(list(receipt.parent.glob(".submission-sdk-*.tmp")), [])
 
     def run_cli(self, *arguments):
         return subprocess.run([

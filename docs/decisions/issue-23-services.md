@@ -1,6 +1,11 @@
 # #23: Shared-service integration requirements delta
 
-Status, 2026-10-18: **Apple consumer delta updated against the accepted canonical
+Status, 2026-10-19: **All three #23 decision criteria and four implementation
+subtasks accepted through the actual Apple product/release engineering
+[receiving decision](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/23#issuecomment-6265740527).**
+The implementation and activation gates below remain unchanged.
+
+Historical preparation status, 2026-10-18: **Apple consumer delta updated against the accepted canonical
 hosting decision; Apple receiving acceptance remains pending.** [Baseline](README.md),
 [Apple scope](issue-21-scope.md). The original [#131 preparation](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/131)
 and its [issue receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/23#issuecomment-6243744177)
@@ -132,20 +137,72 @@ or human operating commitments.
 | Website #15/#18 | Existing canonical artifact and label authority; five frozen read operations | Real approved origins/releases, source-use and freshness receipts, versioned discovery/labels and Apple promotion acceptance |
 | Website #16; Research #39/#41 | Canonical capacity/quality and pricing/evidence authority; frozen write/request shapes | Qualified exact-build artifacts, units/coverage and adopted Apple resource/evidence reads |
 | Website #17; Research #40/#42 | Existing frozen optimistic-write headers and current-head operation | Accepted guest and object authority, idempotency lifecycle, list/history/fork/delete/share/retention/revocation interfaces |
-| Apple #21/#24/#34 and affected-client receiving | Accepted engineering scope/account choices and reviewed upstream Apple handoff | Apple integration-decision review and each actual adapter, lifecycle, device and release criterion; Android product completion is not a global blocker |
+| Apple #21/#24/#34 and affected-client receiving | Accepted engineering scope/account choices and reviewed upstream Apple handoff | Each actual adapter, lifecycle, device and release criterion remains separate from the accepted Apple integration decision; Android product completion is not a global blocker |
 
 Apple may continue bounded parsing, labelled fixture adapters, lifecycle and local
 durability work under the accepted platform scope. Those outputs do not establish
 the missing service facts or require a second backend or purchased infrastructure.
 
-| Exact #23 criterion | Current artifact/design result | Remaining acceptance |
+## Apple receiving decision — 2026-10-19
+
+At **11:05:28 UTC**, the coordinating ChatGPT agent in session `4b6445` made the
+actual [complete Apple product/release engineering receiving decision](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/23#issuecomment-6265740527)
+under the maintainer's delegated project authority. It accepts all three literal
+decision criteria and all four implementation subtasks. An independent in-session
+reviewer separately assessed the design, literal criteria and source preservation.
+This agrees the canonical engineering service responsibilities and cross-client
+handoff; it does not supply a person's ongoing operating or custody commitment.
+
+The decision binds the original 16,736-byte delta, Git blob
+`7af84dbbbb7ea471de83f42ee3bc2c1304de8824`, SHA-256
+`46323473eefabb4c4ed987ba84db149b1b75f2a98522f29e94ac56156098b02d`.
+That source was delivered through [#288](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/288)
+and [#289](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/289) at signed main
+`17e03aa65c6f2b6e0465b4bab48787901fdf0523`, tree
+`3e9e6e8206488aa3154acd7a4ad1c88915ee1823`, and remained byte-identical at the
+receiving decision's inspected main `9e40c79b6eb37273a821d8eddf1c00d57ad4b33c`.
+The original [source review 5563641583](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/288#pullrequestreview-5563641583),
+[receiving review 5563665882](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/289#pullrequestreview-5563665882)
+and [delivery receipt 6251780553](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/23#issuecomment-6251780553)
+retain their preparation/delivery scope and actual execution identities. They are
+not backdated as the new product/release decision or as checks of this amendment.
+
+Both named prerequisite outputs are received. Android #35 supplies the accepted
+`4c753bd69f3857d9b15051be86078948e61074ac` decision above, including its explicit
+open O1 operating gate. [Apple #21's actual receiving record](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/21)
+accepts the required scope-matrix output delivered at signed
+`391e636e73e3a2b8879997009017b7e1a08e67f6`; its
+[scope artifact](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/391e636e73e3a2b8879997009017b7e1a08e67f6/docs/decisions/issue-21-scope.md)
+is blob `69280f570463d07a6e8a906b45953ab505403c9a`, unchanged at the receiving
+decision's inspected main. #21's separate real-data tuple remains incomplete;
+that tuple is not the named scope-matrix output required by #23's native edge.
+
+The issue requests an architecture decision and explicitly includes unresolved
+owner decisions in its validation. Actual origins, deployed versions, adopted
+guest/object authority, operating/custody acceptance and O1–O6 execution remain
+required for their applicable implementation or activation stages. They are not
+missing inputs to this completed decision. The selected future service arrangement,
+website/research ownership, core public-sharing outcome and all failure/recovery
+requirements above are preserved; no endpoint, paid resource or remote feature is
+created or activated by receiving the decision.
+
+| Exact #23 implementation subtask | Receiving disposition |
+| --- | --- |
+| Consume the canonical backend hosting decision and document Apple API needs. | Accepted: the exact canonical #35 decision, frozen endpoint families and Apple requirements are linked above. |
+| Check latency, privacy, authentication and offline constraints. | Accepted: the six desk cases and responsibility map preserve these constraints and their actual implementation limits. |
+| Agree service owner and cross-client handoff without creating another backend. | Accepted: Apple adopts the canonical engineering responsibilities, operating/recovery roles and existing website service lanes; actual O1 commitments remain open. |
+| Record changed interfaces, implementation evidence, reviewer disposition and unresolved limitations. | Accepted: original interface pins, source delivery, scoped reviews, the dated receiving decision and remaining activation gates are recorded without a runtime claim. |
+
+| Exact #23 criterion | Current artifact/design result | Receiving disposition and continuing boundary |
 | --- | --- | --- |
-| Accepted service integration ADR identifies endpoints and operating responsibility. | The selected shared topology, all released route families, implementation ownership and O1–O6 responsibility gates are identified against signed #347 | Actual approved origins/deployed versions and operating acceptance remain unavailable; independent Apple product/release receiving must assess this delta. No complete criterion acceptance is asserted here |
-| Walk through service outage, guest authority, data residency and old-client migration; reject a design that assumes the static website already operates a backend. | Six explicit Apple desk cases consume the selected canonical design and reject static write authority; uncertain commits, retired authority and incompatible/withdrawn data have safe recovery boundaries | Independent review of these decision cases, followed by separately scoped actual service/client failure tests; the walkthrough is not runtime evidence |
-| The shared hosting/API responsibility ADR and Apple requirements delta is linked with criterion results, exact versions, limitations and receiving-review disposition. | Exact signed canonical decision, original frozen bytes, upstream reviews, accepted record placement and this unchanged Apple artifact path are linked | Publish this exact updated delta through reviewed signed delivery and attach its receiving disposition; upstream acceptance does not itself close Apple #23 |
+| Accepted service integration ADR identifies endpoints and operating responsibility. | The selected shared topology, all released route families, implementation ownership and O1–O6 responsibility gates are identified against signed #347 | Accepted as an architecture decision by the dated receiving receipt. Contract routes remain distinct from deployed origins; actual versions, authority and operating/custody acceptance remain activation inputs. |
+| Walk through service outage, guest authority, data residency and old-client migration; reject a design that assumes the static website already operates a backend. | Six explicit Apple desk cases consume the selected canonical design and reject static write authority; uncertain commits, retired authority and incompatible/withdrawn data have safe recovery boundaries | Accepted for the six documented decision cases. Actual service/client failure tests retain their separate implementation scope; the walkthrough is not runtime evidence. |
+| The shared hosting/API responsibility ADR and Apple requirements delta is linked with criterion results, exact versions, limitations and receiving-review disposition. | Exact signed canonical decision, original frozen bytes, upstream reviews, accepted record placement and this unchanged Apple artifact path are linked | Accepted decision content and handoff: the historical signed delivery and the actual 2026-10-19 Apple receiving disposition are linked above. Main delivery and final issue reconciliation of this factual amendment are separate events. |
 
 This update changes documentation only. Original issue criteria, assignments,
 native prerequisites, Project values and the captured acceptance ledger remain
-unchanged. The actual checks for this delta are its source/route/hash comparison,
-literal criterion mapping, relative links and whitespace; no Swift, simulator,
-HTTP, database, backup, device, store or production execution is claimed for it.
+unchanged. Historical source/route/hash, criterion, link and whitespace checks
+retain the identities in their original receipts. No new CI result or main
+delivery is asserted for this factual amendment, and no Swift, simulator, HTTP,
+database, backup, device, store or production execution is claimed for the
+receiving decision.

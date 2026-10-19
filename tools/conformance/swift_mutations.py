@@ -210,7 +210,15 @@ def prepare_output(package, output):
 
 
 def run(package, output, swift, timeout):
-    package = package.resolve()
+    # Native lookup must validate prefixes before resolve can erase '..'.
+    selected = package.stat()
+    if not stat.S_ISDIR(selected.st_mode):
+        raise ValueError('Expected a Swift package directory')
+    package = package.resolve(strict=True)
+    resolved = package.stat()
+    if (not stat.S_ISDIR(resolved.st_mode)
+            or (selected.st_dev, selected.st_ino) != (resolved.st_dev, resolved.st_ino)):
+        raise ValueError('Source package changed during preflight')
     if not (package / 'Package.swift').is_file():
         raise ValueError('Expected a Swift package directory')
     output = prepare_output(package, output)
