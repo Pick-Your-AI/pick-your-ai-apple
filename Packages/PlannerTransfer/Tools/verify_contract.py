@@ -1,5 +1,6 @@
 """Verify pinned resources and replay the shared Swift/Python conformance corpus.
-Requires jsonschema[format]==4.26.0. Read-only; no research checkout or network is needed.
+Install the adjacent requirements.txt into a fresh virtual environment first.
+Validation is read-only; no research checkout or network is needed.
 """
 import hashlib
 import json
@@ -10,7 +11,7 @@ from referencing import Registry, Resource
 ROOT = Path(__file__).resolve().parents[1]
 RESOURCES = ROOT / 'Sources/PlannerTransfer/Resources'
 FIXTURES = ROOT / 'Tests/PlannerTransferTests/Fixtures'
-assert {'date-time', 'uri'} <= FormatChecker().checkers.keys(), 'Install jsonschema[format] to enable canonical format checks'
+assert {'date-time', 'uri'} <= FormatChecker().checkers.keys(), 'Install Tools/requirements.txt to enable canonical format checks'
 manifest = json.loads((ROOT / 'source-manifest.json').read_text())
 for source, digest in manifest['files'].items():
     target = (FIXTURES if source.startswith('examples/') else RESOURCES) / Path(source).name
