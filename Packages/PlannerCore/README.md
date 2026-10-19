@@ -30,11 +30,25 @@ iOS 17 and macOS 13 for compilation; macOS is a test host, not an added product.
   earlier same-revision attempts, foreign requests, late cancellation and duplicate
   completion cannot replace or erase the latest result. Network transport remains
   outside the actor; cancellation is not relied upon for correctness.
+- For frozen-v1 evaluations, `AnalysisIdentity.frozenV1Evaluation` names the
+  expected build/revision, catalog snapshot, ruleset ID/version and dependency
+  graph ID/revision. Supply these from the selected governed inputs. After
+  `EvaluationReport.decode`, the typed `AnalysisStore<EvaluationReport>` overload
+  `receive(_:for:)` derives the complete response identity from the validated
+  report itself. It uses the existing generation/identity gate and preserves the
+  entire returned report. Mismatched fields leave the attempt pending; the caller
+  still owns timeout, failure and cancellation. Report ID, evaluation time and
+  verdicts do not replace input pins or define an additional ordering policy.
+  The generic store remains available for other explicitly identified payloads.
 
 - `EvidencePresentation` retains original provenance and selected evidence identity,
   separates source inspection from accepted independent support, and distinguishes
   newer-snapshot notices from selected-tuple corrections requiring recheck. Capture
   dates do not create automatic expiry or source-use permissions.
+- `EvidenceValuePresence` and `EvidenceCollectionPresence` preserve absent, null,
+  literal-unknown, empty and supplied states without deriving an outcome or a
+  completeness claim. The [evidence mapping and decoder/UI vectors](../PlannerUI/EVIDENCE_RENDERING.md)
+  connect these portable types to the separately qualified SwiftUI views.
 
 All tests are synthetic. The evaluation fixture is copied without byte changes
 from research revision `7acbefbf4e4e700231e88be272bc89e3a73dde15`, frozen contract
@@ -75,10 +89,12 @@ Refer to the delivering PR and its exact Actions runs for observed results.
 | Issues | Implemented slice | Remaining criteria |
 | --- | --- | --- |
 | #26, #29, #30 | Standalone package boundary, checked concurrency, macOS test and iOS SDK compile workflow | Xcode application targets, app/main-actor responsiveness, lifecycle and complete native check/protection qualification |
-| #32, #36, #37 | Report/money decoding and explicit unknown/outcome states; pinned fixture roundtrip | All 29 kinds, generated model/validator coverage, UI semantics, other-client parity and supported migration tests |
-| #47, #75 | Request/response identity and generation gates; deterministic races, cancellation, wrong-response and reconnect tests | Real service adapters, actual UI visible-revision integration and receiving acceptance |
+| #32 | This package supplies the report/money subset of the [accepted all-kind strategy](../PlannerTransfer/README.md#32-receiving-conformance-record) | Preserve the accepted bounded parser/public-decoder strategy; this subset adds no new #32 closure gate |
+| #36 | Presence projection, retained report outcomes and [37 shared evidence decoder/UI vectors](../PlannerUI/EVIDENCE_RENDERING.md) | Actual native rendering, final exact-source receiving review and signed-main criterion reconciliation |
+| #37 | Report/money decoding and explicit unknown/outcome states; pinned fixture roundtrip | Remaining contract/service and supported migration coverage under its own literal criteria |
+| #47, #75 | Request/response identity and generation gates; typed frozen-v1 report admission; deterministic races, cancellation, wrong-response and reconnect tests | Real service transport and governed input adapters, actual UI visible-revision integration and receiving acceptance |
 | #77, #78 | Exact decimal arithmetic, complete-versus-partial coverage and budget guards | Canonical service scenario parity, actual line-item rounding and UI cost/coverage presentation |
-| #36, #42 | Evidence display grades, capture dates and retained-snapshot recheck state | Catalog/service adapters, actual source inspection and acceptance receipts, UI integration and source-use gates |
+| #42 | Evidence display grades, capture dates and retained-snapshot recheck state; [claim view mapping](../PlannerUI/EVIDENCE_RENDERING.md) | Catalog/service adapters, actual source inspection and acceptance receipts, saved-build integration and source-use gates |
 | #37, #104 | Shared report vectors, Debug/Release Swift regressions and semantic mutation checks alongside reference checks | All-kind/service parity, historical migration, complete app/domain coverage and receiving disposition |
 
 Product and service receiving decisions do not block these bounded library changes.

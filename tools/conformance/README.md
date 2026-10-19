@@ -11,6 +11,11 @@ The runner consumes the canonical research import from a read-only checkout.
 `contract-lock.json` pins its revision, contract/fixture versions and import
 manifest hash; every imported file must match that manifest before reference
 code executes. Research branches may advance without changing the frozen bytes.
+Manifest verification and parsing use the same bytes. Both the runner and Swift
+vector exporter also verify every completed copy against that trusted manifest
+before reading copied fixtures or executing copied reference code. Copied-byte
+drift fails without a success result; restoring the pinned bytes permits a normal
+retry. Copying also rechecks source-path containment.
 The copied executable inputs are exactly those listed in the verified manifest;
 no network schema retrieval or untracked source code is needed. The
 [adoption limitations](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/contracts/v1/ADOPTION.md)
@@ -20,15 +25,27 @@ apply: reference rules are proposals, not accepted vendor facts or deployment po
 
 Use Python 3.12 and a checkout of research at the pinned revision. The runner
 requires the exact dependency versions in `requirements.txt` and records the
-actual Python version. From this repository:
+actual Python version. Install their reviewed wheel hashes from
+`requirements-lock.txt`; [the environment record](environment-lock.md) lists
+its platform coverage, primary artifact provenance and remaining limits. The
+version manifest and existing runtime check are unchanged. Use a newly created
+virtual environment for each installation so existing same-version packages
+cannot bypass artifact checking. The selected Python's pip manages that environment
+using its [supported `--python` option](https://pip.pypa.io/en/stable/topics/python-option/)
+(pip 22.3 or newer). From this repository:
 
 ```sh
-python3.12 -m venv /tmp/apple-conformance-venv
-/tmp/apple-conformance-venv/bin/pip install -r tools/conformance/requirements.txt
+conformance_env=$(mktemp -d "${TMPDIR:-/tmp}/apple-conformance.XXXXXX")
+python3.12 -m venv --without-pip "$conformance_env"
+python3.12 -m pip --python "$conformance_env/bin/python" --isolated install \
+  --index-url https://pypi.org/simple --require-hashes --only-binary=:all: \
+  -r tools/conformance/requirements-lock.txt
+python3.12 -m pip --python "$conformance_env/bin/python" --isolated check
+export APPLE_CONFORMANCE_PYTHON="$conformance_env/bin/python"
 export CONTRACT_ROOT=/path/to/pick-your-ai-research/contracts/v1
-/tmp/apple-conformance-venv/bin/python tools/conformance/run.py \
+"$APPLE_CONFORMANCE_PYTHON" tools/conformance/run.py \
   --contract-root "$CONTRACT_ROOT" --output /tmp/apple-conformance.json
-/tmp/apple-conformance-venv/bin/python -m unittest discover \
+"$APPLE_CONFORMANCE_PYTHON" -m unittest discover \
   -s tools/conformance/tests -v
 ```
 
@@ -55,8 +72,21 @@ payloads against the pinned schemas and compare its result for every ID. Do not
 normalize decimal strings into binary floating point. The output is generated,
 not committed; retain it with the producing Apple commit in review/CI evidence.
 A zero exit status requires all baseline checks and all three mutations to pass.
-Any failure exits nonzero and does not write a new report; do not treat an old
-output file as evidence of a new run.
+The output must be outside the frozen contract and conformance tool directories,
+with an existing directory parent. An existing destination must be a regular file
+with one hardlink; symbolic links, directories and other file types are rejected
+without changing them or their targets. Parent-directory aliases are resolved
+before checking these boundaries. Use a separate output path for each concurrent
+run.
+
+After accepting the destination, the runner removes any previous receipt before
+checking source bytes or dependencies. A conformance failure exits nonzero with
+no success report at that path. Success JSON is fully serialized and written to
+a temporary sibling before atomic publication; write or publication failures also
+exit nonzero and remove the temporary file. Import, argument and destination
+preflight failures occur before invalidation and leave existing files unchanged.
+Harness regressions exercise an actual successful CLI run, source rejection and
+recovery, plus protected paths, dependency rejection and partial-write failures.
 
 ## Shared report vectors and native regression detection
 
@@ -68,7 +98,7 @@ invalid enums and every outcome/severity combination with absent, null and liter
 `unknown` evidence. Valid reports round-trip without collapsing outcome/severity.
 
 ```sh
-python tools/conformance/export_swift_vectors.py \
+"$APPLE_CONFORMANCE_PYTHON" tools/conformance/export_swift_vectors.py \
   --contract-root "$CONTRACT_ROOT" \
   --output Packages/PlannerCore/Tests/PlannerCoreTests/Fixtures/evaluation-vectors.json \
   --check
@@ -82,14 +112,85 @@ parity. Require both checks for the same commit. This is partial #32/#37/#104
 coverage for evaluation reports only, not all 29 catalog kinds or service parity.
 The decoder's documented number/depth/timestamp exclusions remain client limits.
 
+`evidence_vectors.py --contract-root "$CONTRACT_ROOT" --check` adds 37 shared
+evidence inputs for the Core decoder and actual SwiftUI rendering tests. It
+uses the shared source-copy containment check, re-verifies the completed frozen
+manifest and copied bytes, checks 28 accepted and nine rejected cases with the
+canonical schema consumer, and requires exact matching
+bytes in both package resources. The [evidence state mapping](../../Packages/PlannerUI/EVIDENCE_RENDERING.md)
+records the presence, conflict, skipped-rule and claim-grade boundaries, the
+exact versions, and the separate native receiving gate. These synthetic inputs
+do not establish source verification or a compatibility policy.
+
+`qualify_evidence_rendering.py` qualifies the four selected native UI test methods
+using the existing strict XCTest parser and the explicit `PlannerEvidenceUITests` module.
+The Core parser's default module and mutation criteria remain unchanged. The
+workflow first requires the actual `xcodebuild test` command to succeed, then
+rejects empty, skipped, duplicate, truncated or incorrectly named log receipts.
+The [isolated real-app host](../evidence-rendering/README.md) preserves the original
+failed direct-host native evidence and runs the four rendering methods through
+public UI automation; it does not change production views or the shared bytes.
+
 `swift_mutations.py --package Packages/PlannerCore --output-dir /tmp/swift-mutations`
 first runs the unmodified Swift suite, then changes required-field handling,
 decimal ordering and request-generation acceptance in separate disposable copies.
-Each mutation must trigger its named regression assertion and normal failed test
-completion. Compile errors, crashes, timeouts and changed anchors do not qualify.
-The source package is never changed. CI retains the logs and success receipt.
+The baseline must contain complete, uniquely identified XCTest cases, zero failures
+or skips, a matching nonzero suite total, and passes from all three exact named
+regressions. Compile-only output and the separate Swift Testing zero-test footer
+cannot qualify. Each mutation must execute only its exact selected regression,
+trigger that test's expected assertion, and complete with a matching failed
+XCTest suite summary. A class or method that only contains the expected name
+does not qualify. Duplicate results, unexpected failures, truncated output,
+compile errors, crashes, timeouts and changed anchors do not qualify.
+The source package is never changed. Before execution, the runner checks all
+five fixed output names (the receipt, baseline log and three mutation logs).
+Existing outputs must be regular files with one hard link; symlinks, shared
+hardlinks, directories and other file types reject the invocation before any
+previous output is removed. The supplied output directory may use an outside
+directory alias, but may not traverse the source package even if a later alias
+resolves outside it. This includes each intermediate absolute or relative link
+target and traversal before `..`; links are inspected component by component.
+Existing directory identity also protects case aliases on filesystems that treat
+them as the same package. Link loops and non-directory or missing prefixes before
+`..` fail before directory creation or cleanup. Resolution permits at most 64
+directory-link expansions per invocation; longer chains fail during preflight.
+A valid rerun clears all five previous outputs, then creates new logs and the
+final success receipt exclusively. Files appearing after
+preflight cannot be followed or overwritten. Use a separate evidence directory
+per concurrent invocation; concurrent replacement of parent directories is not
+supported. CI retains the logs and success receipt.
 This supplements the existing deliberate XCTest failure probe and Python reference
 mutations for #30/#104; it does not prove branch protection is enforced.
+
+The exact-identity regression was reproduced against accepted main `8ca109963`:
+renaming the reported required-field test to a method with an `Extra` suffix still
+qualified under the former substring check. The corrected guard rejects it.
+Portable tests exercise Linux and macOS XCTest spellings, unrelated similarly
+named methods/classes, assertion identity, missing/duplicate/skipped results,
+summary mismatches, empty successful baselines and stale-receipt removal.
+Output regressions reproduce a real child-process invocation against a synthetic
+package, exercise every destination with symbolic/hard links and nonregular
+files, and verify rejected paths preserve source bytes and prior receipts.
+Separate cases cover a source-traversing directory alias, safe outside aliases,
+intermediate link chains and loops, failed-baseline cleanup and retry, and files
+introduced after preflight. A filesystem-conditioned case test distinguishes an
+actual package alias from a separately existing case variant; its case-insensitive
+branch requires execution on such a filesystem. The core workflow runs this
+stdlib-only suite normally and with `-O` in its existing macOS job before Swift
+builds; both retained logs identify the case branch actually exercised.
+These portable I/O and
+synthetic-transcript checks are not a Swift execution receipt.
+The corrected parser also accepts the actual 67-case baseline and all three
+deliberate failures retained in [core run 39108049392](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39108049392),
+artifact `12129239361`, verified SHA-256
+`df5b91c70d2ba2dd193e8f84d69eb47b3bfc12f0daac11176d176567996093e2`.
+That replay verifies compatibility with historical log bytes; it is not a fresh
+Swift execution. A subsequent fresh local run using Swift 6.1.2 on Linux executed
+all 67 unchanged baseline cases successfully, then detected all three actual
+semantic mutations through their expected XCTest assertions. The run used
+task-scoped caches and required no change to application or test sources.
+The changed runner must still complete its actual hosted macOS core workflow on
+the reviewed candidate before delivery; Linux execution is separate evidence.
 
 Supported historical migration, rollback, approved executable policy, actual
 service parity, simulator execution, device results and receiving acceptance are

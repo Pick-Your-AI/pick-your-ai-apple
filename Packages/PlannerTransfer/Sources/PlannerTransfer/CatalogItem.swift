@@ -55,12 +55,6 @@ public struct CatalogItem: Sendable, Equatable {
     public static func decode(_ data: Data) throws -> Self {
         var parser = try JSONParser(data)
         let value = try parser.parse()
-        return try validatingParsedValue(value)
-    }
-
-    /// Shared by the bounded item and whole-catalog entry points. Validation is
-    /// repeated here so no module-internal caller can construct an unchecked item.
-    static func validatingParsedValue(_ value: JSONValue) throws -> Self {
         guard let validator = Self.validator else { throw TransferError.unavailableSchema }
         try validator.validateCatalogItem(value)
         guard let rawKind = value.object?["kind"]?.string,

@@ -4,7 +4,6 @@ import argparse
 import copy
 import json
 from pathlib import Path
-import shutil
 import tempfile
 
 import run as reference
@@ -15,10 +14,7 @@ def bundle(root):
     reference.versions()
     with tempfile.TemporaryDirectory() as directory:
         snapshot = Path(directory)
-        for entry in manifest['files']:
-            target = snapshot / entry['path']
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(root / entry['path'], target)
+        reference.copy_verified_source(root, snapshot, manifest)
         return verified_bundle(snapshot)
 
 
