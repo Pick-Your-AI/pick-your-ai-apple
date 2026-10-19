@@ -420,12 +420,39 @@ identity, old-credential rejection, replacement scope, successful authorized use
 and audit disposition without including credential values. No such real rotation
 is claimed by the synthetic dependency-update rehearsal.
 
+## Criterion 2 receiving
+
+The [actual receiving decision](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/103#issuecomment-6266646864),
+posted on **2026-10-19 at 11:57:25 UTC**, accepts the second literal criterion only.
+The coordinating ChatGPT agent acted as the delegated security/privacy engineering
+reviewer after a separate in-session Apple reviewer read the complete record,
+structured receipt and fresh issue discussion. The coordinating reviewer then
+corroborated both complete original hosted logs, including their byte counts,
+SHA-256s, exact snapshots and guard results, against the
+[historical hosted receipt](dependency-review-hosted-drill.json). This is receiving
+review of the original #259 execution; no new test run is claimed.
+
+That JSON receipt reached valid-signed main through
+[#293](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/293) at
+`71db949333d94958d7d7909a1dd16c51c2421e2e` and remains unchanged at inspected main
+`63df6b24b7bee4272bdcc8e75ad679202089110b`. The current Markdown record includes
+later source-control amendments with their own historical identities and limits.
+The accepted result is the unacceptable-license rejection/removal/recovery
+rehearsal and the documented triage/rotation responsibilities described above.
+
+Criteria **1 and 3** and all four implementation subtasks remain open. In particular,
+**"Test urgent patch and credential rotation process" remains incomplete**: its
+review/removal/recovery half is evidenced, but the actual credential-rotation test
+was not performed. The current baseline/transitive inventory, applicable actual
+custodian/service review and device/server/release checks retain their evidence
+requirements. Whole #103 remains open; the historical JSON is unchanged.
+
 ## Criterion disposition
 
 | Exact #103 criterion | Supplied evidence | Remaining acceptance |
 | --- | --- | --- |
 | Release dependencies and response path have reviewed evidence. | Historical source inventory at the exact main commit; independently reviewed PR policy and locked validator source; actual hosted license drill and exact-source transfer gate; response and receiving responsibilities. | Current baseline/transitive vulnerability/license inventory, actual signed product/destination evidence, final signed release inventory and affected operator/service review where applicable. A clean changed-manifest scan does not audit the baseline. |
-| Introduce a vulnerable or unacceptable-license dependency in review and rehearse an urgent patch; document triage/rotation responsibilities without storing credentials. | The historical local regressions and six synthetic cases remain distinct. Closed, unmerged #259 now supplies actual unacceptable-license discovery, exact-snapshot rejection, declaration removal and corrected success, with 31 security tests passing on each head. Responsibilities and credential-free rotation receipt requirements are documented. | Receiving review of the complete hosted record and the applicable real custodian rotation drill. This observed license exercise is not an observed vulnerability/advisory or installed-release patch. |
+| Introduce a vulnerable or unacceptable-license dependency in review and rehearse an urgent patch; document triage/rotation responsibilities without storing credentials. | The historical local regressions and six synthetic cases remain distinct. Closed, unmerged #259 now supplies actual unacceptable-license discovery, exact-snapshot rejection, declaration removal and corrected success, with 31 security tests passing on each head. Responsibilities and credential-free rotation receipt requirements are documented. | Accepted for criterion 2 by the [2026-10-19 receiving decision](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/103#issuecomment-6266646864). The separate credential-rotation test remains unexecuted. This observed license exercise is not an observed vulnerability/advisory or installed-release patch. |
 | The dependency inventory and vulnerability-response drill is linked with criterion results, exact versions, limitations and receiving-review disposition. | This historical inventory, immutable locked-environment provenance, source-hashed local rehearsal, structured hosted failure/recovery receipt and explicit criteria/limits. | Link the independently reviewed signed product and record deliveries from #103, retain affected receiving dispositions, and close only criteria actually supported by those receipts. |
 
 The repository guard and local drill advance #103; they do not close the full work
