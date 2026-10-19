@@ -6,6 +6,7 @@ import hashlib
 import importlib.util
 import json
 from pathlib import Path
+import sys
 import tempfile
 
 import run as reference
@@ -36,6 +37,30 @@ def checked_inputs(placement_root=None):
             raise ValueError(f'Pinned cross-client input differs: {name}')
         result[name] = data
     return result
+
+
+def load_placement_adapter(inputs, temporary):
+    """Load only the checked adapter and helper, preserving ambient module state."""
+    helper_path = temporary / 'contract_checks.py'
+    helper_path.write_bytes(inputs['placementChecks'])
+    helper_spec = importlib.util.spec_from_file_location('cross_client_contract_checks', helper_path)
+    helper = importlib.util.module_from_spec(helper_spec)
+    helper_spec.loader.exec_module(helper)
+    adapter_path = temporary / 'placement_vectors.py'
+    adapter_path.write_bytes(inputs['placementAdapter'])
+    missing = object()
+    original = sys.modules.get('contract_checks', missing)
+    try:
+        sys.modules['contract_checks'] = helper
+        spec = importlib.util.spec_from_file_location('cross_client_placement', adapter_path)
+        adapter = importlib.util.module_from_spec(spec)
+        spec.loader.exec_module(adapter)
+        return adapter
+    finally:
+        if original is missing:
+            del sys.modules['contract_checks']
+        else:
+            sys.modules['contract_checks'] = original
 
 
 def cases(inputs, placement_adapter):
@@ -131,7 +156,7 @@ def bundle(contract_root, placement_root=None):
     dependency_versions = reference.versions()
     manifest = reference.verify_source(contract_root)
     inputs = checked_inputs(placement_root)
-    # The callable placement adapter is copied from its verified original bytes.
+    # The callable placement adapter and its helper use their checked bytes.
     # No code from an unverified caller-selected path is imported or executed.
     with tempfile.TemporaryDirectory(prefix='planner-cross-client-') as directory:
         temporary = Path(directory)
@@ -145,11 +170,7 @@ def bundle(contract_root, placement_root=None):
                               ('report', 'evaluation-report.json')]:
             if inputs[key] != (snapshot / 'examples' / filename).read_bytes():
                 raise ValueError('Consumer example differs from its canonical original: ' + key)
-        adapter_path = temporary / 'placement_vectors.py'
-        adapter_path.write_bytes(inputs['placementAdapter'])
-        spec = importlib.util.spec_from_file_location('cross_client_placement', adapter_path)
-        adapter = importlib.util.module_from_spec(spec)
-        spec.loader.exec_module(adapter)
+        adapter = load_placement_adapter(inputs, temporary)
         vectors = cases(inputs, adapter)
         checks = reference.schema_results(snapshot, [dict(id=v['id'], schema=v['schema'],
                                                           payload=json.loads(v['payloadJSON']), valid=v['valid'])
@@ -177,7 +198,7 @@ def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--contract-root', type=Path, required=True)
     parser.add_argument('--placement-root', type=Path,
-                        help='Read-only prerequisite preparation checkout; its two original files are hash-verified')
+                        help='Read-only prerequisite preparation checkout; all three placement inputs are hash-verified')
     mode = parser.add_mutually_exclusive_group(required=True)
     mode.add_argument('--write', action='store_true', help='Regenerate only the owned synthetic wire fixture')
     mode.add_argument('--check', action='store_true')

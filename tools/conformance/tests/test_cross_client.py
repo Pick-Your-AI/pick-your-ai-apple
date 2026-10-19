@@ -9,8 +9,9 @@ import subprocess
 import sys
 import tempfile
 import textwrap
+import types
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import cross_client as exporter
@@ -75,6 +76,75 @@ class CrossClientVectorTests(unittest.TestCase):
             with self.assertRaisesRegex(ValueError, 'differs from frozen schema: canonical/build'):
                 exporter.bundle(self.contract, self.placement)
         self.assertEqual(len(exporter.bundle(self.contract, self.placement)['cases']), 223)
+
+    def test_verified_placement_helper_ignores_ambient_module_and_restores_it(self):
+        ambient = types.ModuleType('contract_checks')
+        ambient.require = Mock(side_effect=AssertionError('Unverified helper executed'))
+        original_cases = exporter.cases
+
+        def check_adapter(inputs, adapter):
+            self.assertIsNot(adapter.require, ambient.require)
+            with self.assertRaisesRegex(ValueError, 'Unsupported placement vector operation: unknown'):
+                adapter.apply_vector({'value': 1}, {
+                    'mutations': [{'path': ['value'], 'operation': 'unknown', 'json': '2'}],
+                })
+            return original_cases(inputs, adapter)
+
+        with patch.dict(sys.modules, {'contract_checks': ambient}), \
+                patch.object(exporter, 'cases', side_effect=check_adapter):
+            result = exporter.bundle(self.contract, self.placement)
+            self.assertIs(sys.modules['contract_checks'], ambient)
+            ambient.require.assert_not_called()
+        self.assertEqual(len(result['cases']), 223)
+        self.assertEqual(sum(case['valid'] for case in result['cases']), 141)
+
+    def test_placement_helper_pin_drift_rejects_before_consumption_and_recovers(self):
+        inputs = exporter.checked_inputs(self.placement)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, entry in exporter.LOCK['inputs'].items():
+                path = root / entry['path']
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(inputs[name])
+            helper = root / exporter.LOCK['inputs']['placementChecks']['path']
+            original = helper.read_bytes()
+            with patch.object(exporter, 'ROOT', root):
+                baseline = exporter.bundle(self.contract)
+                helper.write_bytes(original + b'\n')
+                with patch.object(exporter.importlib.util, 'spec_from_file_location',
+                                  wraps=exporter.importlib.util.spec_from_file_location) as load_adapter, \
+                        patch.object(exporter.reference, 'schema_results',
+                                     wraps=exporter.reference.schema_results) as consume:
+                    with self.assertRaisesRegex(ValueError, 'Pinned cross-client input differs: placementChecks'):
+                        exporter.bundle(self.contract)
+                    load_adapter.assert_not_called()
+                    consume.assert_not_called()
+                self.assertEqual(helper.read_bytes(), original + b'\n')
+                helper.write_bytes(original)
+                self.assertEqual(exporter.bundle(self.contract), baseline)
+
+    def test_placement_helper_module_state_recovers_after_adapter_import_failure(self):
+        original_spec = exporter.importlib.util.spec_from_file_location
+        ambient = types.ModuleType('contract_checks')
+        ambient.require = Mock(side_effect=AssertionError('Unverified helper executed'))
+
+        def failing_spec(name, location):
+            spec = original_spec(name, location)
+            if name == 'cross_client_placement':
+                def fail_adapter(module):
+                    self.assertIsNot(sys.modules['contract_checks'], ambient)
+                    raise RuntimeError('Controlled adapter import failure')
+                spec.loader.exec_module = fail_adapter
+            return spec
+
+        with patch.dict(sys.modules, {'contract_checks': ambient}):
+            with patch.object(exporter.importlib.util, 'spec_from_file_location', side_effect=failing_spec):
+                with self.assertRaisesRegex(RuntimeError, 'Controlled adapter import failure'):
+                    exporter.bundle(self.contract, self.placement)
+            self.assertIs(sys.modules['contract_checks'], ambient)
+            ambient.require.assert_not_called()
+            self.assertEqual(len(exporter.bundle(self.contract, self.placement)['cases']), 223)
+            self.assertIs(sys.modules['contract_checks'], ambient)
 
     def test_frozen_input_change_during_snapshot_copy_fails_before_reference_execution(self):
         with tempfile.TemporaryDirectory() as directory:

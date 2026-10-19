@@ -17,7 +17,13 @@ source recovery alone.
 
 The [wire bundle](Tests/PlannerConformanceTests/Fixtures/cross-client-v1.json)
 has version `apple-cross-client-1`, SHA-256
+`8151da7e58e21f29acc5e1594950f1425bc2fb77eb46863a24df91ee39205cf4`.
+The original archive and previously executed consumer bundle remains
 `499fd9a01780ac42fa9bf2ab8cf9e1195db27321fec36040451b553a8b9ea5f9`.
+The current bundle changes only source-pin metadata for the accepted placement
+adapter and its checked helper; all 223 complete case rows, including every
+payload byte, and every other bundle field remain unchanged. Current execution
+and the original consumer receipts retain their separate source identities.
 Its [input lock](../../tools/conformance/cross-client-lock.json) pins every
 consumed original and the canonical website runtime closure. The unchanged
 frozen contract is `1.0.0`, Research revision
@@ -208,9 +214,15 @@ python3 tools/storage/crash_replay.py .build-storage/debug/DraftCrashProbe
 ```
 
 Only `--write` intentionally regenerates the owned synthetic wire fixture. The
-optional `--placement-root` is for read-only prerequisite preparation; its two
-original files must match the exact lock before code is imported. Ordinary
+optional `--placement-root` is for read-only prerequisite preparation; its three
+placement inputs must match the exact lock before code is imported. Ordinary
 receiving CI consumes the delivered files in the same Apple checkout.
+
+The generator loads the placement adapter and `contract_checks` helper only from
+their individually verified temporary copies. An ambient module of that name
+cannot substitute its implementation. The previous module entry is restored on
+both successful and failed adapter imports. The accepted Transfer generators
+and their optimized-Python checks remain unchanged.
 
 For the actual website reference, use a read-only checkout at the pinned website
 revision, Node 24.19.0 and its existing lock. Install its production dependencies
@@ -343,6 +355,44 @@ required before any criterion is reconciled. The separately owned opt-in
 [CD11 consumer proposal #346](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/346)
 retains its own source and receiving lane; this recovery does not adopt a new
 contract version or duplicate that implementation.
+
+### Accepted placement-helper integration
+
+The first actual receiving [Contract preparation run39275765462](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39275765462),
+job `118139537620`, checked out signed `32290d7f`, tree `490cf8b5`, and stopped
+with `Pinned cross-client input differs: placementAdapter`. Accepted
+[#364](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/364) replaces the
+placement adapter's optimization-sensitive assertions with a separate checked
+helper. The original 33,502-byte failed log has SHA-256
+`1b64c886d245d26efaf319c4e068091a44f23bb9ea22c1b162eaa30859d9dece`.
+Its preceding reference/pricebook/raw-wire/evidence stages passed; later harness
+and artifact steps were skipped. None of that failure is relabeled as recovery.
+
+The correction pins both accepted files and loads only their verified copies,
+with the module-state restoration described above. A hash-only update reproduced
+an ambient-helper binding failure before the hostile helper was invoked. The
+unchanged regression now rejects that substitution, verifies the accepted
+helper's unknown-operation guard and retains all 223 expected case results.
+Two other new methods cover helper-byte drift before any adapter/reference
+consumption with a successful retry, and restoration after an adapter import
+failure. All six previous cross-client methods remain unchanged.
+
+| Actual local correction check on 2026-10-19 | Observed result | Original log SHA-256 |
+| --- | --- | --- |
+| Tree `861f477f`, original producer with current input pins and new regression | The one new method failed because the adapter bound the ambient helper. | `ed4e6137e4f18c37acfa5809b0dd634d198a20d3f4273845fcfc415498e4ecf6` |
+| Corrected tree `d532cafb`, ordinary Python | All nine cross-client methods passed in 33.743 seconds. | `9ef3e0512f2a4eb38fb7965ebbfbcc7dd9a92030de59038d989d2f3170d610bb` |
+| Same tree `d532cafb`, optimized Python | All nine methods passed in 24.014 seconds. | `0ad19d5210469e499e657fb26ecee9c133303e5784b92976b37a7c4843407521` |
+| Tree `5ee6d575`, complete preparation suite | All 83 declared methods passed in 135.580 seconds at 15:29:56.257278–15:32:12.278200 UTC; every one of its 299 source files remained unchanged. | `ed3b798fec4caa989fb657ec26f3bad6b5dd060fe2de1b17b3291da1eb5e306d` |
+
+Tree `5ee6d575` differs from the nine-method tree only in this package's README;
+this subsequent results paragraph and the current rendering-count correction
+were written after those runs. The regenerated bundle differs from original
+blob `69718936` only in `inputPins`: the accepted adapter hash and the new checked
+helper entry. Replacing that metadata with the original metadata reproduces
+every original fixture byte. Its new blob is `1566506e`, with the current full
+SHA-256 listed above. Swift/native and affected-client receiving qualification
+must retain the new bundle identity; the old consumer runs still describe the
+original artifact even though every tested payload and expectation is unchanged.
 
 ## Actual preparation evidence and remaining receiving gates
 

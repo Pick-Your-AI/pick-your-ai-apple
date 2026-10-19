@@ -5,7 +5,7 @@
   "websiteRevision": "dc66a9e269917ab7241c7d08fd0e7f2a2f039872",
   "wireFixture": {
     "path": "Packages/PlannerConformance/Tests/PlannerConformanceTests/Fixtures/cross-client-v1.json",
-    "sha256": "499fd9a01780ac42fa9bf2ab8cf9e1195db27321fec36040451b553a8b9ea5f9"
+    "sha256": "8151da7e58e21f29acc5e1594950f1425bc2fb77eb46863a24df91ee39205cf4"
   },
   "migrationFixture": {
     "path": "Packages/PlannerData/Tests/PlannerDataTests/Fixtures/migration-cases.json",
@@ -35,7 +35,11 @@
     },
     "placementAdapter": {
       "path": "Packages/PlannerTransfer/Tools/placement_vectors.py",
-      "sha256": "cced478338c0bdcd4f79abb2cad8ebab68508343a36d4971d26a8e931aff834c"
+      "sha256": "c8174d141568598d55bae09f5fe0bd25d036bb215940f6b5e322455de12970ad"
+    },
+    "placementChecks": {
+      "path": "Packages/PlannerTransfer/Tools/contract_checks.py",
+      "sha256": "ec74883a2d4b0febf1f1950e4694b4fd73ebb470e37e399cd7ae955595cedd1f"
     }
   },
   "websiteFiles": {

@@ -8,6 +8,7 @@ import argparse
 from copy import deepcopy
 import json
 from pathlib import Path
+from contract_checks import require
 
 ROOT = Path(__file__).resolve().parents[1]
 RESOURCES = ROOT / 'Sources/PlannerTransfer/Resources'
@@ -21,7 +22,7 @@ def apply_vector(original, case):
         return value
     replacement = json.loads(case['json']) if 'json' in case else None
     if not case['path']:
-        assert case['operation'] == 'set'
+        require(case['operation'] == 'set', 'Unsupported quality vector operation: ' + case['operation'])
         return replacement
     parent = value
     for key in case['path'][:-1]:
@@ -30,7 +31,7 @@ def apply_vector(original, case):
     if case['operation'] == 'remove':
         del parent[key]
     else:
-        assert case['operation'] == 'set'
+        require(case['operation'] == 'set', 'Unsupported quality vector operation: ' + case['operation'])
         parent[key] = replacement
     return value
 
@@ -152,7 +153,7 @@ def vectors():
     for label, value in [('relative', 'artifact.json'), ('empty', ''), ('space', 'https://example.invalid/a b'),
                          ('percent', 'https://example.invalid/%ZZ'), ('null', None), ('boolean', True)]:
         add('artifact-invalid-' + label, ['artifacts'], [value])
-    assert len({case['name'] for case in cases}) == len(cases)
+    require(len({case['name'] for case in cases}) == len(cases), 'Duplicate quality vector names')
     return cases
 
 
@@ -168,5 +169,6 @@ if __name__ == '__main__':
     if args.write:
         OUTPUT.write_text(expected)
     else:
-        assert OUTPUT.read_text() == expected, 'Quality vectors are stale; run quality_vectors.py --write'
+        if OUTPUT.read_text() != expected:
+            raise SystemExit('Quality vectors are stale; run quality_vectors.py --write')
     print(f'Quality vectors: {len(vectors())}; deterministic generation verified.')
