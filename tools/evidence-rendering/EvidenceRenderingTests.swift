@@ -155,21 +155,88 @@ final class EvidenceRenderingTests: XCTestCase {
         defer { app.terminate() }
         for (index, input) in inputs.enumerated() {
             let correction = input.0 == "date-locale-recovery"
-            let expected = ["Capture date (Gregorian):", "Current-state facts as of \(input.1)",
-                "Original recorded status: verified", "Component: synthetic.component", "Version: 1.0.0",
-                "Retained snapshot: snapshot.retained", "Inspected source: synthetic:claim",
-                "Evidence quality: \(correction ? "Unverified" : "Source checked")"] + input.2
+            let copy: [String]
+            switch input.0 {
+            case "date-de-berlin":
+                copy = ["Erfassungsdatum (gregorianisch):", "Fakten zum aktuellen Zustand vom \(input.1)",
+                    "Ursprünglich erfasster Status: verified", "Komponente: synthetic.component", "Version: 1.0.0",
+                    "Beibehaltener Snapshot: snapshot.retained", "Geprüfte Quelle: synthetic:claim", "Belegqualität: Quelle geprüft"]
+            case "date-ar-calendar":
+                copy = ["تاريخ الالتقاط (ميلادي):", "وقائع الحالة الراهنة بتاريخ \(input.1)",
+                    "الحالة الأصلية المسجلة: verified", "المكوّن: synthetic.component", "الإصدار: 1.0.0",
+                    "اللقطة المحتفَظ بها: snapshot.retained", "المصدر المفحوص: synthetic:claim", "جودة الأدلة: تم فحص المصدر"]
+            default:
+                copy = ["Capture date (Gregorian):", "Current-state facts as of \(input.1)",
+                    "Original recorded status: verified", "Component: synthetic.component", "Version: 1.0.0",
+                    "Retained snapshot: snapshot.retained", "Inspected source: synthetic:claim",
+                    "Evidence quality: \(correction ? "Unverified" : "Source checked")"]
+            }
+            let expected = copy + input.2
             let text = try assertRendered(app, id: input.0, index: index, total: inputs.count, contains: expected)
             let label = try renderedStaticText(app.staticTexts["claim-capture-date"], file: #filePath, line: #line)
                 .joined(separator: "\n")
             for component in input.2 { XCTAssertTrue(label.contains(component), "\(input.0): \(label)") }
             XCTAssertFalse(text.contains("Evidence quality: Independently verified"))
             XCTAssertFalse(text.contains("Facts remain pinned to this version."))
+            XCTAssertFalse(text.contains("Belegqualität: Unabhängig verifiziert"))
+            XCTAssertFalse(text.contains("جودة الأدلة: تم التحقق بصورة مستقلة"))
+            XCTAssertFalse(text.contains("Die Fakten bleiben an diese Version gebunden."))
+            XCTAssertFalse(text.contains("تظل الوقائع مرتبطة بهذا الإصدار."))
             if input.0 == "date-th-calendar" { XCTAssertFalse(label.contains("2567")) }
             if correction {
                 XCTAssertTrue(text.contains("Selected evidence changed. A recheck is required."))
             } else {
                 XCTAssertFalse(text.contains("Selected evidence changed. A recheck is required."))
+                XCTAssertFalse(text.contains("Die ausgewählten Belege haben sich geändert. Eine erneute Prüfung ist erforderlich."))
+                XCTAssertFalse(text.contains("تغيرت الأدلة المحددة. يلزم إعادة التحقق."))
+            }
+            if index + 1 < inputs.count { next(app) }
+        }
+    }
+
+    func testClaimCopyLocaleRTLAndRecoveryPreserveVerbatimEvidenceAndRecheck() throws {
+        let en = ["Component: synthetic.*component*", "Version: 1.0.0",
+            "Retained snapshot: snapshot.[retained](literal)", "Current-state facts as of 2024-01-02"]
+        let de = ["Komponente: synthetic.*component*", "Version: 1.0.0",
+            "Beibehaltener Snapshot: snapshot.[retained](literal)", "Fakten zum aktuellen Zustand vom 2024-01-02"]
+        let ar = ["المكوّن: synthetic.*component*", "الإصدار: 1.0.0",
+            "اللقطة المحتفَظ بها: snapshot.[retained](literal)", "وقائع الحالة الراهنة بتاريخ 2024-01-02"]
+        let deRecheck = "Die ausgewählten Belege haben sich geändert. Eine erneute Prüfung ist erforderlich."
+        let arRecheck = "تغيرت الأدلة المحددة. يلزم إعادة التحقق."
+        let enRecheck = "Selected evidence changed. A recheck is required."
+        let inputs: [(String, [String], [String])] = [
+            ("copy-en", en + ["Evidence quality: Independently verified", "Original recorded status: verified"], ["Belegqualität:", "جودة الأدلة:"]),
+            ("copy-de", de + ["Belegqualität: Unabhängig verifiziert", "Ursprünglich erfasster Status: verified"], ["Evidence quality:", "جودة الأدلة:"]),
+            ("copy-ar", ar + ["جودة الأدلة: تم التحقق بصورة مستقلة", "الحالة الأصلية المسجلة: verified"], ["Evidence quality:", "Belegqualität:"]),
+            ("copy-de-missing", de + ["Belegqualität: Nicht verifiziert", "Die Aussage der Quelle wurde noch nicht geprüft."], ["Unabhängig verifiziert", "Geprüfte Quelle:"]),
+            ("copy-ar-unavailable", ar + ["جودة الأدلة: غير متاح", "الادعاء الوارد في المصدر غير متاح."], ["تم التحقق بصورة مستقلة", "المصدر المفحوص:"]),
+            ("copy-de-user", de + ["Belegqualität: Vom Nutzer bereitgestellt", "Ursprünglich erfasster Status: user_supplied"], ["Unabhängig verifiziert", "Geprüfte Quelle:"]),
+            ("copy-ar-estimated", ar + ["جودة الأدلة: تقديري", "الحالة الأصلية المسجلة: estimated", "لم يُفحص الادعاء الوارد في المصدر."], ["تم التحقق بصورة مستقلة", "المصدر المفحوص:"]),
+            ("copy-de-checked", de + ["Belegqualität: Quelle geprüft", "Geprüfte Quelle: Source checked"], ["Unabhängig verifiziert", "Beleg für unabhängige Bestätigung:"]),
+            ("copy-de-release", de + ["Belegqualität: Unabhängig verifiziert", "Eine neuere Version ist verfügbar. Die beibehaltene Auswahl wurde nicht geändert."], [deRecheck, arRecheck, enRecheck]),
+            ("copy-ar-snapshot", ar + ["جودة الأدلة: تم التحقق بصورة مستقلة", "تتوفر لقطة أحدث. راجع الأدلة الخاصة بهذا الاختيار."], [deRecheck, arRecheck, enRecheck]),
+            ("copy-de-correction", de + ["Belegqualität: Nicht verifiziert", deRecheck], ["Unabhängig verifiziert", arRecheck, enRecheck]),
+            ("copy-ar-correction", ar + ["جودة الأدلة: غير متحقق منه", arRecheck], ["تم التحقق بصورة مستقلة", deRecheck, enRecheck]),
+            ("copy-fr-fallback", en + ["Evidence quality: Unverified", enRecheck], ["Belegqualität:", "جودة الأدلة:", deRecheck, arRecheck]),
+            ("copy-en-recovery", en + ["Evidence quality: Unverified", enRecheck], ["Belegqualität:", "جودة الأدلة:", deRecheck, arRecheck]),
+        ]
+        let app = launch("copy")
+        defer { app.terminate() }
+        for (index, input) in inputs.enumerated() {
+            let text = try assertRendered(app, id: input.0, index: index, total: inputs.count, contains: input.1)
+            for forbidden in input.2 { XCTAssertFalse(text.contains(forbidden), "\(input.0): \(text)") }
+            if !["copy-de-missing", "copy-ar-unavailable", "copy-de-user", "copy-ar-estimated"].contains(input.0) {
+                for value in ["Source checked", "receipt:**literal**", "method:%@"] {
+                    XCTAssertTrue(text.contains(value), "The raw receipt value changed: \(input.0): \(value)")
+                }
+            }
+            if ["copy-en", "copy-de", "copy-ar", "copy-fr-fallback", "copy-en-recovery"].contains(input.0) {
+                XCTAssertTrue(text.contains("support:[literal]"))
+                XCTAssertTrue(text.contains("acceptance:*literal*"))
+                let attachment = XCTAttachment(screenshot: app.screenshot())
+                attachment.name = "claim-copy-\(input.0)-large-text-final-viewport"
+                attachment.lifetime = .keepAlways
+                add(attachment)
             }
             if index + 1 < inputs.count { next(app) }
         }
