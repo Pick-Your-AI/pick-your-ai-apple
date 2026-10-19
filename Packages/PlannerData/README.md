@@ -38,8 +38,27 @@ retired identities. All pending upgrades execute in one transaction. Unknown
 versions, corrupt databases and failed migrations produce errors without a
 reset. A corrupt record remains in storage; paginated reads return recoverable
 records plus `unreadableCount`. The UI must disclose that count. Missing or corrupt
-heads cannot be overwritten through save. There is no automatic salvage of broken
+heads cannot be overwritten through save. Restore also rejects a corrupt history
+revision newer than the current head before writing, preserving the readable head
+and the original history for recovery. There is no automatic salvage of broken
 SQLite pages or silent replacement of a damaged database.
+
+Before the first database read, the connection disables SQLite's final-close WAL
+checkpoint and checks both the configuration result and effective setting. The
+effective schema version is then read before changing journal mode or starting
+application migrations. This includes committed changes held only in a WAL, even
+when the main database header still looks supported. A WAL database whose version
+is already unsupported when admission reads it retains its database and WAL bytes
+on rejection; temporary shared-memory reader marks are not immutable evidence.
+The normal transactional version check remains in place.
+
+SQLite must restore an interrupted transaction's hot rollback journal before it
+can read a consistent schema version. The connection allows that recovery, which
+may restore database pages and remove the journal. If the recovered version is
+unsupported, initialization rejects it without application schema or data changes.
+This is distinct from a reset or a promise that all interrupted files remain
+byte-identical. The caller still owns the directory and coordinates identity,
+database replacement and other external file-lifecycle changes.
 
 SQLite is an implementation choice under the user's delegated engineering mandate,
 replacing the earlier proposed Core Data default for this local library. Its
@@ -50,7 +69,9 @@ directory, configure backup/file-protection policy, isolate identities, and test
 locked-device behavior. No database files should be attached to public issues.
 
 Primary references checked 2026-10-18: [SQLite transactions](https://www.sqlite.org/transactional.html),
-[PRAGMA configuration](https://www.sqlite.org/pragma.html). Their documented guarantees
+[PRAGMA configuration](https://www.sqlite.org/pragma.html),
+[checkpoint-on-close configuration](https://www.sqlite.org/c3ref/c_dbconfig_defensive.html#sqlitedbconfignockptonclose),
+and [hot-journal recovery](https://www.sqlite.org/lockingv3.html#dealing_with_hot_journals). Their documented guarantees
 are design inputs; the tests below are evidence of this implementation's behavior.
 
 ## Reproduce
@@ -58,9 +79,29 @@ are design inputs; the tests below are evidence of this implementation's behavio
 On macOS with Xcode 16.4 (16F6), or Swift 6.0.3 on Linux with SQLite headers/library:
 
 ```sh
+python3 -m unittest discover -s tools/storage/tests -p 'test_crash_replay.py' -v
 swift test --package-path Packages/PlannerData --scratch-path .build-storage -Xswiftc -warnings-as-errors
 python3 tools/storage/crash_replay.py .build-storage/debug/DraftCrashProbe
 ```
+
+The replay driver's exit-code, integrity and migration-rollback checks use
+explicit runtime failures and remain active under optimized Python. Its
+[portable regression tests](../../tools/storage/tests/test_crash_replay.py)
+exercise every probe phase, invalid SQLite contents and changed migration state
+in normal and optimized Python, with a valid synthetic protocol control. These
+fixtures test the driver; they do not execute Swift or establish native storage
+durability. The mandatory hosted step retains `storage-replay-guards.log` with
+the existing storage evidence, and the actual native crash probe still runs.
+
+Each native probe phase has a 60-second deadline. If a phase stalls, the driver
+kills and waits for that probe, reports the phase and captured diagnostics, and
+stops before later recovery checks or a success message. This also bounds local
+replay, independently of the hosted job's timeout. Use `--timeout-seconds` only
+when an explicit different per-phase deadline is needed; zero, negative and
+non-finite values are rejected before starting a probe. Portable guards exercise
+timeouts at all seven phase positions, child cleanup and a fresh successful retry
+in both normal and optimized Python. These guards use temporary synthetic probe
+processes; the real Swift replay and configured native runs remain separate checks.
 
 Tests cover incomplete drafts, exact-byte locks, stale writes, restoration, scoped
 CRUD, corrupt records in a 503-entry library, migrations, actual `SQLITE_FULL`
@@ -71,6 +112,23 @@ These are real abrupt process exits, not physical power cuts or OS kill-on-devic
 measurements. All fixtures are synthetic and temporary. The probe is a test utility,
 not an app target or an installation/release artifact.
 
+Five additional storage regressions cover a closed future-schema WAL database,
+a future version committed only in an orphaned WAL, a supported WAL database that
+migrates and remains writable, supported hot-journal recovery, and rejection of an
+unsupported version after rollback recovery. The orphaned WAL and hot journals are
+snapshots of real SQLite output copied while their writers are idle; no connection
+holds the copied database open. The journal fixtures use a small page cache and
+`sqlite3_db_cacheflush` to capture spilled, uncommitted pages with a valid hot journal.
+These deterministic fixture tests run without spawning child processes on iOS.
+
+On 2026-10-18, the closed-future case
+failed against accepted main `51952c75f2280d57891491903e495fb822b83bfd`: the expected
+unsupported-schema error was raised, but database bytes changed and journal mode
+became DELETE. The corrected local Swift 6.1.2/Linux suite passed all 30 methods
+with zero failures or skips and compiler warnings treated as errors.
+These portable results do not substitute
+for the configured macOS/iPhone/iPad receiving runs or device qualification.
+
 The [CI workflow](../../.github/workflows/swift-storage.yml) repeats macOS tests,
 crash replay and an unsigned iOS Simulator SDK compile. Compilation is distinct
 from running a UI, simulator lifecycle tests or physical-device qualification.
@@ -79,13 +137,13 @@ from running a UI, simulator lifecycle tests or physical-device qualification.
 
 | Issue | Executed library behavior | Remaining issue-specific work |
 | --- | --- | --- |
-| #33 | Empty draft saves and reopens; exact payload/lock bytes survive | Governed valid BuildSnapshot transition, rejection/export and cross-client golden payloads |
+| #33 | Empty draft saves and reopens; exact payload/lock bytes survive; PlannerTransfer validates the immutable snapshot transition | [Criterion-specific transition receipt](../../docs/acceptance/issue-33-draft-snapshot-boundary.md) reconciles the completed boundary; timed UI autosave and Files journeys remain separate issues |
 | #69 | CAS, appended restoration, stale undo rejection; real crash recovery | Editor autosave wiring, process termination during actual UI edits, analysis-state integration |
 | #80 | Rename/duplicate/delete, paginated large library, corrupt-record isolation and restart | Native library UI, evidence state display, cross-client build round-trip and private projection |
-| #86 | Schema 1/2→3, interrupted upgrade, actual capacity error, rollback/retry, corrupt DB retention | App integration, supported device/OS upgrade matrix and protected-data tests |
-| #98 | Storage threat boundary and redacted errors documented | Full import/link/API/share flows and security receiving review |
+| #86 | Schema 1/2→3, interrupted upgrade, actual capacity error, rollback/retry, corrupt DB retention; 25 tests also executed on iPhone/iPad simulators | [Criterion-specific storage receipt](../../docs/acceptance/issue-86-durable-storage.md) records the verified database boundary; closure still requires the reviewed #166 off-main startup integration and #33 receipt on signed main. Full device qualification and protected-data work remain #107/#99 |
+| #98 | [Reviewed data inventory, threat model and mitigation register](../../docs/validation/issue-98-data-threats.md) traces delivered storage and the exact native Files candidate | Imported-build deletion and device/provider/service qualification remain explicit |
 
-These are partial criteria results; no full issue closure follows from a library
-merge. See the [all-issue acceptance map](../../docs/acceptance/README.md) for exact
+Other rows remain partial criteria results; issue closure follows its exact receipt,
+independent review, named prerequisites and signed main integration. See the [all-issue acceptance map](../../docs/acceptance/README.md) for exact
 criteria and remaining executable work. Product/domain receiving acceptance is not
 fabricated; it does not prevent independently testing this implementation.

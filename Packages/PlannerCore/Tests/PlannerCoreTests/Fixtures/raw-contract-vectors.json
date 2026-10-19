@@ -1,0 +1,220 @@
+{
+  "fixture_version": "core-raw-json-1",
+  "description": "Apply each literal UTF-8 replacement in order to the pinned canonical fixture bytes, replacing every occurrence. Decode the resulting raw text without parsing or reserializing it first. Validity includes the Core raw-key profile and existing frozen typed boundary. Byte, depth, node, Unicode-equivalence and malformed-UTF8 limits have separate native tests.",
+  "base_sha256": {
+    "pricebook": "716a848822fc2b182d226c597f7e50f4b00a0fe01ba5c03879e858ca6f0c9b46",
+    "evaluation-report": "039626962ef0f2c4f706614d775ad47eda1d148c58f736c98ad169fc153221f3"
+  },
+  "cases": [
+    {
+      "id": "pricebook/canonical",
+      "fixture": "pricebook",
+      "valid": true,
+      "replacements": []
+    },
+    {
+      "id": "report/canonical",
+      "fixture": "evaluation-report",
+      "valid": true,
+      "replacements": []
+    },
+    {
+      "id": "pricebook/escaped-unique-key",
+      "fixture": "pricebook",
+      "valid": true,
+      "replacements": [
+        [
+          "\"revision\": 1",
+          "\"\\u0072evision\": 1"
+        ]
+      ]
+    },
+    {
+      "id": "pricebook/machine-int-bound",
+      "fixture": "pricebook",
+      "valid": true,
+      "replacements": [
+        [
+          "\"revision\": 1",
+          "\"revision\": 9223372036854775807"
+        ]
+      ]
+    },
+    {
+      "id": "pricebook/exact-money",
+      "fixture": "pricebook",
+      "valid": true,
+      "replacements": [
+        [
+          "\"amount\": \"0.80\"",
+          "\"amount\": \"123456789012345678901234567890.123456789012\""
+        ]
+      ]
+    },
+    {
+      "id": "pricebook/string-punctuation",
+      "fixture": "pricebook",
+      "valid": true,
+      "replacements": [
+        [
+          "\"Illustrative price, NOT a live market quote.\"",
+          "\"Literal {\\\"id\\\":\\\"a\\\",\\\"id\\\":\\\"b\\\"}, []: \\\\ café 🚀\""
+        ]
+      ]
+    },
+    {
+      "id": "report/string-number",
+      "fixture": "evaluation-report",
+      "valid": true,
+      "replacements": [
+        [
+          "\"rule.required.foundation: pass\"",
+          "\"Text: 1e999 and {\\\"outcome\\\":\\\"pass\\\",\\\"outcome\\\":\\\"unknown\\\"}\""
+        ]
+      ]
+    },
+    {
+      "id": "pricebook/duplicate-id",
+      "fixture": "pricebook",
+      "valid": false,
+      "replacements": [
+        [
+          "\"id\": \"prices.fixture.1\"",
+          "\"id\": \"prices.fixture.1\", \"id\": \"prices.other.1\""
+        ]
+      ]
+    },
+    {
+      "id": "pricebook/escaped-duplicate-revision",
+      "fixture": "pricebook",
+      "valid": false,
+      "replacements": [
+        [
+          "\"revision\": 1",
+          "\"revision\": 1, \"\\u0072evision\": 2"
+        ]
+      ]
+    },
+    {
+      "id": "pricebook/duplicate-money",
+      "fixture": "pricebook",
+      "valid": false,
+      "replacements": [
+        [
+          "\"amount\": \"0.80\"",
+          "\"amount\": \"0.80\", \"amount\": \"9.99\""
+        ]
+      ]
+    },
+    {
+      "id": "pricebook/duplicate-provenance",
+      "fixture": "pricebook",
+      "valid": false,
+      "replacements": [
+        [
+          "\"verification_status\": \"estimated\"",
+          "\"verification_status\": \"estimated\", \"verification_status\": \"verified\""
+        ]
+      ]
+    },
+    {
+      "id": "pricebook/duplicate-array-member-key",
+      "fixture": "pricebook",
+      "valid": false,
+      "replacements": [
+        [
+          "\"id\": \"rate.compute_profile.fixture\"",
+          "\"id\": \"rate.compute_profile.fixture\", \"id\": \"rate.other.fixture\""
+        ]
+      ]
+    },
+    {
+      "id": "pricebook/identical-duplicate-key",
+      "fixture": "pricebook",
+      "valid": false,
+      "replacements": [
+        [
+          "\"revision\": 1",
+          "\"revision\": 1, \"revision\": 1"
+        ]
+      ]
+    },
+    {
+      "id": "report/duplicate-build-revision",
+      "fixture": "evaluation-report",
+      "valid": false,
+      "replacements": [
+        [
+          "\"build_revision\": 1",
+          "\"build_revision\": 1, \"build_revision\": 2"
+        ]
+      ]
+    },
+    {
+      "id": "report/escaped-duplicate-result",
+      "fixture": "evaluation-report",
+      "valid": false,
+      "replacements": [
+        [
+          "\"result\": \"valid\"",
+          "\"result\": \"valid\", \"\\u0072esult\": \"invalid\""
+        ]
+      ]
+    },
+    {
+      "id": "report/duplicate-finding",
+      "fixture": "evaluation-report",
+      "valid": false,
+      "replacements": [
+        [
+          "\"outcome\": \"pass\"",
+          "\"outcome\": \"pass\", \"outcome\": \"unknown\""
+        ]
+      ]
+    },
+    {
+      "id": "report/duplicate-summary",
+      "fixture": "evaluation-report",
+      "valid": false,
+      "replacements": [
+        [
+          "\"passed\": 41",
+          "\"passed\": 41, \"passed\": 0"
+        ]
+      ]
+    },
+    {
+      "id": "pricebook/invalid-escape",
+      "fixture": "pricebook",
+      "valid": false,
+      "replacements": [
+        [
+          "\"Illustrative price, NOT a live market quote.\"",
+          "\"bad\\qescape\""
+        ]
+      ]
+    },
+    {
+      "id": "pricebook/trailing-input",
+      "fixture": "pricebook",
+      "valid": false,
+      "replacements": [
+        [
+          "\n}",
+          "\n} {}"
+        ]
+      ]
+    },
+    {
+      "id": "report/trailing-input",
+      "fixture": "evaluation-report",
+      "valid": false,
+      "replacements": [
+        [
+          "\n}",
+          "\n} null"
+        ]
+      ]
+    }
+  ]
+}

@@ -27,6 +27,12 @@ public final class DraftLibraryModel: ObservableObject {
     @Published public private(set) var unreadableCount = 0
     @Published public private(set) var busy = false
     @Published public private(set) var notice: String?
+    /// A successful page read may recover a library failure, but cannot resolve
+    /// an editor conflict, unsupported payload, or failed save on the user's behalf.
+    private var actionNotice: String? { didSet { updateNotice() } }
+    private var libraryNotice: String? { didSet { updateNotice() } }
+    private var historyNotice: String? { didSet { updateNotice() } }
+    private func updateNotice() { notice = actionNotice ?? historyNotice ?? libraryNotice }
     @Published public private(set) var selected: DraftRecord?
     @Published private var titleValue = ""
     @Published private var notesValue = ""
@@ -57,13 +63,14 @@ public final class DraftLibraryModel: ObservableObject {
     public func refresh() async {
         guard !busy else { return }
         busy = true
-        do { try await load() } catch { report(error) }
+        do { try await load() } catch { libraryNotice = message(for: error) }
         await finishOperation()
     }
     private func load() async throws {
         let page = try await store.list(limit: Self.pageSize, offset: pageOffset)
         records = page.records; unreadableCount = page.unreadableCount
         hasNextPage = page.records.count + page.unreadableCount == Self.pageSize
+        libraryNotice = nil
     }
     public func changePage(forward: Bool) async {
         guard !busy, !dirty, forward ? hasNextPage : pageOffset > 0 else { return }
@@ -71,7 +78,7 @@ public final class DraftLibraryModel: ObservableObject {
         pageOffset = max(0, pageOffset + (forward ? Self.pageSize : -Self.pageSize))
         busy = true
         do { try await load() }
-        catch { pageOffset = previous; report(error) }
+        catch { pageOffset = previous; libraryNotice = message(for: error) }
         await finishOperation()
     }
     public func open(_ record: DraftRecord) async { await open(id: record.id) }
@@ -93,9 +100,9 @@ public final class DraftLibraryModel: ObservableObject {
             let payload = try editorPayload(record)
             clearHistory()
             selected = record; title = record.title; notes = payload.notes
-            savedTitle = title; savedNotes = notes; status = "Saved locally"; notice = nil
+            savedTitle = title; savedNotes = notes; status = "Saved locally"; actionNotice = nil
         } catch {
-            notice = "This draft uses an unsupported editor format. It has been preserved without changes."
+            actionNotice = "This draft uses an unsupported editor format. It has been preserved without changes."
         }
     }
     private func editorPayload(_ record: DraftRecord) throws -> EditorPayload {
@@ -107,6 +114,7 @@ public final class DraftLibraryModel: ObservableObject {
     }
     private func clearHistory() {
         revisions = []; historyOffset = 0; hasOlderRevisions = false; unreadableRevisions = 0
+        historyNotice = nil
     }
     /// Pages replace each other; payload-bearing history never grows without bound.
     public func loadHistory(offset: Int = 0) async {
@@ -116,7 +124,8 @@ public final class DraftLibraryModel: ObservableObject {
             let page = try await store.history(id: selected.id, limit: Self.pageSize, offset: offset)
             revisions = page.records; historyOffset = offset; unreadableRevisions = page.unreadableCount
             hasOlderRevisions = page.records.count + page.unreadableCount == Self.pageSize
-        } catch { report(error) }
+            historyNotice = nil
+        } catch { historyNotice = message(for: error) }
         await finishOperation()
     }
     /// Explicit restoration appends a revision and never carries analysis into notes.
@@ -125,7 +134,7 @@ public final class DraftLibraryModel: ObservableObject {
         guard let selected, !busy, !dirty, revision.id == selected.id,
               revision.revision < selected.revision else { return }
         let submittedTitle = title; let submittedNotes = notes
-        busy = true; notice = nil
+        busy = true; actionNotice = nil
         do {
             _ = try editorPayload(revision) // Unsupported history is preserved, never promoted.
             let restored = try await store.restore(id: selected.id, revision: revision.revision,
@@ -140,7 +149,7 @@ public final class DraftLibraryModel: ObservableObject {
             status = "Restored revision \(revision.revision) as local revision \(restored.revision)"
             clearHistory()
             do { try await load() }
-            catch { notice = "The restoration was saved locally, but the library could not refresh. Try Refresh." }
+            catch { libraryNotice = "The restoration was saved locally, but the library could not refresh. Try Refresh." }
         } catch { status = "Not restored"; report(error) }
         await finishOperation()
     }
@@ -182,7 +191,7 @@ public final class DraftLibraryModel: ObservableObject {
     private func operation(_ action: @MainActor () async throws -> DraftRecord?) async {
         guard !busy else { return }
         let submittedTitle = title; let submittedNotes = notes
-        busy = true; status = "Saving…"; notice = nil
+        busy = true; status = "Saving…"; actionNotice = nil
         do {
             let result = try await action()
             busy = false
@@ -198,7 +207,7 @@ public final class DraftLibraryModel: ObservableObject {
             status = "Saved locally"
             busy = true
             do { try await load() }
-            catch { notice = "The change was saved locally, but the library could not refresh. Try Refresh." }
+            catch { libraryNotice = "The change was saved locally, but the library could not refresh. Try Refresh." }
             busy = false
         } catch { busy = false; status = "Not saved"; report(error) }
         await finishOperation()
@@ -215,10 +224,13 @@ public final class DraftLibraryModel: ObservableObject {
     }
 
     private func report(_ error: Error) {
+        actionNotice = message(for: error)
+    }
+    private func message(for error: Error) -> String {
         if error as? DraftStoreError == .conflict {
-            notice = "A newer revision exists. Your edits are still here. Close without saving and reopen the draft to load its latest revision."
+            return "A newer revision exists. Your edits are still here. Close without saving and reopen the draft to load its latest revision."
         } else {
-            notice = "The operation could not finish. Your edits are still here. Check available storage and try again."
+            return "The operation could not finish. Your edits are still here. Check available storage and try again."
         }
     }
 }

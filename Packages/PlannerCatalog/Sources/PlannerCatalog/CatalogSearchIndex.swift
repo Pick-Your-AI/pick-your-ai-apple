@@ -17,6 +17,11 @@ public enum CatalogSearchError: Error, Equatable, Sendable {
     case immutableIdentityConflict
 }
 
+/// Local display order only. Neither case ranks compatibility, evidence, or price.
+public enum CatalogSearchSort: Equatable, Sendable {
+    case title, kind
+}
+
 /// Opaque in-process pagination state. It is neither persisted nor accepted from a
 /// remote service; only the issuing index can create valid tokens.
 public struct CatalogPageToken: Sendable {
@@ -25,6 +30,7 @@ public struct CatalogPageToken: Sendable {
     fileprivate let query: String
     fileprivate let kinds: Set<String>
     fileprivate let limit: Int
+    fileprivate let sort: CatalogSearchSort
 }
 
 public struct CatalogSearchPage: Sendable {
@@ -89,6 +95,7 @@ public actor CatalogSearchIndex {
     }
 
     public func search(query: String = "", kinds: Set<String> = [], limit: Int = 50,
+                       sort: CatalogSearchSort = .title,
                        after token: CatalogPageToken? = nil) throws -> CatalogSearchPage {
         guard query.utf8.count <= 1_024, (1...100).contains(limit), kinds.count <= 64,
               kinds.allSatisfy({ !$0.isEmpty && $0.utf8.count <= 64 }) else {
@@ -98,17 +105,29 @@ public actor CatalogSearchIndex {
         let query = Self.normalize(query.trimmingCharacters(in: .whitespacesAndNewlines))
         if let token {
             guard token.generation == generation else { throw CatalogSearchError.stalePage }
-            guard token.query == query, token.kinds == kinds, token.limit == limit else {
+            guard token.query == query, token.kinds == kinds, token.limit == limit, token.sort == sort else {
                 throw CatalogSearchError.mismatchedPage
             }
         }
-        let matching = entries.filter { item in
+        let filtered = entries.filter { item in
             (kinds.isEmpty || kinds.contains(item.entry.kind)) && (query.isEmpty || item.search.contains(query))
+        }
+        let matching: [IndexedEntry]
+        switch sort {
+        case .title:
+            matching = filtered // Retain the original folded-title/kind/ID/version order.
+        case .kind:
+            matching = filtered.sorted { a, b in
+                if a.entry.kind != b.entry.kind { return a.entry.kind < b.entry.kind }
+                if a.title != b.title { return a.title < b.title }
+                if a.entry.id != b.entry.id { return a.entry.id < b.entry.id }
+                return a.entry.version < b.entry.version
+            }
         }
         let start = token?.offset ?? 0
         let end = min(start + limit, matching.count)
         let next = end < matching.count ? CatalogPageToken(generation: generation, offset: end,
-            query: query, kinds: kinds, limit: limit) : nil
+            query: query, kinds: kinds, limit: limit, sort: sort) : nil
         return CatalogSearchPage(identity: identity, entries: matching[start..<end].map(\.entry),
                                  totalCount: matching.count, next: next)
     }
