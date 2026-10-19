@@ -2,6 +2,15 @@
 
 For the current criterion-level assessment after merged Swift implementation and successful macOS CI, read [foundation disposition](foundation-disposition.md). It separates authorized engineering decisions from actual external inputs. The proposal-1 intake and validation statements below are historical; they do not describe the current CI capability.
 
+The [#21 scope receiving update](issue-21-scope.md) now consumes the accepted #20
+journey map at `fd58e522`, whose actual [receiving receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/20#issuecomment-6244060433)
+is preserved in the foundation disposition. All 110 candidate classifications
+remain unchanged, with an explicit journey trace and missing-field boundaries.
+The three literal criteria have separate results: scope content is prepared for
+independent product/release receiving review, while the first exact qualified
+real-data tuple remains absent. This updates the earlier proposal's #20 status
+without turning desk research or synthetic implementation into release evidence.
+
 The [#23 consumer delta](issue-23-services.md) now consumes the accepted canonical
 service decision delivered through Android #347 at signed `4c753bd6`. Its exact
 topology, frozen routes and operating-gate handoff are available inputs; actual
