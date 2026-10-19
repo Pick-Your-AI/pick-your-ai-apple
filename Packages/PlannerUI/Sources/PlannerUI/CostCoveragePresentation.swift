@@ -20,7 +20,7 @@ struct CostCoveragePresentation: Equatable, Sendable {
     init(summary: CostSummary?, currentBuildID: String, currentBuildRevision: Int,
          monthlyBudget: ContractMoney?) {
         guard let summary, !currentBuildID.isEmpty, currentBuildRevision > 0,
-              summary.buildID == currentBuildID,
+              summary.buildID.utf8.elementsEqual(currentBuildID.utf8),
               summary.buildRevision == currentBuildRevision else {
             state = summary == nil ? .unavailable : .differentRevision
             amount = nil

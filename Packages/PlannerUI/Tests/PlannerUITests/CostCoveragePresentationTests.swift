@@ -91,6 +91,53 @@ final class CostCoveragePresentationTests: XCTestCase {
         }
         XCTAssertEqual(value.total, try money("900"))
         XCTAssertEqual(value.unpricedSelectionIDs, ["sel.private"])
+
+        let composed = "build.caf\u{00e9}"
+        let decomposed = "build.cafe\u{0301}"
+        XCTAssertEqual(composed, decomposed)
+        XCTAssertFalse(composed.utf8.elementsEqual(decomposed.utf8))
+        let budgets: [ContractMoney?] = [nil, try money("100")]
+        for (issuedID, selectedID) in [(composed, decomposed), (decomposed, composed)] {
+            let supplied = try summary(amount: "900.0000", coverage: .partial,
+                                       unpriced: ["sel.private"], unsupported: ["private_meter"],
+                                       buildID: issuedID)
+            XCTAssertEqual(Array(supplied.buildID.utf8), Array(issuedID.utf8))
+            for budget in budgets {
+                let mismatch = CostCoveragePresentation(summary: supplied, currentBuildID: selectedID,
+                                                        currentBuildRevision: 1, monthlyBudget: budget)
+                XCTAssertEqual(mismatch.state, .differentRevision)
+                XCTAssertNil(mismatch.amount)
+                XCTAssertNil(mismatch.estimateCurrency)
+                XCTAssertNil(mismatch.periodDays)
+                XCTAssertEqual(mismatch.unpricedSelectionIDs, [])
+                XCTAssertEqual(mismatch.unsupportedMeters, [])
+                XCTAssertNil(mismatch.rateNotice)
+                XCTAssertNil(mismatch.reportedCoverage)
+                XCTAssertNil(mismatch.budgetAssessment)
+                XCTAssertEqual(mismatch.budgetHeading(hasBudget: budget != nil),
+                               budget == nil ? "No monthly budget set" : "Budget status unknown")
+
+                let exactCopy = String(decoding: Array(issuedID.utf8), as: UTF8.self)
+                let matched = CostCoveragePresentation(summary: supplied, currentBuildID: exactCopy,
+                                                       currentBuildRevision: 1, monthlyBudget: budget)
+                XCTAssertEqual(matched.state, .partial)
+                XCTAssertEqual(matched.amount?.amount.rawValue, "900.0000")
+                XCTAssertEqual(matched.unpricedSelectionIDs, ["sel.private"])
+                XCTAssertEqual(matched.unsupportedMeters, ["private_meter"])
+                if budget == nil {
+                    XCTAssertNil(matched.budgetAssessment)
+                } else {
+                    XCTAssertEqual(matched.budgetAssessment, .unknown(.incompleteCoverage))
+                }
+
+                let replacement = try summary(amount: "900.0000", coverage: .partial,
+                                              unpriced: ["sel.private"], unsupported: ["private_meter"],
+                                              buildID: selectedID)
+                let recovered = CostCoveragePresentation(summary: replacement, currentBuildID: selectedID,
+                                                         currentBuildRevision: 1, monthlyBudget: budget)
+                XCTAssertEqual(recovered, matched)
+            }
+        }
     }
 
     func testCurrenciesArePreservedWithoutConversionOrAggregation() throws {
