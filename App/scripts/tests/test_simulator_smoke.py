@@ -143,6 +143,110 @@ class SimulatorSmokeTests(unittest.TestCase):
         self.assertEqual(self.stdout.getvalue().splitlines().count("synthetic partial output"), 1)
         self.assertIn("timed out after 1s", self.stderr.getvalue())
 
+    def test_real_child_invalid_text_preserves_success_and_nonzero_exit(self):
+        for exit_code in (0, 23):
+            with self.subTest(exit_code=exit_code):
+                self.stdout, self.stderr = io.StringIO(), io.StringIO()
+                program = ("import os, sys\n"
+                           "os.write(1, b'child output \\xff\\n')\n"
+                           "os.write(2, b'child error \\xfe\\n')\n"
+                           f"sys.exit({exit_code})\n")
+                with contextlib.redirect_stdout(self.stdout), contextlib.redirect_stderr(self.stderr):
+                    if exit_code == 0:
+                        self.assertEqual(SMOKE.run(sys.executable, "-c", program),
+                                         "child output \ufffd")
+                    else:
+                        with self.assertRaises(subprocess.CalledProcessError) as caught:
+                            SMOKE.run(sys.executable, "-c", program)
+                        self.assertEqual(caught.exception.returncode, 23)
+                        self.assertEqual(caught.exception.output, "child output \ufffd\n")
+                        self.assertEqual(caught.exception.stderr, "child error \ufffd\n")
+                self.assertIn("child output \ufffd\n", self.stdout.getvalue())
+                self.assertIn("child error \ufffd\n", self.stderr.getvalue())
+                self.assertIn(f"Smoke command exited {exit_code}:", self.stdout.getvalue())
+
+    def test_real_child_invalid_create_diagnostic_preserves_owned_ids_and_commands(self):
+        real_run = subprocess.run
+
+        def effect(args, **kwargs):
+            if args[2] == "create":
+                output = (self.completed(args, **kwargs).stdout + "\n").encode("utf-8")
+                program = (f"import os\nos.write(1, {output!r})\n"
+                           "os.write(2, b'create diagnostic \\xff\\n')\n")
+                return real_run([sys.executable, "-c", program], **kwargs)
+            return self.completed(args, **kwargs)
+
+        with self.commands(effect) as mocked:
+            SMOKE.main()
+        for udid in (CREATED_PHONE, CREATED_PAD):
+            owned = [call for call in mocked.call_args_list
+                     if len(call.args[0]) > 3 and call.args[0][3] == udid]
+            self.assertEqual([call.args[0][2] for call in owned],
+                             ["boot", "bootstatus", "install", "launch",
+                              "terminate", "shutdown", "delete"])
+            self.assertEqual([call.kwargs["timeout"] for call in owned],
+                             [60, 300, 180, 60, 60, 60, 60])
+        self.assertEqual(self.stderr.getvalue().count("create diagnostic \ufffd"), 2)
+
+    def test_real_child_invalid_cleanup_text_preserves_timeout_and_attempts_delete(self):
+        real_run = subprocess.run
+        for cleanup_exit in (0, 9):
+            with self.subTest(cleanup_exit=cleanup_exit):
+                primary = []
+
+                def effect(args, **kwargs):
+                    if args[2] == "launch":
+                        program = ("import os, time\n"
+                                   "os.write(1, b'launch pending\\n')\ntime.sleep(30)\n")
+                        try:
+                            # Exercise a real timeout without waiting for the
+                            # unchanged 60-second simulator command deadline.
+                            return real_run([sys.executable, "-c", program],
+                                            **{**kwargs, "timeout": 1})
+                        except subprocess.TimeoutExpired as error:
+                            primary.append(error)
+                            raise
+                    if args[2] in ("shutdown", "delete"):
+                        program = ("import os, sys\n"
+                                   "os.write(1, b'cleanup output \\xff\\n')\n"
+                                   "os.write(2, b'cleanup error \\xfe\\n')\n"
+                                   f"sys.exit({cleanup_exit})\n")
+                        return real_run([sys.executable, "-c", program], **kwargs)
+                    return self.completed(args, **kwargs)
+
+                with self.commands(effect) as mocked, self.assertRaises(subprocess.TimeoutExpired) as caught:
+                    SMOKE.main()
+                self.assertEqual(len(primary), 1)
+                self.assertIs(caught.exception, primary[0])
+                self.assertEqual(caught.exception.timeout, 1)
+                self.assertEqual(caught.exception.stdout, b"launch pending\n")
+                self.assertEqual([call.args[0][2] for call in mocked.call_args_list],
+                                 ["list", "create", "boot", "bootstatus", "install", "launch",
+                                  "get_app_container", "spawn", "shutdown", "delete"])
+                for call in mocked.call_args_list[-2:]:
+                    self.assertEqual(call.args[0][3], CREATED_PHONE)
+                    self.assertEqual(call.kwargs["timeout"], 60)
+
+    def test_real_child_invalid_delete_text_does_not_qualify_failed_cleanup(self):
+        real_run = subprocess.run
+
+        def effect(args, **kwargs):
+            if args[2] == "delete":
+                program = ("import os, sys\n"
+                           "os.write(2, b'owned device still present \\xff\\n')\n"
+                           "sys.exit(9)\n")
+                return real_run([sys.executable, "-c", program], **kwargs)
+            return self.completed(args, **kwargs)
+
+        with self.commands(effect) as mocked, self.assertRaisesRegex(
+                ValueError, "Owned simulator cleanup did not delete " + CREATED_PHONE):
+            SMOKE.main()
+        self.assertEqual([call.args[0][2] for call in mocked.call_args_list],
+                         ["list", "create", "boot", "bootstatus", "install", "launch",
+                          "terminate", "shutdown", "delete"])
+        self.assertIn("owned device still present \ufffd", self.stderr.getvalue())
+        self.assertIn("Smoke command exited 9:", self.stdout.getvalue())
+
     def test_unavailable_command_output_still_attempts_both_owned_cleanup_commands(self):
         for error_type in (BrokenPipeError, ValueError):
             for failure in ("write", "flush"):
