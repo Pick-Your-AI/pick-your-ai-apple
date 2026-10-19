@@ -38,7 +38,9 @@ retired identities. All pending upgrades execute in one transaction. Unknown
 versions, corrupt databases and failed migrations produce errors without a
 reset. A corrupt record remains in storage; paginated reads return recoverable
 records plus `unreadableCount`. The UI must disclose that count. Missing or corrupt
-heads cannot be overwritten through save. There is no automatic salvage of broken
+heads cannot be overwritten through save. Restore also rejects a corrupt history
+revision newer than the current head before writing, preserving the readable head
+and the original history for recovery. There is no automatic salvage of broken
 SQLite pages or silent replacement of a damaged database.
 
 SQLite is an implementation choice under the user's delegated engineering mandate,
@@ -58,9 +60,19 @@ are design inputs; the tests below are evidence of this implementation's behavio
 On macOS with Xcode 16.4 (16F6), or Swift 6.0.3 on Linux with SQLite headers/library:
 
 ```sh
+python3 -m unittest discover -s tools/storage/tests -p 'test_crash_replay.py' -v
 swift test --package-path Packages/PlannerData --scratch-path .build-storage -Xswiftc -warnings-as-errors
 python3 tools/storage/crash_replay.py .build-storage/debug/DraftCrashProbe
 ```
+
+The replay driver's exit-code, integrity and migration-rollback checks use
+explicit runtime failures and remain active under optimized Python. Its
+[portable regression tests](../../tools/storage/tests/test_crash_replay.py)
+exercise every probe phase, invalid SQLite contents and changed migration state
+in normal and optimized Python, with a valid synthetic protocol control. These
+fixtures test the driver; they do not execute Swift or establish native storage
+durability. The mandatory hosted step retains `storage-replay-guards.log` with
+the existing storage evidence, and the actual native crash probe still runs.
 
 Tests cover incomplete drafts, exact-byte locks, stale writes, restoration, scoped
 CRUD, corrupt records in a 503-entry library, migrations, actual `SQLITE_FULL`

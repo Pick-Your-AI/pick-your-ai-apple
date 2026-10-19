@@ -85,6 +85,15 @@ pages and cancellation races separately. The added journey still requires actual
 hosted execution on both pinned destinations; its source alone proves no UI or
 physical accessibility result. See the [catalog receipt](../docs/validation/issue-59-catalog-browser.md).
 
+## Runtime lifecycle and configuration extension
+
+[`PlannerAppUITests/LocalDraftLifecycleTests.swift`](PlannerAppUITests/LocalDraftLifecycleTests.swift)
+adds the third complete Debug journey: background/foreground editing recovery,
+durable reopening and cancellation of a dirty discard before explicit discard.
+The [runtime journey record](../docs/validation/runtime-journeys.md) keeps its exact
+observations and native-execution limits. Staging and Release independently run
+one missing-endpoint configuration journey on each pinned destination.
+
 ## Shared pinned runner
 
 [`scripts/ui-journey.py`](scripts/ui-journey.py) requires exactly one installed device
@@ -280,10 +289,11 @@ timeout; the 40-minute job budget allows both attempts plus existing checks.
 Every run keeps per-device `xcodebuild` commands/logs, `.xcresult` bundles (including
 screenshots), `xcresulttool` JSON summaries, per-device creation/cleanup receipts, and a combined result record under
 `.build/native-evidence/ui-journey`. Both destinations are attempted after an ordinary
-creation/test failure or timeout. A green runner requires a successful `xcodebuild` exit and exactly two
-passed, zero failed/skipped tests in each result summary and successful owned-simulator
-cleanup; missing results or only one completed journey fail closed. Both specific
-test identifiers are passed through separate `-only-testing` arguments; no whole
+creation/test failure or timeout. A green Debug runner requires a successful `xcodebuild`
+exit and exactly three passed, zero failed/skipped tests in each result summary:
+Notes, Catalog and Lifecycle. Owned-simulator cleanup must also succeed; missing
+results or a partial journey set fail closed. All three specific test identifiers
+are passed through separate `-only-testing` arguments; no whole
 test target, automatic retries or skipped case can substitute for those counts.
 The workflow retains these with the existing native evidence for 14 days, including
 failed-run evidence. For a local rerun, pass a fresh `--evidence-directory` path; existing
@@ -321,11 +331,13 @@ current catalog/details source. The production editor retains canonical #198
 focus handling; the complete notes journey retains its normal keyboard dismissal,
 exact post-dismissal title/notes assertions and the observed paste-education
 correction. All source-specific results above remain historical. The current
-combined source must execute both exact complete journeys on each pinned device,
-plus its full 110-model and 57-transfer gates, before delivery. The strict profiles
-require all 61 UI and 21 Transfer class-qualified mandatory identities. This union
+combined source must execute both original complete journeys and the runtime
+lifecycle journey on each pinned device, plus its full 111-model and 71-transfer
+gates, before delivery. The strict profiles require all 62 UI and 35 Transfer
+class-qualified mandatory identities. This union
 retains the fourteen [source-link review cases](../docs/validation/catalog-source-navigation.md)
-and nine [comparison worker cases](../docs/validation/comparison-preparation.md).
+and nine [comparison worker cases](../docs/validation/comparison-preparation.md),
+plus all six [dependency-graph cases](../Packages/PlannerTransfer/DEPENDENCY_GRAPH.md).
 Historical 87/48, 96/57 and 101/48 profiles remain available only for their recorded sources.
 
 The [actual #240 native results and selector correction](../docs/validation/catalog-editor-receiving.md#actual-87-model-and-48-transfer-receiving-result)
@@ -337,3 +349,14 @@ identified row value to change from off to on. The exact label, restored-on stat
 and every count, detail, pagination and empty-state assertion remain. The
 contained-control query is a source-reviewed candidate; both complete catalog
 journeys must pass before it qualifies for delivery.
+
+The [subsequent 5af result and occluded-row correction](../docs/validation/catalog-editor-receiving.md#observed-occluded-detail-row-and-bounded-scroll-correction)
+retain all 110 model passes, both complete iPad journeys, the passing iPhone Notes
+journey and the failed iPhone Catalog result. That exact Catalog label existed
+behind the navigation bar after a full swipe; continuing in the same direction
+moved it out of view. The helper now uses a small container-relative drag toward
+the center only for an existing unhittable element. Missing elements retain the
+caller's search direction. The 12-attempt ceiling, finite geometry, exact labels,
+uniqueness, values and final hittability remain required. Production source,
+both full journey definitions and the runner gates are unchanged. The fresh
+corrected native run must still pass; this is not a new device receipt.

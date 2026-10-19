@@ -26,9 +26,9 @@ The exact canonical editor `8e76d0ee` has an actual 71-model pass and complete
 Notes journey passes on both pinned simulators, with successful owned cleanup;
 see the [completed editor receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution).
 Its separate scope-cleanup failure remains recorded. The expanded comparison,
-catalog and contract source plus the accepted ResourceEstimate carry require full
-110/65 package inventories and all three Debug journeys on each destination before
-this runtime extension can be accepted.
+catalog, graph and contract source plus the accepted resource, privacy and restoration
+inputs require full 111/71 UI/Transfer inventories and all three Debug journeys
+on each destination before this runtime extension can be accepted.
 
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
@@ -277,8 +277,9 @@ is required before acceptance; no result is inferred from source inspection. Thr
 regressions exercise a prepared fork against source changes/deletion through another
 connection and a successful distinct-payload insert with exact source/history
 preservation after reopening. The storage simulator gate requires the new stale-source
-cases and all 28 storage tests to pass. Existing PlannerData tests
-separately exercise actual malformed SQLite rows, storage exhaustion and migration.
+cases, the future-history restoration regression and all 29 storage tests to pass.
+Existing PlannerData tests separately exercise actual malformed SQLite rows,
+storage exhaustion and migration.
 Actual Files-provider/cross-client journeys, unavailable/revoked remote references,
 VoiceOver and physical-device behavior retain their own unverified acceptance gates.
 
@@ -335,12 +336,18 @@ The [typed component details receipt](../docs/validation/issue-61-catalog-detail
 
 The separate [comparison-worker composition](../docs/validation/comparison-preparation.md)
 retains that catalog/editor source and adds nine model cases. Its own native profile
-retains its historical 96 UI cases and 47 named identities. The current
+retains its historical 96 UI cases and 47 named identities. The
 [source-link composition](../docs/validation/catalog-source-navigation.md#comparison-worker-receiving-composition)
-adds fourteen cases and requires all 110 UI cases and 61 named identities. The
-accepted ResourceEstimate carry preserves that quality boundary and extends its
+adds fourteen cases and retains its historical 110-case/61-identity profile. The
+[received privacy declaration](../docs/validation/planner-ui-privacy.md) adds the
+production-bundle regression; the current UI gate requires all 111 cases and 62
+named identities. The accepted ResourceEstimate carry preserves that quality
+boundary and extends its
 historical 57-case/21-identity Transfer profile to 65 cases and all 29 required
-identities. The catalog/editor receipt preserves its recorded 87/48
+identities. The [Graph boundary](../Packages/PlannerTransfer/DEPENDENCY_GRAPH.md)
+extends the current receiving gate to 71 cases and 35 required identities across
+six classes; the 65-case profile remains available for its own source. The
+catalog/editor receipt preserves its recorded 87/48
 source and historical executions alongside these expanded receiving gates;
 those earlier results do not execute this follow-up.
 
@@ -348,7 +355,10 @@ those earlier results do not execute this follow-up.
 
 The separate [unsigned submission SDK lane](../docs/validation/submission-sdk.md)
 selects Xcode 26.3 / 17C529 and verifies device and simulator SDK 26.2 before
-testing all five packages and building both unsigned Release products. The
-existing 16.4 development pin remains a regression baseline. Consult the dated
+testing all five packages and building both unsigned Release products. This
+runtime composition declares 101 Core, 29 Data, 71 Transfer, 45 Catalog and 111 UI
+cases (357 total); those counts and both exact built-product privacy inventories
+require fresh execution. The existing 16.4 development pin remains a regression
+baseline. Consult the dated
 [#113 policy matrix](../docs/validation/issue-113-policy.md) for current Apple
 requirements and the signed-artifact, privacy and channel evidence still needed.

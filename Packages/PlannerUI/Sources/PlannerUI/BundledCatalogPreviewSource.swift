@@ -13,8 +13,11 @@ public actor BundledCatalogPreviewSource: CatalogBrowsingSource, CatalogDetailSo
     private var decodedSnapshot: CatalogSnapshot?
     public init() {}
 
+    // Keep production resources distinguishable from the test target's Fixtures bundle.
+    static var resourceBundle: Bundle { Bundle.module }
+
     static func fixtureData() throws -> Data {
-        guard let url = Bundle.module.url(forResource: "catalog-preview", withExtension: "json"),
+        guard let url = resourceBundle.url(forResource: "catalog-preview", withExtension: "json"),
               let size = try url.resourceValues(forKeys: [.fileSizeKey]).fileSize,
               size <= BuildTransfer.maximumBytes else { throw CatalogSearchError.snapshotUnavailable }
         let data = try Data(contentsOf: url)

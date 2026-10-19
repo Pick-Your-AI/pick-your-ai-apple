@@ -6,8 +6,10 @@ import json
 from pathlib import Path
 import plistlib
 import re
+import stat
 import subprocess
 import sys
+import tempfile
 
 import toolchain
 
@@ -86,11 +88,39 @@ def inspect_product(app, sdk, xcode_pin, sdk_pin):
         raise toolchain.SetupError(f"Unsigned {sdk} product metadata verification failed: {error}. {GUIDANCE}") from error
 
 
+def prepare_receipt(path, protected_paths):
+    """Invalidate earlier success without removing input files or following links."""
+    if path is None:
+        return None
+    # Resolve directory aliases, but inspect the final component without following it.
+    output = path.parent.resolve() / path.name
+    for protected in protected_paths:
+        if output.is_relative_to(protected.resolve()):
+            raise toolchain.SetupError("Receipt output must be separate from source, pin, product and CI environment inputs.")
+    try:
+        existing = output.lstat()
+    except FileNotFoundError:
+        return output
+    if not stat.S_ISREG(existing.st_mode) or existing.st_nlink != 1:
+        raise toolchain.SetupError("Receipt output must be an unshared regular file (no links or directories).")
+    output.unlink()
+    return output
+
+
 def write_receipt(path, receipt):
     contents = json.dumps(receipt, indent=2, sort_keys=True) + "\n"
     if path is not None:
         path.parent.mkdir(parents=True, exist_ok=True)
-        path.write_text(contents, encoding="utf-8")
+        temporary = None
+        try:
+            with tempfile.NamedTemporaryFile(mode="w", encoding="utf-8", dir=path.parent,
+                                             prefix=".submission-sdk-", suffix=".tmp", delete=False) as stream:
+                temporary = Path(stream.name)
+                stream.write(contents)
+            temporary.replace(path)
+        finally:
+            if temporary is not None:
+                temporary.unlink(missing_ok=True)
     print(contents, end="", flush=True)
 
 
@@ -108,16 +138,22 @@ def main(argv=None):
     inspect.add_argument("--output", type=Path)
     args = parser.parse_args(argv)
     try:
+        protected = [APP_ROOT, args.toolchain_pin, args.sdk_pin]
+        if args.operation == "inspect":
+            protected.append(args.app)
+        elif args.github_env is not None:
+            protected.append(args.github_env)
+        output = prepare_receipt(args.output, protected)
         xcode_pin = toolchain.load_pin(args.toolchain_pin)
         sdk_pin = load_sdk_pin(args.sdk_pin)
         if args.operation == "verify":
             environment = verify_sdks(xcode_pin, sdk_pin)
-            write_receipt(args.output, {"xcode": xcode_pin, **sdk_pin})
             if args.github_env is not None:
-                with args.github_env.open("a", encoding="utf-8") as output:
-                    output.write(f"DEVELOPER_DIR={environment['DEVELOPER_DIR']}\n")
+                with args.github_env.open("a", encoding="utf-8") as stream:
+                    stream.write(f"DEVELOPER_DIR={environment['DEVELOPER_DIR']}\n")
+            write_receipt(output, {"xcode": xcode_pin, **sdk_pin})
         else:
-            write_receipt(args.output, inspect_product(args.app, args.sdk, xcode_pin, sdk_pin))
+            write_receipt(output, inspect_product(args.app, args.sdk, xcode_pin, sdk_pin))
         return 0
     except toolchain.SetupError as error:
         print(f"Submission SDK check failed: {error}", file=sys.stderr)

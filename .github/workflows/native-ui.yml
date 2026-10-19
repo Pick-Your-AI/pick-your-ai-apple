@@ -106,7 +106,7 @@ jobs:
           do
             grep -E "Test Case .*DraftLibraryModelTests.*${name}.* passed" .build/native-evidence/model-tests.txt
           done
-          python3 tools/ci/require_swift_test_results.py comparison-catalog-source-ui .build/native-evidence/model-tests.txt
+          python3 tools/ci/require_swift_test_results.py comparison-catalog-source-privacy-ui .build/native-evidence/model-tests.txt
       - name: Build unsigned simulator app
         run: |
           set -o pipefail

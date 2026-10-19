@@ -53,18 +53,29 @@ fail the runner. Test selection is fixed by the requested build configuration.
 No rerun/retry flag, alternate runtime, launch seed or app-container reset exists.
 
 Debug keeps the native model/build/smoke and all three complete UI journeys in the
-existing native job. The canonical 110-case UI model gate and all 61 required
+existing native job. The canonical 111-case UI model gate and all 62 required
 identities remain mandatory; current Transfer qualification separately requires
-all 65 cases and 29 identities in the accepted resource/quality union, retaining
-the historical 57-case profile for its own source. Staging and Release run in separate mandatory matrix jobs,
+all 71 cases and 35 identities in the Graph/resource/quality union, retaining
+the historical 57-case and 65-case profiles for their own sources. Staging and
+Release run in separate mandatory matrix jobs,
 each with both destinations and its own 40-minute deadline. Matrix fail-fast is
 disabled so a failed configuration does not cancel the other configuration's
 evidence. All three jobs share the conservative native-source scope precondition
 and require the exact Xcode pin; each checks its configured cache/build paths are
 absent before use. No configuration result is allowed to fail without failing
 the workflow. The separate Xcode 26.3 / SDK 26.2 submission lane retains its
-five-package and unsigned simulator/device checks; it does not substitute for
-these pinned Xcode 16.4 / iOS 18.5 development journeys.
+five-package and unsigned simulator/device checks, including both exact privacy
+manifest inventories. This runtime composition declares 101 Core, 29 Data, 71
+Transfer, 45 Catalog and 111 UI cases (357 total), all requiring fresh execution.
+That submission lane does not substitute for these pinned Xcode 16.4 / iOS 18.5
+development journeys. Earlier source-specific package results remain attributed
+to their original commits.
+
+The received Graph/editor source is `f4a35dadbe733e20d35e78f60c622c8c649ae3e2`,
+tree `7c1f448977119771104f30daab498d0e81f165b9`. Its 349-case inventory and the
+earlier 343-case runtime inventory describe their separate source compositions.
+This union retains all eight runtime-configuration and eight exact-decimal Core
+methods; neither earlier inventory supplies native execution of the 357-case union.
 
 `native-local-drafts-evidence`, `native-configuration-Staging-evidence` and
 `native-configuration-Release-evidence` retain their toolchain/build logs, exact
