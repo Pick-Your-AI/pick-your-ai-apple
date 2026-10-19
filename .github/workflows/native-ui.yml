@@ -53,7 +53,7 @@ jobs:
           set -o pipefail
           python3 - <<'PY' | tee .build/native-evidence/empty-caches.txt
           from pathlib import Path
-          for name in ("native-package-cache", "native-swift-tests", "native-source-packages", "native"):
+          for name in ("native-package-cache", "native-swift-tests", "native-source-packages", "native", "evidence-native"):
               path = Path(".build") / name
               if path.exists():
                   raise SystemExit(f"Expected an empty clean-checkout cache at {path}; use a fresh checkout without restored caches.")
@@ -71,6 +71,17 @@ jobs:
         run: |
           set -o pipefail
           swift test --package-path Packages/PlannerUI --cache-path "$PWD/.build/native-package-cache" --scratch-path "$PWD/.build/native-swift-tests" 2>&1 | tee .build/native-evidence/model-tests.txt
+      - name: Inspect actual evidence views through macOS UI automation
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/evidence-rendering"
+          xcodebuild test -project tools/evidence-rendering/EvidenceHarness.xcodeproj -scheme EvidenceHarness \
+            -only-testing:PlannerEvidenceUITests/EvidenceRenderingTests \
+            -destination 'platform=macOS' -parallel-testing-enabled NO \
+            -derivedDataPath .build/evidence-native \
+            -resultBundlePath "$RUNNER_TEMP/evidence-rendering/evidence-macos.xcresult" \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee .build/native-evidence/evidence-macos-test.log
+          python3 tools/conformance/qualify_evidence_rendering.py .build/native-evidence/evidence-macos-test.log
       - name: Build unsigned simulator app
         run: |
           set -o pipefail
@@ -86,5 +97,7 @@ jobs:
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
         with:
           name: native-local-drafts-evidence
-          path: .build/native-evidence
+          path: |
+            .build/native-evidence
+            ${{ runner.temp }}/evidence-rendering/
           retention-days: 14

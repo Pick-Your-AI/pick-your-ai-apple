@@ -52,6 +52,32 @@ final class CostCoverageTests: XCTestCase {
         XCTAssertEqual(try assess(summary(total: money("1"), rates: .expired)), .unknown(.expiredRates))
         XCTAssertEqual(try assess(summary(total: money("1"), rates: .unknown)), .unknown(.unverifiedRates))
     }
+    func testCanonicallyEquivalentBuildIDsRequireTheirOwnEstimate() throws {
+        let composed = "build.caf\u{00e9}"
+        let decomposed = "build.cafe\u{0301}"
+        XCTAssertEqual(composed, decomposed)
+        XCTAssertFalse(composed.utf8.elementsEqual(decomposed.utf8))
+        let limit = try money("100")
+        let cases: [(String, BudgetAssessment)] = [("0", .satisfied), ("20", .satisfied), ("110", .exceeded)]
+        for (issuedBuildID, currentBuildID) in [(composed, decomposed), (decomposed, composed)] {
+            for (amount, expected) in cases {
+                let estimate = try summary(total: money(amount), build: issuedBuildID)
+                XCTAssertEqual(Array(estimate.buildID.utf8), Array(issuedBuildID.utf8))
+                XCTAssertEqual(estimate.assessMonthlyBudget(limit, currentBuildID: currentBuildID,
+                                                            currentBuildRevision: 1), .unknown(.staleBuild))
+
+                let exactCopy = String(decoding: Array(issuedBuildID.utf8), as: UTF8.self)
+                XCTAssertEqual(estimate.assessMonthlyBudget(limit, currentBuildID: exactCopy,
+                                                            currentBuildRevision: 1), expected)
+                XCTAssertEqual(estimate.assessMonthlyBudget(limit, currentBuildID: exactCopy,
+                                                            currentBuildRevision: 2), .unknown(.staleBuild))
+
+                let recovered = try summary(total: money(amount), build: currentBuildID)
+                XCTAssertEqual(recovered.assessMonthlyBudget(limit, currentBuildID: currentBuildID,
+                                                             currentBuildRevision: 1), expected)
+            }
+        }
+    }
     func testMoneyDecodingValidatesCurrencyAndDecimal() throws {
         for currency in ["usd", "US", "USDD", "123", "ÜSD", "USD\n"] {
             XCTAssertThrowsError(try money("1", currency))

@@ -115,7 +115,9 @@ final class SyntheticFixtureAdmissionTests: XCTestCase, @unchecked Sendable {
 
     func testCanonicalFixtureBytesMatchFrozenInventory() throws {
         for fixture in CanonicalFixture.allCases {
-            XCTAssertEqual(try CatalogCache.sha256(fixture.data()), fixture.sha256)
+            // Let an unavailable-platform skip reach XCTest outside its assertion autoclosure.
+            let bytes = try fixture.data()
+            XCTAssertEqual(try CatalogCache.sha256(bytes), fixture.sha256)
         }
     }
 
@@ -149,7 +151,8 @@ final class SyntheticFixtureAdmissionTests: XCTestCase, @unchecked Sendable {
     }
 
     func testMalformedFullFixturesFailTheirExistingBoundariesAndOriginalsRemainValid() throws {
-        var build = try XCTUnwrap(JSONSerialization.jsonObject(with: CanonicalFixture.build.data()) as? [String: Any])
+        let originalBuild = try CanonicalFixture.build.data()
+        var build = try XCTUnwrap(JSONSerialization.jsonObject(with: originalBuild) as? [String: Any])
         build["schema_version"] = "0.0.0"
         XCTAssertThrowsError(try BuildTransfer.snapshot(fromDraftJSON: JSONSerialization.data(withJSONObject: build)))
         let catalog = try XCTUnwrap(JSONSerialization.jsonObject(with: CanonicalFixture.catalog.data()) as? [String: Any])
