@@ -322,28 +322,35 @@ final class EvaluationAnalysisModelTests: XCTestCase {
         XCTAssertEqual(snapshot.evaluationAnalysisIdentity, identity())
         XCTAssertEqual(try snapshot.encoded(), before)
         // Optional pricebook changes are not evaluation-report input fields.
-        var build = try XCTUnwrap(JSONSerialization.jsonObject(with: bytes) as? [String: Any])
-        var locks = try XCTUnwrap(build["locks"] as? [String: Any])
-        locks["pricebook_id"] = "prices.other"
-        build["locks"] = locks
-        build["revision"] = 7
-        let changed = try BuildTransfer.snapshot(fromDraftJSON: JSONSerialization.data(withJSONObject: build))
+        // Mutate the admitted exact values without a binary floating-point
+        // dictionary round trip changing unrelated fractional fixture tokens.
+        guard case .object(var build) = snapshot.value,
+              case .object(var locks)? = build["locks"] else {
+            return XCTFail("Expected the complete synthetic build object and locks")
+        }
+        locks["pricebook_id"] = .string("prices.other")
+        build["locks"] = .object(locks)
+        build["revision"] = .number(7)
+        let changed = try BuildTransfer.snapshot(fromDraftJSON: JSONEncoder().encode(JSONValue.object(build)))
         XCTAssertEqual(changed.evaluationAnalysisIdentity, identity(revision: 7))
         XCTAssertEqual(snapshot.evaluationAnalysisIdentity, identity())
     }
 
     func testLargeSupportedWireRevisionAndChangedSelectedPinsAreProjectedExactly() async throws {
-        var build = try XCTUnwrap(JSONSerialization.jsonObject(with: fixture("evaluation-analysis-build")) as? [String: Any])
-        var locks = try XCTUnwrap(build["locks"] as? [String: Any])
+        let original = try BuildTransfer.snapshot(fromDraftJSON: fixture("evaluation-analysis-build"))
+        guard case .object(var build) = original.value,
+              case .object(var locks)? = build["locks"] else {
+            return XCTFail("Expected the complete synthetic build object and locks")
+        }
         let largeFifteenDigitRevision = 999_999_999_999_999
-        build["revision"] = largeFifteenDigitRevision
-        locks["dependency_graph_revision"] = largeFifteenDigitRevision
-        locks["catalog_snapshot_id"] = "catalog.selected"
-        locks["ruleset_id"] = "rules.selected"
-        locks["ruleset_version"] = "2.0.0"
-        locks["dependency_graph_id"] = "dependencies.selected"
-        build["locks"] = locks
-        let snapshot = try BuildTransfer.snapshot(fromDraftJSON: JSONSerialization.data(withJSONObject: build))
+        build["revision"] = .number(Decimal(largeFifteenDigitRevision))
+        locks["dependency_graph_revision"] = .number(Decimal(largeFifteenDigitRevision))
+        locks["catalog_snapshot_id"] = .string("catalog.selected")
+        locks["ruleset_id"] = .string("rules.selected")
+        locks["ruleset_version"] = .string("2.0.0")
+        locks["dependency_graph_id"] = .string("dependencies.selected")
+        build["locks"] = .object(locks)
+        let snapshot = try BuildTransfer.snapshot(fromDraftJSON: JSONEncoder().encode(JSONValue.object(build)))
         XCTAssertEqual(snapshot.evaluationAnalysisIdentity, .frozenV1Evaluation(
             buildID: "build.fixture.1", buildRevision: largeFifteenDigitRevision,
             catalogSnapshotID: "catalog.selected", rulesetID: "rules.selected", rulesetVersion: "2.0.0",
