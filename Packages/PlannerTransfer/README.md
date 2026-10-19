@@ -210,6 +210,15 @@ its T0–T6 display group from the canonical
 Missing values stay absent, distinct from zero, false and empty values. Decimal
 strings remain exact. The comparison cannot edit, restore, export or save either input.
 
+Decoded strings and property names follow
+[JSON instance equality](https://json-schema.org/draft/2020-12/json-schema-core#section-4.2.2):
+their Unicode code points must match. For example, catalog version pins containing
+U+00E9 and U+0065 U+0301 remain distinct even though Swift's default string
+comparison treats them as equivalent. This applies recursively to arrays and
+objects. Different JSON escapes, equivalent numeric spellings, whitespace and
+object member order do not create differences. Frozen schemas and parsing limits
+remain unchanged.
+
 A duplicate selection/link ID is rejected even when the frozen JSON Schema admits
 it. Different content claiming one build ID/revision is rejected; merely reordering
 selections/links is permitted. At most 2,048 difference rows are returned; exceeding
@@ -228,13 +237,15 @@ outcome/estimate comparison requires separate exact-build evidence with matching
 workload, locks, units, conditions and source approval. An unknown result is never
 rendered as zero or an endorsement.
 
-Sixteen synthetic regression tests cover exact setting/lock differences, absent
+Twenty-one synthetic regression tests cover exact setting/lock differences, absent
 workload inputs, added/removed/disabled selections, decimal strings, relationships,
 deterministic ordering, ambiguous IDs, conflicting revision identity, privacy,
 foreign extension measurements, fork identity and bounds. The four identifier
 regressions cover changed, added and removed selections/links with field-like IDs,
 while requiring nested notes/extensions to remain excluded and private settings
-to remain hidden. Native UI selection,
+to remain hidden. Five exact-text regressions cover Unicode version pins across
+revisions and at one immutable revision, nested scope arrays, private nested
+property names, and equivalent JSON encoding controls. Native UI selection,
 qualified outcomes/costs and physical accessibility review remain separate #81
 acceptance work. Hosted macOS/iOS checks are required before merge; a Linux run
 does not establish native UI or device behavior.
