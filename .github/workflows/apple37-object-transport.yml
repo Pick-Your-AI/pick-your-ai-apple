@@ -1,0 +1,139 @@
+name: Recover exact Apple 37 fixture object
+
+# Temporary transport branch only. This workflow is never part of the recovery PR.
+"on":
+  push:
+    branches: ['contrib/CompleteDotTech/apple37-object-transport-7e9bab']
+    paths: ['.github/workflows/apple37-object-transport.yml']
+
+permissions: {}
+
+jobs:
+  recover-exact-blob:
+    if: >-
+      github.event_name == 'push' &&
+      github.repository == 'Pick-Your-AI/pick-your-ai-apple' &&
+      github.ref == 'refs/heads/contrib/CompleteDotTech/apple37-object-transport-7e9bab'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Verify the immutable lossless fixture and create only its Git blob
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          import hashlib
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+          import zlib
+
+          REPOSITORY = 'Pick-Your-AI/pick-your-ai-apple'
+          BRANCH = 'refs/heads/contrib/CompleteDotTech/apple37-object-transport-7e9bab'
+          SOURCE = (
+              'https://raw.githubusercontent.com/Pick-Your-AI/pick-your-ai-android/'
+              '033ace652059bd78079bf133e6cabccd9465ecb1/'
+              'core/src/test/resources/conformance/cross-client-v1.json.gz'
+          )
+          COMPRESSED_SIZE = 43929
+          COMPRESSED_SHA256 = 'c1e66aa954c20354ec607ceb8f90a90c599a8748ab10dcff17ce63fda8bf366c'
+          RAW_SIZE = 1273770
+          RAW_SHA256 = '499fd9a01780ac42fa9bf2ab8cf9e1195db27321fec36040451b553a8b9ea5f9'
+          BLOB = '69718936a83b83e91aca7a492e48720fd2fe6cce'
+          API = 'https://api.github.com/repos/Pick-Your-AI/pick-your-ai-apple/git/blobs'
+          if (os.environ.get('GITHUB_REPOSITORY') != REPOSITORY
+                  or os.environ.get('GITHUB_REF') != BRANCH
+                  or os.environ.get('GITHUB_EVENT_NAME') != 'push'):
+              raise RuntimeError('Unexpected repository, branch or event')
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  raise RuntimeError('Unexpected HTTP redirect; recovery stopped')
+
+          opener = urllib.request.build_opener(NoRedirect())
+
+          def bounded_response(request, limit, allowed_status):
+              with opener.open(request, timeout=30) as response:
+                  if response.status != allowed_status:
+                      raise RuntimeError('Unexpected HTTP response status')
+                  data = response.read(limit + 1)
+                  if len(data) > limit:
+                      raise RuntimeError('HTTP response exceeds the fixed bound')
+                  return data
+
+          # Public download has no authorization header. No downloaded code executes.
+          compressed = bounded_response(
+              urllib.request.Request(SOURCE, headers={'User-Agent': 'apple37-exact-object-recovery'}),
+              COMPRESSED_SIZE, 200,
+          )
+          if (len(compressed) != COMPRESSED_SIZE
+                  or hashlib.sha256(compressed).hexdigest() != COMPRESSED_SHA256):
+              raise RuntimeError('Immutable compressed fixture identity mismatch')
+          decoder = zlib.decompressobj(16 + zlib.MAX_WBITS)
+          raw = decoder.decompress(compressed, RAW_SIZE + 1)
+          if (not decoder.eof or decoder.unused_data or decoder.unconsumed_tail
+                  or len(raw) != RAW_SIZE or hashlib.sha256(raw).hexdigest() != RAW_SHA256):
+              raise RuntimeError('Exact original fixture identity mismatch')
+          original_blob = hashlib.sha1(b'blob ' + str(len(raw)).encode('ascii') + b'\0' + raw).hexdigest()
+          if original_blob != BLOB:
+              raise RuntimeError('Original Git blob identity mismatch')
+          raw.decode('utf-8', errors='strict')
+
+          # The automatically supplied token is used only for this exact repository API.
+          headers = {
+              'Authorization': 'Bearer ' + os.environ['GH_TOKEN'],
+              'Accept': 'application/vnd.github+json',
+              'Content-Type': 'application/json',
+              'X-GitHub-Api-Version': '2026-03-10',
+              'User-Agent': 'apple37-exact-object-recovery',
+          }
+
+          def read_exact_blob():
+              try:
+                  payload = bounded_response(urllib.request.Request(API + '/' + BLOB, headers=headers), 2000000, 200)
+              except urllib.error.HTTPError as error:
+                  if error.code == 404:
+                      return None
+                  raise RuntimeError('Blob read failed with HTTP ' + str(error.code)) from None
+              value = json.loads(payload)
+              if (value.get('sha') != BLOB or value.get('size') != RAW_SIZE
+                      or value.get('encoding') != 'base64' or not isinstance(value.get('content'), str)):
+                  raise RuntimeError('Remote blob metadata mismatch')
+              decoded = base64.b64decode(value['content'].replace('\n', ''), validate=True)
+              if decoded != raw:
+                  raise RuntimeError('Remote blob bytes differ from the reviewed archive')
+              return value
+
+          already_present = read_exact_blob() is not None
+          if not already_present:
+              payload = json.dumps({'content': base64.b64encode(raw).decode('ascii'), 'encoding': 'base64'}).encode('utf-8')
+              request = urllib.request.Request(API, data=payload, headers=headers, method='POST')
+              try:
+                  created = json.loads(bounded_response(request, 65536, 201))
+              except urllib.error.HTTPError as error:
+                  raise RuntimeError('Blob creation failed with HTTP ' + str(error.code) + '; no retry was made') from None
+              if created.get('sha') != BLOB:
+                  raise RuntimeError('Created blob identity mismatch')
+              if read_exact_blob() is None:
+                  raise RuntimeError('Created object not readable; reconcile before any further action')
+
+          # Metadata only: no token, fixture body, downloaded executable, tree or ref write.
+          print(json.dumps({
+              'repository': REPOSITORY,
+              'workflow_source': os.environ['GITHUB_SHA'],
+              'verified_blob': BLOB,
+              'bytes': RAW_SIZE,
+              'sha256': RAW_SHA256,
+              'source': SOURCE,
+              'compressed_sha256': COMPRESSED_SHA256,
+              'already_present': already_present,
+              'object_only': True,
+              'ref_mutations': 0,
+          }, sort_keys=True))
+          PY
