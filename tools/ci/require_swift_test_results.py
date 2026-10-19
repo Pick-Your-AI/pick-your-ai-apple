@@ -804,6 +804,35 @@ PROFILES['integrated-retained-ui'] = (204, {
 })
 
 
+# Current input preparation retains the entire 204-method integration profile.
+# Historical identities/counts remain usable only for their original source.
+PROFILES["planning-inputs-ui"] = (221, {
+    **PROFILES["integrated-retained-ui"][1],
+    "PlannerUITests.DraftLibraryModelTests": (
+        *PROFILES["integrated-retained-ui"][1]["PlannerUITests.DraftLibraryModelTests"],
+        "testPlanningInputsUpgradeV1OnSaveAndPreserveOriginalHistory",
+        "testPlanningInputsRoundTripInvalidTextAndUnansweredChoicesAcrossDuplication",
+        "testPlanningInputUndoRedoAndRetiredDraftCallbacksPreserveIdentity",
+        "testPlanningInputSaveAcknowledgesOnlyTheSubmittedValues",
+        "testPlanningInputRestorationKeepsTouchedFieldsAndRestoresUntouchedFields",
+        "testPlanningInputConflictRetainsRawEditsAndTheConcurrentRevision",
+        "testPlanningInputLifecycleSaveDrainsLatestTextAndCatalogReferences",
+        "testPlanningInputAutosaveUsesExistingSchedulerAndDiscardSuspendsIt",
+        "testUnsupportedPlanningPayloadRemainsUnopenedAndByteExactInStorage",
+    ),
+    "PlannerUITests.PlanningInputsTests": (
+        "testEmptyDraftHasNoAssumedObjectivesOrCatalogChoices",
+        "testInputVectorsPreserveRawTextAndValidationStateThroughCoding",
+        "testBudgetPrecisionAndSpellingRemainIndependentOfCurrency",
+        "testCatalogChoicesRetainCanonicalKindsAndPinsWithoutCopyingDefaults",
+        "testWrongKindCannotReplaceAChoiceAndRemovalRestoresUnanswered",
+        "testUnsupportedNestedFieldsAndMisplacedCatalogKindsAreRejected",
+        "testExactInputTextParticipatesInEqualityAndBoundedUndo",
+        "testEditorPayloadVersionsDoNotInventOrDiscardFields",
+    ),
+})
+
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

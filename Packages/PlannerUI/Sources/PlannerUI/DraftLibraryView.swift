@@ -7,8 +7,7 @@ public struct DraftLibraryView: View {
     @SceneStorage("localDraftSelection") private var restoredID = ""
     @State private var pendingDelete: DraftRecord?
     @State private var pendingRestore: DraftRecord?
-    @FocusState private var focusedEditorField: EditorField?
-    private enum EditorField: Hashable { case title, notes }
+    @FocusState private var focusedEditorField: DraftEditorField?
     public init(store: DraftStore) { _model = StateObject(wrappedValue: DraftLibraryModel(store: store)) }
     public var body: some View {
         NavigationStack {
@@ -82,6 +81,11 @@ public struct DraftLibraryView: View {
                         .accessibilityLabel("Planning notes").accessibilityIdentifier("draftNotes")
                         .focused($focusedEditorField, equals: .notes)
                         .disabled(!model.canEdit)
+                }
+                if let selected = model.selected {
+                    PlanningInputsSection(model: model, draftID: selected.id,
+                                          sessionID: model.editorSessionID, focus: $focusedEditorField)
+                        .id(model.editorSessionID)
                 }
                 Section("Edit history") {
                     HStack {

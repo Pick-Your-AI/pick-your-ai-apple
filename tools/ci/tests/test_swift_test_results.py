@@ -150,7 +150,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
     def test_integrated_profiles_match_every_current_source_method(self):
         root = Path(__file__).resolve().parents[3]
         for package, profile, count in (("PlannerTransfer", "integrated-retained-transfer", 181),
-                                        ("PlannerUI", "integrated-retained-ui", 204)):
+                                        ("PlannerUI", "planning-inputs-ui", 221)):
             expected, groups = gate.PROFILES[profile]
             actual = set()
             for path in (root / "Packages" / package / "Tests" / (package + "Tests")).glob("*.swift"):
@@ -167,7 +167,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
             self.assertEqual(required, actual)
 
     def test_integrated_profiles_reject_every_same_count_identity_substitution(self):
-        for profile in ("integrated-retained-transfer", "integrated-retained-ui"):
+        for profile in ("integrated-retained-transfer", "integrated-retained-ui", "planning-inputs-ui"):
             text = self.profile_log(profile)
             self.assertEqual(self.run_profile(profile, text), 0)
             for suite, names in gate.PROFILES[profile][1].items():
@@ -180,7 +180,8 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
 
     def test_historical_profiles_cannot_qualify_the_integrated_source_by_padding(self):
         for old, current in (("fixture-placement-graph-resource-quality-catalog-editor-transfer", "integrated-retained-transfer"),
-                             ("comparison-catalog-source-privacy-cost-ui", "integrated-retained-ui")):
+                             ("comparison-catalog-source-privacy-cost-ui", "integrated-retained-ui"),
+                             ("integrated-retained-ui", "planning-inputs-ui")):
             padded = self.profile_log(old, total=gate.PROFILES[current][0])
             with self.subTest(profile=current), self.assertRaises(SystemExit):
                 self.run_profile(current, padded)

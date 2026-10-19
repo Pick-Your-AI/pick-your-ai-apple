@@ -57,6 +57,15 @@ public actor BundledCatalogPreviewSource: CatalogBrowsingSource, CatalogDetailSo
                                         snapshot: Self.identity(snapshot), sha256: Self.expectedSHA256)
     }
 
+    /// Explicit synthetic choices only. Catalog spec defaults never populate draft input fields.
+    func planningInputChoices() throws -> [PlanningCatalogChoice] {
+        let snapshot = try qualifiedSnapshot()
+        return try snapshot.items.filter { $0.kind == .workload || $0.kind == .deploymentMode }.map {
+            try PlanningCatalogChoice(CatalogPinnedDetails(details: CatalogItemDetails(item: $0),
+                snapshot: Self.identity(snapshot), sha256: Self.expectedSHA256))
+        }
+    }
+
     private func qualifiedSnapshot() throws -> CatalogSnapshot {
         if let decodedSnapshot { return decodedSnapshot }
         let snapshot = try CatalogSnapshot.decode(Self.fixtureData())

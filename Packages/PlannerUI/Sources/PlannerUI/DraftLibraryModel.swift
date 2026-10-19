@@ -18,7 +18,31 @@ extension DraftStore: DraftLibraryStorage {}
 struct EditorPayload: Codable, Equatable {
     let editorVersion: Int
     var notes: String
-    init(notes: String) { editorVersion = 1; self.notes = notes }
+    var planningInputs: PlanningInputs
+    init(notes: String, planningInputs: PlanningInputs = PlanningInputs()) {
+        editorVersion = 2; self.notes = notes; self.planningInputs = planningInputs
+    }
+    private enum CodingKeys: String, CodingKey { case editorVersion, notes, planningInputs }
+    init(from decoder: any Decoder) throws {
+        let container = try decoder.container(keyedBy: CodingKeys.self)
+        editorVersion = try container.decode(Int.self, forKey: .editorVersion)
+        let keys: Set<String>
+        switch editorVersion {
+        case 1: keys = ["editorVersion", "notes"]
+        case 2: keys = ["editorVersion", "notes", "planningInputs"]
+        default: throw DraftInputFormatError.unsupported
+        }
+        try requireDraftKeys(decoder, allowed: keys, required: keys)
+        notes = try container.decode(String.self, forKey: .notes)
+        if editorVersion == 1 { planningInputs = PlanningInputs() }
+        else { planningInputs = try container.decode(PlanningInputs.self, forKey: .planningInputs) }
+    }
+    func encode(to encoder: any Encoder) throws {
+        var container = encoder.container(keyedBy: CodingKeys.self)
+        try container.encode(editorVersion, forKey: .editorVersion)
+        try container.encode(notes, forKey: .notes)
+        if editorVersion == 2 { try container.encode(planningInputs, forKey: .planningInputs) }
+    }
 }
 
 @MainActor
@@ -34,17 +58,33 @@ public final class DraftLibraryModel: ObservableObject {
     private var historyNotice: String? { didSet { updateNotice() } }
     private func updateNotice() { notice = actionNotice ?? historyNotice ?? libraryNotice }
     @Published public private(set) var selected: DraftRecord?
+    @Published private(set) var editorSessionID = UUID()
     @Published private var titleValue = ""
     @Published private var notesValue = ""
+    @Published private var inputsValue = PlanningInputs()
     @Published private var editHistory = EditorUndoHistory()
     @Published public private(set) var awaitingDiscardDecision = false
     public var title: String {
         get { titleValue }
-        set { edit(EditorContents(title: newValue, notes: notesValue)) }
+        set { edit(EditorContents(title: newValue, notes: notesValue, inputs: inputsValue)) }
     }
     public var notes: String {
         get { notesValue }
-        set { edit(EditorContents(title: titleValue, notes: newValue)) }
+        set { edit(EditorContents(title: titleValue, notes: newValue, inputs: inputsValue)) }
+    }
+    public var planningInputs: PlanningInputs {
+        get { inputsValue }
+        set { edit(EditorContents(title: titleValue, notes: notesValue, inputs: newValue)) }
+    }
+    /// Retained callbacks belong to one opening, including when the same draft is reopened.
+    func setPlanningInput(_ field: PlanningInputField, raw: String, draftID: UUID, sessionID: UUID) {
+        guard selected?.id == draftID, editorSessionID == sessionID else { return }
+        planningInputs[field] = raw
+    }
+    func setPlanningReference(_ reference: PlanningCatalogReference?, kind: PlanningCatalogKind, draftID: UUID, sessionID: UUID) {
+        guard selected?.id == draftID, editorSessionID == sessionID else { return }
+        var value = planningInputs
+        if value.select(reference, for: kind) { planningInputs = value }
     }
     public static let pageSize = 20
     @Published public private(set) var pageOffset = 0
@@ -58,19 +98,22 @@ public final class DraftLibraryModel: ObservableObject {
     private var saveRequested = false
     private var savedTitle = ""
     private var savedNotes = ""
+    private var savedInputs = PlanningInputs()
     private let store: any DraftLibraryStorage
     private let autosaveWait: (@Sendable () async throws -> Void)?
     private var autosaveGeneration: UUID?
     private var inputGeneration = UUID()
     private var titleInputGeneration = UUID()
     private var notesInputGeneration = UUID()
+    private var planningInputGenerations: [PlanningInputField: UUID] = [:]
+    private var planningReferenceGenerations: [PlanningCatalogKind: UUID] = [:]
     // Internal handle lets controlled-clock consumers await the exact scheduled operation.
     private(set) var pendingAutosave: Task<Void, Never>?
-    public var dirty: Bool { contents != EditorContents(title: savedTitle, notes: savedNotes) }
+    public var dirty: Bool { contents != EditorContents(title: savedTitle, notes: savedNotes, inputs: savedInputs) }
     public var canEdit: Bool { selected != nil && !deleting && !awaitingDiscardDecision }
     public var canUndo: Bool { !busy && !awaitingDiscardDecision && selected != nil && editHistory.canUndo(contents) }
     public var canRedo: Bool { !busy && !awaitingDiscardDecision && selected != nil && editHistory.canRedo(contents) }
-    private var contents: EditorContents { EditorContents(title: titleValue, notes: notesValue) }
+    private var contents: EditorContents { EditorContents(title: titleValue, notes: notesValue, inputs: inputsValue) }
     public convenience init(store: any DraftLibraryStorage) {
         self.init(store: store, autosaveWait: { try await Task.sleep(for: .milliseconds(750)) })
     }
@@ -88,7 +131,13 @@ public final class DraftLibraryModel: ObservableObject {
     private func applyInput(_ value: EditorContents) {
         if !titleValue.utf8.elementsEqual(value.title.utf8) { titleInputGeneration = UUID() }
         if !notesValue.utf8.elementsEqual(value.notes.utf8) { notesInputGeneration = UUID() }
-        titleValue = value.title; notesValue = value.notes; inputGeneration = UUID()
+        for field in PlanningInputField.allCases where !inputsValue.hasSameRawValue(as: value.inputs, field: field) {
+            planningInputGenerations[field] = UUID()
+        }
+        for kind in PlanningCatalogKind.allCases where inputsValue.reference(for: kind) != value.inputs.reference(for: kind) {
+            planningReferenceGenerations[kind] = UUID()
+        }
+        titleValue = value.title; notesValue = value.notes; inputsValue = value.inputs; inputGeneration = UUID()
         scheduleAutosave()
     }
     public func undo() {
@@ -158,18 +207,17 @@ public final class DraftLibraryModel: ObservableObject {
             let payload = try editorPayload(record)
             clearHistory()
             cancelAutosave(); editHistory = EditorUndoHistory(); inputGeneration = UUID()
+            editorSessionID = UUID()
             selected = record; titleValue = record.title; notesValue = payload.notes
-            savedTitle = title; savedNotes = notes; status = "Saved locally"; actionNotice = nil
+            inputsValue = payload.planningInputs
+            savedTitle = title; savedNotes = notes; savedInputs = inputsValue
+            status = "Saved locally"; actionNotice = nil
         } catch {
             actionNotice = "This draft uses an unsupported editor format. It has been preserved without changes."
         }
     }
     private func editorPayload(_ record: DraftRecord) throws -> EditorPayload {
-        guard let fields = try JSONSerialization.jsonObject(with: record.payload) as? [String: Any],
-              Set(fields.keys) == ["editorVersion", "notes"] else { throw DraftStoreError.invalidDraft }
-        let payload = try JSONDecoder().decode(EditorPayload.self, from: record.payload)
-        guard payload.editorVersion == 1 else { throw DraftStoreError.invalidDraft }
-        return payload
+        try JSONDecoder().decode(EditorPayload.self, from: record.payload)
     }
     private func clearHistory() {
         revisions = []; historyOffset = 0; hasOlderRevisions = false; unreadableRevisions = 0
@@ -194,6 +242,8 @@ public final class DraftLibraryModel: ObservableObject {
               revision.revision < selected.revision else { return }
         let submittedTitleGeneration = titleInputGeneration
         let submittedNotesGeneration = notesInputGeneration
+        let submittedPlanningGenerations = planningInputGenerations
+        let submittedReferenceGenerations = planningReferenceGenerations
         busy = true; actionNotice = nil
         do {
             _ = try editorPayload(revision) // Unsupported history is preserved, never promoted.
@@ -203,12 +253,21 @@ public final class DraftLibraryModel: ObservableObject {
             self.selected = restored
             // Preserve any field edited during the actor hop, even if it returned
             // to its earlier value. Only unchanged fields receive restored text.
+            var restoredInputs = planningInputs
+            for field in PlanningInputField.allCases where planningInputGenerations[field] == submittedPlanningGenerations[field] {
+                restoredInputs.restoreRawValue(from: payload.planningInputs, field: field)
+            }
+            for kind in PlanningCatalogKind.allCases where planningReferenceGenerations[kind] == submittedReferenceGenerations[kind] {
+                restoredInputs.select(payload.planningInputs.reference(for: kind), for: kind)
+            }
             let restoredContents = EditorContents(
                 title: titleInputGeneration == submittedTitleGeneration ? restored.title : title,
-                notes: notesInputGeneration == submittedNotesGeneration ? payload.notes : notes)
+                notes: notesInputGeneration == submittedNotesGeneration ? payload.notes : notes,
+                inputs: restoredInputs)
             if restoredContents != contents { editHistory.record(contents) }
             titleValue = restoredContents.title; notesValue = restoredContents.notes
-            savedTitle = restored.title; savedNotes = payload.notes
+            inputsValue = restoredContents.inputs
+            savedTitle = restored.title; savedNotes = payload.notes; savedInputs = payload.planningInputs
             scheduleAutosave()
             status = "Restored revision \(revision.revision) as local revision \(restored.revision)"
             clearHistory()
@@ -239,7 +298,9 @@ public final class DraftLibraryModel: ObservableObject {
         guard !busy else { return }
         awaitingDiscardDecision = false
         clearHistory(); cancelAutosave(); editHistory = EditorUndoHistory(); inputGeneration = UUID()
+        editorSessionID = UUID()
         saveRequested = false; selected = nil; titleValue = ""; notesValue = ""; savedTitle = ""; savedNotes = ""
+        inputsValue = PlanningInputs(); savedInputs = PlanningInputs()
     }
     public func create() async {
         guard !dirty else { return }
@@ -253,9 +314,10 @@ public final class DraftLibraryModel: ObservableObject {
         cancelAutosave()
         guard let selected, dirty else { return }
         if busy { saveRequested = true; return }
-        let title = self.title; let notes = self.notes
+        let title = self.title; let notes = self.notes; let inputs = planningInputs
         await operation {
-            try await self.store.save(id: selected.id, expectedRevision: selected.revision, title: title, payload: JSONEncoder().encode(EditorPayload(notes: notes)))
+            try await self.store.save(id: selected.id, expectedRevision: selected.revision, title: title,
+                                     payload: JSONEncoder().encode(EditorPayload(notes: notes, planningInputs: inputs)))
         }
     }
     public func duplicate(_ record: DraftRecord) async {
@@ -272,15 +334,17 @@ public final class DraftLibraryModel: ObservableObject {
             if self.selected?.id == record.id {
                 self.clearHistory()
                 self.cancelAutosave(); self.editHistory = EditorUndoHistory(); self.inputGeneration = UUID()
+                self.editorSessionID = UUID()
                 self.selected = nil; self.titleValue = ""; self.notesValue = ""
                 self.savedTitle = ""; self.savedNotes = ""
+                self.inputsValue = PlanningInputs(); self.savedInputs = PlanningInputs()
             }
             return nil
         }
     }
     private func operation(_ action: @MainActor () async throws -> DraftRecord?) async {
         guard !busy else { return }
-        let submittedTitle = title; let submittedNotes = notes
+        let submittedTitle = title; let submittedNotes = notes; let submittedInputs = planningInputs
         busy = true; status = "Saving…"; actionNotice = nil
         do {
             let result = try await action()
@@ -289,7 +353,7 @@ public final class DraftLibraryModel: ObservableObject {
                 if selected?.id == result.id {
                     clearHistory()
                     selected = result
-                    savedTitle = submittedTitle; savedNotes = submittedNotes
+                    savedTitle = submittedTitle; savedNotes = submittedNotes; savedInputs = submittedInputs
                     // Input can return to the old baseline while this write is
                     // suspended. Recheck it against the acknowledged revision;
                     // preserve an existing debounce or an already queued save.

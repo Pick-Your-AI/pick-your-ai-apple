@@ -636,3 +636,222 @@ extension DraftLibraryModelTests {
         XCTAssertEqual(history.records[1].restoredFrom, 1)
     }
 }
+
+
+extension DraftLibraryModelTests {
+    func testPlanningInputsUpgradeV1OnSaveAndPreserveOriginalHistory() async throws {
+        let (store, model, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let bytes = Data("{\"editorVersion\":1,\"notes\":\"cafe\\u0301\"}".utf8)
+        let original = try await store.save(id: UUID(), expectedRevision: nil, title: "Legacy", payload: bytes)
+        await model.open(original)
+        XCTAssertFalse(model.dirty)
+        XCTAssertEqual(model.planningInputs, PlanningInputs())
+        XCTAssertTrue(model.notes.utf8.elementsEqual("cafe\u{0301}".utf8))
+        let before = try await store.read(id: original.id)
+        XCTAssertEqual(before, original)
+        model.planningInputs[.monthlyBudgetAmount] = "12.00 USD"
+        await model.save()
+        let current = try await store.read(id: original.id)
+        let payload = try JSONDecoder().decode(EditorPayload.self, from: current.payload)
+        XCTAssertEqual(payload.editorVersion, 2)
+        XCTAssertEqual(payload.planningInputs[.monthlyBudgetAmount], "12.00 USD")
+        XCTAssertTrue(payload.notes.utf8.elementsEqual("cafe\u{0301}".utf8))
+        let history = try await store.history(id: original.id)
+        XCTAssertEqual(history.records.map(\.revision), [2, 1])
+        XCTAssertEqual(history.records[1].payload, bytes)
+        XCTAssertFalse(model.dirty)
+    }
+
+    func testPlanningInputsRoundTripInvalidTextAndUnansweredChoicesAcrossDuplication() async throws {
+        let (store, model, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        await model.create()
+        model.planningInputs[.requestsPerDay] = "12 requests"
+        model.planningInputs[.monthlyBudgetAmount] = "0.000"
+        model.planningInputs[.region] = "cafe\u{0301}"
+        await model.save()
+        let saved = try XCTUnwrap(model.selected)
+        let expected = model.planningInputs
+        model.close(); await model.open(saved)
+        XCTAssertEqual(model.planningInputs, expected)
+        XCTAssertNil(model.planningInputs.workload)
+        XCTAssertNil(model.planningInputs.deploymentMode)
+        XCTAssertEqual(model.planningInputs[.currency], "")
+        await model.duplicate(saved)
+        XCTAssertNotEqual(model.selected?.id, saved.id)
+        XCTAssertEqual(model.planningInputs, expected)
+        let durable = try await store.read(id: try XCTUnwrap(model.selected?.id))
+        XCTAssertEqual(try JSONDecoder().decode(EditorPayload.self, from: durable.payload).planningInputs, expected)
+        XCTAssertFalse(durable.analysisIsCurrent)
+    }
+
+    func testPlanningInputUndoRedoAndRetiredDraftCallbacksPreserveIdentity() async throws {
+        let (_, model, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        await model.create()
+        let firstID = try XCTUnwrap(model.selected?.id)
+        let firstSession = model.editorSessionID
+        model.setPlanningInput(.region, raw: "caf\u{00E9}", draftID: firstID, sessionID: firstSession)
+        model.setPlanningInput(.region, raw: "cafe\u{0301}", draftID: firstID, sessionID: firstSession)
+        model.undo()
+        XCTAssertTrue(model.planningInputs[.region].utf8.elementsEqual("caf\u{00E9}".utf8))
+        model.redo()
+        XCTAssertTrue(model.planningInputs[.region].utf8.elementsEqual("cafe\u{0301}".utf8))
+        let choices = try await BundledCatalogPreviewSource().planningInputChoices()
+        let workload = try XCTUnwrap(choices.first { $0.reference.kind == .workload }?.reference)
+        model.setPlanningReference(workload, kind: .workload, draftID: firstID, sessionID: firstSession)
+        model.undo(); XCTAssertNil(model.planningInputs.workload)
+        model.redo(); XCTAssertEqual(model.planningInputs.workload, workload)
+        await model.save()
+        XCTAssertEqual(model.editorSessionID, firstSession)
+        let firstSaved = try XCTUnwrap(model.selected)
+        let firstInputs = model.planningInputs
+        model.close(); await model.create()
+        let second = try XCTUnwrap(model.selected)
+        model.setPlanningInput(.region, raw: "Late old field", draftID: firstID, sessionID: firstSession)
+        model.setPlanningReference(workload, kind: .workload, draftID: firstID, sessionID: firstSession)
+        XCTAssertEqual(model.selected, second)
+        XCTAssertEqual(model.planningInputs, PlanningInputs())
+        XCTAssertFalse(model.dirty)
+        model.close(); await model.open(firstSaved)
+        XCTAssertEqual(model.selected?.id, firstID)
+        XCTAssertNotEqual(model.editorSessionID, firstSession)
+        model.setPlanningInput(.region, raw: "Late control from prior opening", draftID: firstID, sessionID: firstSession)
+        model.setPlanningReference(nil, kind: .workload, draftID: firstID, sessionID: firstSession)
+        XCTAssertEqual(model.planningInputs, firstInputs)
+        XCTAssertFalse(model.dirty)
+    }
+
+    func testPlanningInputSaveAcknowledgesOnlyTheSubmittedValues() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
+        await model.create()
+        model.planningInputs[.requestsPerDay] = "10"
+        await controlled.configure(pause: true)
+        let saving = Task { await model.save() }
+        await controlled.waitForSave()
+        model.planningInputs[.requestsPerDay] = "newer invalid text"
+        await controlled.resumeSave(); await saving.value
+        XCTAssertEqual(model.planningInputs[.requestsPerDay], "newer invalid text")
+        XCTAssertTrue(model.dirty)
+        let durable = try await store.read(id: try XCTUnwrap(model.selected?.id))
+        XCTAssertEqual(try JSONDecoder().decode(EditorPayload.self, from: durable.payload).planningInputs[.requestsPerDay], "10")
+        await model.save()
+        XCTAssertFalse(model.dirty)
+        XCTAssertEqual(model.selected?.revision, 3)
+    }
+
+    func testPlanningInputRestorationKeepsTouchedFieldsAndRestoresUntouchedFields() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
+        await model.create()
+        model.planningInputs[.region] = "earlier-region"
+        model.planningInputs[.monthlyBudgetAmount] = "1.00"
+        model.planningInputs[.requestsPerDay] = "20"
+        await model.save()
+        let earlier = try XCTUnwrap(model.selected)
+        model.planningInputs[.region] = "later-region"
+        model.planningInputs[.monthlyBudgetAmount] = "2.00"
+        model.planningInputs[.requestsPerDay] = "30"
+        await model.save()
+        await controlled.configure(pauseRestore: true)
+        let restoring = Task { await model.restore(earlier) }
+        await controlled.waitForSave()
+        model.planningInputs[.region] = "temporary"
+        model.planningInputs[.region] = "later-region"
+        model.planningInputs[.requestsPerDay] = "31 requests"
+        await controlled.resumeSave(); await restoring.value
+        XCTAssertEqual(model.planningInputs[.region], "later-region")
+        XCTAssertEqual(model.planningInputs[.monthlyBudgetAmount], "1.00")
+        XCTAssertEqual(model.planningInputs[.requestsPerDay], "31 requests")
+        XCTAssertTrue(model.dirty)
+        XCTAssertEqual(model.selected?.restoredFrom, earlier.revision)
+        let restored = try await store.read(id: earlier.id)
+        XCTAssertEqual(try JSONDecoder().decode(EditorPayload.self, from: restored.payload).planningInputs[.region], "earlier-region")
+        await model.save()
+        XCTAssertFalse(model.dirty)
+        XCTAssertEqual(model.selected?.revision, 5)
+    }
+
+    func testPlanningInputConflictRetainsRawEditsAndTheConcurrentRevision() async throws {
+        let (store, model, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        await model.create()
+        let original = try XCTUnwrap(model.selected)
+        let concurrent = try await store.rename(id: original.id, expectedRevision: original.revision, title: "Concurrent")
+        model.planningInputs[.maximumLatencyMilliseconds] = "1 ms"
+        await model.save()
+        XCTAssertTrue(model.dirty)
+        XCTAssertEqual(model.status, "Not saved")
+        XCTAssertEqual(model.planningInputs[.maximumLatencyMilliseconds], "1 ms")
+        let durable = try await store.read(id: original.id)
+        XCTAssertEqual(durable, concurrent)
+    }
+
+    func testPlanningInputLifecycleSaveDrainsLatestTextAndCatalogReferences() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let controlled = ControlledStorage(store: store)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
+        let choices = try await BundledCatalogPreviewSource().planningInputChoices()
+        let deployment = try XCTUnwrap(choices.first { $0.reference.kind == .deploymentMode }?.reference)
+        await model.create()
+        let id = try XCTUnwrap(model.selected?.id)
+        let session = model.editorSessionID
+        model.planningInputs[.requestsPerDay] = "10"
+        await controlled.configure(pauseHistory: true)
+        let reading = Task { await model.loadHistory() }
+        await controlled.waitForSave()
+        await model.save()
+        model.planningInputs[.requestsPerDay] = "latest raw input"
+        model.setPlanningReference(deployment, kind: .deploymentMode, draftID: id, sessionID: session)
+        await controlled.resumeSave(); await reading.value
+        XCTAssertFalse(model.dirty)
+        let durable = try await store.read(id: id)
+        let inputs = try JSONDecoder().decode(EditorPayload.self, from: durable.payload).planningInputs
+        XCTAssertEqual(inputs[.requestsPerDay], "latest raw input")
+        XCTAssertEqual(inputs.deploymentMode, deployment)
+        XCTAssertNil(inputs.workload)
+        XCTAssertEqual(durable.revision, 2)
+    }
+
+    func testPlanningInputAutosaveUsesExistingSchedulerAndDiscardSuspendsIt() async throws {
+        let (store, _, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let model = DraftLibraryModel(store: store, autosaveWait: {})
+        await model.create()
+        model.planningInputs[.monthlyBudgetAmount] = "0.000"
+        let scheduled = try XCTUnwrap(model.pendingAutosave)
+        await scheduled.value
+        XCTAssertFalse(model.dirty)
+        XCTAssertEqual(model.selected?.revision, 2)
+        model.planningInputs[.currency] = "usd"
+        let cancelled = try XCTUnwrap(model.pendingAutosave)
+        model.requestClose()
+        model.planningInputs[.currency] = "late input while frozen"
+        await model.save(); await cancelled.value
+        XCTAssertEqual(model.planningInputs[.currency], "usd")
+        XCTAssertTrue(model.awaitingDiscardDecision)
+        XCTAssertEqual(model.selected?.revision, 2)
+        XCTAssertTrue(model.dirty)
+    }
+
+    func testUnsupportedPlanningPayloadRemainsUnopenedAndByteExactInStorage() async throws {
+        let (store, model, folder) = try fixture()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let payload = Data(#"{"editorVersion":2,"notes":"retain","planningInputs":{"values":{"future_field":"retain"}}}"#.utf8)
+        let original = try await store.save(id: UUID(), expectedRevision: nil, title: "Future inputs", payload: payload)
+        await model.open(original)
+        XCTAssertNil(model.selected)
+        XCTAssertNotNil(model.notice)
+        let durable = try await store.read(id: original.id)
+        let history = try await store.history(id: original.id)
+        XCTAssertEqual(durable, original)
+        XCTAssertEqual(history.records, [original])
+    }
+}
