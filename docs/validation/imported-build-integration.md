@@ -1,5 +1,85 @@
 # New imported-build, catalog and T6 receiving preparation
 
+## Exact T6 fixture mutation correction
+
+Date: 2026-10-19. This separate test-only correction starts from actual published
+#391 source `d9ae5ee93e0f3c8b47b513da739bd3076335c5ca`, tree
+`b7f33bd8f9d6add5b07a1e83983cb3a1599e16d7`. Its immutable local code/test/guard
+checkpoint is `dcf4f4c1989ef8d8a4dd41eeac0b5af85ba0b2cf`, tree
+`9f76820589c4d292abd961e442f115affc9ebc50`. The complete earlier record remains
+below with every source-time inventory, failure, review and observation intact.
+The preceding route-disappearance correction and its actual
+[independent source review](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#pullrequestreview-5575996034)
+are distinct from this later fixture correction.
+
+The actual [older-source SDK receipt 6274687624](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6274687624)
+qualifies original source `545e8dfc2ae2c1bad7db53c428636cb20ffc567b`, receiving
+`02ef64ea4b02f8cd6f850346bcfe7d6eb40b49b4`, and
+[job 118197236457](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39292603059/job/118197236457).
+That original run reported 52 failed UI methods: six imported-build binding,
+eight navigation, sixteen plan-report and twenty-two T6 model methods.
+All 52 errors are `unsupportedNumber` at the strict Transfer parser boundary;
+51 are caught errors and one is the output-limit assertion throwing that error.
+The UI result remains 140 passed / 52 failed out of 192. Its complete error and
+artifact qualification belongs to the actual Apple receiving reviewer. Neither
+that failed run nor the independently reviewed later `d9ae5ee9` source is a
+successful native observation of this correction.
+
+The four failing test families read the original Build through
+`JSONSerialization` into `[String: Any]` and serialize it again before strict
+Transfer admission, including for a no-op mutation. That intermediate Foundation
+conversion does not guarantee exact decimal preservation. The unchanged raw
+Build contains numeric `minimum_score: 0.85` and `sample_rate: 0.1`; both are
+within the existing bounded decimal subset. The original log does not print the
+rejected emitted token, so no particular binary-floating tail is asserted as an
+observed result. Fresh pinned native execution must establish whether the
+corrected setup recovers every previously failing method.
+
+The shared test-only `T6FixtureJSON` bridge now parses original bytes with the
+existing Transfer `JSONParser` and keeps each number as `Decimal`. Existing
+mutation closures still use dictionaries and arrays, but encoding reconstructs
+the existing `JSONValue` and uses its `JSONEncoder` conformance. Scalar admission
+checks the exact runtime type before any bridgeable cast: Swift Bool, Int,
+Decimal and String are supported; Double, Float, NSNumber and NSDecimalNumber
+are rejected. Explicit null, arrays and objects retain their own representations.
+This helper grants no new production input admission or numeric tolerance.
+Encoding a mutated test object preserves its complete parsed value, not its
+original JSON whitespace or member order; all checked-in fixture bytes remain
+unchanged and ordinary production decoders still apply their existing limits.
+
+The four existing test files change only their two helper lines. Exact inverse
+replacement restores each entire prior file, including all 58 current affected
+method bodies: the 52 older methods and six later disappearance regressions.
+Every production file, the three T6 fixtures, Debug synthetic journey bytes,
+App/native journey bodies, workflows, SDK guards and historical profile inputs
+remain exact to `d9ae5ee9`.
+
+Six new Swift declarations require direct original-byte Build admission;
+complete no-op Build equality; an identity-only mutation preserving both original
+fractions and every other value; complete quality-fixture equality with threshold
+0.85, observed zero and false preserved; rejection of floating and bridged values;
+and distinct Boolean, integer, decimal, null and nested-array representations.
+These are source assertions awaiting Swift execution. Current mandatory source
+inventory is **204 UI / 657 total package declarations**: 146 Core, 34 Data,
+181 Transfer, 92 Catalog and 204 UI. All 198 prior UI identities remain required.
+The UI receiver requires every new class/method pair and retains all parser
+function bodies and historical profiles. Its new portable control rejects a
+modeled earlier receipt padded to 204 with unrelated names.
+
+At 18:49:42 UTC the unchanged 16 Python controls first reported two failures:
+the six new identities were unregistered and the receiver count was still 198.
+After only the current-profile registration, Python 3.12.14 ran those same
+**16 controls at 18:52:36–18:52:37 UTC: 16 passed in 0.603 seconds**, with no
+failures, errors or skips. The original red log is 4,806 bytes, SHA-256
+`45647c471c2d30d75f687e6328f7981e5d40418e4913a8edd52766b68c8e5fb4`;
+the original green log is 3,153 bytes, SHA-256
+`57e461732be0deb660ed7ec8e6a77090e0847f604bc62df5f9f8af73dc3152b1`.
+All 386 source entries were unchanged during each original execution; the green
+input is exactly the local checkpoint above and the red input differs only in
+the unregistered receiver. These are portable attendance/receipt controls, not
+a native reproduction or corrected Swift result. Both pinned Swift/Xcode
+compilation and all configured native receiving gates remain required.
+
 ## Route-captured child disappearance correction
 
 Date: 2026-10-19. This bounded correction starts from actual published #391 source

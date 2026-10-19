@@ -36,9 +36,9 @@ final class ImportedBuildT6NavigationTests: XCTestCase {
         return try Data(contentsOf: url)
     }
     private func build(_ change: (inout [String: Any]) -> Void = { _ in }) throws -> BuildSnapshot {
-        var value = try XCTUnwrap(JSONSerialization.jsonObject(with: fixture()) as? [String: Any])
+        var value = try T6FixtureJSON.object(fixture())
         change(&value)
-        return try BuildTransfer.snapshot(fromDraftJSON: JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]))
+        return try BuildTransfer.snapshot(fromDraftJSON: T6FixtureJSON.data(value))
     }
     private func setup() throws -> (DraftStore, ImportedBuildLibraryModel, ImportedBuildLibraryNavigation, URL) {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)

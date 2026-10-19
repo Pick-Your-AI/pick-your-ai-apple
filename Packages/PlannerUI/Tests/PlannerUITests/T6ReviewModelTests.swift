@@ -50,10 +50,10 @@ final class T6ReviewModelTests: XCTestCase {
         return try Data(contentsOf: url)
     }
     private func object(_ name: String) throws -> [String: Any] {
-        try XCTUnwrap(JSONSerialization.jsonObject(with: fixture(name)) as? [String: Any])
+        try T6FixtureJSON.object(fixture(name))
     }
     private func bytes(_ object: [String: Any]) throws -> Data {
-        try JSONSerialization.data(withJSONObject: object, options: [.sortedKeys])
+        try T6FixtureJSON.data(object)
     }
     private func build(_ mutate: (inout [String: Any]) -> Void = { _ in }) throws -> BuildSnapshot {
         var object = try object("t6-build"); mutate(&object)

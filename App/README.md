@@ -32,7 +32,7 @@ Notes journey passes on both pinned simulators, with successful owned cleanup;
 see the [completed editor receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution).
 Its separate scope-cleanup failure remains recorded. The earlier 110 UI / 57
 Transfer composition is historical input. The current preparation requires all
-198 UI and 181 Transfer methods plus all six complete journeys on each destination;
+204 UI and 181 Transfer methods plus all six complete journeys on each destination;
 none of those expanded results is inferred from the earlier editor run.
 
 ## Current receiving source and required validation
@@ -66,6 +66,15 @@ Six further callback regressions specify the separately identified
 completed and pending no-Files reviews, both current-route cancellation controls,
 and live importer/exporter protection. The original eight method bodies remain.
 
+Six test-only exact-fixture controls now require direct raw admission, complete
+no-op value preservation, unrelated-mutation fraction preservation, quality
+threshold/false preservation and rejection of floating or bridged numeric inputs.
+The four T6 test families use the existing exact Transfer parser/value encoder;
+their original method bodies, raw fixtures and production numeric limits remain.
+The [fixture correction record](../docs/validation/imported-build-integration.md#exact-t6-fixture-mutation-correction)
+preserves the actual older 52-failure native observation separately from the
+new source and portable controls. It claims no corrected native execution.
+
 The App reports tab withdrawal synchronously before changing selectedTab. The
 library uses a separate opaque route for each T6 presentation; a stale Back
 binding cannot cancel a reopened same-Build route. Files temporarily covering
@@ -91,7 +100,7 @@ fourth T6 journey exercises actual tab withdrawal, reopen and retained-input ret
 | Mandatory current job | Exact selected work |
 | --- | --- |
 | `native-evidence-rendering` | All five accepted real macOS Evidence methods and strict receipt, including the Gregorian capture-date extension, Xcode 16.4, unchanged 20-minute job. |
-| `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 198 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
+| `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 204 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
 | `native-cost-rendering` | Three real macOS Cost methods and their strict receipt, Xcode 16.4, separate 20-minute job. |
 | `native-ui-journey (iphone)` and `(ipad)` | All six app journeys on each fresh pinned 18.5 destination, 24 runner controls, separate 20-minute jobs and unchanged 900-second inner test limit. |
 | `native-ui` | Result-only aggregate requires successful scope and every selected job's success; only an audited false scope permits all native jobs to skip. |
@@ -100,7 +109,7 @@ Core retains every existing package, mutation, guard and Evidence-rendering step
 and adds the three Cost methods on each pinned simulator. Storage requires all 34
 methods and its actual crash/recovery controls. Transfer requires 181 exact methods,
 the original nine reference phases and the separate Manifest controls. Submission
-SDK requires all five packages (146 Core, 34 Data, 181 Transfer, 92 Catalog, 198 UI),
+SDK requires all five packages (146 Core, 34 Data, 181 Transfer, 92 Catalog, 204 UI),
 all current App guards and both unsigned Release products with their separate SDK
 and privacy receipts. Static inventories are not execution observations.
 
@@ -117,7 +126,7 @@ and Transfer dependencies. The historical audit gains only the four correspondin
 existing package-tree values; no current skip authority or job deadline changes.
 
 The exact method receiver rejects missing, duplicated, skipped or substituted
-methods and an older padded receipt. Its 15 portable controls and the exhaustive
+methods and an older padded receipt. Its 16 portable controls and the exhaustive
 4,096-state result-gate control do not execute an Apple application. New source,
 current-main composition, configured native results and actual main readback must
 retain their own identities.

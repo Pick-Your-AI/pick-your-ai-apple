@@ -556,7 +556,7 @@ PROFILES['integrated-retained-transfer'] = (181, {
     ),
 })
 
-PROFILES['integrated-retained-ui'] = (198, {
+PROFILES['integrated-retained-ui'] = (204, {
     'PlannerUITests.CatalogBrowserModelTests': (
         'testBundledPreviewValidatesAllKindsAndRemainsVisiblySynthetic',
         'testConcurrentPreviewLoadsPreserveBothIssuedPageTokens',
@@ -792,6 +792,14 @@ PROFILES['integrated-retained-ui'] = (198, {
         'testCurrentChildDisappearanceCancelsPendingWorkWithoutFilesAndAllowsRetry',
         'testCapturedChildDisappearancePreservesCurrentOwnedImporters',
         'testCapturedChildDisappearancePreservesCurrentOwnedExporter',
+    ),
+    'PlannerUITests.T6FixtureJSONTests': (
+        'testOriginalT6BuildIsAdmittedWithoutFoundationRoundTrip',
+        'testNoOpFixtureEncodingPreservesTheCompleteBuild',
+        'testUnrelatedMutationPreservesBothOriginalFractions',
+        'testQualityFixtureEncodingPreservesThresholdAndFalseFlag',
+        'testFloatingAndBridgedNumbersAreRejectedWithoutCoercion',
+        'testBooleanIntegerDecimalAndNullRemainDistinct',
     ),
 })
 
