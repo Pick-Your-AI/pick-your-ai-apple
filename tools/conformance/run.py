@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Read-only frozen-v1 preparation runner; not an Apple runtime implementation."""
 import argparse
+from contextlib import contextmanager
 import copy
 import hashlib
 import importlib.metadata
@@ -34,13 +35,31 @@ def read(path):
     return json.loads(path.read_text())
 
 
+@contextmanager
+def open_regular_input(path):
+    """Admit and read the same regular file without waiting for a FIFO writer."""
+    descriptor = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
+    try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise ValueError(f'Conformance input must be a regular file: {path}')
+        with os.fdopen(descriptor, 'rb', closefd=False) as stream:
+            yield stream
+    finally:
+        os.close(descriptor)
+
+
+def read_regular_bytes(path):
+    with open_regular_input(path) as stream:
+        return stream.read()
+
+
 def digest(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashlib.sha256(read_regular_bytes(path)).hexdigest()
 
 
 def verify_source(root):
     """Trust only the pinned manifest, then verify every frozen import byte."""
-    manifest_bytes = (root / 'IMPORT_MANIFEST.json').read_bytes()
+    manifest_bytes = read_regular_bytes(root / 'IMPORT_MANIFEST.json')
     if hashlib.sha256(manifest_bytes).hexdigest() != LOCK['import_manifest_sha256']:
         raise ValueError('Frozen import manifest differs from contract-lock.json')
     manifest = json.loads(manifest_bytes)
@@ -62,7 +81,8 @@ def copy_verified_source(root, snapshot, manifest):
             raise ValueError(f"Frozen import hash mismatch: {entry['path']}")
         target = snapshot / entry['path']
         target.parent.mkdir(parents=True, exist_ok=True)
-        shutil.copyfile(source, target)
+        with open_regular_input(source) as incoming, target.open('wb') as outgoing:
+            shutil.copyfileobj(incoming, outgoing)
     # The source checkout can change after verify_source. Pin the bytes that
     # will actually be consumed, using its already verified in-memory manifest.
     for entry in manifest['files']:
