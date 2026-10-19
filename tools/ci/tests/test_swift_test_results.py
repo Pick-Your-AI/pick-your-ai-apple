@@ -150,7 +150,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
     def test_integrated_profiles_match_every_current_source_method(self):
         root = Path(__file__).resolve().parents[3]
         for package, profile, count in (("PlannerTransfer", "integrated-retained-transfer", 181),
-                                        ("PlannerUI", "integrated-retained-ui", 204)):
+                                        ("PlannerUI", "integrated-retained-ui", 211)):
             expected, groups = gate.PROFILES[profile]
             actual = set()
             for path in (root / "Packages" / package / "Tests" / (package + "Tests")).glob("*.swift"):
@@ -217,6 +217,26 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
             "testQualityFixtureEncodingPreservesThresholdAndFalseFlag",
             "testFloatingAndBridgedNumbersAreRejectedWithoutCoercion",
             "testBooleanIntegerDecimalAndNullRemainDistinct",
+        }
+        self.assertEqual(set(gate.PROFILES[profile][1].get(suite, ())), added)
+        text = self.profile_log(profile)
+        self.assertEqual(self.run_profile(profile, text), 0)
+        for index, name in enumerate(sorted(added)):
+            text = text.replace(f"-[{suite} {name}]", f"-[{suite} testHistoricalPadding{index}]")
+        with self.assertRaises(SystemExit):
+            self.run_profile(profile, text)
+
+    def test_before_descriptor_admission_receipt_cannot_qualify_by_same_count_padding(self):
+        profile = "integrated-retained-ui"
+        suite = "PlannerUITests.ImportedBuildFileReaderTests"
+        added = {
+            "testRegularReadPreservesBytesAndClosesDescriptor",
+            "testExactByteLimitAcceptedAndOverflowRejected",
+            "testDescriptorTypeRejectsFIFOAfterPathReturnsToRegularFile",
+            "testPathReplacementAfterOpenKeepsOriginalDescriptor",
+            "testMissingAndNonFileURLsFailBeforeReading",
+            "testCancellationBeforeOpenDoesNotAcquireDescriptor",
+            "testCancellationAfterOpenClosesDescriptor",
         }
         self.assertEqual(set(gate.PROFILES[profile][1].get(suite, ())), added)
         text = self.profile_log(profile)

@@ -556,7 +556,16 @@ PROFILES['integrated-retained-transfer'] = (181, {
     ),
 })
 
-PROFILES['integrated-retained-ui'] = (204, {
+PROFILES['integrated-retained-ui'] = (211, {
+    'PlannerUITests.ImportedBuildFileReaderTests': (
+        'testRegularReadPreservesBytesAndClosesDescriptor',
+        'testExactByteLimitAcceptedAndOverflowRejected',
+        'testDescriptorTypeRejectsFIFOAfterPathReturnsToRegularFile',
+        'testPathReplacementAfterOpenKeepsOriginalDescriptor',
+        'testMissingAndNonFileURLsFailBeforeReading',
+        'testCancellationBeforeOpenDoesNotAcquireDescriptor',
+        'testCancellationAfterOpenClosesDescriptor',
+    ),
     'PlannerUITests.CatalogBrowserModelTests': (
         'testBundledPreviewValidatesAllKindsAndRemainsVisiblySynthetic',
         'testConcurrentPreviewLoadsPreserveBothIssuedPageTokens',

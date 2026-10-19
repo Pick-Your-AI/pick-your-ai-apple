@@ -1,5 +1,56 @@
 # New imported-build, catalog and T6 receiving preparation
 
+## Regular import descriptor admission
+
+This bounded correction starts from published #391 source
+`9e83640075037bb23a1703a5c03f40befe0b5580`. It retains the complete route and exact
+numeric-fixture corrections below. Refs [#82](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/82)
+and [#102](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/102).
+
+`ImportedBuildLibraryModel.readFile` previously checked the URL's regular-file
+metadata and then separately opened that pathname through `FileHandle`. A provider
+can replace the checked path before open; no opened-descriptor type check existed.
+A named pipe at that point can block before the worker reaches its cancellation
+or byte-limit checks. A deterministic Linux POSIX control confirmed the syscall
+boundary: a regular-file check succeeded, the owned path became a FIFO, and the
+blocking read-only open had not returned after 0.5 seconds. Only that owned child
+was terminated. Nonblocking open plus `fstat` rejected the FIFO immediately and
+the independent regular-file control preserved all bytes. This is source/POSIX
+evidence, not execution of Swift, Foundation on Apple, or a real Files provider.
+
+The internal [ImportedBuildFileReader](../../Packages/PlannerUI/Sources/PlannerUI/ImportedBuildFileReader.swift)
+now uses the existing PlannerCatalog pattern: `open` with read-only, close-on-exec
+and nonblocking flags; a FileHandle owning the descriptor; deferred close; and
+`fstat` requiring the opened object to be regular before any read. The same handle
+performs all bounded reads. Existing URL admission, security-scoped access lifetime,
+cancellation checks, 65,536-byte chunks and the 512 KiB limit plus one overflow
+byte remain. No new validator, wire format, storage action or source authority is
+introduced. Open/admission failures reach the existing generic preview notice.
+
+This helper imports Darwin because PlannerUI's accepted targets are iOS 17 and
+macOS 14 or newer. Its internal opener seam is used only to make descriptor/path
+replacement tests deterministic; the normal model always uses Darwin open. Seven
+Swift methods require regular-byte preservation and closure, exact-limit/overflow
+behavior, rejection of an opened FIFO even after the pathname is regular again,
+reading the originally opened file after pathname replacement, missing/non-file
+URL rejection, and cancellation before/after descriptor acquisition. The FIFO
+test asserts that production requested nonblocking open, and also forces that flag
+in its injected opener so a regression fails without hanging the test process.
+
+Current required source inventory is **211 UI / 664 total package declarations**:
+146 Core, 34 Data, 181 Transfer, 92 Catalog and 211 UI. Every one of the prior 204
+UI methods and all original bodies remain. The strict receiver includes all seven
+new class-qualified identities; its new portable guard rejects an older receipt
+padded with unrelated names. Historical source inventories and observations below
+retain their original attribution.
+
+Swift/Xcode are unavailable in the authoring environment. These new Swift methods
+are declarations awaiting actual native execution; the original POSIX control and
+portable receiver checks cannot qualify them. The existing #391 route retains all
+configured native/package/journey/SDK gates and requires fresh receiving review.
+Real Files-provider behavior, physical devices and full #82/#102 acceptance remain
+separate from this descriptor correction. No issue is closed by its preparation.
+
 ## Exact T6 fixture mutation correction
 
 Date: 2026-10-19. This separate test-only correction starts from actual published
