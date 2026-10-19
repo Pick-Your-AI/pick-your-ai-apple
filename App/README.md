@@ -33,8 +33,21 @@ Successful deletion is required; an already-shutdown result alone is not a clean
 failure. If creation times out, even a partial UUID does not authorize cleanup, and
 the retained command/name/output is the evidence for later inspection. The runner
 never shuts down or deletes a pre-existing device, guesses an ID, or erases a device.
-Fourteen portable regressions cover these deadlines, partial output, failed install/launch,
+After a failed launch, two read-only diagnostic commands target that same verified
+owned UUID before cleanup: the installed app-bundle container query and the last
+two minutes of simulator logs filtered to the Planner process or its exact bundle
+identifier. Each has its own 15-second limit. Diagnostic output or failure is
+retained in `launch.txt`; neither can turn the failed launch into a pass, retry it,
+or replace its original error. The 60-second launch limit and separate cleanup
+limits are unchanged. The outer job deadline can still interrupt diagnostics or
+cleanup. These are observations for diagnosis, not evidence of a launch cause.
+Apple describes simulator-specific tools in its [Simulator command-line guide](https://developer.apple.com/videos/play/wwdc2019/418/)
+and filtered log inspection in its [logging example](https://developer.apple.com/videos/play/wwdc2022/10119/).
+
+Seventeen portable regressions cover these deadlines, partial output, failed install/launch,
 ownership and cleanup boundaries; one executes a real bounded synthetic subprocess.
+Launch-failure cases also cover diagnostic command failures, exact preservation
+of the original timeout, and isolation to the failing iPhone or iPad's owned UUID.
 The mandatory native CI step runs them separately from the Xcode-pin guards and
 retains their complete output in `smoke-runner-tests.txt` with the native evidence.
 Actual macOS simulator execution remains required for a changed runner.
