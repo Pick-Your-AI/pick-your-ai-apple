@@ -133,6 +133,22 @@ The [CI workflow](../../.github/workflows/swift-storage.yml) repeats macOS tests
 crash replay and an unsigned iOS Simulator SDK compile. Compilation is distinct
 from running a UI, simulator lifecycle tests or physical-device qualification.
 
+The [#37 conformance and migration record](../PlannerConformance/README.md)
+adds six pinned, language-neutral descriptions of Apple historical storage and
+four test methods. Its archived `08e54247` preparation preserved the then-current
+25 methods and production implementation; that original 29-method execution
+remains a historical receipt. The later `04d44920` preparation preserved the
+accepted #298 future-history restoration guard and executed 26 accepted methods
+plus the four migration methods; that 30-method receipt is also historical.
+The current preparation preserves that guard and all five accepted #306 WAL and
+hot-journal methods. Its exact gate requires all 31 accepted methods plus the
+four migration methods,
+with 20 exact per-fixture observations on macOS and both selected simulators.
+These cover every migration interruption, retained unsupported databases,
+separate compatible-backup recovery and appended restoration history. Local
+storage versions remain distinct from wire contract versions. Actual local
+preparation and pending native receiving results are recorded separately there.
+
 ## Acceptance boundaries
 
 | Issue | Executed library behavior | Remaining issue-specific work |

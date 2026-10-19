@@ -8,4 +8,5 @@ let package = Package(
     targets: [.systemLibrary(name: "CSQLite", pkgConfig: "sqlite3"),
               .target(name: "PlannerData", dependencies: ["CSQLite"]),
               .executableTarget(name: "DraftCrashProbe", dependencies: ["PlannerData"]),
-              .testTarget(name: "PlannerDataTests", dependencies: ["PlannerData", "CSQLite"])])
+              .testTarget(name: "PlannerDataTests", dependencies: ["PlannerData", "CSQLite"],
+                          resources: [.process("Fixtures")])])

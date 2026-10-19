@@ -1,0 +1,145 @@
+{
+  "canonicalBuildSHA256": "26762208769a8cf1012b4f33b1c1608556d275187ce21117d0b9632cdf951864",
+  "cases": [
+    {
+      "draftID": "00000000-0000-0000-0000-000000000001",
+      "expectedStorageVersion": 3,
+      "headRevision": 1,
+      "id": "v1-empty-draft",
+      "records": [
+        {
+          "payloadJSON": "{}",
+          "restoredFrom": null,
+          "revision": 1,
+          "title": ""
+        }
+      ],
+      "retiredIDs": [],
+      "snapshotMeaning": "opaque-local-draft",
+      "storageVersion": 1
+    },
+    {
+      "draftID": "00000000-0000-0000-0000-000000000001",
+      "expectedStorageVersion": 3,
+      "headRevision": 2,
+      "id": "v1-locked-history",
+      "records": [
+        {
+          "payloadJSON": " { \"locks\" : {\"catalog_snapshot_id\":\"catalog.fixture.1\", \"ruleset_id\":\"ruleset.core.v1\", \"ruleset_version\":\"1.0.0\"}, \"budget\" : \"9007199254740993.0100\", \"evidence\" : null, \"unanswered\" : \"unknown\", \"selections\" : [] }\n",
+          "restoredFrom": null,
+          "revision": 1,
+          "title": "Original"
+        },
+        {
+          "payloadJSON": "{ \"locks\": {\"catalog_snapshot_id\":\"catalog.fixture.1\"}, \"budget\":\"9007199254740993.0200\", \"evidence\":null, \"selections\":[] }\n",
+          "restoredFrom": null,
+          "revision": 2,
+          "title": "Edited"
+        }
+      ],
+      "retiredIDs": [],
+      "snapshotMeaning": "opaque-local-draft",
+      "storageVersion": 1
+    },
+    {
+      "draftID": "00000000-0000-0000-0000-000000000001",
+      "expectedStorageVersion": 3,
+      "headRevision": 3,
+      "id": "v2-restored-history",
+      "records": [
+        {
+          "payloadJSON": " { \"locks\" : {\"catalog_snapshot_id\":\"catalog.fixture.1\", \"ruleset_id\":\"ruleset.core.v1\", \"ruleset_version\":\"1.0.0\"}, \"budget\" : \"9007199254740993.0100\", \"evidence\" : null, \"unanswered\" : \"unknown\", \"selections\" : [] }\n",
+          "restoredFrom": null,
+          "revision": 1,
+          "title": "Original"
+        },
+        {
+          "payloadJSON": "{ \"locks\": {\"catalog_snapshot_id\":\"catalog.fixture.1\"}, \"budget\":\"9007199254740993.0200\", \"evidence\":null, \"selections\":[] }\n",
+          "restoredFrom": null,
+          "revision": 2,
+          "title": "Edited"
+        },
+        {
+          "payloadJSON": " { \"locks\" : {\"catalog_snapshot_id\":\"catalog.fixture.1\", \"ruleset_id\":\"ruleset.core.v1\", \"ruleset_version\":\"1.0.0\"}, \"budget\" : \"9007199254740993.0100\", \"evidence\" : null, \"unanswered\" : \"unknown\", \"selections\" : [] }\n",
+          "restoredFrom": 1,
+          "revision": 3,
+          "title": "Original"
+        }
+      ],
+      "retiredIDs": [],
+      "snapshotMeaning": "opaque-local-draft",
+      "storageVersion": 2
+    },
+    {
+      "draftID": "00000000-0000-0000-0000-000000000001",
+      "expectedStorageVersion": 3,
+      "headRevision": 2,
+      "id": "v3-retired-identity",
+      "records": [
+        {
+          "payloadJSON": " { \"locks\" : {\"catalog_snapshot_id\":\"catalog.fixture.1\", \"ruleset_id\":\"ruleset.core.v1\", \"ruleset_version\":\"1.0.0\"}, \"budget\" : \"9007199254740993.0100\", \"evidence\" : null, \"unanswered\" : \"unknown\", \"selections\" : [] }\n",
+          "restoredFrom": null,
+          "revision": 1,
+          "title": "Original"
+        },
+        {
+          "payloadJSON": "{ \"locks\": {\"catalog_snapshot_id\":\"catalog.fixture.1\"}, \"budget\":\"9007199254740993.0200\", \"evidence\":null, \"selections\":[] }\n",
+          "restoredFrom": null,
+          "revision": 2,
+          "title": "Edited"
+        }
+      ],
+      "retiredIDs": [
+        "00000000-0000-0000-0000-000000000002"
+      ],
+      "snapshotMeaning": "opaque-local-draft",
+      "storageVersion": 3
+    },
+    {
+      "draftID": "00000000-0000-0000-0000-000000000001",
+      "expectedStorageVersion": 3,
+      "headRevision": 1,
+      "id": "v1-canonical-snapshot",
+      "records": [
+        {
+          "payloadJSON": "{\n  \"schema_version\": \"1.0.0\",\n  \"id\": \"build.fixture.1\",\n  \"revision\": 1,\n  \"name\": \"FICTIONAL Full-Stack AI Build\",\n  \"owner_ref\": \"team.fixture\",\n  \"lifecycle\": \"draft\",\n  \"created_at\": \"2026-10-16T09:00:00Z\",\n  \"updated_at\": \"2026-10-16T09:00:00Z\",\n  \"objectives\": {\n    \"region\": \"us-east-fixture\",\n    \"currency\": \"USD\",\n    \"monthly_budget_amount\": \"1000.00\",\n    \"requests_per_day\": 200,\n    \"avg_input_tokens\": 700,\n    \"avg_output_tokens\": 400,\n    \"max_concurrency\": 2,\n    \"data_classification\": \"internal\",\n    \"max_latency_ms\": 6000\n  },\n  \"locks\": {\n    \"catalog_snapshot_id\": \"catalog.fixture.1\",\n    \"ruleset_id\": \"rules.fixture.1\",\n    \"ruleset_version\": \"1.0.0\",\n    \"dependency_graph_id\": \"dependencies.core.1\",\n    \"dependency_graph_revision\": 1,\n    \"pricebook_id\": \"prices.fixture.1\"\n  },\n  \"selections\": [\n    {\n      \"id\": \"sel_workload\",\n      \"kind\": \"workload\",\n      \"catalog_item_id\": \"cat.workload.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"concurrency\": 2,\n        \"requests_per_day\": 200,\n        \"avg_input_tokens\": 700,\n        \"avg_output_tokens\": 400\n      }\n    },\n    {\n      \"id\": \"sel_deployment_mode\",\n      \"kind\": \"deployment_mode\",\n      \"catalog_item_id\": \"cat.deployment_mode.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {}\n    },\n    {\n      \"id\": \"sel_model_provider\",\n      \"kind\": \"model_provider\",\n      \"catalog_item_id\": \"cat.model_provider.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {}\n    },\n    {\n      \"id\": \"sel_model\",\n      \"kind\": \"model\",\n      \"catalog_item_id\": \"cat.model.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"serving_mode\": \"weights\",\n        \"precision\": \"fp16\",\n        \"max_output_tokens\": 512,\n        \"temperature\": 0.4\n      }\n    },\n    {\n      \"id\": \"sel_context_policy\",\n      \"kind\": \"context_policy\",\n      \"catalog_item_id\": \"cat.context_policy.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"requested_context_tokens\": 4096,\n        \"reserved_output_tokens\": 512,\n        \"truncation_strategy\": \"reject\"\n      }\n    },\n    {\n      \"id\": \"sel_hosting_platform\",\n      \"kind\": \"hosting_platform\",\n      \"catalog_item_id\": \"cat.hosting_platform.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"region\": \"us-east-fixture\",\n        \"network_isolation\": \"private\"\n      }\n    },\n    {\n      \"id\": \"sel_accelerator\",\n      \"kind\": \"accelerator\",\n      \"catalog_item_id\": \"cat.accelerator.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"device_count\": 1,\n        \"tensor_parallel_groups\": 1\n      }\n    },\n    {\n      \"id\": \"sel_compute_profile\",\n      \"kind\": \"compute_profile\",\n      \"catalog_item_id\": \"cat.compute_profile.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"instances\": 1,\n        \"region\": \"us-east-fixture\",\n        \"reserved_hours_per_month\": 720\n      }\n    },\n    {\n      \"id\": \"sel_inference_engine\",\n      \"kind\": \"inference_engine\",\n      \"catalog_item_id\": \"cat.inference_engine.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"precision\": \"fp16\",\n        \"tensor_parallel_size\": 1,\n        \"max_batch_tokens\": 4096\n      }\n    },\n    {\n      \"id\": \"sel_storage\",\n      \"kind\": \"storage\",\n      \"catalog_item_id\": \"cat.storage.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"provisioned_gb\": 50,\n        \"region\": \"us-east-fixture\"\n      }\n    },\n    {\n      \"id\": \"sel_data_source\",\n      \"kind\": \"data_source\",\n      \"catalog_item_id\": \"cat.data_source.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"enabled\": true\n      }\n    },\n    {\n      \"id\": \"sel_knowledge_base\",\n      \"kind\": \"knowledge_base\",\n      \"catalog_item_id\": \"cat.knowledge_base.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"chunk_size_tokens\": 300,\n        \"chunk_overlap_tokens\": 30,\n        \"acl_enforced\": true\n      }\n    },\n    {\n      \"id\": \"sel_embedding_model\",\n      \"kind\": \"embedding_model\",\n      \"catalog_item_id\": \"cat.embedding_model.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"output_dimensions\": 768\n      }\n    },\n    {\n      \"id\": \"sel_vector_database\",\n      \"kind\": \"vector_database\",\n      \"catalog_item_id\": \"cat.vector_database.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"index_dimension\": 768,\n        \"similarity_metric\": \"cosine\",\n        \"region\": \"us-east-fixture\",\n        \"index_name\": \"fixture-collection\"\n      }\n    },\n    {\n      \"id\": \"sel_rag_pipeline\",\n      \"kind\": \"rag_pipeline\",\n      \"catalog_item_id\": \"cat.rag_pipeline.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"top_k\": 5,\n        \"max_chunks\": 8\n      }\n    },\n    {\n      \"id\": \"sel_agent_framework\",\n      \"kind\": \"agent_framework\",\n      \"catalog_item_id\": \"cat.agent_framework.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"agent_count\": 2,\n        \"max_iterations\": 8\n      }\n    },\n    {\n      \"id\": \"sel_tool\",\n      \"kind\": \"tool\",\n      \"catalog_item_id\": \"cat.tool.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"enabled\": true,\n        \"allowed_scopes\": [\n          \"fixture.write\"\n        ]\n      }\n    },\n    {\n      \"id\": \"sel_mcp_server\",\n      \"kind\": \"mcp_server\",\n      \"catalog_item_id\": \"cat.mcp_server.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"read_only\": false\n      }\n    },\n    {\n      \"id\": \"sel_memory_store\",\n      \"kind\": \"memory_store\",\n      \"catalog_item_id\": \"cat.memory_store.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"ttl_hours\": 720\n      }\n    },\n    {\n      \"id\": \"sel_integration\",\n      \"kind\": \"integration\",\n      \"catalog_item_id\": \"cat.integration.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"enabled\": true,\n        \"rate_limit_per_minute\": 60\n      }\n    },\n    {\n      \"id\": \"sel_training_framework\",\n      \"kind\": \"training_framework\",\n      \"catalog_item_id\": \"cat.training_framework.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"method\": \"lora\",\n        \"epochs\": 3,\n        \"batch_size\": 2\n      }\n    },\n    {\n      \"id\": \"sel_training_compute\",\n      \"kind\": \"training_compute\",\n      \"catalog_item_id\": \"cat.training_compute.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"gpu_hours_budget\": 25\n      }\n    },\n    {\n      \"id\": \"sel_training_dataset\",\n      \"kind\": \"training_dataset\",\n      \"catalog_item_id\": \"cat.training_dataset.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"train_split\": 0.8,\n        \"eval_split\": 0.1,\n        \"test_split\": 0.1,\n        \"redaction_enabled\": true\n      }\n    },\n    {\n      \"id\": \"sel_fine_tuned_model\",\n      \"kind\": \"fine_tuned_model\",\n      \"catalog_item_id\": \"cat.fine_tuned_model.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"use_adapter\": true\n      }\n    },\n    {\n      \"id\": \"sel_guardrail\",\n      \"kind\": \"guardrail\",\n      \"catalog_item_id\": \"cat.guardrail.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"enforcement\": \"block\",\n        \"failure_action\": \"fail_closed\"\n      }\n    },\n    {\n      \"id\": \"sel_evaluation_suite\",\n      \"kind\": \"evaluation_suite\",\n      \"catalog_item_id\": \"cat.evaluation_suite.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"gate_required\": true,\n        \"minimum_score\": 0.85\n      }\n    },\n    {\n      \"id\": \"sel_deployment_target\",\n      \"kind\": \"deployment_target\",\n      \"catalog_item_id\": \"cat.deployment_target.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"environment\": \"production\",\n        \"replicas_min\": 1,\n        \"replicas_max\": 2,\n        \"region\": \"us-east-fixture\"\n      }\n    },\n    {\n      \"id\": \"sel_monitoring_stack\",\n      \"kind\": \"monitoring_stack\",\n      \"catalog_item_id\": \"cat.monitoring_stack.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"sample_rate\": 0.1,\n        \"retention_days\": 30\n      }\n    },\n    {\n      \"id\": \"sel_cost_policy\",\n      \"kind\": \"cost_policy\",\n      \"catalog_item_id\": \"cat.cost_policy.fixture\",\n      \"catalog_item_version\": \"2026.10-demo\",\n      \"role\": \"primary\",\n      \"enabled\": true,\n      \"settings\": {\n        \"monthly_budget_amount\": \"1000.00\",\n        \"enforce_hard_cap\": true,\n        \"notify_at_pct\": 80\n      }\n    }\n  ],\n  \"links\": [\n    {\n      \"id\": \"link.01\",\n      \"from_selection_id\": \"sel_model\",\n      \"to_selection_id\": \"sel_model_provider\",\n      \"relation\": \"provided_by\"\n    },\n    {\n      \"id\": \"link.02\",\n      \"from_selection_id\": \"sel_model\",\n      \"to_selection_id\": \"sel_context_policy\",\n      \"relation\": \"uses\"\n    },\n    {\n      \"id\": \"link.03\",\n      \"from_selection_id\": \"sel_compute_profile\",\n      \"to_selection_id\": \"sel_hosting_platform\",\n      \"relation\": \"runs_on\"\n    },\n    {\n      \"id\": \"link.04\",\n      \"from_selection_id\": \"sel_compute_profile\",\n      \"to_selection_id\": \"sel_accelerator\",\n      \"relation\": \"uses\"\n    },\n    {\n      \"id\": \"link.05\",\n      \"from_selection_id\": \"sel_model\",\n      \"to_selection_id\": \"sel_inference_engine\",\n      \"relation\": \"served_by\"\n    },\n    {\n      \"id\": \"link.06\",\n      \"from_selection_id\": \"sel_inference_engine\",\n      \"to_selection_id\": \"sel_compute_profile\",\n      \"relation\": \"runs_on\"\n    },\n    {\n      \"id\": \"link.07\",\n      \"from_selection_id\": \"sel_knowledge_base\",\n      \"to_selection_id\": \"sel_data_source\",\n      \"relation\": \"reads_from\"\n    },\n    {\n      \"id\": \"link.08\",\n      \"from_selection_id\": \"sel_rag_pipeline\",\n      \"to_selection_id\": \"sel_knowledge_base\",\n      \"relation\": \"reads_from\"\n    },\n    {\n      \"id\": \"link.09\",\n      \"from_selection_id\": \"sel_rag_pipeline\",\n      \"to_selection_id\": \"sel_embedding_model\",\n      \"relation\": \"uses\"\n    },\n    {\n      \"id\": \"link.10\",\n      \"from_selection_id\": \"sel_rag_pipeline\",\n      \"to_selection_id\": \"sel_vector_database\",\n      \"relation\": \"indexes_with\"\n    },\n    {\n      \"id\": \"link.11\",\n      \"from_selection_id\": \"sel_vector_database\",\n      \"to_selection_id\": \"sel_storage\",\n      \"relation\": \"stored_in\"\n    },\n    {\n      \"id\": \"link.12\",\n      \"from_selection_id\": \"sel_memory_store\",\n      \"to_selection_id\": \"sel_vector_database\",\n      \"relation\": \"stored_in\"\n    },\n    {\n      \"id\": \"link.13\",\n      \"from_selection_id\": \"sel_agent_framework\",\n      \"to_selection_id\": \"sel_rag_pipeline\",\n      \"relation\": \"uses\"\n    },\n    {\n      \"id\": \"link.14\",\n      \"from_selection_id\": \"sel_agent_framework\",\n      \"to_selection_id\": \"sel_tool\",\n      \"relation\": \"calls\"\n    },\n    {\n      \"id\": \"link.15\",\n      \"from_selection_id\": \"sel_agent_framework\",\n      \"to_selection_id\": \"sel_mcp_server\",\n      \"relation\": \"calls\"\n    },\n    {\n      \"id\": \"link.16\",\n      \"from_selection_id\": \"sel_mcp_server\",\n      \"to_selection_id\": \"sel_tool\",\n      \"relation\": \"exposes\"\n    },\n    {\n      \"id\": \"link.17\",\n      \"from_selection_id\": \"sel_integration\",\n      \"to_selection_id\": \"sel_tool\",\n      \"relation\": \"exposes\"\n    },\n    {\n      \"id\": \"link.18\",\n      \"from_selection_id\": \"sel_fine_tuned_model\",\n      \"to_selection_id\": \"sel_model\",\n      \"relation\": \"derived_from\"\n    },\n    {\n      \"id\": \"link.19\",\n      \"from_selection_id\": \"sel_fine_tuned_model\",\n      \"to_selection_id\": \"sel_training_dataset\",\n      \"relation\": \"trained_on\"\n    },\n    {\n      \"id\": \"link.20\",\n      \"from_selection_id\": \"sel_fine_tuned_model\",\n      \"to_selection_id\": \"sel_training_framework\",\n      \"relation\": \"uses\"\n    },\n    {\n      \"id\": \"link.21\",\n      \"from_selection_id\": \"sel_training_compute\",\n      \"to_selection_id\": \"sel_compute_profile\",\n      \"relation\": \"runs_on\"\n    },\n    {\n      \"id\": \"link.22\",\n      \"from_selection_id\": \"sel_training_dataset\",\n      \"to_selection_id\": \"sel_data_source\",\n      \"relation\": \"reads_from\"\n    },\n    {\n      \"id\": \"link.23\",\n      \"from_selection_id\": \"sel_deployment_target\",\n      \"to_selection_id\": \"sel_hosting_platform\",\n      \"relation\": \"runs_on\"\n    },\n    {\n      \"id\": \"link.24\",\n      \"from_selection_id\": \"sel_deployment_target\",\n      \"to_selection_id\": \"sel_model\",\n      \"relation\": \"deploys_to\"\n    },\n    {\n      \"id\": \"link.25\",\n      \"from_selection_id\": \"sel_agent_framework\",\n      \"to_selection_id\": \"sel_guardrail\",\n      \"relation\": \"secured_by\"\n    },\n    {\n      \"id\": \"link.26\",\n      \"from_selection_id\": \"sel_agent_framework\",\n      \"to_selection_id\": \"sel_evaluation_suite\",\n      \"relation\": \"evaluated_by\"\n    },\n    {\n      \"id\": \"link.27\",\n      \"from_selection_id\": \"sel_agent_framework\",\n      \"to_selection_id\": \"sel_monitoring_stack\",\n      \"relation\": \"observed_by\"\n    }\n  ],\n  \"policy\": {\n    \"fail_on_unknown\": true,\n    \"require_evaluations_for_production\": true,\n    \"allow_unverified_catalog_items\": true,\n    \"min_resource_confidence\": \"estimated\"\n  }\n}\n",
+          "restoredFrom": null,
+          "revision": 1,
+          "title": "Historical synthetic v1 snapshot"
+        }
+      ],
+      "retiredIDs": [],
+      "snapshotMeaning": "frozen-build-1.0.0",
+      "storageVersion": 1
+    },
+    {
+      "draftID": "00000000-0000-0000-0000-000000000001",
+      "expectedStorageVersion": 3,
+      "headRevision": 1,
+      "id": "v2-opaque-future-wire-draft",
+      "records": [
+        {
+          "payloadJSON": "{ \"schema_version\":\"99.0.0\", \"id\":\"build.synthetic.future\", \"selections\":[], \"locks\":{\"catalog_snapshot_id\":\"catalog.fixture.1\"} }\n",
+          "restoredFrom": null,
+          "revision": 1,
+          "title": "Unavailable wire version retained locally"
+        }
+      ],
+      "retiredIDs": [],
+      "snapshotMeaning": "opaque-local-draft",
+      "storageVersion": 2
+    }
+  ],
+  "description": "Synthetic Apple SQLite fixture descriptions, not shared wire successors or Android store formats. payloadJSON decodes to exact original UTF-8 bytes.",
+  "fixtureVersion": "apple-local-migrations-1",
+  "limits": [
+    "Only Apple local storage schemas 1 and 2 migrate to 3; schema 3 reopens.",
+    "Opaque draft retention does not validate a BuildSnapshot or approve a future wire version.",
+    "Failed local migration rolls back before retry; no physical power cut or binary downgrade is claimed."
+  ],
+  "unsupportedStorageVersions": [
+    -1,
+    4,
+    99
+  ]
+}

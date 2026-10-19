@@ -203,6 +203,29 @@ task-scoped caches and required no change to application or test sources.
 The changed runner must still complete its actual hosted macOS core workflow on
 the reviewed candidate before delivery; Linux execution is separate evidence.
 
-Supported historical migration, rollback, approved executable policy, actual
-service parity, simulator execution, device results and receiving acceptance are
-still unverified. Rejection of unsupported versions is not successful migration.
+The original preparation results above do not establish historical migration,
+rollback, executable policy, actual service parity or device/receiving acceptance.
+Rejection of unsupported versions is not successful migration.
+
+## Shared wire consumers and Apple local migration receipts
+
+The [#37 bundle and criterion record](../../Packages/PlannerConformance/README.md)
+adds 223 identical golden wire payloads for actual Swift, canonical Python and
+the pinned website validator, plus six distinct Apple-local migration fixture
+descriptions. `cross_client.py --contract-root "$CONTRACT_ROOT" --check` verifies
+all derived bytes and canonical schema expectations, retaining all 98 placement
+and 37 evidence inputs. It does not change the original frozen import or model
+boundaries. `web_consumer.mjs` executes a private verified copy of the original
+website/runtime closure; it does not modify or deploy the website.
+
+`consumer_receipts.py` requires all four wire methods/223 observations or all
+35 storage methods/20 observations, with exact native module identity and complete
+failure-free XCTest scope. The explicitly selected Linux spelling remains
+labeled local evidence. The linked record specifies the neutral consumer
+interface, exact source/runtime pins, separate wire/local versions, actual local
+results and pending native/receiving gates. Its separate Android receiving
+section now records the actually executed and signed-main-delivered fixture
+consumer from Android #432, retaining the original `b0d2/c0143` execution and
+later `033ace/c4db` source preservation. Android's 34 private migration
+observations remain distinct from Apple's 20 SQLite observations; installed
+application and production evaluator behavior remain outside those receipts.

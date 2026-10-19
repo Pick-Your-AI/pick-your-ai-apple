@@ -1,0 +1,102 @@
+{
+  "bundleVersion": "apple-cross-client-1",
+  "contractVersion": "1.0.0",
+  "referenceRevision": "7acbefbf4e4e700231e88be272bc89e3a73dde15",
+  "websiteRevision": "dc66a9e269917ab7241c7d08fd0e7f2a2f039872",
+  "wireFixture": {
+    "path": "Packages/PlannerConformance/Tests/PlannerConformanceTests/Fixtures/cross-client-v1.json",
+    "sha256": "499fd9a01780ac42fa9bf2ab8cf9e1195db27321fec36040451b553a8b9ea5f9"
+  },
+  "migrationFixture": {
+    "path": "Packages/PlannerData/Tests/PlannerDataTests/Fixtures/migration-cases.json",
+    "version": "apple-local-migrations-1",
+    "sha256": "244e97154bb19b77b454280ba73fabe06a0f75f4fe353fdf5f265509e6100394"
+  },
+  "inputs": {
+    "build": {
+      "path": "Packages/PlannerTransfer/Tests/PlannerTransferTests/Fixtures/build.json",
+      "sha256": "26762208769a8cf1012b4f33b1c1608556d275187ce21117d0b9632cdf951864"
+    },
+    "catalog": {
+      "path": "Packages/PlannerTransfer/Tests/PlannerTransferTests/Fixtures/catalog.json",
+      "sha256": "2e9120db823faef3e1e330a7d2e8067b3ab064328e2faed699d15cf41880fbf8"
+    },
+    "report": {
+      "path": "Packages/PlannerCore/Tests/PlannerCoreTests/Fixtures/evaluation-report.json",
+      "sha256": "039626962ef0f2c4f706614d775ad47eda1d148c58f736c98ad169fc153221f3"
+    },
+    "evidence": {
+      "path": "Packages/PlannerCore/Tests/PlannerCoreTests/Fixtures/evidence-vectors.json",
+      "sha256": "9db8c150e7666549cd4ddeacf57bcbd4a0277c193090f9d55a7f90e22154d7be"
+    },
+    "placement": {
+      "path": "Packages/PlannerTransfer/Tests/PlannerTransferTests/Fixtures/placement-conformance.json",
+      "sha256": "59d5be49578224f3e82bd0c040fdee8d68bbb35c9d19ef7c95d13e397a1bffab"
+    },
+    "placementAdapter": {
+      "path": "Packages/PlannerTransfer/Tools/placement_vectors.py",
+      "sha256": "cced478338c0bdcd4f79abb2cad8ebab68508343a36d4971d26a8e931aff834c"
+    }
+  },
+  "websiteFiles": {
+    "src/contracts/validation.ts": {
+      "sha256": "184f646fad36fd3dbbcb967cc6d4447713b932a8ea11826478d57d0ded413c9c",
+      "bytes": 3585
+    },
+    "src/contracts/generated/validators.js": {
+      "sha256": "ee3219e58b7b0fd22ec4220981fa5f374628e4ec64cfd5ad3895430edb6f3897",
+      "bytes": 720217
+    },
+    "package.json": {
+      "sha256": "65171ec7b69fc167233a284b55c3b1ad5bf0158ff19af93cc08de51ec2ed1d1f",
+      "bytes": 1890
+    },
+    "package-lock.json": {
+      "sha256": "b7ac62b204d8ca90d9f7c62f33f87cc8d213ae4355adbdebc36466a9b2724392",
+      "bytes": 233220
+    },
+    "node_modules/ajv/package.json": {
+      "sha256": "1f9033ee5a6515e7d76938b7072941862d1ed228a6879cc7fe10cdeb75107989",
+      "bytes": 4405
+    },
+    "node_modules/ajv/dist/runtime/ucs2length.js": {
+      "sha256": "1df012dd3d23fced07255a7204798004509687cb1f431ae0ab976db436bbd890",
+      "bytes": 808
+    },
+    "node_modules/ajv/dist/runtime/equal.js": {
+      "sha256": "c94467da09ee94e5d194483a7ab821b9bb3bf1c04397270f2ab53dea9de59274",
+      "bytes": 286
+    },
+    "node_modules/ajv-formats/package.json": {
+      "sha256": "402fb4bcfa457f0226813f3976ac42839dd619907c075c108efba8600d7edb69",
+      "bytes": 1897
+    },
+    "node_modules/ajv-formats/dist/formats.js": {
+      "sha256": "b61693a26869970a92cc1fe832c931ccd3afe8b6d66802b19c48306349e84880",
+      "bytes": 12263
+    },
+    "node_modules/fast-deep-equal/package.json": {
+      "sha256": "a5c63940db0260739be9e2ac67f3aac268df4db5770420ee4e34e493152f97d2",
+      "bytes": 1496
+    },
+    "node_modules/fast-deep-equal/index.js": {
+      "sha256": "eb469e206280321a3878f2335ec98aa2104a155079d8ed83a23029098dccd215",
+      "bytes": 1177
+    }
+  },
+  "websiteDependencies": {
+    "ajv": {
+      "version": "8.20.0",
+      "integrity": "sha512-Thbli+OlOj+iMPYFBVBfJ3OmCAnaSyNn4M1vz9T6Gka5Jt9ba/HIR56joy65tY6kx/FCF5VXNB819Y7/GUrBGA=="
+    },
+    "ajv-formats": {
+      "version": "3.0.1",
+      "integrity": "sha512-8iUql50EUR+uUcdRQ3HDqa6EVyo3docL8g5WJ3FNcWmu62IbkGUue/pEyLBW8VGKKucTPgqeks4fIU1DA4yowQ=="
+    },
+    "fast-deep-equal": {
+      "version": "3.1.3",
+      "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q=="
+    }
+  },
+  "nodeVersion": "24.19.0"
+}
