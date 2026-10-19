@@ -270,7 +270,7 @@ final class EvidenceRenderingTests: XCTestCase {
             #endif
         }
         let text = labels.sorted().joined(separator: "\n")
-        XCTAssertTrue(settled, "The bounded native content scan did not settle: \(id)", file: file, line: line)
+        XCTAssertTrue(settled, "The bounded native content scan did not settle: \(id); actual native text: \(text)", file: file, line: line)
         XCTAssertFalse(text.isEmpty, "No actual native accessibility text was rendered: \(id)", file: file, line: line)
         for value in expected {
             XCTAssertTrue(text.contains(value), "\(id): missing \(value); actual native text: \(text)", file: file, line: line)
