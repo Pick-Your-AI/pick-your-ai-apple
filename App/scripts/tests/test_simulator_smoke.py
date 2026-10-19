@@ -45,6 +45,24 @@ def inventory():
     }
 
 
+class UnavailableOutput(io.StringIO):
+    def __init__(self, error_type=BrokenPipeError, failure="write", unavailable=True):
+        super().__init__()
+        self.error_type = error_type
+        self.failure = failure
+        self.unavailable = unavailable
+
+    def write(self, value):
+        if self.unavailable and self.failure == "write":
+            raise self.error_type("synthetic unavailable output")
+        return super().write(value)
+
+    def flush(self):
+        if self.unavailable and self.failure == "flush":
+            raise self.error_type("synthetic unavailable output")
+        return super().flush()
+
+
 class SimulatorSmokeTests(unittest.TestCase):
     def setUp(self):
         self.inventory = inventory()
@@ -124,6 +142,96 @@ class SimulatorSmokeTests(unittest.TestCase):
         self.assertEqual(emitted.strip(), "synthetic partial output")
         self.assertEqual(self.stdout.getvalue().splitlines().count("synthetic partial output"), 1)
         self.assertIn("timed out after 1s", self.stderr.getvalue())
+
+    def test_unavailable_command_output_still_attempts_both_owned_cleanup_commands(self):
+        for error_type in (BrokenPipeError, ValueError):
+            for failure in ("write", "flush"):
+                with self.subTest(error=error_type.__name__, failure=failure):
+                    self.stdout = UnavailableOutput(error_type, failure)
+                    with self.commands() as mocked:
+                        self.assertTrue(SMOKE.cleanup_simulator(CREATED_PHONE))
+                    self.assertEqual([call.args[0] for call in mocked.call_args_list], [
+                        ("xcrun", "simctl", "shutdown", CREATED_PHONE),
+                        ("xcrun", "simctl", "delete", CREATED_PHONE),
+                    ])
+                    self.assertTrue(all(call.kwargs["timeout"] == 60
+                                        for call in mocked.call_args_list))
+
+    def test_unavailable_command_output_preserves_original_process_failure(self):
+        for stream in ("stdout", "stderr"):
+            for failure in ("write", "flush"):
+                for outcome in ("timeout", "nonzero"):
+                    with self.subTest(stream=stream, failure=failure, outcome=outcome):
+                        self.stdout, self.stderr = io.StringIO(), io.StringIO()
+                        setattr(self, stream, UnavailableOutput(failure=failure))
+                        primary = subprocess.TimeoutExpired("launch", 60,
+                                                            output=b"launch pending\n",
+                                                            stderr=b"launch refused\n")
+                        result = (primary if outcome == "timeout" else
+                                  subprocess.CompletedProcess([], 23,
+                                                              "launch pending\n", "launch refused\n"))
+                        def effect(args, **kwargs):
+                            if outcome == "timeout":
+                                raise primary
+                            return result
+
+                        with self.commands(effect) as mocked:
+                            if outcome == "timeout":
+                                with self.assertRaises(subprocess.TimeoutExpired) as caught:
+                                    SMOKE.run("xcrun", "simctl", "launch", CREATED_PHONE)
+                                self.assertIs(caught.exception, primary)
+                            else:
+                                with self.assertRaises(subprocess.CalledProcessError) as caught:
+                                    SMOKE.run("xcrun", "simctl", "launch", CREATED_PHONE)
+                                self.assertEqual(caught.exception.returncode, 23)
+                                self.assertEqual(caught.exception.output, "launch pending\n")
+                                self.assertEqual(caught.exception.stderr, "launch refused\n")
+                        self.assertEqual(len(mocked.call_args_list), 1)
+                        self.assertEqual(mocked.call_args.args[0],
+                                         ("xcrun", "simctl", "launch", CREATED_PHONE))
+                        self.assertEqual(mocked.call_args.kwargs["timeout"], 60)
+                        if stream == "stdout":
+                            self.assertIn("launch refused", self.stderr.getvalue())
+                        else:
+                            self.assertIn("launch pending", self.stdout.getvalue())
+
+    def test_output_failure_after_create_preserves_owned_identity_and_required_commands(self):
+        for failing_udid in (CREATED_PHONE, CREATED_PAD):
+            with self.subTest(udid=failing_udid):
+                self.stdout = UnavailableOutput(unavailable=False)
+
+                def effect(args, **kwargs):
+                    result = self.completed(args, **kwargs)
+                    if args[2] == "create" and result.stdout == failing_udid:
+                        self.stdout.unavailable = True
+                    return result
+
+                with self.commands(effect) as mocked:
+                    SMOKE.main()
+                for udid in (CREATED_PHONE, CREATED_PAD):
+                    owned = [call for call in mocked.call_args_list
+                             if len(call.args[0]) > 3 and call.args[0][3] == udid]
+                    self.assertEqual([call.args[0][2] for call in owned],
+                                     ["boot", "bootstatus", "install", "launch",
+                                      "terminate", "shutdown", "delete"])
+                    self.assertEqual([call.kwargs["timeout"] for call in owned],
+                                     [60, 300, 180, 60, 60, 60, 60])
+
+    def test_unavailable_command_output_does_not_qualify_failed_deletion(self):
+        self.stdout = UnavailableOutput()
+
+        def effect(args, **kwargs):
+            if args[2] == "delete":
+                return subprocess.CompletedProcess(args, 9, "", "owned device still present")
+            return self.completed(args, **kwargs)
+
+        with self.commands(effect) as mocked, self.assertRaisesRegex(
+                ValueError, "Owned simulator cleanup did not delete " + CREATED_PHONE):
+            SMOKE.main()
+        self.assertEqual([call.args[0][2] for call in mocked.call_args_list],
+                         ["list", "create", "boot", "bootstatus", "install", "launch",
+                          "terminate", "shutdown", "delete"])
+        self.assertIn("owned device still present", self.stderr.getvalue())
 
     def test_failed_launch_stays_failed_and_cleans_its_owned_simulator(self):
         def effect(args, **kwargs):

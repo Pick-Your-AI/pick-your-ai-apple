@@ -113,26 +113,36 @@ def collect_runtime_snapshot(udid, phase):
                              sort_keys=True), flush=True)
 
 
+def report(*args, **kwargs):
+    """Logging cannot prevent an owned command or replace its actual result."""
+    try:
+        print(*args, **kwargs)
+    except Exception:
+        # stdout/stderr can disappear or fail on flush during runner teardown.
+        # The command outcome and the owned cleanup attempts remain authoritative.
+        pass
+
+
 def emit_output(stdout, stderr):
     # TimeoutExpired can contain bytes even when text=True was requested.
     for value, stream in ((stdout, sys.stdout), (stderr, sys.stderr)):
         if isinstance(value, bytes):
             value = value.decode("utf-8", errors="replace")
         if value:
-            print(value, end="" if value.endswith("\n") else "\n", file=stream, flush=True)
+            report(value, end="" if value.endswith("\n") else "\n", file=stream, flush=True)
 
 
 def run(*args, timeout=COMMAND_TIMEOUT_SECONDS):
     command = shlex.join(args)
-    print(f"Smoke command (deadline {timeout}s): {command}", flush=True)
+    report(f"Smoke command (deadline {timeout}s): {command}", flush=True)
     try:
         result = subprocess.run(args, capture_output=True, text=True, check=False, timeout=timeout)
     except subprocess.TimeoutExpired as error:
         emit_output(error.stdout, error.stderr)
-        print(f"Smoke command timed out after {timeout}s: {command}", file=sys.stderr, flush=True)
+        report(f"Smoke command timed out after {timeout}s: {command}", file=sys.stderr, flush=True)
         raise
     emit_output(result.stdout, result.stderr)
-    print(f"Smoke command exited {result.returncode}: {command}", flush=True)
+    report(f"Smoke command exited {result.returncode}: {command}", flush=True)
     result.check_returncode()
     return result.stdout.strip()
 
@@ -203,8 +213,8 @@ def smoke_destination(device, runtime, family, existing_ids):
         # Preserve simctl's exact spelling for all commands. A failed/timed-out
         # create, partial output or unparseable ID never establishes ownership.
         udid = output
-        print(f"Owned simulator created by this run: {udid} ({name})", flush=True)
-        print(f"Smoke launch: {device['name']}, iOS {runtime['version']}", flush=True)
+        report(f"Owned simulator created by this run: {udid} ({name})", flush=True)
+        report(f"Smoke launch: {device['name']}, iOS {runtime['version']}", flush=True)
         observe_runtime(udid, "before-boot")
         try:
             run("xcrun", "simctl", "boot", udid)
@@ -257,5 +267,5 @@ if __name__ == "__main__":
     try:
         main()
     except (OSError, ValueError, subprocess.SubprocessError) as error:
-        print(f"Simulator smoke could not complete: {error}", file=sys.stderr, flush=True)
+        report(f"Simulator smoke could not complete: {error}", file=sys.stderr, flush=True)
         raise SystemExit(1) from error
