@@ -138,6 +138,43 @@ final class EvidenceRenderingTests: XCTestCase {
         }
     }
 
+    func testCaptureDateLocaleChangesPreserveGregorianDayAndRetainedEvidence() throws {
+        let inputs: [(String, String, [String])] = [
+            ("date-us-honolulu", "2024-01-02", ["January 2, 2024"]),
+            ("date-gb-kiritimati", "2024-01-02", ["2 January 2024"]),
+            ("date-de-berlin", "2024-01-02", ["2. Januar 2024"]),
+            ("date-ar-calendar", "2024-01-02", ["٢", "يناير", "٢٠٢٤"]),
+            ("date-th-calendar", "2024-01-02", ["มกราคม", "2024"]),
+            ("date-gregorian-switch", "1582-10-10", ["October 10, 1582"]),
+            ("date-first-year", "0001-01-01", ["January 1, 1"]),
+            ("date-leap-day", "2000-02-29", ["29 February 2000"]),
+            ("date-last-year", "9999-12-31", ["December 31, 9999"]),
+            ("date-locale-recovery", "2024-01-02", ["January 2, 2024"]),
+        ]
+        let app = launch("dates")
+        defer { app.terminate() }
+        for (index, input) in inputs.enumerated() {
+            let correction = input.0 == "date-locale-recovery"
+            let expected = ["Capture date (Gregorian):", "Current-state facts as of \(input.1)",
+                "Original recorded status: verified", "Component: synthetic.component", "Version: 1.0.0",
+                "Retained snapshot: snapshot.retained", "Inspected source: synthetic:claim",
+                "Evidence quality: \(correction ? "Unverified" : "Source checked")"] + input.2
+            let text = try assertRendered(app, id: input.0, index: index, total: inputs.count, contains: expected)
+            let label = try renderedStaticText(app.staticTexts["claim-capture-date"], file: #filePath, line: #line)
+                .joined(separator: "\n")
+            for component in input.2 { XCTAssertTrue(label.contains(component), "\(input.0): \(label)") }
+            XCTAssertFalse(text.contains("Evidence quality: Independently verified"))
+            XCTAssertFalse(text.contains("Facts remain pinned to this version."))
+            if input.0 == "date-th-calendar" { XCTAssertFalse(label.contains("2567")) }
+            if correction {
+                XCTAssertTrue(text.contains("Selected evidence changed. A recheck is required."))
+            } else {
+                XCTAssertFalse(text.contains("Selected evidence changed. A recheck is required."))
+            }
+            if index + 1 < inputs.count { next(app) }
+        }
+    }
+
     private func next(_ app: XCUIApplication) {
         let button = app.buttons["evidence-harness-next"]
         XCTAssertTrue(button.isEnabled)
