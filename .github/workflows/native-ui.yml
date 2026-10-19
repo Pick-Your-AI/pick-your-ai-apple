@@ -32,7 +32,63 @@ jobs:
           APPLE_CI_BASE: ${{ github.event.pull_request.base.sha }}
           APPLE_CI_BEFORE: ${{ github.event.before }}
         run: python3 tools/ci/native_scope.py
-  native-ui:
+  rendering:
+    name: native-evidence-rendering
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
+    runs-on: macos-15-intel
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify Xcode pins
+        run: |
+          set -e -o pipefail
+          mkdir -p .build/native-evidence
+          python3 App/scripts/toolchain.py --github-env "$GITHUB_ENV" 2>&1 | tee .build/native-evidence/pin-selection.txt
+      - name: Verify fresh dependency and build caches
+        run: |
+          set -o pipefail
+          python3 - <<'PY' | tee .build/native-evidence/empty-caches.txt
+          from pathlib import Path
+          for name in ("native-package-cache", "native-swift-tests", "native-source-packages", "native", "evidence-native"):
+              path = Path(".build") / name
+              if path.exists():
+                  raise SystemExit(f"Expected an empty clean-checkout cache at {path}; use a fresh checkout without restored caches.")
+              print(f"Verified absent before dependency resolution/build: {path}")
+          PY
+      - name: Record toolchain
+        run: |
+          mkdir -p .build/native-evidence
+          xcodebuild -version | tee .build/native-evidence/xcode.txt
+          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') .build/native-evidence/xcode.txt
+          sw_vers | tee .build/native-evidence/macos.txt
+          swift --version | tee .build/native-evidence/swift.txt
+          xcrun simctl list runtimes | tee .build/native-evidence/runtimes.txt
+      - name: Inspect actual evidence views through macOS UI automation
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/evidence-rendering"
+          xcodebuild test -project tools/evidence-rendering/EvidenceHarness.xcodeproj -scheme EvidenceHarness \
+            -only-testing:PlannerEvidenceUITests/EvidenceRenderingTests \
+            -destination 'platform=macOS' -parallel-testing-enabled NO \
+            -derivedDataPath .build/evidence-native \
+            -resultBundlePath "$RUNNER_TEMP/evidence-rendering/evidence-macos.xcresult" \
+            CODE_SIGNING_ALLOWED=NO 2>&1 | tee .build/native-evidence/evidence-macos-test.log
+          python3 tools/conformance/qualify_evidence_rendering.py .build/native-evidence/evidence-macos-test.log
+      - name: Retain rendering evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-evidence-rendering
+          path: |
+            .build/native-evidence
+            ${{ runner.temp }}/evidence-rendering/
+          retention-days: 14
+
+  simulator:
+    name: native-simulator
     needs: scope
     if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
     runs-on: macos-15-intel
@@ -71,17 +127,6 @@ jobs:
         run: |
           set -o pipefail
           swift test --package-path Packages/PlannerUI --cache-path "$PWD/.build/native-package-cache" --scratch-path "$PWD/.build/native-swift-tests" 2>&1 | tee .build/native-evidence/model-tests.txt
-      - name: Inspect actual evidence views through macOS UI automation
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/evidence-rendering"
-          xcodebuild test -project tools/evidence-rendering/EvidenceHarness.xcodeproj -scheme EvidenceHarness \
-            -only-testing:PlannerEvidenceUITests/EvidenceRenderingTests \
-            -destination 'platform=macOS' -parallel-testing-enabled NO \
-            -derivedDataPath .build/evidence-native \
-            -resultBundlePath "$RUNNER_TEMP/evidence-rendering/evidence-macos.xcresult" \
-            CODE_SIGNING_ALLOWED=NO 2>&1 | tee .build/native-evidence/evidence-macos-test.log
-          python3 tools/conformance/qualify_evidence_rendering.py .build/native-evidence/evidence-macos-test.log
       - name: Build unsigned simulator app
         run: |
           set -o pipefail
@@ -99,5 +144,34 @@ jobs:
           name: native-local-drafts-evidence
           path: |
             .build/native-evidence
-            ${{ runner.temp }}/evidence-rendering/
           retention-days: 14
+
+  native-ui:
+    needs: [scope, rendering, simulator]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require every selected native result
+        env:
+          SCOPE_RESULT: ${{ needs.scope.result }}
+          NATIVE_REQUIRED: ${{ needs.scope.outputs.native_required }}
+          RENDERING_RESULT: ${{ needs.rendering.result }}
+          SIMULATOR_RESULT: ${{ needs.simulator.result }}
+        run: |
+          set -euo pipefail
+          test "$SCOPE_RESULT" = success
+          case "$NATIVE_REQUIRED" in
+            true)
+              test "$RENDERING_RESULT" = success
+              test "$SIMULATOR_RESULT" = success
+              ;;
+            false)
+              test "$RENDERING_RESULT" = skipped
+              test "$SIMULATOR_RESULT" = skipped
+              ;;
+            *)
+              echo "Missing or invalid native scope result" >&2
+              exit 1
+              ;;
+          esac

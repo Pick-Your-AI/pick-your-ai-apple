@@ -122,6 +122,53 @@ host choice is limited to the native UI job; package and submission-SDK workflow
 are unchanged. It does not add a product platform, physical-device observation,
 minimum-OS coverage or broader native/release acceptance.
 
+**Separate mandatory rendering and simulator jobs — 2026-10-19.** The first
+Intel trial at actual receiving checkout
+`2e3f97e1889b45b05d765ea55ebe73eba5e70d81` is still
+[cancelled](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/317#issuecomment-6262744418).
+Its four macOS rendering methods passed, the unsigned app built, and the phone's
+single launch returned PID 26970 before successful termination, shutdown and
+deletion. The tablet was then created and booted, but the job stopped during its
+boot-readiness command. There is no tablet installation, launch or cleanup result.
+The [original check annotation](https://api.github.com/repos/Pick-Your-AI/pick-your-ai-apple/check-runs/117937750065/annotations)
+confirms the overall 20-minute job limit. It does not explain the slow rendering,
+boot readiness or installation, and the earlier arm64 launch failure remains open
+under its own source and evidence.
+
+The workflow now runs two separately required jobs from the same event checkout:
+
+| Job | Required work and original artifact |
+| --- | --- |
+| `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all four real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
+| `native-simulator` | The unchanged eight Xcode and 24 smoke-runner guards, fresh-cache checks, actual toolchain recording, all 23 current model methods, unsigned Simulator build and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
+
+Each native job uses its own fresh standard `macos-15-intel` host and retains the
+same 20-minute job limit. The rendering command, source and qualifier are moved
+unchanged. The simulator runner, every individual command deadline, single-attempt
+behavior, device/runtime selection, explicit termination and owned cleanup are
+unchanged. No app or cache is transferred between jobs. Each always-run artifact
+step retains its own actual inputs and failures for 14 days.
+
+The existing `native-ui` check is a short completion gate with no source checkout,
+build or simulator operation. It waits for both native jobs and checks their
+literal results even when a dependency fails or is skipped. A successful scope
+result with `native_required: true` requires both native jobs to succeed; an
+explicit audited `false` requires both to be skipped. A failed scope, missing or
+unexpected output, or any failed/cancelled/unexpectedly skipped required job fails
+the gate. The original conservative scope condition still selects both native
+jobs together. GitHub documents [dependent-job conditions](https://docs.github.com/en/actions/reference/workflows-and-actions/workflow-syntax#jobsjob_idneeds)
+and the [always status function](https://docs.github.com/en/actions/reference/workflows-and-actions/expressions#always)
+used by this bounded result-only gate.
+
+The split removes unrelated rendering work from the simulator job's elapsed-time
+budget; it does not extend that budget or promise the remaining work will finish.
+Both new jobs still need their own successful actual receiving execution and
+artifact qualification before this source can complete the native gate. A later
+success cannot identify the cancelled run's performance cause, qualify the prior
+arm64 host or supply physical-device, minimum-OS, accessibility-journey or release
+acceptance. The original cancelled run, failed arm64 run and all earlier receipts
+remain historical observations rather than results of this new composition.
+
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
 | #26 pinned clean checkout; #30 native CI | Checked-in project/local packages, explicit Xcode pin, actual CLI missing-pin regression and isolated-cache workflow | Exact-head hosted evidence and receiving review; #30 untrusted-PR and release-secret gates remain separate |
