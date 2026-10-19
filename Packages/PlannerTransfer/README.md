@@ -4,6 +4,12 @@ This portable Swift 6 package implements part of Apple [#32](https://github.com/
 
 ## API and integration
 
+The separate [opt-in context preparation](../../docs/validation/context-budget.md)
+reads the explicitly selected CD11/CD1-0.1 candidate and preserves its original
+byte binding, five answer states and exact integer counts. It is an isolated
+consumer under Apple #37; it does not enter the frozen-v1 dispatcher, adopt new
+catalog context policy or complete that issue's archival/native receiving work.
+
 - `CatalogItem.decode(_:)` validates a single frozen-v1 catalog item, preserves its exact `CatalogKind` identity and every supported field, and returns an immutable value. Kind-specific specs and their required tier are checked against the unchanged canonical schema. No missing optional fact is filled in and no catalog item becomes a user selection.
 - `QualityEvaluationRun.decode(_:)` validates a frozen-v1 quality record and retains the supplied build/suite identities, timestamps, recorded status and measurements. Typed views preserve exact supported decimals, optional absence and array order. This structural boundary performs no evaluation, evidence authentication or current-build binding.
 - `CostEstimateRecord.decode(_:)` validates a frozen-v1 cost record and preserves exact decimal strings, build/pricebook identity, ordered items and reported coverage. The [cost boundary](COST_ESTIMATE.md) performs no pricing, arithmetic correction, rate authentication or current-build qualification.

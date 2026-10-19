@@ -59,6 +59,8 @@ jobs:
           "$transfer_python/bin/python" -m pip --isolated install --require-hashes --only-binary=:all: -r Packages/PlannerTransfer/Tools/requirements.txt
           "$transfer_python/bin/python" -m pip check
           "$transfer_python/bin/python" Packages/PlannerTransfer/Tools/verify_contract.py
+          "$transfer_python/bin/python" -m unittest discover -s Packages/PlannerTransfer/Tools/tests -p 'test_context_vectors.py' -v
+          "$transfer_python/bin/python" Packages/PlannerTransfer/Tools/context_vectors.py
       - name: Run Swift boundary and adversarial tests
         run: swift test --package-path Packages/PlannerTransfer
       - name: Compile unsigned iOS Simulator boundary
