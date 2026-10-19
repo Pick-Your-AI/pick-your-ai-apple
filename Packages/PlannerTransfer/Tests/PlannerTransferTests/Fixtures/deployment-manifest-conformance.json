@@ -1,0 +1,804 @@
+[
+  {
+    "name": "canonical-proposed-synthetic",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "missing-schema_version",
+    "json": "{\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-build_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-build_revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-deployment_target_selection_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-compatibility_report_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-quality_run_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-cost_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-resource_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-approvals",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-rollout_strategy",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-requested_at",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-status",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-schema_version",
+    "json": "{\"schema_version\":null,\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":null,\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-build_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":null,\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-build_revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":null,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-deployment_target_selection_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":null,\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-compatibility_report_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":null,\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-quality_run_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":null,\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-cost_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":null,\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-resource_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":null,\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-approvals",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":null,\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-rollout_strategy",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":null,\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-rollback_artifact_uri",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"rollback_artifact_uri\":null}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-requested_at",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":null,\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-status",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":null,\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-deployment_reference",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"deployment_reference\":null}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-notes",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":null}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "unknown-top-level-field",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"unreviewed_extension\":true}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "unsupported-schema-version",
+    "json": "{\"schema_version\":\"2.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "number-schema-version",
+    "json": "{\"schema_version\":1,\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "short-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"ab\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "uppercase-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"BAD.fixture\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "too-long-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "array-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":[],\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "max-length-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "short-build_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"ab\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "uppercase-build_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"BAD.fixture\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "too-long-build_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "array-build_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":[],\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "max-length-build_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "short-compatibility_report_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"ab\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "uppercase-compatibility_report_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"BAD.fixture\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "too-long-compatibility_report_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "array-compatibility_report_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":[],\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "max-length-compatibility_report_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "short-quality_run_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"ab\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "uppercase-quality_run_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"BAD.fixture\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "too-long-quality_run_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "array-quality_run_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":[],\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "max-length-quality_run_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "short-cost_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"ab\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "uppercase-cost_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"BAD.fixture\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "too-long-cost_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "array-cost_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":[],\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "max-length-cost_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "short-resource_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"ab\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "uppercase-resource_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"BAD.fixture\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "too-long-resource_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "array-resource_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":[],\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "max-length-resource_estimate_id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "terminal-newline-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\\n\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": false,
+    "clientLimit": "Existing client identifier regex requires strict end-of-input."
+  },
+  {
+    "name": "valid-nonprefixed-target-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "maximum-target-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "oversized-target-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"aaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaaa\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "uppercase-target-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_TARGET\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "empty-target-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "numeric-target-id",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":1,\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "zero-revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":0,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "negative-revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":-1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "fraction-revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1.5,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "boolean-revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":true,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "string-revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":\"1\",\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "fifteen-significant-digit-revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":123456789012345,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "sixteen-significant-digit-revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1234567890123456,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": false,
+    "clientLimit": "Existing client numeric subset permits at most 15 significant digits."
+  },
+  {
+    "name": "above-safe-integer-revision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":9007199254740992,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": false,
+    "clientLimit": "Existing client numeric subset excludes integers above 2^53-1."
+  },
+  {
+    "name": "declared-status-proposed",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-status-approved",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"approved\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-status-rejected",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"rejected\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-status-deployed",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"deployed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-status-rolled_back",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"rolled_back\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "unknown-status",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"ready\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "boolean-status",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":true,\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "rollout-canary",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "rollout-blue_green",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"blue_green\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "rollout-rolling",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"rolling\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "rollout-manual",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"manual\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "unknown-rollout",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"automatic\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "empty-approvals",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "object-approvals",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":{},\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "approval-pending-security",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"pending\",\"scope\":\"security\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "approval-pending-owner",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "approval-pending-finance",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"pending\",\"scope\":\"finance\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "approval-pending-compliance",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"pending\",\"scope\":\"compliance\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "approval-approved-security",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"approved\",\"scope\":\"security\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "approval-approved-owner",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"approved\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "approval-approved-finance",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"approved\",\"scope\":\"finance\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "approval-approved-compliance",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"approved\",\"scope\":\"compliance\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "approval-rejected-security",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"rejected\",\"scope\":\"security\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "approval-rejected-owner",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"rejected\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "approval-rejected-finance",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"rejected\",\"scope\":\"finance\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "approval-rejected-compliance",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"fixture.private.é\",\"decision\":\"rejected\",\"scope\":\"compliance\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "missing-approval-approver_ref",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-approval-approver_ref",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"decision\":\"pending\",\"scope\":\"owner\",\"approver_ref\":null}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-approval-decision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-approval-decision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"scope\":\"owner\",\"decision\":null}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "missing-approval-scope",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "null-approval-scope",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":null}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-approval-approver_ref",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-approval-decision",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"accepted\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-approval-scope",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"runtime\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-approval-extra",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\",\"extra\":\"unreviewed\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "invalid-approval-approved_at",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\",\"approved_at\":\"2026-02-30T09:00:00Z\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "pending-with-declared-approval-time",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\",\"approved_at\":\"2024-02-29T09:00:00+01:00\"},{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\",\"approved_at\":\"2024-02-29T09:00:00+01:00\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "leap-day-requested-at",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2024-02-29T23:59:59Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "fraction-offset-requested-at",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00.001-05:30\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "bad-day-requested-at",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-02-29T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "no-zone-requested-at",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "bad-hour-requested-at",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T24:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"]}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "https-rollback",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"rollback_artifact_uri\":\"https://fixture.invalid/rollback/a%20b#v1\"}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "urn-rollback",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"rollback_artifact_uri\":\"urn:fixture:rollback:1\"}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "file-rollback",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"rollback_artifact_uri\":\"file:///private/fixture\"}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "ipv6-rollback",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"rollback_artifact_uri\":\"https://[::1]/rollback\"}",
+    "canonicalValid": true,
+    "clientValid": false,
+    "clientLimit": "Existing client URI subset excludes IP-literal hosts."
+  },
+  {
+    "name": "relative-rollback",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"rollback_artifact_uri\":\"rollback/v1\"}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "space-rollback",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"rollback_artifact_uri\":\"https://fixture.invalid/a b\"}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "bad-percent-rollback",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"rollback_artifact_uri\":\"https://fixture.invalid/%zz\"}",
+    "canonicalValid": false,
+    "clientValid": false
+  },
+  {
+    "name": "empty-deployment-reference",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"deployment_reference\":\"\"}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "declared-private-deployment-reference",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"Not approved or deployed. All evidence is synthetic.\"],\"deployment_reference\":\"private.fixture/é\"}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "empty-notes",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "ordered-repeated-unicode-notes",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[\"é\",\"é\",\"é\"]}",
+    "canonicalValid": true,
+    "clientValid": true
+  },
+  {
+    "name": "wrong-note-item",
+    "json": "{\"schema_version\":\"1.0.0\",\"id\":\"manifest.fixture.1\",\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"deployment_target_selection_id\":\"sel_deployment_target\",\"compatibility_report_id\":\"evaluation.build.fixture.1.r1\",\"quality_run_id\":\"quality.fixture.1\",\"cost_estimate_id\":\"estimate.fixture.1\",\"resource_estimate_id\":\"resources.fixture.1\",\"approvals\":[{\"approver_ref\":\"user.fixture\",\"decision\":\"pending\",\"scope\":\"owner\"}],\"rollout_strategy\":\"canary\",\"requested_at\":\"2026-10-16T09:00:00Z\",\"status\":\"proposed\",\"notes\":[true]}",
+    "canonicalValid": false,
+    "clientValid": false
+  }
+]
