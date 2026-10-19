@@ -19,11 +19,12 @@ service and release receiving acceptance retain their separate criteria.
 On macOS, use the [pinned toolchain setup and commands](#pinned-toolchain) below.
 
 The workflow records the actual compiler/SDK/runtime and runs model tests, an unsigned
-simulator build, iPhone/iPad launch smoke checks, and six XCUITest journeys on each
+simulator build, iPhone/iPad launch smoke checks, and seven XCUITest journeys on each
 pinned UI-test destination: local notes with production autosave, durable undo/redo
 and discard recovery; catalog filters, pagination, relaunch and exact details; and
 four T6 journeys using two explicitly synthetic retained-review scenarios, including
-report disclosure/Files cancellation and actual tab withdrawal. It contains no signing
+report disclosure/Files cancellation and actual tab withdrawal; and the planning-input
+edit, acknowledged-save, relaunch and revision-restoration journey. It contains no signing
 secrets. The launch-only smoke script remains a separate check; see the
 [UI journey evidence and limits](UI_JOURNEY.md).
 
@@ -32,7 +33,7 @@ Notes journey passes on both pinned simulators, with successful owned cleanup;
 see the [completed editor receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution).
 Its separate scope-cleanup failure remains recorded. The earlier 110 UI / 57
 Transfer composition is historical input. The current preparation requires all
-204 UI and 181 Transfer methods plus all six complete journeys on each destination;
+221 UI and 181 Transfer methods plus all seven complete journeys on each destination;
 none of those expanded results is inferred from the earlier editor run.
 
 ## Current receiving source and required validation
@@ -100,16 +101,16 @@ fourth T6 journey exercises actual tab withdrawal, reopen and retained-input ret
 | Mandatory current job | Exact selected work |
 | --- | --- |
 | `native-evidence-rendering` | All five accepted real macOS Evidence methods and strict receipt, including the Gregorian capture-date extension, Xcode 16.4, unchanged 20-minute job. |
-| `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 204 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
+| `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 221 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
 | `native-cost-rendering` | Three real macOS Cost methods and their strict receipt, Xcode 16.4, separate 20-minute job. |
-| `native-ui-journey (iphone)` and `(ipad)` | All six app journeys on each fresh pinned 18.5 destination, 24 runner controls, separate 20-minute jobs and unchanged 900-second inner test limit. |
+| `native-ui-journey (iphone)` and `(ipad)` | All seven app journeys on each fresh pinned 18.5 destination, 24 runner controls, separate 20-minute jobs and unchanged 900-second inner test limit. |
 | `native-ui` | Result-only aggregate requires successful scope and every selected job's success; only an audited false scope permits all native jobs to skip. |
 
 Core retains every existing package, mutation, guard and Evidence-rendering step
 and adds the three Cost methods on each pinned simulator. Storage requires all 34
 methods and its actual crash/recovery controls. Transfer requires 181 exact methods,
 the original nine reference phases and the separate Manifest controls. Submission
-SDK requires all five packages (146 Core, 34 Data, 181 Transfer, 92 Catalog, 204 UI),
+SDK requires all five packages (146 Core, 34 Data, 181 Transfer, 92 Catalog, 221 UI),
 all current App guards and both unsigned Release products with their separate SDK
 and privacy receipts. Static inventories are not execution observations.
 
@@ -130,6 +131,20 @@ methods and an older padded receipt. Its 16 portable controls and the exhaustive
 4,096-state result-gate control do not execute an Apple application. New source,
 current-main composition, configured native results and actual main readback must
 retain their own identities.
+
+The [planning-input source and journey record](../docs/validation/issue-64-planning-inputs.md)
+describes the local raw fields, unanswered catalog references and lossless editor-v1
+reading. Its 17 added UI methods retain all 204 preceding identities. The new App
+journey creates only its own draft through ordinary controls, retains invalid usage
+units and exact budget spelling across a process relaunch, explicitly chooses the
+fictional workload/deployment records, then restores the earlier invalid/unanswered
+revision and verifies it after another relaunch. It also checks that catalog usage,
+classification and region declarations do not become fabricated user input.
+The six preceding App method bodies and both historical local/T6 selector groups
+remain exact; `--suite all` additionally requires the new method's start and pass.
+An older six-method result cannot qualify the expanded current suite. This is a
+declared journey awaiting its own native execution, not a simulated interruption,
+manual accessibility audit, evaluated filter result or completed #64 criterion.
 
 ## Retained smoke and toolchain history
 

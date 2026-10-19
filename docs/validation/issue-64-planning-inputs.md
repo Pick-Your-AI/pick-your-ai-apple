@@ -130,6 +130,43 @@ until their original current-source results are recorded. Independent receiving
 review follows the concrete published source; no prior donor review applies to this
 new input implementation automatically.
 
+## Native planning-input journey follow-up
+
+The initially published donor `3113efb3007194ce22b413783c88a5650ebcac0a`, tree
+`62803d95458c093c6b9beb7d42fa24f2c96196ff`, retains the six preceding App journeys;
+none of those methods operates these new fields. Its root source review and
+original hosted results retain that exact source identity. The follow-up adds
+`LocalDraftJourneyTests.testPlanningInputsPreserveUnansweredInvalidTextAndRestoredRevisions`
+through the existing App test target. No application code or frozen field schema
+changes in this test increment.
+
+The [complete declared journey](../../App/UI_JOURNEY.md#current-seven-journey-planning-input-follow-up--2026-10-19)
+uses ordinary controls and a uniquely named test-created draft. It checks absent
+workload/deployment/currency, preserves `1.2500` and invalid `12 requests/day` after
+acknowledged autosave and process relaunch, explicitly selects the fictional pinned
+records, then corrects currency/usage while preserving unanswered catalog-derived
+inputs. Restoring the earlier revision must create a new saved revision, retain the
+later corrected history, and recover the earlier raw invalid/absent state after
+another process relaunch. It checks actual UI values, state text and durable row
+identities; it neither injects records nor reads the database directly.
+
+All six preceding App method bodies and every old helper remain exact. The 221
+package-test profile is unchanged. The original two/four local/T6 selector groups
+are unchanged; the existing native workflow's `--suite all` additionally requires
+the seventh App method. All runner functions, destinations, deadlines, single
+attempts and cleanup remain unchanged. The workflow edit only makes its step name
+describe the complete current selection. Current App documentation now names the
+221 package methods and seven App journeys, preserving dated prior receipts.
+
+The actual local registration control first ran the same 24 Python methods with
+the new Swift method absent from the runner selection: one expected missing-method
+failure in 0.046 seconds. After registration, all 24 pass in 0.055 seconds with
+zero failures/errors/skips. The original red/green logs are retained. This proves
+source/receipt attendance and rejection of older or substituted output, not
+execution of the Swift journey. A Swift 6.2.4 frontend syntax parse of the changed
+native test is separately recorded; syntax parsing is not Apple SDK type checking
+or native behavioral execution.
+
 ## Remaining acceptance
 
 #64 remains open for input-driven documented filters, complete empty-draft to

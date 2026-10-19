@@ -26,7 +26,10 @@ T6_TESTS = (
     "PlannerAppUITests/T6ReviewJourneyTests/testReportDisclosurePreviewAndFilesCancellationKeepThePrivatePlan",
     "PlannerAppUITests/T6ReviewJourneyTests/testLeavingImportedBuildsWithdrawsReportPreviewAndReopensRetainedInputs",
 )
-SUITES = {"local": TESTS, "t6": T6_TESTS, "all": TESTS + T6_TESTS}
+PLANNING_TESTS = (
+    "PlannerAppUITests/LocalDraftJourneyTests/testPlanningInputsPreserveUnansweredInvalidTextAndRestoredRevisions",
+)
+SUITES = {"local": TESTS, "t6": T6_TESTS, "all": TESTS + T6_TESTS + PLANNING_TESTS}
 TEST_TIMEOUT_SECONDS = 15 * 60
 
 

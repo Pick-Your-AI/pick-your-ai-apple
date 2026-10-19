@@ -168,6 +168,165 @@ final class LocalDraftJourneyTests: XCTestCase {
         // The control is removed only with this run's owned simulator cleanup.
     }
 
+    /// Exercises only this test-created draft through the normal app controls.
+    /// Invalid input is valid local draft content, not a validated frozen Build.
+    @MainActor
+    func testPlanningInputsPreserveUnansweredInvalidTextAndRestoredRevisions() {
+        continueAfterFailure = false
+        let app = XCUIApplication()
+        app.launchArguments = ["-AppleLanguages", "(en)", "-AppleLocale", "en_US"]
+        app.launch()
+        if app.textFields["draftTitle"].exists {
+            XCTAssertFalse(app.buttons["saveDraft"].isEnabled, "An existing draft must be clean")
+            tap(app.buttons["Close"])
+        }
+        tapNavigation("Notes", in: app)
+        let title = "UI-Planning-\(UUID().uuidString)"
+        let notes = "Synthetic planning input journey. Preserve these notes."
+        let recordIdentifier = createDraft(app, title: title, notes: notes)
+        tap(app.buttons[recordIdentifier])
+        assertEditor(app, title: title, notes: notes)
+        assertUnansweredPlanningChoices(app, towardTop: false)
+        retainHierarchy(app, name: "New draft with unanswered workload and deployment")
+        assertPlanningState(app, key: "currency",
+            message: "Unanswered. A budget cannot be interpreted without its currency.", towardTop: false)
+
+        replacePlanningInput(app, key: "monthly_budget_amount", previous: "", replacement: "1.2500", towardTop: false)
+        assertPlanningState(app, key: "monthly_budget_amount",
+            message: "Amount entered. A valid currency code is still needed to interpret this budget.", towardTop: false)
+        replacePlanningInput(app, key: "requests_per_day", previous: "", replacement: "12 requests/day", towardTop: false)
+        let invalidUsage = "Invalid input. Use a whole number of at least 0 in the stated unit; omit separators and unit text. Your text is preserved."
+        assertPlanningState(app, key: "requests_per_day", message: invalidUsage, towardTop: false)
+        awaitAutosaveAcknowledgement(app)
+        let invalidRevision = newestSavedRevision(app, title: title)
+        retainScreenshot(app, name: "Saved revision after invalid planning units and unanswered choices")
+        autosaveAndClose(app)
+        app.terminate()
+        app.launch()
+        tapNavigation("Notes", in: app)
+        assertLoadedLibrary(app, controlIdentifier: recordIdentifier)
+        tap(app.buttons[recordIdentifier])
+        assertEditor(app, title: title, notes: notes)
+        assertUnansweredPlanningChoices(app, towardTop: false)
+        assertPlanningState(app, key: "currency",
+            message: "Unanswered. A budget cannot be interpreted without its currency.", towardTop: false)
+        assertPlanningValue(app, key: "monthly_budget_amount", expected: "1.2500", towardTop: false)
+        assertPlanningValue(app, key: "requests_per_day", expected: "12 requests/day", towardTop: false)
+        assertPlanningState(app, key: "requests_per_day", message: invalidUsage, towardTop: false)
+        retainScreenshot(app, name: "Exact invalid units and budget spelling after process relaunch")
+
+        // These are explicit native menu selections from the unchanged fictional
+        // catalog. Its declared usage and region must not become user input.
+        let workload = app.buttons["planningChoice-workload"]
+        reveal(workload, in: app, towardTop: true)
+        tap(workload)
+        tap(app.buttons["FICTIONAL Workload — agentic"])
+        let workloadReference = app.staticTexts["cat.workload.fixture · 2026.10-demo"]
+        XCTAssertTrue(workloadReference.waitForExistence(timeout: 10))
+        let deployment = app.buttons["planningChoice-deployment_mode"]
+        reveal(deployment, in: app, towardTop: false)
+        tap(deployment)
+        tap(app.buttons["FICTIONAL Deployment Mode — self_hosted"])
+        XCTAssertTrue(app.staticTexts["cat.deployment_mode.fixture · 2026.10-demo"].waitForExistence(timeout: 10))
+        retainScreenshot(app, name: "Explicit fictional workload and deployment choices")
+        assertPlanningState(app, key: "region",
+            message: "Unanswered. Region restrictions cannot be applied.", towardTop: false)
+        replacePlanningInput(app, key: "currency", previous: "", replacement: "USD", towardTop: false)
+        assertPlanningState(app, key: "data_classification",
+            message: "Unanswered. Data classification restrictions cannot be applied.", towardTop: false)
+        replacePlanningInput(app, key: "requests_per_day", previous: "12 requests/day", replacement: "00012", towardTop: false)
+        assertPlanningState(app, key: "requests_per_day",
+            message: "Input recorded. Compatibility, availability and prices remain unknown.", towardTop: false)
+        assertPlanningState(app, key: "avg_input_tokens",
+            message: "Unanswered. Usage is unknown; no zero usage is assumed.", towardTop: false)
+        awaitAutosaveAcknowledgement(app)
+        let correctedRevision = newestSavedRevision(app, title: title)
+        XCTAssertGreaterThan(correctedRevision, invalidRevision)
+        retainScreenshot(app, name: "Saved revision after explicit choices and corrected usage")
+
+        let restore = app.buttons["Restore revision \(invalidRevision)"]
+        reveal(restore, in: app, towardTop: false)
+        tap(restore)
+        tap(app.buttons["Restore revision"])
+        assertUnansweredPlanningChoices(app, towardTop: true)
+        assertPlanningState(app, key: "currency",
+            message: "Unanswered. A budget cannot be interpreted without its currency.", towardTop: false)
+        assertPlanningValue(app, key: "monthly_budget_amount", expected: "1.2500", towardTop: false)
+        assertPlanningValue(app, key: "requests_per_day", expected: "12 requests/day", towardTop: false)
+        assertPlanningState(app, key: "requests_per_day", message: invalidUsage, towardTop: false)
+        awaitAutosaveAcknowledgement(app)
+        assertSavedRevision(app, revision: correctedRevision + 1, title: title)
+        let retainedCorrected = app.staticTexts["revisionTitle-\(correctedRevision)"]
+        reveal(retainedCorrected, in: app, towardTop: false)
+        XCTAssertEqual(retainedCorrected.label, title, "Restoration must retain the later saved revision")
+        autosaveAndClose(app)
+        app.terminate()
+        app.launch()
+        tapNavigation("Notes", in: app)
+        assertLoadedLibrary(app, controlIdentifier: recordIdentifier)
+        tap(app.buttons[recordIdentifier])
+        assertEditor(app, title: title, notes: notes)
+        assertUnansweredPlanningChoices(app, towardTop: false)
+        assertPlanningState(app, key: "currency",
+            message: "Unanswered. A budget cannot be interpreted without its currency.", towardTop: false)
+        assertPlanningValue(app, key: "monthly_budget_amount", expected: "1.2500", towardTop: false)
+        assertPlanningValue(app, key: "requests_per_day", expected: "12 requests/day", towardTop: false)
+        assertPlanningState(app, key: "requests_per_day", message: invalidUsage, towardTop: false)
+        XCTAssertFalse(app.staticTexts["editorNotice"].exists)
+        retainHierarchy(app, name: "Restored planning inputs after process relaunch")
+        retainScreenshot(app, name: "Restored planning inputs after process relaunch")
+        autosaveAndClose(app)
+        // The test-created row remains until this run's owned simulator cleanup.
+        // This acknowledged-save journey does not simulate an interrupted write.
+    }
+
+    @MainActor
+    private func assertUnansweredPlanningChoices(_ app: XCUIApplication, towardTop: Bool) {
+        for (index, kind) in ["Workload", "Deployment mode"].enumerated() {
+            let state = app.staticTexts["Unanswered. \(kind) filters cannot be applied."]
+            reveal(state, in: app, towardTop: index == 0 ? towardTop : false)
+            XCTAssertEqual(state.label, "Unanswered. \(kind) filters cannot be applied.")
+        }
+    }
+
+    @MainActor
+    private func replacePlanningInput(_ app: XCUIApplication, key: String, previous: String,
+                                      replacement: String, towardTop: Bool) {
+        let field = app.textFields["planningInput-\(key)"]
+        reveal(field, in: app, towardTop: towardTop)
+        if previous.isEmpty {
+            XCTAssertEqual(field.placeholderValue, "Unanswered")
+            XCTAssertTrue((field.value as? String) == "" || (field.value as? String) == field.placeholderValue,
+                          "Only an empty native field or its displayed placeholder is expected")
+        } else {
+            XCTAssertEqual(field.value as? String, previous)
+        }
+        field.coordinate(withNormalizedOffset: CGVector(dx: 0.95, dy: 0.5)).tap()
+        if !previous.isEmpty {
+            field.typeText(String(repeating: XCUIKeyboardKey.delete.rawValue, count: previous.count))
+        }
+        field.typeText(replacement)
+        XCTAssertEqual(field.value as? String, replacement)
+    }
+
+    @MainActor
+    private func assertPlanningValue(_ app: XCUIApplication, key: String, expected: String, towardTop: Bool) {
+        let field = app.textFields["planningInput-\(key)"]
+        reveal(field, in: app, towardTop: towardTop)
+        let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "value == %@", expected), object: field)
+        XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 10), .completed)
+        XCTAssertEqual(field.value as? String, expected)
+    }
+
+    @MainActor
+    private func assertPlanningState(_ app: XCUIApplication, key: String, message: String, towardTop: Bool) {
+        let state = app.staticTexts["planningInputState-\(key)"]
+        reveal(state, in: app, towardTop: towardTop)
+        let ready = XCTNSPredicateExpectation(predicate: NSPredicate(format: "label == %@", message), object: state)
+        XCTAssertEqual(XCTWaiter.wait(for: [ready], timeout: 10), .completed)
+        XCTAssertEqual(state.label, message)
+    }
+
     @MainActor
     private func tapNavigation(_ title: String, in app: XCUIApplication) {
         // Adaptive iPad navigation is exposed as Buttons outside a TabBar.

@@ -1,6 +1,43 @@
 # Bounded native notes and catalog UI journeys
 
-## Current six-journey T6 successor — 2026-10-19
+## Current seven-journey planning-input follow-up — 2026-10-19
+
+The [planning-input source record](../docs/validation/issue-64-planning-inputs.md)
+adds one method to the existing LocalDraftJourneyTests class:
+`testPlanningInputsPreserveUnansweredInvalidTextAndRestoredRevisions`. It launches
+the ordinary app with locale arguments only and creates a uniquely named synthetic
+draft through the normal Notes controls. There is no storage seed, reset, direct
+database access or test-only persistence path.
+
+The declared journey checks unanswered workload, deployment and currency before
+entering the exact amount `1.2500` and invalid usage `12 requests/day`. After the
+production autosave acknowledges those edits, it closes, terminates and relaunches
+the app, then opens the exact created record and checks both raw values and their
+unanswered/invalid explanations. It explicitly selects the two unchanged fictional
+catalog records and corrects currency/usage to `USD`/`00012`. Catalog region,
+classification and input-token declarations must remain unanswered user inputs.
+
+Through the actual revision controls, it restores the earlier invalid/unanswered
+state as a new durable revision. The later corrected revision must remain in the
+history. A second clean close and process relaunch must recover the restored raw
+values, empty choices, unchanged title/notes and visible state explanations. The
+test retains original screenshots and hierarchy attachments; it leaves only its
+own new row for the existing process-owned simulator cleanup.
+
+All six preceding App method bodies and their helpers remain exact. The historical
+`--suite local` and `--suite t6` groups still contain two and four methods. Current
+CI's `--suite all` adds this seventh exact identity; its structured count and every
+method's single start/pass are required. The same 24 portable controls reject an
+older six-method result and same-count substitution. Both pinned destinations,
+the 900-second inner deadline, single attempts and mandatory owned cleanup remain
+unchanged. Only the workflow step's display name changes.
+
+This is test source awaiting actual native execution on the current source. It
+does not simulate an interrupted unacknowledged write, prove a manual accessibility
+audit, execute workload/budget compatibility filters or complete issue #64. The
+earlier six-method source and all dated observations below retain their own scope.
+
+## Earlier six-journey T6 successor — 2026-10-19
 
 The [T6 receiving follow-up](../docs/validation/imported-build-integration.md#t6-report-and-route-lifecycle-follow-up)
 keeps both original Notes/Catalog methods and the two original T6 methods. It

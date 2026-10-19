@@ -149,16 +149,16 @@ class UIJourneyRunnerTests(unittest.TestCase):
         return "\n".join(rows) + "\n"
 
     def test_combined_single_destination_retains_all_four_exact_methods(self):
-        # Retain the original four cases, now with both successor journeys.
-        summary = {**PASSING, "totalTestCount": 6, "passedTests": 6}
+        # Retain all six earlier cases, now with the planning-input journey.
+        summary = {**PASSING, "totalTestCount": 7, "passedTests": 7}
         with tempfile.TemporaryDirectory() as directory:
             _, commands, tests, results, failure = self.exercise_main(directory, summary=summary,
                 extra_args=("--suite", "all", "--destination", "ipad"))
             self.assertIsNone(failure)
             self.assertEqual(len(tests), 1)
             self.assertEqual(results[0]["destination"]["label"], "ipad")
-            self.assertEqual(results[0]["tests"], list(journey.TESTS + journey.T6_TESTS))
-            self.assertEqual(len(results[0]["tests"]), 6)
+            self.assertEqual(results[0]["tests"], list(journey.TESTS + journey.T6_TESTS + journey.PLANNING_TESTS))
+            self.assertEqual(len(results[0]["tests"]), 7)
             self.assertTrue(results[0]["executionIdentitiesPassed"])
             self.assertTrue(results[0]["cleanupSucceeded"])
             self.assertEqual(len([c for c in commands if c[:3] == ["xcrun", "simctl", "create"]]), 1)
@@ -178,7 +178,7 @@ class UIJourneyRunnerTests(unittest.TestCase):
 
     def test_combined_summary_rejects_the_earlier_two_method_observation(self):
         self.assertFalse(journey.summary_passed(PASSING, journey.SUITES["all"]))
-        self.assertTrue(journey.summary_passed({**PASSING, "totalTestCount": 6, "passedTests": 6}, journey.SUITES["all"]))
+        self.assertTrue(journey.summary_passed({**PASSING, "totalTestCount": 7, "passedTests": 7}, journey.SUITES["all"]))
 
     def test_current_suite_requires_every_declared_app_method_without_same_count_substitution(self):
         root = Path(__file__).resolve().parents[2] / "PlannerAppUITests"
@@ -204,7 +204,7 @@ class UIJourneyRunnerTests(unittest.TestCase):
 
     def test_expanded_suite_rejects_pre_export_and_missing_withdrawal_receipts(self):
         tests = journey.SUITES["all"]
-        for total in (4, 5):
+        for total in (4, 5, 6):
             with self.subTest(old_total=total):
                 summary = {**PASSING, "totalTestCount": total, "passedTests": total}
                 self.assertFalse(journey.summary_passed(summary, tests))
