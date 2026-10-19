@@ -1,0 +1,116 @@
+{
+  "schema_version": "1.0.0",
+  "id": "build.fixture.1",
+  "revision": 1,
+  "name": "SYNTHETIC T6 review fixture",
+  "owner_ref": "team.fixture",
+  "lifecycle": "draft",
+  "created_at": "2026-10-16T09:00:00Z",
+  "updated_at": "2026-10-16T09:00:00Z",
+  "objectives": {
+    "region": "us-east-fixture",
+    "currency": "USD",
+    "monthly_budget_amount": "1000.00",
+    "requests_per_day": 0,
+    "avg_input_tokens": 700,
+    "avg_output_tokens": 400,
+    "max_concurrency": 2,
+    "data_classification": "internal",
+    "max_latency_ms": 6000
+  },
+  "locks": {
+    "catalog_snapshot_id": "catalog.fixture.1",
+    "ruleset_id": "rules.fixture.1",
+    "ruleset_version": "1.0.0",
+    "dependency_graph_id": "dependencies.core.1",
+    "dependency_graph_revision": 1,
+    "pricebook_id": "prices.fixture.1"
+  },
+  "selections": [
+    {
+      "id": "sel_workload",
+      "kind": "workload",
+      "catalog_item_id": "cat.workload.fixture",
+      "catalog_item_version": "2026.10-demo",
+      "role": "primary",
+      "enabled": true,
+      "settings": {
+        "concurrency": 2,
+        "requests_per_day": 200,
+        "avg_input_tokens": 700,
+        "avg_output_tokens": 400
+      }
+    },
+    {
+      "id": "sel_deployment_mode",
+      "kind": "deployment_mode",
+      "catalog_item_id": "cat.deployment_mode.fixture",
+      "catalog_item_version": "2026.10-demo",
+      "role": "primary",
+      "enabled": true,
+      "settings": {}
+    },
+    {
+      "id": "sel_guardrail",
+      "kind": "guardrail",
+      "catalog_item_id": "cat.guardrail.fixture",
+      "catalog_item_version": "2026.10-demo",
+      "role": "primary",
+      "enabled": true,
+      "settings": {
+        "enforcement": "block",
+        "failure_action": "fail_closed"
+      }
+    },
+    {
+      "id": "sel_evaluation_suite",
+      "kind": "evaluation_suite",
+      "catalog_item_id": "cat.evaluation_suite.fixture",
+      "catalog_item_version": "2026.10-demo",
+      "role": "primary",
+      "enabled": true,
+      "settings": {
+        "gate_required": true,
+        "minimum_score": 0.85
+      }
+    },
+    {
+      "id": "sel_deployment_target",
+      "kind": "deployment_target",
+      "catalog_item_id": "cat.deployment_target.fixture",
+      "catalog_item_version": "2026.10-demo",
+      "role": "primary",
+      "enabled": true,
+      "settings": {
+        "environment": "production",
+        "replicas_min": 1,
+        "replicas_max": 2,
+        "region": "us-east-fixture"
+      }
+    },
+    {
+      "id": "sel_monitoring_stack",
+      "kind": "monitoring_stack",
+      "catalog_item_id": "cat.monitoring_stack.fixture",
+      "catalog_item_version": "2026.10-demo",
+      "role": "primary",
+      "enabled": true,
+      "settings": {
+        "sample_rate": 0.1,
+        "retention_days": 30
+      }
+    }
+  ],
+  "links": [],
+  "policy": {
+    "fail_on_unknown": true,
+    "require_evaluations_for_production": true,
+    "allow_unverified_catalog_items": true,
+    "min_resource_confidence": "estimated"
+  },
+  "extensions": {
+    "x_planning_notes": [
+      "SYNTHETIC private owner note; never share by implication."
+    ]
+  }
+}
