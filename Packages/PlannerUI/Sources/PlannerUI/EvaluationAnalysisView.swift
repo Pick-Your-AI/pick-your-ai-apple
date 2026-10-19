@@ -32,6 +32,7 @@ public struct EvaluationAnalysisView: View {
                 Text("Compatibility and readiness remain unknown until a matching report arrives.")
                     .foregroundStyle(.secondary)
             }
+            .accessibilityElement(children: .contain)
             .accessibilityIdentifier("visible-analysis-pending")
         case .unavailable(let reason):
             VStack(alignment: .leading, spacing: 8) {
