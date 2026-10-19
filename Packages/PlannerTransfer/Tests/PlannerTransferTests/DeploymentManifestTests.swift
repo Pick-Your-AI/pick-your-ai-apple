@@ -176,7 +176,7 @@ final class DeploymentManifestTests: XCTestCase {
     func testProposedLocalPairPreservesLocksMonitoringPrivateFieldsAndDeclarations() throws {
         var buildInput = try object("build")
         buildInput["owner_ref"] = .string("private.synthetic.owner")
-        buildInput["notes"] = .array([.string("private synthetic planning notes")])
+        buildInput["extensions"] = .object(["x_planning_notes": .array([.string("private synthetic planning notes")])])
         buildInput = replacingSelection(buildInput, id: "sel_monitoring_stack") { selection in
             var result = selection; result["catalog_item_version"] = .string("private.e\u{301}.version")
             return result
@@ -312,7 +312,7 @@ final class DeploymentManifestTests: XCTestCase {
             result["settings"] = .object(settings)
             return result
         }
-        input["notes"] = .array([.string("Synthetic incompatible embedding/index dimensions; quality and approval unverified.")])
+        input["extensions"] = .object(["x_planning_notes": .array([.string("Synthetic incompatible embedding/index dimensions; quality and approval unverified.")])])
         var declaration = try object()
         declaration["quality_run_id"] = .string("quality.unverified.reference")
         declaration["notes"] = .array([.string("Referenced reports are not supplied or verified by this local pair.")])
