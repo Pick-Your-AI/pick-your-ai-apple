@@ -6,6 +6,7 @@ These fixtures do not execute Swift or establish native storage durability.
 import json
 import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
 import tempfile
@@ -28,6 +29,12 @@ modes = json.loads(trace.read_text()) if trace.exists() else []
 mode, database = sys.argv[1], Path(sys.argv[2])
 modes.append(mode)
 trace.write_text(json.dumps(modes))
+if len(modes) - 1 == options.get("hang_index"):
+    print("synthetic blocked probe stdout", flush=True)
+    print("synthetic blocked probe stderr", file=sys.stderr, flush=True)
+    Path(options["pid_file"]).write_text(str(os.getpid()))
+    import time
+    time.sleep(30)
 if options.get("always_zero"):
     raise SystemExit(0)
 if len(modes) - 1 == options.get("bad_index"):
@@ -56,22 +63,38 @@ if mode.startswith("crash-"):
 
 
 class CrashReplayChecks(unittest.TestCase):
-    def replay(self, optimized=False, **options):
+    def replay(self, optimized=False, timeout_seconds=None, **options):
         with tempfile.TemporaryDirectory(prefix="synthetic-replay-driver-") as directory:
             root = Path(directory)
             probe = root / "probe"
             probe.write_text(f"#!{sys.executable}\n" + PROBE, encoding="utf-8")
             probe.chmod(0o755)
             trace = root / "trace.json"
+            pid_file = root / "probe.pid"
+            options["pid_file"] = str(pid_file)
             environment = dict(os.environ)
             environment.pop("PYTHONOPTIMIZE", None)
             environment["REPLAY_FIXTURE_OPTIONS"] = json.dumps(options)
             environment["REPLAY_FIXTURE_TRACE"] = str(trace)
-            result = subprocess.run(
-                [sys.executable, *(["-O"] if optimized else []), str(DRIVER), str(probe)],
-                env=environment, capture_output=True, text=True, timeout=20,
+            command = [sys.executable, *(["-O"] if optimized else []), str(DRIVER), str(probe),
+                       *(["--timeout-seconds", str(timeout_seconds)] if timeout_seconds is not None else [])]
+            process = subprocess.Popen(
+                command, env=environment, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                text=True, start_new_session=True,
             )
+            try:
+                stdout, stderr = process.communicate(timeout=20)
+            except subprocess.TimeoutExpired:
+                # A regression in the driver must not leave the deliberately
+                # hung fixture behind after the test's independent watchdog.
+                os.killpg(process.pid, signal.SIGKILL)
+                process.communicate(timeout=5)
+                raise
+            result = subprocess.CompletedProcess(command, process.returncode, stdout, stderr)
             modes = json.loads(trace.read_text()) if trace.exists() else []
+            if pid_file.exists():
+                with self.assertRaises(ProcessLookupError, msg="timed-out probe must be reaped"):
+                    os.kill(int(pid_file.read_text()), 0)
             return result, modes
 
     def require_failure(self, result):
@@ -98,6 +121,38 @@ class CrashReplayChecks(unittest.TestCase):
                     self.assertIn(mode, result.stderr)
                     self.assertIn("synthetic probe stdout", result.stderr)
                     self.assertIn("synthetic probe stderr", result.stderr)
+
+    def test_timeout_at_each_phase_stops_and_reaps_the_probe(self):
+        for optimized in (False, True):
+            for index, mode in enumerate(MODES):
+                with self.subTest(optimized=optimized, index=index, mode=mode):
+                    result, modes = self.replay(optimized, timeout_seconds=1, hang_index=index)
+                    self.require_failure(result)
+                    self.assertEqual(modes, MODES[:index + 1])
+                    self.assertIn(f"{mode}: probe exceeded 1-second deadline", result.stderr)
+                    self.assertIn("synthetic blocked probe stdout", result.stderr)
+                    self.assertIn("synthetic blocked probe stderr", result.stderr)
+
+    def test_fresh_replay_succeeds_after_a_timed_out_probe(self):
+        for optimized in (False, True):
+            with self.subTest(optimized=optimized):
+                failed, modes = self.replay(optimized, timeout_seconds=1, hang_index=5)
+                self.require_failure(failed)
+                self.assertEqual(modes, MODES[:6])
+                result, modes = self.replay(optimized, timeout_seconds=1)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertEqual(modes, MODES)
+                self.assertEqual(result.stdout.count("PASS:"), 1)
+                self.assertEqual(result.stderr, "")
+
+    def test_invalid_deadlines_fail_before_starting_a_probe(self):
+        for optimized in (False, True):
+            for timeout in (0, -1, "nan", "inf", "-inf", "not-a-number"):
+                with self.subTest(optimized=optimized, timeout=timeout):
+                    result, modes = self.replay(optimized, timeout_seconds=timeout)
+                    self.require_failure(result)
+                    self.assertEqual(modes, [])
+                    self.assertEqual(result.returncode, 2)
 
     def test_zero_exit_probe_without_a_database_cannot_report_success(self):
         for optimized in (False, True):

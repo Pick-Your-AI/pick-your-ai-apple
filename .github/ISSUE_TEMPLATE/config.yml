@@ -6,3 +6,6 @@ contact_links:
   - name: Delivery Project
     url: https://github.com/orgs/Pick-Your-AI/projects/5
     about: Inspect ownership, prerequisites and existing work packages.
+  - name: Apple support and correction guide
+    url: https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/main/SUPPORT.md
+    about: Review public reporting routes, diagnostic privacy and current response limits.

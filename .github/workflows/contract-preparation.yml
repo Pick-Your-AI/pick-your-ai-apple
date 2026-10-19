@@ -49,6 +49,8 @@ jobs:
         run: '"$APPLE_CONFORMANCE_PYTHON" tools/conformance/pricebook_vectors.py --contract-root .canonical-research/contracts/v1'
       - name: Replay raw JSON without collapsing repeated keys
         run: '"$APPLE_CONFORMANCE_PYTHON" tools/conformance/raw_core_vectors.py --contract-root .canonical-research/contracts/v1'
+      - name: Verify identical decoder and rendered evidence inputs
+        run: '"$APPLE_CONFORMANCE_PYTHON" tools/conformance/evidence_vectors.py --contract-root .canonical-research/contracts/v1 --check'
       - name: Test preparation harness failure and recovery
         env:
           CONTRACT_ROOT: .canonical-research/contracts/v1

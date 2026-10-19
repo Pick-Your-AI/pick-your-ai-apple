@@ -8,6 +8,7 @@ This portable Swift 6 package implements part of Apple [#32](https://github.com/
 - `QualityEvaluationRun.decode(_:)` validates a frozen-v1 quality record and retains the supplied build/suite identities, timestamps, recorded status and measurements. Typed views preserve exact supported decimals, optional absence and array order. This structural boundary performs no evaluation, evidence authentication or current-build binding.
 - `CostEstimateRecord.decode(_:)` validates a frozen-v1 cost record and preserves exact decimal strings, build/pricebook identity, ordered items and reported coverage. The [cost boundary](COST_ESTIMATE.md) performs no pricing, arithmetic correction, rate authentication or current-build qualification.
 - `ResourceEstimate.decode(_:)` validates a frozen-v1 resource estimate artifact while preserving its exact decimal strings, ordered declarations and optional source absence. Parsing performs no capacity evaluation, dimensional qualification or current-build binding.
+- `DependencyGraph.decode(_:)` preserves all directed frozen-v1 edges with typed kind, relationship and activation labels. Its [boundary and conformance record](DEPENDENCY_GRAPH.md) distinguishes structural decoding from executable graph or placement policy.
 - `BuildTransfer.snapshot(fromDraftJSON:)` validates a complete frozen-v1 BuildSnapshot and returns an immutable value. Missing fields and fewer than two selections fail; no defaults, locks or synthetic values are inserted. Keep editor drafts in PlannerData even when this transition fails.
 - `BuildTransfer.preview(_:)` accepts a bare snapshot or the existing web `pickyour.ai/build-export` version-1 envelope. Envelope provenance is untrusted metadata, not a verified catalog activation. `usesSyntheticData` is nil for bare imports; do not interpret that as production evidence.
 - `ImportPreview.fork(localOwner:timestamp:)` explicitly creates a new UUID-based build identity, revision 1 and draft lifecycle. Source owner is replaced by the caller's local identity. Every lock, selection and link is retained. This API cannot overwrite an existing record; the integration must insert the returned value as a new draft only after user confirmation.
@@ -42,18 +43,20 @@ Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. D
 
 ## Pinned inputs and validation
 
-`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/quality-evaluation-run/cost-estimate/resource-estimate schemas and synthetic build/catalog/quality/cost/resource-estimate fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared build corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. The additional CatalogItem, QualityEvaluationRun and ResourceEstimate corpora are described below; the CostEstimateRecord corpus is described in the [cost boundary](COST_ESTIMATE.md). Swift and Python Draft202012Validator with FormatChecker replay the same concrete payloads. Synthetic fixtures are not real catalog or installed-application evidence.
+`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/quality-evaluation-run/cost-estimate/resource-estimate/dependency-graph schemas and synthetic build/catalog/quality/cost/resource-estimate/graph fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared build corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. The additional CatalogItem, QualityEvaluationRun and ResourceEstimate corpora are described below; the CostEstimateRecord corpus is described in the [cost boundary](COST_ESTIMATE.md). Swift and Python Draft202012Validator with FormatChecker replay the same concrete payloads. Synthetic fixtures are not real catalog or installed-application evidence.
 
 Run:
 
 ```sh
 swift test --package-path Packages/PlannerTransfer
-python3 -m venv /tmp/planner-transfer-validation
-/tmp/planner-transfer-validation/bin/pip install 'jsonschema[format]==4.26.0'
-/tmp/planner-transfer-validation/bin/python Packages/PlannerTransfer/Tools/verify_contract.py
+transfer_validation_dir=$(mktemp -d)
+python3 -m venv "$transfer_validation_dir"
+"$transfer_validation_dir/bin/python" -m pip --isolated install --require-hashes --only-binary=:all: -r Packages/PlannerTransfer/Tools/requirements.txt
+"$transfer_validation_dir/bin/python" -m pip check
+"$transfer_validation_dir/bin/python" Packages/PlannerTransfer/Tools/verify_contract.py
 ```
 
-The verifier explicitly requires date-time and URI format support; plain jsonschema without format dependencies can silently skip these checks. `.github/workflows/swift-transfer.yml` runs hash/reference parity, macOS Swift tests and unsigned iOS Simulator compilation with Xcode 16.4 (16F6). Local execution: Swift 6.0.3 on Ubuntu 24.04, ten tests passed; four source hashes and 129 canonical cases passed with Python 3.12/jsonschema 4.26.0. Hosted/physical evidence must be recorded separately when actually observed.
+The verifier explicitly requires date-time and URI format support; plain jsonschema without format dependencies can silently skip these checks. The [locked reference environment](Tools/reference-environment.md) keeps jsonschema 4.26.0, selects the two supported format providers used by these frozen schemas, and pins their complete Python dependencies and wheel hashes. Use a fresh virtual environment so unrelated installed format providers cannot change selection. `.github/workflows/swift-transfer.yml` runs hash/reference parity, macOS Swift tests and unsigned iOS Simulator compilation with Xcode 16.4 (16F6). Original local execution: Swift 6.0.3 on Ubuntu 24.04, ten tests passed; four source hashes and 129 canonical cases passed with Python 3.12/jsonschema 4.26.0. Hosted/physical evidence must be recorded separately when actually observed.
 
 Implementation uses Foundation JSONDecoder only for individual JSON strings and JSONEncoder for value serialization; an explicit bounded parser detects duplicate keys before decoding. Apple [JSONDecoder documentation](https://developer.apple.com/documentation/foundation/jsondecoder) was checked on 2026-10-18 but returned a JavaScript shell; runtime behavior is covered by executable tests instead of claiming newly verified documentation semantics.
 
@@ -313,8 +316,9 @@ This advances #32 transport coverage and #49 quality-record preparation. It does
 not establish qualified evaluation execution, exact-current-workload evidence,
 resource-estimate binding, live service/fault handling, UI delivery or receiving
 acceptance. The existing #49 prerequisites (Apple #44, Apple #34 and Android #79)
-and its remaining criteria remain open. The separate #32 all-kind boundary
-disposition is recorded above. Frozen contracts, service ownership and other active
+and the remaining #49 criteria remain open. The [accepted #32 conformance record](#32-receiving-conformance-record)
+already governs its completed criteria; this separate quality artifact adds no new
+#32 closure requirement. Frozen contracts, service ownership and other active
 artifact-boundary implementations are unchanged.
 
 ## External resource estimate artifact boundary
