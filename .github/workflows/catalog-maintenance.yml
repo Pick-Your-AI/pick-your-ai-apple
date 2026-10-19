@@ -18,8 +18,6 @@ jobs:
     timeout-minutes: 20
     env:
       DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
-      MAINTENANCE_EVIDENCE: ${{ runner.temp }}/catalog-maintenance-evidence
-      MAINTENANCE_BUILD: ${{ runner.temp }}/catalog-maintenance-build
       MAINTENANCE_RESEARCH: 9db556b7fca485c8eb4396f9ee2ceeacdc119d79
       PYTHONDONTWRITEBYTECODE: '1'
     defaults:
@@ -34,6 +32,9 @@ jobs:
       - name: Record source and selected native toolchain
         run: |
           set -euo pipefail
+          export MAINTENANCE_EVIDENCE="$RUNNER_TEMP/catalog-maintenance-evidence"
+          export MAINTENANCE_BUILD="$RUNNER_TEMP/catalog-maintenance-build"
+          printf 'MAINTENANCE_EVIDENCE=%s\nMAINTENANCE_BUILD=%s\n' "$MAINTENANCE_EVIDENCE" "$MAINTENANCE_BUILD" >> "$GITHUB_ENV"
           mkdir "$MAINTENANCE_EVIDENCE"
           git show -s --format='commit %H%ntree %T%nparents %P' HEAD | tee "$MAINTENANCE_EVIDENCE/apple-checkout.txt"
           git archive --format=tar HEAD .github/workflows/catalog-maintenance.yml tools/catalog-maintenance Packages/PlannerCore Packages/PlannerData Packages/PlannerCatalog Packages/PlannerTransfer > "$MAINTENANCE_EVIDENCE/apple-source.tar"
