@@ -142,7 +142,15 @@ trigger that test's expected assertion, and complete with a matching failed
 XCTest suite summary. A class or method that only contains the expected name
 does not qualify. Duplicate results, unexpected failures, truncated output,
 compile errors, crashes, timeouts and changed anchors do not qualify.
-The source package is never changed. Before execution, the runner checks all
+The source package is never changed. The selected package path must pass native
+directory lookup before normalization or output cleanup. A regular-file or
+missing prefix before `..`, including one inside a symlink target, cannot be
+discarded to select a different usable package. Strict resolution then requires
+the same observed directory identity. Invalid package lookup, resolution or
+identity changes reject before any prior output is removed; valid directory
+aliases remain supported. These observations do not make concurrent directory
+replacement atomic or supported.
+Before execution, the runner checks all
 five fixed output names (the receipt, baseline log and three mutation logs).
 Existing outputs must be regular files with one hard link; symlinks, shared
 hardlinks, directories and other file types reject the invocation before any
@@ -191,6 +199,22 @@ semantic mutations through their expected XCTest assertions. The run used
 task-scoped caches and required no change to application or test sources.
 The changed runner must still complete its actual hosted macOS core workflow on
 the reviewed candidate before delivery; Linux execution is separate evidence.
+
+The package-path preflight regression was reproduced against accepted
+`7dd9f7d1ad1a6590021b52bd303d16ffba697f47`. In owned synthetic inputs,
+`evidence/baseline.log/../package` failed native lookup, but the CLI normalized
+away the regular-file prefix and cleared prior outputs before execution failed.
+A symlink to that invalid path reproduced the same result. Three added methods
+cover eight rejected selectors, a valid directory alias with failed-baseline
+cleanup and successful retry, and an observed directory-identity mismatch.
+Against the original helper, two methods failed with seven assertions while the
+valid-alias control passed. The correction passes all three focused methods and
+all 25 methods normally and with `-O` on Python 3.12.14. Real CLI children use only
+owned temporary packages and a deliberately absent executable or an explicitly
+synthetic transcript producer; they do not execute Swift. The identity-mismatch
+test models the changed resolution observation without claiming a concurrent
+filesystem reproduction. All prior 22 methods and the three mutation anchors
+remain intact. Actual current-source macOS qualification remains required.
 
 Supported historical migration, rollback, approved executable policy, actual
 service parity, simulator execution, device results and receiving acceptance are
