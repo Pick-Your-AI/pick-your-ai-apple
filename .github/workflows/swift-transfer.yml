@@ -58,6 +58,7 @@ jobs:
           "$transfer_python/bin/python" --version
           "$transfer_python/bin/python" -m pip --isolated install --require-hashes --only-binary=:all: -r Packages/PlannerTransfer/Tools/requirements.txt
           "$transfer_python/bin/python" -m pip check
+          "$transfer_python/bin/python" -m unittest discover -s Packages/PlannerTransfer/Tools/tests -p 'test_verify_contract.py' -v
           "$transfer_python/bin/python" Packages/PlannerTransfer/Tools/verify_contract.py
       - name: Run Swift boundary and adversarial tests
         run: swift test --package-path Packages/PlannerTransfer

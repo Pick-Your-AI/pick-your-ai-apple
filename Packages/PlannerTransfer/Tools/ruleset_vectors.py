@@ -8,6 +8,7 @@ import argparse
 from copy import deepcopy
 import json
 from pathlib import Path
+from contract_checks import require
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / "Tests/PlannerTransferTests/Fixtures"
@@ -131,7 +132,7 @@ def vectors():
         add("unsupported-literal-" + name, prefix + ["assert"],
             {"op": "exists", "value": {"literal": value}}, canonical=True)
     add("unsupported-terminal-newline-id", ["id"], "rules.valid\n", canonical=True)
-    assert len({case["name"] for case in cases}) == len(cases)
+    require(len({case["name"] for case in cases}) == len(cases), 'Duplicate ruleset vector names')
     return cases
 
 
@@ -148,5 +149,5 @@ if __name__ == "__main__":
     if args.write:
         OUTPUT.write_text(expected)
     else:
-        assert OUTPUT.read_text() == expected, "Ruleset vectors are stale; run ruleset_vectors.py --write"
+        require(OUTPUT.read_text() == expected, "Ruleset vectors are stale; run ruleset_vectors.py --write")
     print(f"Ruleset vectors: {len(vectors())}; deterministic generation verified.")

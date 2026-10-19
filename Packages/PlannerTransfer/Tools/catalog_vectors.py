@@ -8,6 +8,7 @@ import argparse
 from copy import deepcopy
 import json
 from pathlib import Path
+from contract_checks import require
 
 ROOT = Path(__file__).resolve().parents[1]
 RESOURCES = ROOT / 'Sources/PlannerTransfer/Resources'
@@ -21,7 +22,7 @@ def apply_vector(item, case):
         return value
     replacement = json.loads(case['json']) if 'json' in case else None
     if not case['path']:
-        assert case['operation'] == 'set'
+        require(case['operation'] == 'set', 'Unsupported catalog vector operation: ' + case['operation'])
         return replacement
     parent = value
     for key in case['path'][:-1]:
@@ -32,7 +33,7 @@ def apply_vector(item, case):
     if case['operation'] == 'remove':
         del parent[key]
     else:
-        assert case['operation'] == 'set'
+        require(case['operation'] == 'set', 'Unsupported catalog vector operation: ' + case['operation'])
         parent[key] = replacement
     return value
 
@@ -47,7 +48,7 @@ def sample(schema):
         return False
     if kind in ('integer', 'number'):
         return schema.get('minimum', 1)
-    assert kind == 'string', kind
+    require(kind == 'string', 'Unsupported catalog sample type: ' + kind)
     if schema.get('format') == 'uri':
         return 'https://example.invalid/fixture'
     if schema.get('pattern') == '^[A-Z]{3}$':
@@ -60,7 +61,8 @@ def vectors():
     catalog = json.loads((FIXTURES / 'catalog.json').read_text())
     kinds = schema['properties']['kind']['enum']
     items = {item['kind']: item for item in catalog['items']}
-    assert len(kinds) == len(items) == 29 and set(kinds) == set(items)
+    require(len(kinds) == len(items) == 29 and set(kinds) == set(items),
+            'Expected all 29 frozen catalog kinds')
     cases = []
 
     def add(kind, label, path=(), value=None, *, operation='set', valid=False, canonical=None):
@@ -168,7 +170,7 @@ def vectors():
     add(kind, 'unsupported-terminal-newline-id', ['id'], 'catalog.valid\n', canonical=True)
     add('cost_policy', 'unsupported-terminal-newline-currency', ['spec', 'default_currency'], 'USD\n', canonical=True)
     add(kind, 'unsupported-terminal-newline-extension-key', ['extensions'], {'x_fixture\n': True}, canonical=True)
-    assert len({case['name'] for case in cases}) == len(cases)
+    require(len({case['name'] for case in cases}) == len(cases), 'Duplicate catalog vector names')
     return cases
 
 
@@ -185,5 +187,6 @@ if __name__ == '__main__':
     if args.write:
         OUTPUT.write_text(expected)
     else:
-        assert OUTPUT.read_text() == expected, 'Catalog vectors are stale; run catalog_vectors.py --write'
+        if OUTPUT.read_text() != expected:
+            raise SystemExit('Catalog vectors are stale; run catalog_vectors.py --write')
     print(f'Catalog vectors: {len(vectors())}; deterministic generation verified.')

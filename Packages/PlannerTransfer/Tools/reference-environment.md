@@ -93,6 +93,7 @@ python3 -m venv "$transfer_validation_dir"
 "$transfer_validation_dir/bin/python" --version
 "$transfer_validation_dir/bin/python" -m pip --isolated install --require-hashes --only-binary=:all: -r Packages/PlannerTransfer/Tools/requirements.txt
 "$transfer_validation_dir/bin/python" -m pip check
+"$transfer_validation_dir/bin/python" -m unittest discover -s Packages/PlannerTransfer/Tools/tests -p 'test_verify_contract.py' -v
 "$transfer_validation_dir/bin/python" Packages/PlannerTransfer/Tools/verify_contract.py
 ```
 
@@ -106,6 +107,21 @@ itself resolves only the pinned local resources. The workflow records its existi
 `python3` interpreter; selecting or freezing a different Python/host image is
 outside this dependency lock. Xcode 16.4/16F6, all Swift tests and unsigned simulator
 compilation remain unchanged and required.
+
+Mandatory verifier checks run with both normal and optimized Python, including
+`python -O`; successful summaries are emitted only after the complete check passes.
+The portable regressions alter disposable copies of each source pin and corpus,
+remove required format registrations, and exercise canonical/client mismatches,
+catalog identity and recovery after a late failure. Canonical-parity cases control
+only generator freshness so the real validator must evaluate the changed expected
+outcome. These Python results do not execute Swift or establish native parity.
+The standalone Catalog, Quality, Cost, Placement, Dependency Graph and Ruleset
+vector check commands also reject stale output with normal or optimized Python,
+including `PYTHONOPTIMIZE=1`.
+The [Graph receiving record](../../../docs/validation/transfer-graph-optimization.md)
+documents the seven-corpus optimization regression and its separate local result.
+The [Ruleset receiving record](../../../docs/validation/transfer-ruleset-optimization.md)
+adds the eighth corpus, sixteen source pins and complete validator attendance.
 
 The additional format-provider probes are reproducible in the same fresh
 environment:

@@ -8,6 +8,7 @@ import argparse
 from copy import deepcopy
 import json
 from pathlib import Path
+from contract_checks import require
 
 ROOT = Path(__file__).resolve().parents[1]
 RESOURCES = ROOT / 'Sources/PlannerTransfer/Resources'
@@ -34,7 +35,7 @@ def apply_vector(original, case):
         if change['operation'] == 'remove':
             del parent[key]
         else:
-            assert change['operation'] == 'set'
+            require(change['operation'] == 'set', 'Unsupported placement vector operation: ' + change['operation'])
             parent[key] = json.loads(change['json'])
     return value
 
@@ -52,7 +53,7 @@ def vectors():
     def add(name, changes=(), *, kind='build', disposition='preserved', reason,
             decision='none', error=None):
         valid = disposition in ('preserved', 'unresolved')
-        assert valid == (error is None)
+        require(valid == (error is None), 'Placement disposition and expected error disagree: ' + name)
         cases.append(dict(name=name, fixture=kind, mutations=list(changes),
                           canonicalValid=valid, clientValid=valid,
                           disposition=disposition, decision=decision, reason=reason,
@@ -211,8 +212,9 @@ def vectors():
                                 ('reserved-negative', selection('context_policy', 'settings', 'reserved_output_tokens'), -1)]:
         add('invalid-' + label, [mutation(path, value)], disposition='invalid-contract', error='schemaViolation',
             reason='Reject the exact invalid field type, enum, identifier or bound without coercion.')
-    assert len({case['name'] for case in cases}) == len(cases)
-    assert {case['disposition'] for case in cases} == {'preserved', 'unresolved', 'unsupported-field', 'invalid-contract'}
+    require(len({case['name'] for case in cases}) == len(cases), 'Duplicate placement vector names')
+    require({case['disposition'] for case in cases} == {'preserved', 'unresolved', 'unsupported-field', 'invalid-contract'},
+            'Missing placement dispositions')
     return cases
 
 
@@ -228,5 +230,6 @@ if __name__ == '__main__':
     if args.write:
         OUTPUT.write_text(expected)
     else:
-        assert OUTPUT.read_text() == expected, 'Placement vectors are stale; run placement_vectors.py --write'
+        if OUTPUT.read_text() != expected:
+            raise SystemExit('Placement vectors are stale; run placement_vectors.py --write')
     print(f'Placement vectors: {len(vectors())}; deterministic generation verified.')

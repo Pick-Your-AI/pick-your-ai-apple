@@ -8,6 +8,7 @@ import argparse
 from copy import deepcopy
 import json
 from pathlib import Path
+from contract_checks import require
 
 ROOT = Path(__file__).resolve().parents[1]
 RESOURCES = ROOT / 'Sources/PlannerTransfer/Resources'
@@ -21,7 +22,7 @@ def apply_vector(original, case):
         return value
     replacement = json.loads(case['json']) if 'json' in case else None
     if not case['path']:
-        assert case['operation'] == 'set'
+        require(case['operation'] == 'set', 'Unsupported cost vector operation: ' + case['operation'])
         return replacement
     parent = value
     for key in case['path'][:-1]:
@@ -30,7 +31,7 @@ def apply_vector(original, case):
     if case['operation'] == 'remove':
         del parent[key]
     else:
-        assert case['operation'] == 'set'
+        require(case['operation'] == 'set', 'Unsupported cost vector operation: ' + case['operation'])
         parent[key] = replacement
     return value
 
@@ -178,7 +179,7 @@ def vectors():
     add('reported-line-amount-not-multiplied', ['line_items', '0', 'amount', 'amount'], '0', valid=True)
     add('reported-money-currency-not-unified', ['line_items', '0', 'amount', 'currency'], 'EUR', valid=True)
     add('recorded-complete-with-unpriced-selection', ['unpriced_selection_ids'], ['sel_missing'], valid=True)
-    assert len({case['name'] for case in cases}) == len(cases)
+    require(len({case['name'] for case in cases}) == len(cases), 'Duplicate cost vector names')
     return cases
 
 
@@ -194,5 +195,6 @@ if __name__ == '__main__':
     if args.write:
         OUTPUT.write_text(expected)
     else:
-        assert OUTPUT.read_text() == expected, 'Cost vectors are stale; run cost_vectors.py --write'
+        if OUTPUT.read_text() != expected:
+            raise SystemExit('Cost vectors are stale; run cost_vectors.py --write')
     print(f'Cost vectors: {len(vectors())}; deterministic generation verified.')
