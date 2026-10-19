@@ -58,7 +58,7 @@ retain their original assertions and add actual actor operations:
 These two additions preserve the eleven methods in this test class. The combined
 receiver also retains the four separate `CatalogSearchExactVersionTests` methods
 from [PR #337](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/337), for fifteen
-search methods and sixty-eight methods in the current Catalog package. Receiving
+search methods in the combined Catalog package. Receiving
 profiles must match the complete actual source; historical results for either
 contribution do not qualify their combination. The exact combined candidate must
 run the existing Catalog and submission-SDK gates before delivery. No workflow

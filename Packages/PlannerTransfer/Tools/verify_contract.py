@@ -104,3 +104,12 @@ validator = Draft202012Validator(schemas['dependency-graph.schema.json'], regist
 for case in graph_cases:
     assert validator.is_valid(apply_vector(graph, case)) == case['canonicalValid'], case['name']
 print(f'Verified {len(graph_cases)} canonical dependency graph cases; no executable graph policy is inferred.')
+
+from ruleset_vectors import encoded_vectors as encoded_ruleset_vectors
+ruleset_cases_path = FIXTURES / 'ruleset-conformance.json'
+assert ruleset_cases_path.read_text() == encoded_ruleset_vectors(), 'Stale ruleset vectors'
+ruleset_cases = json.loads(ruleset_cases_path.read_text())
+validator = Draft202012Validator(schemas['ruleset.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in ruleset_cases:
+    assert validator.is_valid(json.loads(case['json'])) == case['canonicalValid'], case['name']
+print(f'Verified {len(ruleset_cases)} canonical ruleset syntax cases; no rule evaluation is performed.')

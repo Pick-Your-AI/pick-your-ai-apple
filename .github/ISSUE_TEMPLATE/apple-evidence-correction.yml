@@ -1,0 +1,67 @@
+name: Apple evidence correction
+description: Request review of a public claim, source, recorded price or evidence presentation.
+title: "[Apple evidence correction]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **This issue and any attachments will be public.** Read the [support and triage guide](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/main/SUPPORT.md) and check [existing Apple reports](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues) first.
+
+        Provide public references and the affected public value/version. Keep private builds, personal information, credentials, private URLs and raw source downloads out of this form. No private/security reporting destination has been verified for this Apple preview; do not submit confidential or sensitive security details here.
+
+        Identify bundled examples as synthetic. A request does not verify a claim, rewrite pinned history or publish catalog data. Shared evidence, prices, contracts and source-use rights keep their existing review authorities. The app uploads nothing here; you review and submit the issue yourself.
+  - type: input
+    id: version
+    attributes:
+      label: App version or public source revision
+      description: Record the app/build, exact public source commit or public document version you inspected. Say unknown if unavailable.
+    validations:
+      required: true
+  - type: dropdown
+    id: correction-kind
+    attributes:
+      label: Requested review
+      options:
+        - Incorrect public value or presentation
+        - Missing or mismatched item, version or snapshot
+        - Stale, superseded or retracted evidence
+        - Recorded price, unit, region or coverage
+        - Provenance, attribution or source-use rights
+    validations:
+      required: true
+  - type: textarea
+    id: affected-reference
+    attributes:
+      label: Affected public reference
+      description: Give a public source/issue URL or public item ID, version and snapshot. Identify synthetic examples as synthetic. Omit private record IDs and private or credential-bearing URLs.
+    validations:
+      required: true
+  - type: textarea
+    id: correction
+    attributes:
+      label: Observed claim and requested correction
+      description: State the displayed claim or missing value, proposed correction and conditions. For prices, preserve units, currency, region and recorded dates. Unknown does not mean zero or compatible.
+    validations:
+      required: true
+  - type: textarea
+    id: public-basis
+    attributes:
+      label: Public basis and uncertainty
+      description: Link a public basis and explain missing proof or rights limitations. Prefer a link and concise citation to an uploaded source copy. Say unverified when appropriate; do not invent verification or publication dates.
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Optional synthetic reproduction or related issue
+      description: Name the relevant controls or an existing public report. Diagnostic metadata is optional; follow the guide's redaction-preview procedure before including any. Exclude private drafts, raw files and logs.
+  - type: checkboxes
+    id: final-public-review
+    attributes:
+      label: Final public-content review
+      description: Read the whole completed form and inspect every attachment locally before checking this. Repeat the review after any edit.
+      options:
+        - label: I reviewed the final text and any attachments and excluded private information, credentials and sensitive security details.
+          required: true
+        - label: I left diagnostics empty or reviewed the complete redacted metadata preview; I included no raw files, logs or private draft content.
+          required: true
