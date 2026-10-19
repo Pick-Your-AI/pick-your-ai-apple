@@ -41,10 +41,29 @@ private struct LocalLibrariesView: View {
                 }
             }
             .tabItem { Label("Imported builds", systemImage: "doc.badge.plus") }
-            CatalogBrowserView()
+            catalog
                 .tabItem { Label("Demo catalog", systemImage: "square.grid.2x2") }
         }
         .task { await startup.load() }
+    }
+
+    @ViewBuilder
+    private var catalog: some View {
+        #if DEBUG
+        // Closed, visibly fictional UI-journey inputs only. No external data,
+        // selected records or local-library state can be supplied at launch.
+        if ProcessInfo.processInfo.arguments.contains("--comparison-examples-v1") {
+            if ProcessInfo.processInfo.arguments.contains("--comparison-accessibility3") {
+                CatalogBrowserView(collection: .comparisonExamples).dynamicTypeSize(.accessibility3)
+            } else {
+                CatalogBrowserView(collection: .comparisonExamples)
+            }
+        } else {
+            CatalogBrowserView()
+        }
+        #else
+        CatalogBrowserView()
+        #endif
     }
 
     private func unavailable(_ library: String) -> some View {

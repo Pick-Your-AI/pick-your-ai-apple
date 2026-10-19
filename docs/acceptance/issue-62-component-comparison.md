@@ -1,5 +1,25 @@
 # #62 — Component comparison preparation
 
+## 2026-10-19 mounted candidate checkpoint
+
+The isolated main model/view was independently source-reviewed at tree
+`fd20f02ae37f7eb99882afe3f37f93ed08c24958`. The separate catalog adapter was
+independently source-reviewed at `f5b9e0a4c6ca154a31cdae792037851322fc6336` on
+signed `2206ea74b25b7b5c0406563d237e4e7fe332ed21`, then persisted as source-only
+`7620719b79ae54dc6f0e409fe8ce1e9d9ee0d76a`. Its independent local commit has the
+same tree. Those facts supersede the earlier preparation-only publication and
+pending-source-review sentences below; they do not supply native acceptance.
+
+The [mounted journey evidence contract](../../App/COMPONENT_COMPARISON_JOURNEY.md)
+now describes a separately pinned fictional five-record catalog, Debug-only real
+app entry, exact-cell identifiers, two bounded journey methods, default/large text
+and narrow/wide layouts, original-recording retention and strict evidence checks.
+The source is a candidate; the new 139-model inventory and four device/method
+executions have not run natively. The three original criteria below stay unchanged
+and unclosed. Canonical #198 and the separate recorded-version route are preserved.
+
+## Original isolated-main preparation and criterion record
+
 This record follows the three literal criteria in [Apple #62](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/62). It describes an isolated implementation on accepted main `5387e5b7ace7d6eef57059722040675a9f3618e8` and a separately prepared receiving adapter. It is **not a completion receipt**: SwiftUI compilation, the mounted catalog receiving composition, native interaction, accessibility recording and independent receiving disposition remain pending.
 
 ## Literal criterion matrix

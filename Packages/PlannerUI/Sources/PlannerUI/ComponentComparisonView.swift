@@ -75,14 +75,20 @@ public struct ComponentComparisonView: View {
                 VStack(alignment: .leading, spacing: 6) {
                     heading("Component \(index + 1)")
                     literal(candidate.details.item.name)
+                        .accessibilityIdentifier("componentComparisonName-\(index)")
                     literal(candidate.details.item.id)
+                        .accessibilityIdentifier("componentComparisonID-\(index)")
                     Text("Kind: \(candidate.details.item.kind.rawValue)")
                     Text("Version")
                     literal(candidate.details.item.version)
+                        .accessibilityIdentifier("componentComparisonVersion-\(index)")
                     Text("Catalog pin")
                     literal(candidate.catalog.identity.id)
+                        .accessibilityIdentifier("componentComparisonCatalogID-\(index)")
                     Text("Revision \(candidate.catalog.identity.revision); schema \(candidate.catalog.identity.schemaVersion)")
+                        .accessibilityIdentifier("componentComparisonCatalogVersion-\(index)")
                     literal(candidate.catalog.identity.capturedAt)
+                        .accessibilityIdentifier("componentComparisonCatalogCaptured-\(index)")
                     literal(candidate.catalog.sha256)
                         .accessibilityIdentifier("componentComparisonPin-\(index)")
                     Button("Inspect complete record for component \(index + 1)") { model.inspect(candidate.id) }
@@ -139,7 +145,7 @@ public struct ComponentComparisonView: View {
                             heading("Component \(index + 1)")
                             literal(model.selections[index].details.item.name)
                             literal(model.selections[index].details.item.version)
-                            cellContents(cell)
+                            cellContents(cell, row: row, index: index)
                         }
                         .accessibilityElement(children: .contain)
                     }
@@ -168,7 +174,7 @@ public struct ComponentComparisonView: View {
                 GridRow {
                     rowHeading(row).frame(maxWidth: 180, alignment: .leading)
                     ForEach(Array(row.cells.enumerated()), id: \.offset) { index, cell in
-                        cellContents(cell).frame(maxWidth: .infinity, alignment: .leading)
+                        cellContents(cell, row: row, index: index).frame(maxWidth: .infinity, alignment: .leading)
                             .accessibilityLabel("Component \(index + 1), \(row.field)")
                             .accessibilityElement(children: .contain)
                     }
@@ -183,15 +189,20 @@ public struct ComponentComparisonView: View {
         VStack(alignment: .leading, spacing: 4) {
             heading(row.field)
             Text(row.differs ? "Recorded declarations differ" : "Same recorded declaration")
+                .accessibilityIdentifier("componentComparisonDifference-\(row.id)")
             if row.hasUnknown { Text("Contains unknown information").font(.footnote) }
         }
     }
 
-    private func cellContents(_ cell: ComponentComparisonCell) -> some View {
+    private func cellContents(_ cell: ComponentComparisonCell, row: ComponentComparisonRow, index: Int) -> some View {
         VStack(alignment: .leading, spacing: 6) {
             if let type = cell.type { Text(verbatim: "Type: " + type).font(.caption) }
             Text(verbatim: cell.availability.label)
-            if let value = cell.value { completeText(ComponentComparisonText.value(value)) }
+                .accessibilityIdentifier("componentComparisonState-\(row.id)-\(index)")
+            if let value = cell.value {
+                completeText(ComponentComparisonText.value(value))
+                    .accessibilityIdentifier("componentComparisonValue-\(row.id)-\(index)")
+            }
         }
     }
 

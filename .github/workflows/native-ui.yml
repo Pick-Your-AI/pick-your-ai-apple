@@ -106,7 +106,7 @@ jobs:
           do
             grep -E "Test Case .*DraftLibraryModelTests.*${name}.* passed" .build/native-evidence/model-tests.txt
           done
-          python3 tools/ci/require_swift_test_results.py component-comparison-catalog-ui .build/native-evidence/model-tests.txt
+          python3 tools/ci/require_swift_test_results.py component-comparison-examples-ui .build/native-evidence/model-tests.txt
       - name: Build unsigned simulator app
         run: |
           set -o pipefail
@@ -127,5 +127,45 @@ jobs:
         with:
           name: native-local-drafts-evidence
           path: .build/native-evidence
+          if-no-files-found: error
+          retention-days: 14
+  component-comparison-ui:
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
+    runs-on: macos-15
+    timeout-minutes: 40
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Select the existing exact Xcode pin
+        run: |
+          set -euo pipefail
+          mkdir -p .build/component-comparison-evidence
+          python3 App/scripts/toolchain.py --github-env "$GITHUB_ENV" 2>&1 | tee .build/component-comparison-evidence/pin-selection.txt
+      - name: Record toolchain and actual xcresult export interface
+        run: |
+          set -euo pipefail
+          xcodebuild -version | tee .build/component-comparison-evidence/xcode.txt
+          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') .build/component-comparison-evidence/xcode.txt
+          sw_vers | tee .build/component-comparison-evidence/macos.txt
+          swift --version | tee .build/component-comparison-evidence/swift.txt
+          xcrun xcresulttool help export attachments | tee .build/component-comparison-evidence/attachment-interface.txt
+          xcrun simctl list runtimes | tee .build/component-comparison-evidence/runtimes.txt
+      - name: Require fresh comparison build caches and runner guards
+        run: |
+          set -euo pipefail
+          test ! -e .build/native
+          python3 -m unittest discover -s App/scripts/tests -v 2>&1 | tee .build/component-comparison-evidence/runner-guards.txt
+      - name: Exercise mounted comparison with default and accessibility text on both pinned devices
+        run: |
+          set -euo pipefail
+          python3 App/scripts/ui-journey.py --suite component-comparison --evidence-directory .build/component-comparison-evidence/ui-journey 2>&1 | tee .build/component-comparison-evidence/journey.txt
+      - name: Retain original comparison bundles and success recordings
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-component-comparison-evidence
+          path: .build/component-comparison-evidence
           if-no-files-found: error
           retention-days: 14

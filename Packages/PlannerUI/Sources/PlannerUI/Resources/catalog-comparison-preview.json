@@ -1,0 +1,202 @@
+{
+  "schema_version": "1.0.0",
+  "id": "catalog.comparison.examples.v1",
+  "revision": 1,
+  "captured_at": "2026-10-19T00:00:00Z",
+  "items": [
+    {
+      "schema_version": "1.0.0",
+      "id": "cat.comparison.compute",
+      "kind": "compute_profile",
+      "tier": "T2",
+      "name": "FICTIONAL Comparison fixture-v1",
+      "version": "fixture-v1",
+      "status": "preview",
+      "billing_class": "unknown",
+      "description": "Fictional comparison specimen. No serving offering, current price, compatibility or source-use approval is established.",
+      "spec": {
+        "hosting_ref": "cat.hosting.unresolved",
+        "cpu_cores": 4,
+        "ram_gb": 8,
+        "region": "fixture-east",
+        "disk_gb": 0
+      },
+      "license": {
+        "commercial_use_allowed": false
+      },
+      "provenance": [
+        {
+          "checked_at": "2026-10-19T00:00:00Z",
+          "verification_status": "unverified",
+          "notes": "FICTIONAL COMPARISON EXAMPLE. These declarations are not measurements, vendor facts, rates or evidence of support."
+        }
+      ],
+      "extensions": {
+        "x_comparison_example": {
+          "amount": 1000,
+          "unit": "milliseconds/request",
+          "region": "fixture-east",
+          "offering": "unqualified-fixture-v1",
+          "effective_at": "2026-10-19T00:00:00Z",
+          "workload": "fictional-128-input-tokens",
+          "qualification": "Fictional declaration; no conversion, ranking or rate applicability."
+        }
+      },
+      "updated_at": "2026-10-19T00:00:00Z"
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "cat.comparison.compute",
+      "kind": "compute_profile",
+      "tier": "T2",
+      "name": "FICTIONAL Comparison fixture-v2",
+      "version": "fixture-v2",
+      "status": "preview",
+      "billing_class": "unknown",
+      "description": "Fictional comparison specimen. No serving offering, current price, compatibility or source-use approval is established.",
+      "spec": {
+        "hosting_ref": "cat.hosting.unresolved",
+        "cpu_cores": 4,
+        "ram_gb": 16,
+        "region": "fixture-west",
+        "network_gbps": 0
+      },
+      "license": {
+        "commercial_use_allowed": true
+      },
+      "provenance": [
+        {
+          "checked_at": "2026-10-19T00:00:00Z",
+          "verification_status": "unverified",
+          "notes": "FICTIONAL COMPARISON EXAMPLE. These declarations are not measurements, vendor facts, rates or evidence of support."
+        }
+      ],
+      "extensions": {
+        "x_comparison_example": {
+          "amount": 1,
+          "unit": "seconds/request",
+          "region": "fixture-west",
+          "offering": "unqualified-fixture-v2",
+          "effective_at": "2026-10-19T00:00:00Z",
+          "workload": "fictional-128-input-tokens",
+          "qualification": "Fictional declaration; no conversion, ranking or rate applicability."
+        }
+      },
+      "updated_at": "2026-10-19T00:00:00Z"
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "cat.comparison.storage",
+      "kind": "storage",
+      "tier": "T2",
+      "name": "FICTIONAL Comparison fixture-v3",
+      "version": "fixture-v3",
+      "status": "preview",
+      "billing_class": "unknown",
+      "description": "Fictional comparison specimen. No serving offering, current price, compatibility or source-use approval is established.",
+      "spec": {
+        "storage_type": "object",
+        "region": "unknown",
+        "max_capacity_gb": 512
+      },
+      "license": {
+        "commercial_use_allowed": false
+      },
+      "provenance": [
+        {
+          "checked_at": "2026-10-19T00:00:00Z",
+          "verification_status": "unverified",
+          "notes": "FICTIONAL COMPARISON EXAMPLE. These declarations are not measurements, vendor facts, rates or evidence of support."
+        }
+      ],
+      "extensions": {
+        "x_comparison_example": {
+          "amount": 1,
+          "unit": "tokens/second",
+          "region": "unknown",
+          "offering": "unqualified-fixture-v3",
+          "effective_at": "2026-10-19T00:00:00Z",
+          "workload": "fictional-128-input-tokens",
+          "qualification": "Fictional declaration; no conversion, ranking or rate applicability."
+        }
+      },
+      "updated_at": "2026-10-19T00:00:00Z"
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "cat.comparison.storage",
+      "kind": "storage",
+      "tier": "T2",
+      "name": "FICTIONAL Comparison fixture-v4",
+      "version": "fixture-v4",
+      "status": "preview",
+      "billing_class": "unknown",
+      "description": "Fictional comparison specimen. No serving offering, current price, compatibility or source-use approval is established.",
+      "spec": {
+        "storage_type": "object",
+        "region": ""
+      },
+      "license": {
+        "commercial_use_allowed": false
+      },
+      "provenance": [
+        {
+          "checked_at": "2026-10-19T00:00:00Z",
+          "verification_status": "unverified",
+          "notes": "FICTIONAL COMPARISON EXAMPLE. These declarations are not measurements, vendor facts, rates or evidence of support."
+        }
+      ],
+      "extensions": {
+        "x_comparison_example": {
+          "amount": 1,
+          "unit": "requests/second",
+          "region": "",
+          "offering": "unqualified-fixture-v4",
+          "effective_at": "2026-10-19T00:00:00Z",
+          "workload": "fictional-128-input-tokens",
+          "qualification": "Fictional declaration; no conversion, ranking or rate applicability."
+        }
+      },
+      "updated_at": "2026-10-19T00:00:00Z"
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "cat.comparison.control",
+      "kind": "compute_profile",
+      "tier": "T2",
+      "name": "FICTIONAL Comparison fixture-v5",
+      "version": "fixture-v5",
+      "status": "preview",
+      "billing_class": "unknown",
+      "description": "Fictional comparison specimen. No serving offering, current price, compatibility or source-use approval is established.",
+      "spec": {
+        "hosting_ref": "cat.hosting.unresolved",
+        "cpu_cores": 4,
+        "ram_gb": 8,
+        "region": "fixture-control"
+      },
+      "license": {
+        "commercial_use_allowed": false
+      },
+      "provenance": [
+        {
+          "checked_at": "2026-10-19T00:00:00Z",
+          "verification_status": "unverified",
+          "notes": "FICTIONAL COMPARISON EXAMPLE. These declarations are not measurements, vendor facts, rates or evidence of support."
+        }
+      ],
+      "extensions": {
+        "x_comparison_example": {
+          "amount": 500,
+          "unit": "milliseconds/request",
+          "region": "fixture-control",
+          "offering": "unqualified-fixture-v5",
+          "effective_at": "2026-10-19T00:00:00Z",
+          "workload": "fictional-128-input-tokens",
+          "qualification": "Fictional declaration; no conversion, ranking or rate applicability."
+        }
+      },
+      "updated_at": "2026-10-19T00:00:00Z"
+    }
+  ]
+}

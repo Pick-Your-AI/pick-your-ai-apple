@@ -272,6 +272,20 @@ PROFILES["component-comparison-catalog-ui"] = (133, {
     ),
 })
 
+# Same mounted comparison source plus six exact example-source regressions.
+# This inventory is separate from the unrelated canonical #198 UI batch.
+PROFILES["component-comparison-examples-ui"] = (139, {
+    **PROFILES["component-comparison-catalog-ui"][1],
+    "PlannerUITests.CatalogComparisonPreviewSourceTests": (
+        "testCanonicalAndComparisonFixturesRetainDistinctExactPinsAndMembers",
+        "testMutatedOversizedAndOriginalCollectionBytesCannotQualifyAsComparison",
+        "testTwoExactVersionsPageSeparatelyAndFiltersPreserveWholeMembership",
+        "testDetailsRejectEveryMismatchedItemAndCatalogPinBeforeAdmission",
+        "testConcurrentInitialRequestsDoNotRetireTheFirstExactContinuation",
+        "testQualifiedSourceFeedsFourExactUnitStatesAndSelectionLimitRecovery",
+    ),
+})
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

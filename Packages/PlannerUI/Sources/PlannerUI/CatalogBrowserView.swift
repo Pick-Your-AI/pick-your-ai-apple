@@ -11,20 +11,31 @@ public struct CatalogBrowserView: View {
     @State private var choosingKinds = false
     @FocusState private var searchFocused: Bool
     private let detailSource: any CatalogDetailSource
+    private let collection: CatalogPreviewCollection
 
-    public init() {
-        let source = BundledCatalogPreviewSource()
-        detailSource = source
-        _model = StateObject(wrappedValue: CatalogBrowserModel(
-            source: source, availableKinds: BundledCatalogPreviewSource.availableKinds,
-            preferences: CatalogFilterPreferences()))
+    public init(collection: CatalogPreviewCollection = .componentKinds) {
+        self.collection = collection
+        switch collection {
+        case .componentKinds:
+            let source = BundledCatalogPreviewSource()
+            detailSource = source
+            _model = StateObject(wrappedValue: CatalogBrowserModel(
+                source: source, availableKinds: BundledCatalogPreviewSource.availableKinds,
+                preferences: CatalogFilterPreferences()))
+        case .comparisonExamples:
+            let source = CatalogComparisonPreviewSource()
+            detailSource = source
+            _model = StateObject(wrappedValue: CatalogBrowserModel(
+                source: source, availableKinds: CatalogComparisonPreviewSource.availableKinds,
+                preferences: CatalogFilterPreferences(key: "catalogComparisonExampleFilters.v1")))
+        }
     }
 
     public var body: some View {
         NavigationStack {
             List {
                 Section {
-                    Text("Sample data for exploring the planner. These fictional components have no current compatibility assessment or price estimate.")
+                    Text(collection.qualification)
                         .accessibilityIdentifier("catalogQualification")
                 }
                 Section("Read-only comparison") {
@@ -130,7 +141,11 @@ public struct CatalogBrowserView: View {
             .sheet(item: $inspected) { row in
                 CatalogPreviewDetails(row: row, source: detailSource, comparison: comparison).id(CatalogDetailsIdentity(row))
             }
+            #if os(iOS)
+            .fullScreenCover(isPresented: $comparing) { ComponentComparisonView(model: comparison) }
+            #else
             .sheet(isPresented: $comparing) { ComponentComparisonView(model: comparison) }
+            #endif
             .sheet(isPresented: $choosingKinds) {
                 NavigationStack {
                     List {

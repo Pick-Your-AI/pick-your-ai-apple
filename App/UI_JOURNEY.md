@@ -1,5 +1,11 @@
 # Bounded native notes and catalog UI journeys
 
+The separate [mounted component comparison candidate](COMPONENT_COMPARISON_JOURNEY.md)
+adds a closed two-method suite in its own pinned workflow job. The original
+notes/catalog scheme, method identities, device/runtime pins and per-device
+budget below are retained. The new suite's actual execution and recordings remain
+pending; its source does not qualify the original or canonical #198 receiving lane.
+
 [`PlannerAppUITests/LocalDraftJourneyTests.swift`](PlannerAppUITests/LocalDraftJourneyTests.swift)
 is an Xcode UI Testing Bundle, separate from the Swift package's editor-model tests.
 The shared `Planner` scheme includes it in the Test action. It uses the actual app,

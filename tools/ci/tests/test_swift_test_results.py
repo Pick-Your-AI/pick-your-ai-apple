@@ -91,7 +91,8 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                         "comparison-catalog-source-privacy-ui",
                         "graph-resource-quality-catalog-editor-transfer",
                         "component-comparison-main-ui",
-                        "component-comparison-catalog-ui"):
+                        "component-comparison-catalog-ui",
+                        "component-comparison-examples-ui"):
             text = self.profile_log(profile)
             with self.subTest(profile=profile):
                 self.assertEqual(self.run_profile(profile, text), 0)
@@ -117,6 +118,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
 
     def test_padded_stacked_evidence_cannot_qualify_receiving_profile(self):
         for stacked, receiving in (
+                ("component-comparison-catalog-ui", "component-comparison-examples-ui"),
                 ("comparison-catalog-source-privacy-ui", "component-comparison-catalog-ui"),
                 ("component-comparison-main-ui", "component-comparison-catalog-ui"),
                 ("catalog-details-transfer", "catalog-editor-transfer"),
