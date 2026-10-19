@@ -37,16 +37,18 @@ def apply_mutation(package, mutation):
     path.write_text(original.replace(mutation['before'], mutation['after'], 1))
 
 
-def test_identity(name):
+def test_identity(name, module='PlannerCoreTests', require_module=False):
     """Normalize the observed Linux/macOS XCTest spellings, with exact names."""
     identifier = r'[A-Za-z_][A-Za-z0-9_]*'
-    linux = re.fullmatch(rf'(?:PlannerCoreTests\.)?({identifier})\.({identifier})', name)
-    macos = re.fullmatch(rf'-\[PlannerCoreTests\.({identifier}) ({identifier})\]', name)
+    module = re.escape(module)
+    prefix = rf'{module}\.' if require_module else rf'(?:{module}\.)?'
+    linux = re.fullmatch(rf'{prefix}({identifier})\.({identifier})', name)
+    macos = re.fullmatch(rf'-\[{module}\.({identifier}) ({identifier})\]', name)
     match = linux or macos
     return '.'.join(match.groups()) if match else None
 
 
-def suite_results(output, suite, outcome):
+def suite_results(output, suite, outcome, module='PlannerCoreTests', require_module=False):
     """Require one complete XCTest session and its matching nonempty summary.
 
     The unrelated Swift Testing zero-test footer is not an XCTest result. Unknown,
@@ -82,7 +84,7 @@ def suite_results(output, suite, outcome):
             rf"Test Case '([^']+)' (passed|failed|skipped) \({duration} seconds\)\.?", line)
         if not (beginning or completion) or not start < index < end:
             return None
-        name = test_identity((beginning or completion)[1])
+        name = test_identity((beginning or completion)[1], module, require_module)
         if name is None:
             return None
         if beginning:
