@@ -9,6 +9,9 @@ struct PlannerApp: App {
 }
 
 private struct LocalLibrariesView: View {
+    private enum LibraryTab: Hashable { case notes, importedBuilds, catalog }
+    @State private var selectedTab = LibraryTab.notes
+    @State private var importedNavigation = ImportedBuildLibraryNavigation()
     @StateObject private var startup = LocalLibraryStartup {
         try await LocalLibraryStores.open {
             let root: URL
@@ -31,7 +34,12 @@ private struct LocalLibrariesView: View {
     }
 
     var body: some View {
-        TabView {
+        TabView(selection: Binding(get: { selectedTab }, set: { tab in
+            // Retire T6 ownership before the actual selected tab changes. A
+            // system Files presentation does not write this navigation binding.
+            importedNavigation.setActive(tab == .importedBuilds)
+            selectedTab = tab
+        })) {
             Group {
                 switch startup.state {
                 case .loading: ProgressView("Opening notes…")
@@ -42,6 +50,7 @@ private struct LocalLibrariesView: View {
                 }
             }
             .tabItem { Label("Notes", systemImage: "note.text") }
+            .tag(LibraryTab.notes)
             Group {
                 switch startup.state {
                 case .loading: ProgressView("Opening imported builds…")
@@ -49,10 +58,10 @@ private struct LocalLibrariesView: View {
                     if let store = libraries.importedBuilds {
                         #if DEBUG
                         if let scenario = SyntheticT6Launch.scenario {
-                            ImportedBuildLibraryView(store: store, syntheticT6Scenario: scenario)
-                        } else { ImportedBuildLibraryView(store: store) }
+                            ImportedBuildLibraryView(store: store, syntheticT6Scenario: scenario, navigation: importedNavigation)
+                        } else { ImportedBuildLibraryView(store: store, navigation: importedNavigation) }
                         #else
-                        ImportedBuildLibraryView(store: store)
+                        ImportedBuildLibraryView(store: store, navigation: importedNavigation)
                         #endif
                     }
                     else { unavailable("Imported builds") }
@@ -60,8 +69,10 @@ private struct LocalLibrariesView: View {
                 }
             }
             .tabItem { Label("Imported builds", systemImage: "doc.badge.plus") }
+            .tag(LibraryTab.importedBuilds)
             CatalogBrowserView()
                 .tabItem { Label("Demo catalog", systemImage: "square.grid.2x2") }
+                .tag(LibraryTab.catalog)
         }
         .task { await startup.load() }
     }

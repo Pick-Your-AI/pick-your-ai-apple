@@ -4,6 +4,7 @@ import errno
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
 import plistlib
 import subprocess
@@ -18,6 +19,22 @@ sys.path.insert(0, str(SCRIPT.parent))
 spec = importlib.util.spec_from_file_location("submission_sdk", SCRIPT)
 submission = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(submission)
+
+
+class ReadBudgetProbe(io.BytesIO):
+    """Reject a read request that would consume beyond the input budget."""
+
+    def __init__(self, data, limit):
+        super().__init__(data)
+        self.limit = limit
+        self.bytes_read = 0
+
+    def read(self, size=-1):
+        if size < 0 or size > self.limit + 1 - self.bytes_read:
+            raise AssertionError("input requested an unbounded or over-budget read")
+        data = super().read(size)
+        self.bytes_read += len(data)
+        return data
 
 
 class SubmissionSDKTests(unittest.TestCase):
@@ -209,11 +226,141 @@ class SubmissionSDKTests(unittest.TestCase):
                 with self.assertRaises(submission.toolchain.SetupError):
                     submission.inspect_product(app, "iphoneos", self.xcode, self.sdks)
 
+    def test_sdk_pin_read_limit_is_enforced_before_consuming_input(self):
+        stream = ReadBudgetProbe(b" " * 4097, 4096)
+        with patch.object(submission.toolchain, "open", return_value=stream, create=True):
+            with self.assertRaisesRegex(submission.toolchain.SetupError, "SDK pin exceeds 4096 bytes"):
+                submission.load_sdk_pin(self.sdk_file)
+        self.assertTrue(stream.closed)
+        self.assertGreater(stream.bytes_read, 0)
+        self.assertLessEqual(stream.bytes_read, 4097)
+
+    def test_product_read_limit_is_enforced_before_consuming_input(self):
+        limit = 1024 * 1024
+        app = self.write_product(self.product_info("iphoneos"))
+        stream = ReadBudgetProbe(b" " * (limit + 1), limit)
+        with patch.object(submission.toolchain, "open", return_value=stream, create=True):
+            with self.assertRaisesRegex(submission.toolchain.SetupError, "built Info.plist exceeds the inspection bound"):
+                submission.inspect_product(app, "iphoneos", self.xcode, self.sdks)
+        self.assertTrue(stream.closed)
+        self.assertGreater(stream.bytes_read, 0)
+        self.assertLessEqual(stream.bytes_read, limit + 1)
+
+    def test_sdk_pin_exact_limit_accepts_and_one_extra_byte_rejects_then_recovers(self):
+        original = self.sdk_file.read_bytes()
+        exact = original.ljust(4096, b" ")
+        self.assertEqual(len(exact), 4096)
+        self.sdk_file.write_bytes(exact)
+        self.assertEqual(submission.load_sdk_pin(self.sdk_file), self.sdks)
+        self.sdk_file.write_bytes(exact + b" ")
+        with self.assertRaisesRegex(submission.toolchain.SetupError, "SDK pin exceeds 4096 bytes"):
+            submission.load_sdk_pin(self.sdk_file)
+        self.sdk_file.write_bytes(original)
+        self.assertEqual(submission.load_sdk_pin(self.sdk_file), self.sdks)
+
+    def test_actual_cli_product_exact_limit_rejects_one_extra_byte_and_recovers_receipt(self):
+        limit = 1024 * 1024
+        for sdk in submission.SDK_PLATFORMS:
+            with self.subTest(sdk=sdk):
+                app = self.write_product(self.product_info(sdk))
+                info_path = app / "Info.plist"
+                original = info_path.read_bytes()
+                exact = original.ljust(limit, b" ")
+                self.assertEqual(len(exact), limit)
+                receipt = self.root / "evidence" / f"bounded-{sdk}.json"
+                arguments = ("inspect", "--sdk", sdk, "--app", app, "--output", receipt)
+                info_path.write_bytes(exact)
+                accepted = self.run_cli(*arguments)
+                self.assertEqual(accepted.returncode, 0, accepted.stderr)
+                expected = json.loads(accepted.stdout)
+                self.assertEqual(json.loads(receipt.read_text()), expected)
+                self.assertEqual(expected["DTSDKName"], sdk + "26.2")
+                self.assertNotIn("UnexpectedAppMetadata", expected)
+
+                info_path.write_bytes(exact + b" ")
+                rejected = self.run_cli(*arguments)
+                self.assertEqual(rejected.returncode, 2, rejected.stdout + rejected.stderr)
+                self.assertIn("built Info.plist exceeds the inspection bound", rejected.stderr)
+                self.assertEqual(rejected.stdout, "")
+                self.assertFalse(receipt.exists())
+
+                info_path.write_bytes(original)
+                recovered = self.run_cli(*arguments)
+                self.assertEqual(recovered.returncode, 0, recovered.stderr)
+                self.assertEqual(json.loads(recovered.stdout), expected)
+                self.assertEqual(json.loads(receipt.read_text()), expected)
+                self.assertEqual(list(receipt.parent.glob(".submission-sdk-*.tmp")), [])
+
     def run_cli(self, *arguments):
         return subprocess.run([
             sys.executable, str(SCRIPT), "--toolchain-pin", str(self.xcode_file),
             "--sdk-pin", str(self.sdk_file), *map(str, arguments),
         ], capture_output=True, text=True, timeout=10, check=False)
+
+    @unittest.skipUnless(os.name == "posix", "POSIX FIFO and symlink inputs")
+    def test_actual_cli_fifo_pins_remove_old_receipts_and_regular_symlinks_recover(self):
+        environment = self.root / "github-env"
+        environment.write_text("EXISTING=value\n", encoding="utf-8")
+        receipt = self.root / "selection.json"
+        app = self.write_product(self.product_info("iphoneos"))
+        for pin_path in (self.xcode_file, self.sdk_file):
+            with self.subTest(pin_path=pin_path.name):
+                original = pin_path.read_bytes()
+                pin_path.unlink()
+                os.mkfifo(pin_path)
+                receipt.write_text('{"old_success": true}', encoding="utf-8")
+                try:
+                    rejected = self.run_cli("verify", "--github-env", environment, "--output", receipt)
+                    self.assertEqual(rejected.returncode, 2, rejected.stdout + rejected.stderr)
+                    self.assertIn("input must be a regular file", rejected.stderr)
+                    self.assertIn("Restore", rejected.stderr)
+                    self.assertEqual(rejected.stdout, "")
+                    self.assertFalse(receipt.exists())
+                    self.assertEqual(environment.read_text(encoding="utf-8"), "EXISTING=value\n")
+                finally:
+                    pin_path.unlink()
+                    regular = pin_path.with_suffix(".regular")
+                    regular.write_bytes(original)
+                    pin_path.symlink_to(regular)
+                recovered = self.run_cli("inspect", "--sdk", "iphoneos", "--app", app, "--output", receipt)
+                self.assertEqual(recovered.returncode, 0, recovered.stdout + recovered.stderr)
+                self.assertEqual(json.loads(receipt.read_text(encoding="utf-8")), json.loads(recovered.stdout))
+                self.assertEqual(json.loads(recovered.stdout)["DTSDKName"], "iphoneos26.2")
+                self.assertEqual(environment.read_text(encoding="utf-8"), "EXISTING=value\n")
+
+    @unittest.skipUnless(os.name == "posix", "POSIX FIFO and symlink inputs")
+    def test_actual_cli_fifo_metadata_removes_old_receipts_and_regular_symlinks_recover(self):
+        receipt = self.root / "product.json"
+        for sdk in submission.SDK_PLATFORMS:
+            for linked in (False, True):
+                with self.subTest(sdk=sdk, linked=linked):
+                    app = self.write_product(self.product_info(sdk))
+                    info_path = app / "Info.plist"
+                    original = info_path.read_bytes()
+                    info_path.unlink()
+                    fifo = self.root / f"{sdk}-{linked}.fifo" if linked else info_path
+                    os.mkfifo(fifo)
+                    if linked:
+                        info_path.symlink_to(fifo)
+                    receipt.write_text('{"old_success": true}', encoding="utf-8")
+                    try:
+                        rejected = self.run_cli("inspect", "--sdk", sdk, "--app", app, "--output", receipt)
+                        self.assertEqual(rejected.returncode, 2, rejected.stdout + rejected.stderr)
+                        self.assertIn("input must be a regular file", rejected.stderr)
+                        self.assertEqual(rejected.stdout, "")
+                        self.assertFalse(receipt.exists())
+                    finally:
+                        info_path.unlink()
+                        regular = self.root / f"{sdk}-{linked}-regular.plist"
+                        regular.write_bytes(original)
+                        info_path.symlink_to(regular)
+                    recovered = self.run_cli("inspect", "--sdk", sdk, "--app", app, "--output", receipt)
+                    self.assertEqual(recovered.returncode, 0, recovered.stdout + recovered.stderr)
+                    actual = json.loads(recovered.stdout)
+                    self.assertEqual(json.loads(receipt.read_text(encoding="utf-8")), actual)
+                    self.assertEqual(actual["DTSDKName"], sdk + "26.2")
+                    self.assertNotIn("UnexpectedAppMetadata", actual)
+                    self.assertEqual(list(receipt.parent.glob(".submission-sdk-*.tmp")), [])
 
     def test_actual_cli_failed_product_recheck_removes_success_and_valid_retry_recovers(self):
         for sdk in submission.SDK_PLATFORMS:

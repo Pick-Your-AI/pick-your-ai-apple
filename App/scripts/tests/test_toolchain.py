@@ -1,5 +1,7 @@
 import importlib.util
+import io
 import json
+import os
 from pathlib import Path
 import subprocess
 import sys
@@ -11,6 +13,22 @@ SCRIPT = Path(__file__).resolve().parents[1] / "toolchain.py"
 spec = importlib.util.spec_from_file_location("native_toolchain", SCRIPT)
 toolchain = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(toolchain)
+
+
+class ReadBudgetProbe(io.BytesIO):
+    """Reject a read request that would consume beyond the input budget."""
+
+    def __init__(self, data, limit):
+        super().__init__(data)
+        self.limit = limit
+        self.bytes_read = 0
+
+    def read(self, size=-1):
+        if size < 0 or size > self.limit + 1 - self.bytes_read:
+            raise AssertionError("input requested an unbounded or over-budget read")
+        data = super().read(size)
+        self.bytes_read += len(data)
+        return data
 
 
 class ToolchainPinTests(unittest.TestCase):
@@ -41,6 +59,34 @@ class ToolchainPinTests(unittest.TestCase):
         self.assertEqual(environment_file.read_text(encoding="utf-8"), "EXISTING=value\n")
         self.assertFalse(sentinel.exists())
         print("Observed production CLI unavailable-pin rejection: " + result.stderr.strip())
+
+    @unittest.skipUnless(os.name == "posix", "POSIX FIFO and symlink inputs")
+    def test_actual_cli_fifo_pin_fails_before_side_effects_and_regular_symlink_recovers(self):
+        fifo = self.root / "pin.fifo"
+        os.mkfifo(fifo)
+        alias = self.root / "pin-link.json"
+        alias.symlink_to(fifo)
+        environment_file = self.root / "github-env"
+        environment_file.write_text("EXISTING=value\n", encoding="utf-8")
+        sentinel = self.root / "downstream-command-ran"
+        for pin_path in (fifo, alias):
+            with self.subTest(pin_path=pin_path.name):
+                result = subprocess.run([
+                    sys.executable, str(SCRIPT), "--pin", str(pin_path),
+                    "--github-env", str(environment_file), "--", sys.executable, "-c",
+                    "from pathlib import Path; Path(" + repr(str(sentinel)) + ").write_text('unexpected')",
+                ], capture_output=True, text=True, timeout=10, check=False)
+                self.assertEqual(result.returncode, 2, result.stdout + result.stderr)
+                self.assertIn("Cannot read the Xcode pin", result.stderr)
+                self.assertIn("input must be a regular file", result.stderr)
+                self.assertIn("Restore", result.stderr)
+                self.assertEqual(result.stdout, "")
+                self.assertEqual(environment_file.read_text(encoding="utf-8"), "EXISTING=value\n")
+                self.assertFalse(sentinel.exists())
+        fifo.unlink()
+        fifo.write_bytes(self.pin_file.read_bytes())
+        self.assertEqual(toolchain.load_pin(fifo), self.pin)
+        self.assertEqual(toolchain.load_pin(alias), self.pin)
 
     def test_missing_pin_never_probes_a_global_default(self):
         runner = Mock()
@@ -104,6 +150,27 @@ class ToolchainPinTests(unittest.TestCase):
                     toolchain.load_pin(self.pin_file)
         with self.assertRaisesRegex(toolchain.SetupError, "Restore"):
             toolchain.load_pin(self.root / "absent.json")
+
+    def test_pin_read_limit_is_enforced_before_consuming_input(self):
+        stream = ReadBudgetProbe(b" " * 4097, 4096)
+        with patch.object(toolchain, "open", return_value=stream, create=True):
+            with self.assertRaisesRegex(toolchain.SetupError, "pin file exceeds 4096 bytes"):
+                toolchain.load_pin(self.pin_file)
+        self.assertTrue(stream.closed)
+        self.assertGreater(stream.bytes_read, 0)
+        self.assertLessEqual(stream.bytes_read, 4097)
+
+    def test_pin_exact_limit_accepts_and_one_extra_byte_rejects_then_recovers(self):
+        original = self.pin_file.read_bytes()
+        exact = original.ljust(4096, b" ")
+        self.assertEqual(len(exact), 4096)
+        self.pin_file.write_bytes(exact)
+        self.assertEqual(toolchain.load_pin(self.pin_file), self.pin)
+        self.pin_file.write_bytes(exact + b" ")
+        with self.assertRaisesRegex(toolchain.SetupError, "pin file exceeds 4096 bytes"):
+            toolchain.load_pin(self.pin_file)
+        self.pin_file.write_bytes(original)
+        self.assertEqual(toolchain.load_pin(self.pin_file), self.pin)
 
     def test_verified_cli_environment_and_command_preserve_exact_pin_and_exit_status(self):
         environment_file = self.root / "github-env"

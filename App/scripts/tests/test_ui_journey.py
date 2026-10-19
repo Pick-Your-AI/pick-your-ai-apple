@@ -3,6 +3,7 @@ import copy
 import importlib.util
 import json
 from pathlib import Path
+import re
 import tempfile
 import unittest
 from unittest.mock import patch
@@ -148,7 +149,8 @@ class UIJourneyRunnerTests(unittest.TestCase):
         return "\n".join(rows) + "\n"
 
     def test_combined_single_destination_retains_all_four_exact_methods(self):
-        summary = {**PASSING, "totalTestCount": 4, "passedTests": 4}
+        # Retain the original four cases, now with both successor journeys.
+        summary = {**PASSING, "totalTestCount": 6, "passedTests": 6}
         with tempfile.TemporaryDirectory() as directory:
             _, commands, tests, results, failure = self.exercise_main(directory, summary=summary,
                 extra_args=("--suite", "all", "--destination", "ipad"))
@@ -156,14 +158,14 @@ class UIJourneyRunnerTests(unittest.TestCase):
             self.assertEqual(len(tests), 1)
             self.assertEqual(results[0]["destination"]["label"], "ipad")
             self.assertEqual(results[0]["tests"], list(journey.TESTS + journey.T6_TESTS))
-            self.assertEqual(len(results[0]["tests"]), 4)
+            self.assertEqual(len(results[0]["tests"]), 6)
             self.assertTrue(results[0]["executionIdentitiesPassed"])
             self.assertTrue(results[0]["cleanupSucceeded"])
             self.assertEqual(len([c for c in commands if c[:3] == ["xcrun", "simctl", "create"]]), 1)
 
     def test_t6_results_require_both_declared_starts_and_passes(self):
         text = self.method_log(journey.T6_TESTS)
-        self.assertEqual(len(journey.T6_TESTS), 2)
+        self.assertEqual(len(journey.T6_TESTS), 4)
         self.assertTrue(journey.recorded_methods_passed(text, journey.T6_TESTS))
         self.assertFalse(journey.recorded_methods_passed(self.method_log(journey.TESTS), journey.T6_TESTS))
         for mutation in (text.replace("T6ReviewJourneyTests", "OtherTests"),
@@ -176,7 +178,37 @@ class UIJourneyRunnerTests(unittest.TestCase):
 
     def test_combined_summary_rejects_the_earlier_two_method_observation(self):
         self.assertFalse(journey.summary_passed(PASSING, journey.SUITES["all"]))
-        self.assertTrue(journey.summary_passed({**PASSING, "totalTestCount": 4, "passedTests": 4}, journey.SUITES["all"]))
+        self.assertTrue(journey.summary_passed({**PASSING, "totalTestCount": 6, "passedTests": 6}, journey.SUITES["all"]))
+
+    def test_current_suite_requires_every_declared_app_method_without_same_count_substitution(self):
+        root = Path(__file__).resolve().parents[2] / "PlannerAppUITests"
+        actual = set()
+        for path in root.glob("*.swift"):
+            source = path.read_text()
+            classes = list(re.finditer(r"\bclass\s+(\w+)\s*:\s*XCTestCase\b", source))
+            self.assertTrue(classes, path)
+            for index, declaration in enumerate(classes):
+                end = classes[index + 1].start() if index + 1 < len(classes) else len(source)
+                actual.update("PlannerAppUITests/" + declaration.group(1) + "/" + name
+                              for name in re.findall(r"\bfunc\s+(test\w+)\s*\(", source[declaration.end():end]))
+        tests = journey.SUITES["all"]
+        self.assertEqual(len(tests), len(set(tests)))
+        self.assertEqual(set(tests), actual)
+        text = self.method_log(tests)
+        self.assertTrue(journey.recorded_methods_passed(text, tests))
+        for item in tests:
+            _, _, name = item.split("/")
+            with self.subTest(missing=item):
+                replaced = text.replace(" " + name + "]", " testUnrelatedPadding]")
+                self.assertFalse(journey.recorded_methods_passed(replaced, tests))
+
+    def test_expanded_suite_rejects_pre_export_and_missing_withdrawal_receipts(self):
+        tests = journey.SUITES["all"]
+        for total in (4, 5):
+            with self.subTest(old_total=total):
+                summary = {**PASSING, "totalTestCount": total, "passedTests": total}
+                self.assertFalse(journey.summary_passed(summary, tests))
+                self.assertFalse(journey.recorded_methods_passed(self.method_log(tests[:total]), tests))
 
     def test_unknown_suite_or_destination_cannot_start_inventory(self):
         for args in (("--suite", "custom"), ("--destination", "newest")):

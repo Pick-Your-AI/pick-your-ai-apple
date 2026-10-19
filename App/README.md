@@ -1,7 +1,9 @@
 # Native local draft preview
 
 This unsigned iPhone/iPad app composes `PlannerUI` and `PlannerData`. It is a local
-editor with a separate local imported-build library and reviewed JSON file export.
+editor with a separate local imported-build library, reviewed JSON file export and
+a separately reviewed proposed-plan text report. The report is not a private
+Build/Manifest pair or a deployment action.
 The Demo catalog tab browses a pinned, explicitly synthetic fixture and its typed
 component details; compatibility and price remain unknown. A selected imported
 Build can open a local T6 declaration review. No ordinary compatibility evaluator,
@@ -17,10 +19,11 @@ service and release receiving acceptance retain their separate criteria.
 On macOS, use the [pinned toolchain setup and commands](#pinned-toolchain) below.
 
 The workflow records the actual compiler/SDK/runtime and runs model tests, an unsigned
-simulator build, iPhone/iPad launch smoke checks, and four XCUITest journeys on each
+simulator build, iPhone/iPad launch smoke checks, and six XCUITest journeys on each
 pinned UI-test destination: local notes with production autosave, durable undo/redo
 and discard recovery; catalog filters, pagination, relaunch and exact details; and
-the two explicitly synthetic retained T6 review scenarios. It contains no signing
+four T6 journeys using two explicitly synthetic retained-review scenarios, including
+report disclosure/Files cancellation and actual tab withdrawal. It contains no signing
 secrets. The launch-only smoke script remains a separate check; see the
 [UI journey evidence and limits](UI_JOURNEY.md).
 
@@ -29,16 +32,23 @@ Notes journey passes on both pinned simulators, with successful owned cleanup;
 see the [completed editor receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution).
 Its separate scope-cleanup failure remains recorded. The earlier 110 UI / 57
 Transfer composition is historical input. The current preparation requires all
-165 UI and 181 Transfer methods plus all four complete journeys on each destination;
+192 UI and 181 Transfer methods plus all six complete journeys on each destination;
 none of those expanded results is inferred from the earlier editor run.
 
 ## Current receiving source and required validation
 
 The [integration record](../docs/validation/imported-build-integration.md) names the
 actual 2026-10-19 selection, immutable donors, current-module joins and remaining
-receiving gates. The new preparation selected on `888cb7e7` now carries accepted
-main through `0e289d81`; it does not recover an absent old #198 tree or deliver its signed
-staging branch to main. The existing
+receiving gates. The fixed preparation selected on `888cb7e7` carried accepted
+main through `0e289d81`; the current composition carries accepted `bd289eb0`.
+It does not recover an absent old #198 tree or deliver its signed
+staging branch to main. The separately prepared T6 report/route follow-up starts
+on published #391 source `9e7cc629`, with the exact donor `394ff3ba` and
+[explicit route ownership](../docs/validation/imported-build-integration.md#t6-report-and-route-lifecycle-follow-up).
+Its local source checkpoint is not a native or main-delivery observation. The
+[current-main intake](../docs/validation/imported-build-integration.md#accepted-main-composition-and-original-portable-observation)
+preserves the bounded SDK inputs, regular-file admission, accepted catalog-envelope delivery and later
+documentation changes with their original source identities. The existing
 Build configuration comparison is independent of the separately owned catalog
 component comparison in #365.
 
@@ -48,7 +58,17 @@ immutable Build; changed locks, another fork or selected deletion retire prior
 T6 inputs, compatibility and pending picker authority. Ordinary navigation begins
 without a compatibility result. The user explicitly reviews retained quality and
 proposed deployment declarations; no service, default pass, approval or execution
-is manufactured. Six real-store tests specify that new caller binding.
+is manufactured. The original six real-store binding tests remain exact. Eight
+additional receiver methods specify the captured full-Build route, actual tab
+withdrawal, stale callbacks, selected closure/deletion and fresh recovery.
+
+The App reports tab withdrawal synchronously before changing selectedTab. The
+library uses a separate opaque route for each T6 presentation; a stale Back
+binding cannot cancel a reopened same-Build route. Files temporarily covering
+the view preserves its exact owned request. Back navigation, another tab, selected
+closure/deletion or a replaced library owner cancels it explicitly. Closing the
+selection preserves every stored row. Report disclosure and source rights remain
+separate; a successful system callback is only a reported file-save result.
 
 Only an explicitly selected Debug UI-journey argument admits the two synthetic T6
 scenarios. Each such app launch uses a fresh temporary library, preserves the exact
@@ -58,29 +78,31 @@ contain neither that fixture path nor its bytes. Ordinary app launches create no
 fixture and receive no synthetic report. The source-defined two original T6 test
 bodies remain unchanged; their shared navigation helper uses the same adaptive
 button lookup as the existing catalog journey and bounded scrolling in the exact
-imported-build Form.
+imported-build Form. The donor third Files-cancellation body is also exact; the
+fourth T6 journey exercises actual tab withdrawal, reopen and retained-input retry.
 
 | Mandatory current job | Exact selected work |
 | --- | --- |
 | `native-evidence-rendering` | All five accepted real macOS Evidence methods and strict receipt, including the Gregorian capture-date extension, Xcode 16.4, unchanged 20-minute job. |
-| `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, eight pin / 32 smoke / 32 SDK guards, all 165 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
+| `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 192 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
 | `native-cost-rendering` | Three real macOS Cost methods and their strict receipt, Xcode 16.4, separate 20-minute job. |
-| `native-ui-journey (iphone)` and `(ipad)` | All four app journeys on each fresh pinned 18.5 destination, 22 runner controls, separate 20-minute jobs and unchanged 900-second inner test limit. |
+| `native-ui-journey (iphone)` and `(ipad)` | All six app journeys on each fresh pinned 18.5 destination, 24 runner controls, separate 20-minute jobs and unchanged 900-second inner test limit. |
 | `native-ui` | Result-only aggregate requires successful scope and every selected job's success; only an audited false scope permits all native jobs to skip. |
 
 Core retains every existing package, mutation, guard and Evidence-rendering step
 and adds the three Cost methods on each pinned simulator. Storage requires all 34
 methods and its actual crash/recovery controls. Transfer requires 181 exact methods,
 the original nine reference phases and the separate Manifest controls. Submission
-SDK requires all five packages (146 Core, 34 Data, 181 Transfer, 92 Catalog, 165 UI),
+SDK requires all five packages (146 Core, 34 Data, 181 Transfer, 92 Catalog, 192 UI),
 all current App guards and both unsigned Release products with their separate SDK
 and privacy receipts. Static inventories are not execution observations.
 
 The current carry preserves the accepted evidence-date presentation and its fifth
 rendering method, the native package-path preflight before mutation-output cleanup,
 the maintenance runbook and the exact #317 smoke source. The combined Transfer
-receiver keeps the already reviewed ninth catalog-envelope phase alongside the
-eight phases now on main. Earlier four-method rendering results remain observations
+receiver keeps the same nine reference phases now accepted through #285 at
+`b35414a8`; this source carry does not reexecute their earlier receipts.
+Earlier four-method rendering results remain observations
 of those earlier inputs; they do not execute the added date method.
 
 The complete Core/native UI scope footprints include this UI package's Catalog
@@ -228,8 +250,8 @@ The workflow now runs two separately required jobs from the same event checkout:
 
 | Job | Required work and original artifact |
 | --- | --- |
-| `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all four real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
-| `native-simulator` | Eight Xcode-pin, 32 smoke-runner and 17 SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
+| `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all five real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
+| `native-simulator` | Xcode-pin, smoke-runner and SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
 
 Each native job uses its own fresh standard `macos-15-intel` host and retains the
 same 20-minute job limit. The rendering command, source and qualifier are moved

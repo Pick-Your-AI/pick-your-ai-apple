@@ -244,7 +244,7 @@ jobs:
           diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') .build/native-evidence/xcode.txt
           swift --version | tee .build/native-evidence/swift.txt
           sw_vers | tee .build/native-evidence/macos.txt
-      - name: Exercise all four real app journeys on the selected fresh destination
+      - name: Exercise all six real app journeys on the selected fresh destination
         env:
           JOURNEY_DESTINATION: ${{ matrix.destination }}
         run: |

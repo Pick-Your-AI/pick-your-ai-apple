@@ -556,7 +556,7 @@ PROFILES['integrated-retained-transfer'] = (181, {
     ),
 })
 
-PROFILES['integrated-retained-ui'] = (165, {
+PROFILES['integrated-retained-ui'] = (192, {
     'PlannerUITests.CatalogBrowserModelTests': (
         'testBundledPreviewValidatesAllKindsAndRemainsVisiblySynthetic',
         'testConcurrentPreviewLoadsPreserveBothIssuedPageTokens',
@@ -755,6 +755,37 @@ PROFILES['integrated-retained-ui'] = (165, {
         'testCancelledPickerSuccessAndFailureCannotReviveSameBuild',
         'testNewPickerSupersedesOldCallbacksAndSuccessIsSingleUse',
         'testReviewRetryAndRestoredSelectionInvalidatePendingPicker',
+        'testOwnedImporterDisappearancePreservesItsExactTerminalCallback',
+        'testExplicitRouteCancellationRetiresAnOwnedImporterAfterDisappearance',
+        'testOrdinaryDisappearanceCancelsUnfinishedReviewAndAllowsRecovery',
+    ),
+    'PlannerUITests.T6PlanReportTests': (
+        'testDeterministicReportPreservesAllLocksAndOriginalQualityCounts',
+        'testPrivateFieldsAndReferenceAddressesAreWithheldWithoutChangingInputs',
+        'testApprovalOrderDuplicatesAndDecisionsRemainReported',
+        'testQuotedUTF8PreservesSpellingAndCannotInjectLinesOrHiddenHeadings',
+        'testRetainedSecretMarkersFailClosedAndAValidRetryRecovers',
+        'testOutputLimitAppliesAfterEscapingWithoutChangingAValidInput',
+        'testOnlyProposedExactlyBoundContentCanCreateAReport',
+        'testOptionalLocksOmittedTiersDisabledMonitoringAndRollbackStayExplicit',
+        'testFilesSaveRequiresExactReviewedPreviewAndIsSingleUse',
+        'testCurrentFailureCancellationAndPreviewDismissalRecoverWithoutPrivateMutation',
+        'testRetiredFilesCallbacksCannotBorrowNewContentOrRestoredSameBuild',
+        'testLateReportPreparationSuccessAndFailureCannotReplaceFreshPreview',
+        'testReportPreparationErrorsLeavePrivatePairAndAllowFreshRetry',
+        'testOwnedExporterDisappearancePreservesItsExactTerminalCallback',
+        'testExplicitRouteCancellationRetiresAnOwnedExporterAfterDisappearance',
+        'testOrdinaryDisappearanceCancelsReportPreparationAndUnsubmittedPreview',
+    ),
+    'PlannerUITests.ImportedBuildT6NavigationTests': (
+        'testRouteRequiresAnActiveSelectedBuildAndHasOnePresentation',
+        'testNavigationPopRetiresBothOwnedImportersAndLateCallbacksBeforeRecovery',
+        'testActualTabWithdrawalRetiresOwnedExportButSameTabReappearancePreservesIt',
+        'testOldNavigationBindingCannotWithdrawReopenedSameBuildRoute',
+        'testLabelRenamePreservesRouteButSameIDRevisionWithDifferentLocksWithdrawsIt',
+        'testDeletingAnotherRowKeepsOwnedRequestAndDeletingSelectedClearsIt',
+        'testClosingSelectedBuildClearsOwnedExportWithoutDeletingRetainedRow',
+        'testFailedStorageActionPreservesRouteUntilActualLibraryOwnerReplacement',
     ),
 })
 

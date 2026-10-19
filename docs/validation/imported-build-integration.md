@@ -1,5 +1,250 @@
 # New imported-build, catalog and T6 receiving preparation
 
+## Current regular-file admission carry
+
+Date: 2026-10-19. After the fixed `761e8952` composition below was prepared,
+accepted #398 delivered signed `bd289eb074c055bdf9ed1d74d1ab6fe729c778b9`,
+tree `4970c9db4bfd6552b26dc4208836301e95786812`, sole `761e8952` parent.
+Its four-file change directly affects the selected SDK/pin input boundary. The
+current source receives that bounded correction while retaining the complete
+earlier composition and original 46-method observation as history below.
+
+`read_bounded` now opens with nonblocking POSIX admission and checks the actual
+opened descriptor for a regular file before reading. Rejected descriptors close;
+regular-file symlinks and the existing maximum-plus-one budgets remain supported.
+The independent accepted-source review
+[5574875791](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/398#pullrequestreview-5574875791)
+retains its original FIFO timeout and corrected-result scopes. The in-session
+Apple receiving review separately read the complete four-file carry and the
+unchanged enclosing toolchain/receipt boundary. Three new methods exercise real
+FIFO pin/metadata rejection, safe receipt/environment handling and regular-file
+symlink recovery; three stream-mock targets adapt to the new opener without
+changing their byte-budget assertions. Every other earlier method body remains.
+The accepted App guide removes changing discovery counts from its historical
+simulator row. Its [current handoff](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6272616352)
+asks the receiving table to use `Xcode-pin, smoke-runner and SDK guards`; that wording
+is preserved. The source inventories remain **11 pin / 32 smoke / 38 SDK** at this
+exact preparation.
+
+Native Git composition of that accepted source with the reviewed T6 preparation
+is exact local `640e60a47db942356925fcb34cea82c30c10a587`, tree
+`205a5d8d8e0b1419e23972472a6fde3db6a2ce7a`, with no merge conflict.
+On that immutable local source, Python 3.12.14 ran all **49 SDK/pin methods** at
+16:58:49–16:58:57 UTC: **38 SDK plus 11 pin**, 8.436 seconds, zero
+failures/errors/skips. All 385 tracked source entries were hashed before and after;
+their bytes and modes remained unchanged. The 10,309-byte original log hashes to
+`245f59aa2d258a329850b441b1ba79cd6e0135be826a1910d73e0128ea302255`.
+The complete exact source-defined method attendance and original footer were
+checked without another run. Its case-alias control observed the distinct-directory
+branch on this Linux filesystem; no case-insensitive host observation is implied.
+
+This later source changes no T6, native runner, workflow, reference input, deadline
+or accepted scope-audit binding. Its final documentation-only inventory/history
+amendment changes no executable or test byte. The earlier 46-method run remains
+at `ee1fb1f1`; the separate T6 14/24 observations remain at their original source.
+No actual Xcode, Swift, simulator, Files-save or new hosted result is inferred
+from either portable observation. The final published receiving revision still
+requires all configured native gates and original-result qualification.
+
+## Accepted-main composition and original portable observation
+
+Date: 2026-10-19. This current preparation combines the independently reviewed
+T6 follow-up `eed67f92ed6ad86f95418c992078c00218c4390f`, tree
+`96820578948b3fd56a0999b006a27f73529d32e4`, with accepted main
+`761e89526c7afcab1830c66a15b4f865889fe567`, tree
+`5073585e50c7ad0474706ef456d88741f7e51c2e`. It remains a normal descendant
+of published #391 source `9e7cc629`; neither a new donor lane nor a change to the
+historical #198 ref is created. The local source/tree and actual hosted receiving
+revision must retain separate identities when published and qualified.
+
+The original fixed #391 source was independently reviewed in
+[5574336544](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#pullrequestreview-5574336544)
+and [5574484483](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#pullrequestreview-5574484483).
+Those reviews retain their fixed `9e7cc629` / `101b3cfd` scope. The in-session
+Apple engineering reviewer separately read the complete T6 successor production,
+receiver tests, journeys, mandatory inventories and documentation, verified all
+six exact non-App donor blobs, and reproduced its complete 383-leaf tree. All
+165 previous UI method bodies and the original journey bodies/helper remain
+exact; the added cases and their portable observations are specified below.
+That review performed no Swift, native or portable suite rerun.
+
+### Exact accepted inputs and joins
+
+The previously prepared signed #391 receiver
+`ee1fb1f1802984e5732f251f79972865e1d805c0`, tree
+`8003193e273b0713ce9c041b79c1960e3fb0645b`, has ordered parents
+`269ff82dc50a24a5f44d6c2caee0c066abe20d78` and `9e7cc629`.
+The complete 24-path `0e289d81` to `269ff82d` source carry was read and its
+382-leaf composition independently reconstructed. It receives these bounded inputs:
+
+- #380 limits actual Xcode/SDK pin reads to 4,096 bytes and Info.plist reads to
+  1 MiB, rejecting before decoding or allocating an unbounded input. Existing
+  protected input/receipt functions remain exact, as do every earlier SDK/pin
+  test body. Four SDK and two pin methods extend the current source inventory.
+- #369 retains the original synthetic support-intake record and its remaining
+  private receiving/operational limits; this consumer adds no operational receipt.
+- #373 rejects ambiguous or invalid acceptance-row identities before constructing
+  its lookup, preserves the historical inventory, and adds both normal and
+  optimized checks without treating pull requests as issue rows.
+- #285 was actually delivered at signed `b35414a8b665bd4f8ea910860edea77537b89028`.
+  Its catalog-envelope implementation/test/schema/manifest paths already equal the
+  selected source. The ninth reference phase and earlier original observations
+  retain their own scope; no new native result follows from byte preservation.
+- #389 and signed `72b44ae1d37a594ed18be41441c8353799c48052` correct only the
+  historical rendering and SDK/pin rows in the App guide. Those literal historical
+  rows remain intact; the current inventory above them is separately 10 pin,
+  32 smoke and 36 SDK methods.
+
+The later accepted `aaae0b19` contribution guide adds the proposed team model and
+effective-grant distinction. This source carry changes no access or repository
+rule. Accepted #393 at `761e8952` correctly identifies Core as a Transfer library
+dependency and Data/Catalog as test dependencies. The one shared paragraph keeps
+that clarification and this integration's actual five-package Core/native-UI
+closure, CostHarness and App journey inputs. Every selector, historical audit pin
+and method remains unchanged. The only other manual joins update the current
+App inventory and this dated source-intake record.
+
+### Original portable execution on the earlier literal receiver
+
+On exact `ee1fb1f1` / `8003193e`, Python 3.12.14 executed
+`python -m unittest -v test_submission_sdk test_toolchain` from
+`App/scripts/tests` at 16:22:34–16:22:42 UTC. All **46 methods** passed:
+**36 SDK plus 10 pin**, 7.985 seconds, zero failures/errors/skips. Every tracked
+source byte was independently hashed before and after and remained unchanged.
+The original 9,701-byte log has SHA-256
+`97b55d38daaae1e13f5ffc9fc87ec70f8627931ca1a52552103d76586c02ef7e`.
+
+An initial output-only parser expected each success on one line and undercounted
+four cases whose expected CLI diagnostics preceded `ok`. The original run had
+already returned exit 0 and `Ran 46 tests` / `OK`. A corrected output-only reader
+verified every exact method block, terminal result and footer; no suite rerun
+replaced the original. This result is not execution of the later T6 composition,
+Swift typechecking, either Release product or a simulator application.
+
+Current source requires **645 Swift declarations** across the five packages,
+including **192 UI**, and **six real App journeys per pinned destination**.
+The exact T6/runner/attendance inputs remain the reviewed successor; the SDK/pin
+production and guard inputs remain exact to the literal portable observation.
+All configured checks must qualify their actual new receiving source. Neither
+old queued work nor an earlier component result is relabelled as its execution.
+
+## T6 report and route lifecycle follow-up
+
+Date: 2026-10-19. This is a focused successor to the published, fixed #391 source
+`9e7cc6296dda07addc65c03b76287b5800ead59f`, tree
+`101b3cfd8474916202bee331534c7b75b99e4ff7`, whose sole parent is accepted
+`0e289d81428068a0a3196cde064fda536c71691b`. The fixed preparation and all
+its original source/native limits remain in the complete historical record below.
+This follow-up does not modify historical #198, the donor branch or the separately
+owned later-main carry. Source checkpoint `2707ca331de9969ce88ccd10cb6345edba7441f0`
+is a local immutable commit, not a published or executed receiving revision.
+
+### Exact successor input and scope
+
+The actual [T6 handoff 6269003189](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/198#issuecomment-6269003189)
+selects immutable donor `394ff3ba1547b0ae59d18afa374879801808eaac`, sole
+`a8c601d8c1cc1bd17f2a57f8a6489448c72611b9` parent, tree
+`91fca44586e70252d758cc87c547faf56e013b47`. All seven complete changed
+files were read and independently hashed against the actual remote source.
+The six non-App paths are copied byte-for-byte: T6 model/view/report, both full
+model/report test files and the complete donor T6 guide. The three original
+Build/Quality/Manifest fixture bytes and artifact preparation remain unchanged.
+The App journey retains the entire prior receiver helper and both original bodies,
+appends the exact third donor body, and adds one separately identified receiver
+journey. No original assertion or method is replaced.
+
+The new UTF-8 report is a bounded human-readable disclosure projection of the
+exact reviewed proposed plan. It is not an executable plan, private-pair format,
+shared-schema change, rights receipt or approval/deployment action. It preserves
+reported counts and declarations, withholds the stated private fields and reference
+addresses, requires review of the exact preview and uses the actual system Files
+terminal result. The donor's conditional disappearance policy preserves a pending
+owned importer/exporter, including the interval before its terminal callback.
+This was a source integration requirement, not an observed native Files failure.
+
+### Concrete receiver lifetime changes
+
+The former unbound navigation link supplied no explicit route-withdrawal signal.
+The App now binds its actual selected tab and notifies
+`ImportedBuildLibraryNavigation` synchronously before changing that selection.
+The navigation owner attaches weakly to the actual retained library model; replacing
+that model withdraws the old route. Reattaching the same active model and an owned
+Files presentation do not masquerade as tab withdrawal. Standalone library callers
+may omit this optional App owner; their actual T6 navigation binding still owns
+Back cancellation, and a separate host withdrawal must use the explicit owner.
+
+Each T6 opening captures a fresh opaque route, local record ID and complete immutable
+BuildSnapshot. SwiftUI uses the same captured Boolean binding tested by the receiver
+cases. Its false setter cancels only that exact route. A late old setter cannot
+cancel a fresh route for the same Build. The destination modifier is outside the
+Form's lazy content, within the existing NavigationStack. No new compatibility
+producer or default result is introduced; an ordinary first review/retry explicitly
+shows absent evidence.
+
+An actual Back action, tab change or library-owner replacement calls `cancel()`.
+A changed selected row or complete snapshot withdraws the route before adoption;
+a local label-only revision retains it. Selected deletion and the explicit
+**Close selected build** action call `clear()` and retire the route. Close performs
+no storage deletion. Failed opens or conflicted deletes keep the prior selected
+route, while a committed deletion of another row leaves its request intact. Files
+callbacks still need their original donor token; after withdrawal, stale success,
+failure and cancellation cannot publish a notice or borrow a new same-Build route.
+Retained inputs recover only through a newly selected route and explicit retry.
+
+The eight new real-store Swift methods cover: active selection and one route;
+Back with each importer plus late callbacks and recovery; tab withdrawal of an
+owned exporter versus same-tab reappearance; same-Build route ABA; local label
+versus changed-lock identity; other/selected deletion; close without data deletion;
+and failed storage actions versus actual library-owner replacement. These are
+source declarations using the production binding/owner, not a Python simulation
+or an executed native result. The six previous store-binding methods remain exact.
+
+### Current inventories and bounded local observations
+
+On this exact fixed #391 base, the required package inventories become 146 Core,
+34 Data, 181 Transfer, 92 Catalog and **192 UI**: **645 Swift declarations**.
+The UI increment is 19 exact successor model/report methods (22 plus 16 donor
+methods in total, preserving all 19 earlier model methods), plus eight receiver
+methods. Every one of the original 165 UI method identities and bodies remains.
+The existing receiver now requires all 192 exact class/method pairs; every parser,
+summary, duplicate, failure and skipped-case rejection function is unchanged.
+
+The App requires **six actual journeys per pinned destination**: the two original
+Notes/Catalog cases plus four T6 cases. Its original helper, original two T6 bodies
+and donor third body retain their source identities. The new fourth T6 body uses
+normal tab controls and requires route withdrawal before fresh retained-input
+recovery. The workflow changes only its descriptive four-to-six step label; it
+continues invoking the same `--suite all` command. No runtime, SDK, timeout, simulator
+ownership, retry, result or cleanup policy changes. Historical scope audit bindings
+and source revision remain untouched, so this source does not refresh skip authority.
+
+Actual portable observations on 2026-10-19 are separate from Swift execution:
+
+| Observation | Exact local result and interpretation |
+| --- | --- |
+| Before attendance registration, 16:29 UTC | The 14-method model receiver run fails one source-inventory check with all 27 added identities missing. The 24-method journey runner run fails three inventory/older-receipt assertions. Both complete failed logs remain retained. |
+| After registration, 16:30 UTC | All 14 model-receipt controls pass (0.388 s), and all 24 journey-runner controls pass (0.059 s), with no failures/errors/skips. They exercise receipt parsing, exact source inventories, same-count substitutions and earlier receipt rejection; they do not run Swift or an Apple UI. |
+
+No local Swift toolchain is installed. The 192 Swift UI methods, four T6 journeys,
+actual native compilation, complete current package/source inventory, system Files
+save/readback/failure recovery and all existing receiving gates still need their
+literal native observations. The donor's original 22 canonical input controls and
+all older component/SDK/rendering results retain their own original source/date/
+configuration and are not relabelled as execution of this successor.
+
+The separate current-main contribution owns its SDK/pin/profile additions and
+accepted documentation. A later composed source must combine those exact current
+inputs with this follow-up, retain every old method and receipt, and qualify the
+actual resulting native source. The fixed-base totals above do not assert the
+inventory or execution of an as-yet-uncomposed later main.
+
+## Retained fixed #391 preparation
+
+The complete earlier source record follows. Its selected-donor, reserved-export,
+618-method and four-journey descriptions are historical to the fixed source above;
+the explicitly dated follow-up selects the later report source and new requirements.
+
+
 Date: 2026-10-19. This record describes the new isolated source preparation selected
 in [coordination 6268490006](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/198#issuecomment-6268490006).
 It is an integration contribution to the existing Apple work, not an acceptance

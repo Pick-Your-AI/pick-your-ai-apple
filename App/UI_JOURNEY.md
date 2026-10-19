@@ -1,6 +1,37 @@
 # Bounded native notes and catalog UI journeys
 
-## Current four-journey integration — 2026-10-19
+## Current six-journey T6 successor — 2026-10-19
+
+The [T6 receiving follow-up](../docs/validation/imported-build-integration.md#t6-report-and-route-lifecycle-follow-up)
+keeps both original Notes/Catalog methods and the two original T6 methods. It
+adds the exact donor `394ff3ba` disclosure-preview/real Files-cancellation method
+and one receiver method for leaving Imported builds, returning to the library,
+opening a fresh T6 route and retrying the retained quality/proposed-plan inputs.
+The two scenarios remain explicitly synthetic; the fourth T6 method does not
+introduce another seed path or a test-only navigation/persistence shortcut.
+
+Current `--suite all` therefore requires six actual methods on each fresh pinned
+iPhone/iPad destination, and `--suite t6` requires the four T6 methods. The default
+`--suite local` still selects only the original two methods. All deadlines,
+original-UDID spelling, selected runtime/device types, single attempts, result
+requirements and owned cleanup remain unchanged. The 24 portable runner methods
+check all six source declarations, every same-count method substitution and
+rejection of the older four-/five-case output. Their synthetic log specimens are
+not native execution.
+
+The Files journey opens the real exporter and cancels it after the exact report
+and disclosure toggle. The new tab journey withdraws a prepared preview through
+the real adaptive tab controls and verifies that the route and preview are gone
+before a new route recovers the retained inputs. Actual save/readback, platform
+Files failure and callback behavior still need their own native observation; the
+source or a cancelled save supplies no successful-save receipt.
+
+The current source declares these additional cases but has not executed them in
+the Linux preparation environment. Earlier observations below retain their exact
+source/configuration identities and cannot qualify this expanded inventory.
+
+
+## Earlier four-journey integration — 2026-10-19
 
 The [new receiving record](../docs/validation/imported-build-integration.md) selects
 all four actual App UI-test methods per device. The original Notes and Catalog

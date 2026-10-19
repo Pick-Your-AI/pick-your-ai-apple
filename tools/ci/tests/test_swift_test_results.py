@@ -150,7 +150,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
     def test_integrated_profiles_match_every_current_source_method(self):
         root = Path(__file__).resolve().parents[3]
         for package, profile, count in (("PlannerTransfer", "integrated-retained-transfer", 181),
-                                        ("PlannerUI", "integrated-retained-ui", 165)):
+                                        ("PlannerUI", "integrated-retained-ui", 192)):
             expected, groups = gate.PROFILES[profile]
             actual = set()
             for path in (root / "Packages" / package / "Tests" / (package + "Tests")).glob("*.swift"):

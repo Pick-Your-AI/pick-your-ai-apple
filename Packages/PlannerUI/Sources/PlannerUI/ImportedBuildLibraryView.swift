@@ -16,6 +16,7 @@ private struct ExportBuildDocument: FileDocument {
 
 public struct ImportedBuildLibraryView: View {
     @StateObject private var model: ImportedBuildLibraryModel
+    private let navigation: ImportedBuildLibraryNavigation?
     @State private var importing = false
     @State private var exporting = false
     @State private var alias = ""
@@ -27,12 +28,16 @@ public struct ImportedBuildLibraryView: View {
     @State private var deleting = false
     #if DEBUG
     private var syntheticT6Fixture: T6SyntheticJourney?
-    public init(store: DraftStore, syntheticT6Scenario: String) {
+    public init(store: DraftStore, syntheticT6Scenario: String, navigation: ImportedBuildLibraryNavigation? = nil) {
         _model = StateObject(wrappedValue: ImportedBuildLibraryModel(store: store))
+        self.navigation = navigation
         syntheticT6Fixture = T6SyntheticJourney(rawValue: syntheticT6Scenario)
     }
     #endif
-    public init(store: DraftStore) { _model = StateObject(wrappedValue: ImportedBuildLibraryModel(store: store)) }
+    public init(store: DraftStore, navigation: ImportedBuildLibraryNavigation? = nil) {
+        _model = StateObject(wrappedValue: ImportedBuildLibraryModel(store: store))
+        self.navigation = navigation
+    }
     public var body: some View {
         NavigationStack {
             Form {
@@ -87,15 +92,16 @@ public struct ImportedBuildLibraryView: View {
                                 .accessibilityIdentifier("duplicateImportedBuild")
                             Button("Delete local entry", role: .destructive) { pendingDelete = record; deleting = true }
                                 .accessibilityIdentifier("deleteImportedBuild")
+                            Button("Close selected build") { model.closeSelectedBuild() }
+                                .accessibilityIdentifier("closeImportedBuild")
                         }
                         Text("Pinned snapshot: " + snapshot.name)
                         Text("Pinned snapshot revision: " + revisionText(snapshot))
                         Text(model.markedSynthetic ? "Marked synthetic fixture" : "Data qualification unknown")
                         Text("Compatibility: unknown. Imported analysis is not current.")
                         Text(snapshot.id).font(.caption).textSelection(.enabled)
-                        NavigationLink("T6 review") {
-                            T6ReviewView(model: model.t6Review)
-                        }.accessibilityIdentifier("openT6Review")
+                        Button("T6 review") { model.openT6Review() }
+                            .accessibilityIdentifier("openT6Review")
                     }
                     Section("Cost coverage") {
                         switch ImportedBuildCostContext(snapshot: snapshot) {
@@ -157,6 +163,10 @@ public struct ImportedBuildLibraryView: View {
             .accessibilityIdentifier("importedBuildsForm")
             .disabled(model.busy)
             .navigationTitle("Imported builds")
+            .navigationDestination(isPresented: model.t6PresentationBinding(for: model.t6Route)) {
+                T6ReviewView(model: model.t6Review)
+            }
+            .onAppear { navigation?.attach(model) }
             .task {
                 #if DEBUG
                 if let fixture = syntheticT6Fixture { await model.installSyntheticT6Journey(fixture) }

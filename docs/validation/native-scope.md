@@ -66,10 +66,10 @@ objects for the following dependency closure, including test targets:
 | `native-ui` | `PlannerUI`, `PlannerData`, `PlannerCore`, `PlannerCatalog`, `PlannerTransfer` |
 
 These are entire package trees, including sources, tests, fixtures, resources,
-tools and metadata. The PlannerTransfer library target links PlannerCore. Its
-test target additionally links PlannerData and PlannerCatalog for durable
-boundary and synthetic fixture admission checks. The selected PlannerUI manifest
-depends on PlannerData,
+tools and metadata. Transfer's durable boundary test imports PlannerData, and
+its synthetic fixture admission tests import Core and Catalog. Its library target
+also links Core; Data and Catalog are test-target dependencies. The selected
+PlannerUI manifest depends on PlannerData,
 PlannerCore, PlannerCatalog and PlannerTransfer. The Core and UI jobs execute
 EvidenceHarness and CostHarness; the UI workflow also executes the App journeys.
 These hosts link PlannerUI and therefore include all four of its dependencies.

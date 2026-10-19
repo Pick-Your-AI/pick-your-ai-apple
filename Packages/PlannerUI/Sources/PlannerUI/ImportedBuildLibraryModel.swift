@@ -9,6 +9,37 @@ struct PreparedBuildComparison: Equatable, Sendable {
     let afterSynthetic: Bool
 }
 
+/// The App reports actual tab selection here, before changing its selected tab.
+/// Files temporarily covering the library is not a navigation withdrawal.
+@MainActor
+public final class ImportedBuildLibraryNavigation {
+    private var active = false
+    private weak var model: ImportedBuildLibraryModel?
+
+    public init() {}
+
+    public func setActive(_ active: Bool) {
+        self.active = active
+        model?.setLibraryActive(active)
+    }
+
+    func attach(_ model: ImportedBuildLibraryModel) {
+        if self.model !== model {
+            self.model?.setLibraryActive(false)
+            self.model = model
+        }
+        model.setLibraryActive(active)
+    }
+}
+
+/// One local presentation, including the full immutable Build and local row.
+/// A later presentation of the same Build receives a different route identity.
+struct ImportedBuildT6Route: Equatable {
+    fileprivate let id: UUID
+    fileprivate let recordID: UUID
+    fileprivate let snapshot: BuildSnapshot
+}
+
 /// Local persistence wrapper only; this is not a shared wire format or evidence claim.
 struct ImportedBuildRecord: Codable, Sendable {
     let storageVersion: Int
@@ -57,6 +88,8 @@ public final class ImportedBuildLibraryModel: ObservableObject {
     /// Selection changes reach the retained-review owner on the same actor turn,
     /// before a queued picker or preparation callback can inspect the old Build.
     public let t6Review = T6ReviewModel()
+    @Published private(set) var t6Route: ImportedBuildT6Route?
+    private var libraryActive = true
     @Published public private(set) var markedSynthetic = false
     @Published public private(set) var preview: ImportPreview?
     @Published public private(set) var notice: String?
@@ -87,6 +120,51 @@ public final class ImportedBuildLibraryModel: ObservableObject {
     public convenience init(store: DraftStore) { self.init(store: store, preparation: .live) }
     init(store: DraftStore, preparation: ImportedBuildPreparation) {
         self.store = store; self.preparation = preparation
+    }
+
+    @discardableResult
+    func openT6Review() -> ImportedBuildT6Route? {
+        guard libraryActive, !busy, t6Route == nil, let selected, let snapshot else { return nil }
+        let route = ImportedBuildT6Route(id: UUID(), recordID: selected.id, snapshot: snapshot)
+        t6Route = route
+        return route
+    }
+
+    /// SwiftUI and the receiver tests use this same captured presentation binding.
+    /// An old pop callback cannot borrow a new route's same-Build identity.
+    func t6PresentationBinding(for captured: ImportedBuildT6Route?) -> Binding<Bool> {
+        Binding(get: {
+            guard let captured else { return false }
+            return self.libraryActive && self.t6Route == captured
+                && self.selected?.id == captured.recordID && self.snapshot == captured.snapshot
+        }, set: { presented in
+            guard !presented, let captured, self.t6Route == captured else { return }
+            self.withdrawT6Review()
+        })
+    }
+
+    func setLibraryActive(_ active: Bool) {
+        guard libraryActive != active else { return }
+        libraryActive = active
+        if !active { withdrawT6Review() }
+    }
+
+    private func withdrawT6Review() {
+        t6Route = nil
+        t6Review.cancel()
+    }
+
+    /// Close only the selected presentation; every stored row and revision stays.
+    public func closeSelectedBuild() {
+        guard !busy else { return }
+        clearSelectedBuild()
+    }
+
+    private func clearSelectedBuild() {
+        invalidateComparison()
+        t6Route = nil; t6Review.clear()
+        selected = nil; snapshot = nil; markedSynthetic = false; sourceRevision = nil
+        clearExport()
     }
 
     /// Only the Files picker grants access. The actual read is bounded independently
@@ -288,14 +366,14 @@ public final class ImportedBuildLibraryModel: ObservableObject {
             // Only a committed deletion can remove a pinned comparison source.
             if baselineRecordID == record.id { clearComparisonBaseline() }
             if selected?.id == record.id {
-                invalidateComparison()
-                selected = nil; snapshot = nil; markedSynthetic = false; sourceRevision = nil; clearExport()
+                clearSelectedBuild()
             }
             notice = nil
             await reloadAfterMutation("The selected local entry was deleted.", offset: offset)
         } catch { notice = "The selected revision could not be deleted. Reopen the entry and retry; existing records were preserved." }
     }
     private func adopt(_ record: DraftRecord, snapshot: BuildSnapshot, markedSynthetic: Bool, sourceRevision: String?) {
+        if t6Route != nil, selected?.id != record.id || self.snapshot != snapshot { withdrawT6Review() }
         invalidateComparison()
         selected = record; self.snapshot = snapshot; self.markedSynthetic = markedSynthetic; self.sourceRevision = sourceRevision
         clearExport(); notice = nil

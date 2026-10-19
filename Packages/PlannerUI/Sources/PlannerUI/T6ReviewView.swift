@@ -5,7 +5,7 @@ import SwiftUI
 import UniformTypeIdentifiers
 
 /// Reusable destination; its parent owns the selected persisted Build and the
-/// current compatibility adapter. It does not create, approve, publish or deploy.
+/// current compatibility adapter. It does not approve, publish online or deploy.
 public struct T6ReviewView: View {
     @ObservedObject private var model: T6ReviewModel
     @State private var filePicker = false
@@ -57,7 +57,9 @@ public struct T6ReviewView: View {
             }
         }
         .onDisappear {
-            model.cancel(); filePicker = false; fileSelection = nil
+            if model.handleDisappearance() {
+                filePicker = false; fileSelection = nil
+            }
         }
     }
 
@@ -151,8 +153,18 @@ public struct T6ReviewView: View {
             DisclosureGroup("Complete original declaration, including private fields") { value(manifest.value) }
         }
         if content.localArtifacts != nil {
-            Text("A private local Build and proposed manifest are prepared separately. Nothing has been saved, shared or deployed.")
+            Text("The private local Build and proposed manifest remain separate in memory. Report export does not save or share this private pair.")
                 .accessibilityIdentifier("t6-local-pair")
+            Button("Preview proposed-plan report") { model.preparePlanExport() }
+                .disabled(model.exportPreparing)
+                .accessibilityIdentifier("t6-preview-report")
+            if model.exportPreparing {
+                ProgressView("Preparing disclosure preview…").accessibilityIdentifier("t6-report-pending")
+                Button("Cancel report preparation") { model.cancelPlanExportPreparation() }
+            }
+            if let request = model.planExport {
+                T6PlanReportPreview(model: model, request: request).id(request.id)
+            }
         }
     }
 
@@ -205,5 +217,50 @@ private struct T6FileSelectionPresenter: View {
             }, onCancellation: {
                 model.fileSelectionCancelled(for: request)
             })
+    }
+}
+
+/// The presenter owns one immutable preview and terminal callback identity.
+@MainActor
+private struct T6PlanReportPreview: View {
+    @ObservedObject var model: T6ReviewModel
+    let request: T6PlanExportRequest
+    @State private var disclosureReviewed = false
+    @State private var isPresented = false
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 12) {
+            Text("Proposed-plan report disclosure preview").font(.headline)
+            Text("Only the exact UTF-8 text below will be supplied to Files. It is not a JSON manifest or an executable plan.")
+            Text(verbatim: "Default filename: \(T6PlanReport.defaultFilename)")
+            Text("Fields withheld from this report:")
+            ForEach(T6PlanReport.omissions.indices, id: \.self) { index in
+                Text(verbatim: T6PlanReport.omissions[index])
+            }
+            Text(verbatim: request.report.text)
+                .font(.system(.body, design: .monospaced))
+                .textSelection(.enabled).fixedSize(horizontal: false, vertical: true)
+                .accessibilityIdentifier("t6-report-preview")
+            Toggle("I reviewed the exact report and the listed omissions for disclosure.", isOn: $disclosureReviewed)
+                .accessibilityIdentifier("t6-report-disclosure")
+            Button("Save report to Files") {
+                guard model.beginPlanExport(request, disclosureReviewed: disclosureReviewed) else { return }
+                isPresented = true
+            }
+            .disabled(!disclosureReviewed || isPresented)
+            .accessibilityIdentifier("t6-save-report")
+            Button("Close report preview") { model.dismissPlanExport(request) }
+                .accessibilityIdentifier("t6-close-report-preview")
+        }
+        .fileExporter(isPresented: $isPresented, document: T6PlanReportDocument(report: request.report),
+                      contentTypes: [.utf8PlainText], defaultFilename: T6PlanReport.defaultFilename,
+                      onCompletion: { result in
+            switch result {
+            case .success: model.finishPlanExport(.saved, for: request)
+            case .failure: model.finishPlanExport(.failed, for: request)
+            }
+        }, onCancellation: {
+            model.finishPlanExport(.cancelled, for: request)
+        })
     }
 }

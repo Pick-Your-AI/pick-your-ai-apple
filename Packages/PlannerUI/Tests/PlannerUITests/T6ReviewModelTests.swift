@@ -417,4 +417,83 @@ final class T6ReviewModelTests: XCTestCase {
             XCTAssertEqual(model.content?.build, input, transition); XCTAssertNil(model.notice, transition)
         }
     }
+
+    func testOwnedImporterDisappearancePreservesItsExactTerminalCallback() async throws {
+        let input = try build()
+        let url = URL(fileURLWithPath: "/synthetic-not-opened.json")
+        for kind in [T6FileSelection.Kind.quality, .manifest] {
+            for terminal in ["success", "failure", "cancelled"] {
+                let counter = CountingT6Preparation()
+                let model = T6ReviewModel(build: input, preparation: .init(prepare: { try await counter.prepare($0, $1) }))
+                let request = try XCTUnwrap(model.beginFileSelection(kind))
+                XCTAssertFalse(model.handleDisappearance())
+                XCTAssertFalse(model.handleDisappearance())
+                XCTAssertEqual(model.build, input); XCTAssertNil(model.notice)
+                switch terminal {
+                case "success":
+                    await model.importFile(url, for: request)
+                    XCTAssertEqual(model.content?.build, input); XCTAssertNil(model.notice)
+                case "failure":
+                    model.fileSelectionFailed(for: request)
+                    XCTAssertNil(model.content)
+                    XCTAssertEqual(model.notice, "The file selection did not complete. Existing records were not changed.")
+                default:
+                    model.fileSelectionCancelled(for: request)
+                    XCTAssertNil(model.content)
+                    XCTAssertEqual(model.notice, "Review cancelled. Retry to inspect the selected records.")
+                }
+                let accepted = model.content; let notice = model.notice
+                await model.importFile(url, for: request)
+                model.fileSelectionFailed(for: request)
+                model.fileSelectionCancelled(for: request)
+                let calls = await counter.callCount
+                XCTAssertEqual(calls, terminal == "success" ? 1 : 0)
+                XCTAssertEqual(model.content, accepted); XCTAssertEqual(model.notice, notice)
+                XCTAssertFalse(model.busy)
+            }
+        }
+    }
+
+    func testExplicitRouteCancellationRetiresAnOwnedImporterAfterDisappearance() async throws {
+        let input = try build()
+        let url = URL(fileURLWithPath: "/synthetic-not-opened.json")
+        for kind in [T6FileSelection.Kind.quality, .manifest] {
+            for closesRecord in [false, true] {
+                let counter = CountingT6Preparation()
+                let model = T6ReviewModel(build: input, preparation: .init(prepare: { try await counter.prepare($0, $1) }))
+                let request = try XCTUnwrap(model.beginFileSelection(kind))
+                XCTAssertFalse(model.handleDisappearance())
+                if closesRecord { model.clear() } else { model.cancel() }
+                let notice = model.notice
+                await model.importFile(url, for: request)
+                model.fileSelectionFailed(for: request)
+                model.fileSelectionCancelled(for: request)
+                let calls = await counter.callCount
+                XCTAssertEqual(calls, 0); XCTAssertNil(model.content); XCTAssertFalse(model.busy)
+                XCTAssertEqual(model.notice, notice)
+                if closesRecord { XCTAssertNil(model.build) }
+                else { XCTAssertEqual(model.build, input) }
+            }
+        }
+    }
+
+    func testOrdinaryDisappearanceCancelsUnfinishedReviewAndAllowsRecovery() async throws {
+        let input = try build()
+        for oldFailure in [false, true] {
+            let gate = SuspendedT6Preparation()
+            let model = T6ReviewModel(build: input, preparation: .init(prepare: { try await gate.prepare($0, $1) }))
+            let pending = Task { await model.review() }; await gate.waitFor(0)
+            XCTAssertTrue(model.busy)
+            XCTAssertTrue(model.handleDisappearance())
+            let notice = model.notice
+            await gate.complete(0, oldFailure ? .failure(T6TestFailure.synthetic) : .success(try content(input)))
+            await pending.value
+            XCTAssertNil(model.content); XCTAssertFalse(model.busy)
+            XCTAssertEqual(model.build, input); XCTAssertEqual(model.notice, notice)
+            XCTAssertEqual(notice, "Review cancelled. Retry to inspect the selected records.")
+            let recovered = Task { await model.retry() }; await gate.waitFor(1)
+            await gate.complete(1, .success(try content(input))); await recovered.value
+            XCTAssertEqual(model.content?.build, input); XCTAssertNil(model.notice)
+        }
+    }
 }
