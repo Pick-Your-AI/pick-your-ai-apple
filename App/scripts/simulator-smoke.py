@@ -169,6 +169,20 @@ def collect_launch_diagnostics(udid):
             print(f"Launch diagnostic did not complete for {udid}: {error}", file=sys.stderr, flush=True)
 
 
+def observe_installation(udid, phase):
+    """Reuse bounded filtered probes without changing installation or cleanup."""
+    try:
+        collect_runtime_snapshot(udid, phase)
+    except Exception as error:
+        try:
+            print(json.dumps({"smoke_snapshot": phase, "owned_udid": udid,
+                              "error": type(error).__name__}, sort_keys=True), flush=True)
+        except Exception:
+            # Even an unavailable observation sink must not replace the actual
+            # install outcome or prevent finally from attempting owned cleanup.
+            pass
+
+
 def smoke_destination(device, runtime, family, existing_ids):
     udid = None
     cleanup_succeeded = False
@@ -184,8 +198,13 @@ def smoke_destination(device, runtime, family, existing_ids):
         print(f"Smoke launch: {device['name']}, iOS {runtime['version']}", flush=True)
         run("xcrun", "simctl", "boot", udid)
         run("xcrun", "simctl", "bootstatus", udid, "-b", timeout=BOOT_TIMEOUT_SECONDS)
-        run("xcrun", "simctl", "install", udid,
-            ".build/native/Build/Products/Debug-iphonesimulator/Planner.app", timeout=INSTALL_TIMEOUT_SECONDS)
+        observe_installation(udid, "before-install")
+        try:
+            run("xcrun", "simctl", "install", udid,
+                ".build/native/Build/Products/Debug-iphonesimulator/Planner.app", timeout=INSTALL_TIMEOUT_SECONDS)
+        except (OSError, subprocess.SubprocessError):
+            observe_installation(udid, "install-failed")
+            raise
         collect_runtime_snapshot(udid, "before-launch")
         try:
             # This simulator was just created and the app just installed. There

@@ -75,18 +75,29 @@ A zero exit status requires all baseline checks and all three mutations to pass.
 The output must be outside the frozen contract and conformance tool directories,
 with an existing directory parent. An existing destination must be a regular file
 with one hardlink; symbolic links, directories and other file types are rejected
-without changing them or their targets. Parent-directory aliases are resolved
-before checking these boundaries. Use a separate output path for each concurrent
-run.
+without changing them or their targets. Native directory lookup with
+[`Path.stat`](https://docs.python.org/3.12/library/pathlib.html#pathlib.Path.stat)
+validates the raw selected contract root and output parent before alias resolution.
+An ordinary file or missing prefix followed by `..` cannot be normalized away before cleanup.
+Resolved directory identity is checked for consistency, and output ancestors are
+also compared by [physical identity](https://docs.python.org/3.12/library/os.path.html#os.path.samestat)
+to protect case variants on case-insensitive filesystems. Valid outside directory
+aliases remain supported. These checks do
+not make concurrent directory replacement race-free. Use a separate output path
+for each concurrent run.
 
 After accepting the destination, the runner removes any previous receipt before
 checking source bytes or dependencies. A conformance failure exits nonzero with
 no success report at that path. Success JSON is fully serialized and written to
 a temporary sibling before atomic publication; write or publication failures also
 exit nonzero and remove the temporary file. Import, argument and destination
-preflight failures occur before invalidation and leave existing files unchanged.
+preflight failures, including structural contract-root or output-parent failures,
+occur before invalidation and leave existing files unchanged. A valid directory
+whose frozen contents fail validation still invalidates its accepted receipt.
 Harness regressions exercise an actual successful CLI run, source rejection and
 recovery, plus protected paths, dependency rejection and partial-write failures.
+Output-path regressions use isolated synthetic directories; their case-variant
+check reports whether the actual filesystem supplies an alias or distinct directories.
 
 ## Shared report vectors and native regression detection
 

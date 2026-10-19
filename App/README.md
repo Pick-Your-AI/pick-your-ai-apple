@@ -169,6 +169,62 @@ arm64 host or supply physical-device, minimum-OS, accessibility-journey or relea
 acceptance. The original cancelled run, failed arm64 run and all earlier receipts
 remain historical observations rather than results of this new composition.
 
+### Install-phase observations after the split (2026-10-19)
+
+The first split receiving checkout, `2bc6470804faa49af19b19aa8998e0e5e7d18fe0`
+(tree `2df9e20d35a22471935290fc3ed8245cfcb32390`), kept the two native outcomes
+separate. Its [rendering job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39224938072/job/117968907685)
+passed all four real methods. Its [simulator job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39224938072/job/117968907682)
+passed the eight pin guards, twenty-four smoke guards, twenty-three model methods
+and unsigned build, then failed during the first phone's installation. The
+required `native-ui` completion gate correctly rejected that mixed result.
+
+The literal host selected Xcode 16.4 / 16F6, Swift 6.1.2, x86_64 macOS 15.7.9 /
+24G830 and the available iOS 26.2 / 23C54 runtime. Creation, boot and the
+300-second-bounded boot-status command returned success. Installation timed out
+at its unchanged 180-second deadline. Cleanup attempted both commands: shutdown
+timed out at 60 seconds and deletion returned success. No launch command or PID
+was observed, and the tablet sequence did not start. This is an installation
+failure, not the earlier launch timeout or outer-job cancellation.
+
+That source collected runtime snapshots only after installation. Consequently,
+the failed original has no snapshot of the host or owned services around this
+install boundary. Its selected versions and available-runtime flag do not
+establish a toolchain mismatch, health, saturation or another cause. The
+earlier successful Intel phone remains a separately identified observation.
+
+This extension reuses the existing filtered resource, process and owned-service
+probes immediately after successful owned boot readiness, before installation,
+and after an installation timeout, nonzero exit or unavailable command. Each
+probe still has its three-second deadline and the same field, row and character
+limits. Partial or failed probes remain explicit observations; they neither
+replace the original install error nor prevent the remaining cleanup attempts.
+There is no app-container query or app-log claim before installation succeeds.
+The observations can perturb timing and supply no native fix or causal result.
+
+The portable suite now has twenty-nine methods. All original seventeen method
+bodies and six earlier snapshot method bodies remain unchanged. The earlier
+test forbidding snapshots before successful installation is deliberately narrowed
+to creation and boot failures. Three additional methods check both successful
+destination sequences, install timeout/nonzero/unavailable errors with failed
+diagnostic probes and cleanup, and a tablet install failure after phone cleanup.
+They preserve original exception identity or nonzero status, partial output,
+one install attempt, exact owned IDs, and the required launches on success.
+Two additional methods cover collector and observation-output exceptions on
+successful and failed installs, and real bounded child probes with filtered
+partial output. The installation-only wrapper reports only the exception type
+if collection fails and tolerates failure of that observation sink. It preserves
+the original install result and the existing owned cleanup attempts.
+Each reached installation phase adds nine nominal probe seconds plus process
+and output overhead; it supplies no job-completion guarantee.
+These are portable regression cases, not a new simulator execution.
+
+The split workflow, required result gate, both device families, selected
+toolchain/runtime, every command deadline and both 20-minute job limits remain
+unchanged. This source still needs its own actual hosted qualification. All
+earlier guard counts and failed, cancelled or successful native observations
+above retain their original source and run identities.
+
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
 | #26 pinned clean checkout; #30 native CI | Checked-in project/local packages, explicit Xcode pin, actual CLI missing-pin regression and isolated-cache workflow | Exact-head hosted evidence and receiving review; #30 untrusted-PR and release-secret gates remain separate |

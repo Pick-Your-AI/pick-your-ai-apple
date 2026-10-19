@@ -280,6 +280,105 @@ class SimulatorSmokeTests(unittest.TestCase):
         self.assertEqual([args[3] for args in calls if args[2] == "delete"], [CREATED_PHONE, CREATED_PAD])
         self.assertIn("shutdown pending", self.stderr.getvalue())
 
+    def test_install_observation_errors_preserve_success_and_primary_failure(self):
+        for install_fails, sink_fails in ((False, False), (False, True), (True, False), (True, True)):
+            with self.subTest(install_fails=install_fails, sink_fails=sink_fails):
+                observed = []
+                primary = subprocess.TimeoutExpired("install", 180)
+
+                def effect(args, **kwargs):
+                    if install_fails and args[2] == "install":
+                        raise primary
+                    if install_fails and args[2] in ("shutdown", "delete"):
+                        raise subprocess.TimeoutExpired(args, 60)
+                    return self.completed(args, **kwargs)
+
+                def snapshot(udid, phase):
+                    observed.append((udid, phase))
+                    if phase in ("before-install", "install-failed"):
+                        raise RuntimeError("private diagnostic detail must remain excluded")
+
+                def observation_output(*args, **kwargs):
+                    if sink_fails and args and '"smoke_snapshot"' in str(args[0]):
+                        raise OSError("private observation-output failure")
+                    print(*args, **kwargs)
+
+                self.stdout = io.StringIO()
+                with self.commands(effect, snapshot_effect=snapshot) as mocked, \
+                        patch.object(SMOKE, "print", side_effect=observation_output, create=True):
+                    if install_fails:
+                        with self.assertRaises(subprocess.TimeoutExpired) as caught:
+                            SMOKE.main()
+                        self.assertIs(caught.exception, primary)
+                    else:
+                        SMOKE.main()
+                self.assertEqual([x for x in observed if x[1] in ("before-install", "install-failed")],
+                                 [(CREATED_PHONE, "before-install"), (CREATED_PHONE, "install-failed")]
+                                 if install_fails else
+                                 [(CREATED_PHONE, "before-install"), (CREATED_PAD, "before-install")])
+                calls = [c.args[0] for c in mocked.call_args_list]
+                self.assertEqual([c[2] for c in calls[-2:]], ["shutdown", "delete"])
+                self.assertEqual(sum(c[2] == "launch" for c in calls), 0 if install_fails else 2)
+                self.assertNotIn("private diagnostic detail", self.stdout.getvalue())
+                self.assertNotIn("private observation-output", self.stdout.getvalue())
+                records = [json.loads(line) for line in self.stdout.getvalue().splitlines()
+                           if line.startswith("{") and '"smoke_snapshot"' in line]
+                self.assertEqual([r["error"] for r in records], [] if sink_fails else ["RuntimeError", "RuntimeError"])
+
+
+    def test_install_failure_real_probe_timeouts_preserve_redaction_and_cleanup(self):
+        primary = subprocess.TimeoutExpired("install", 180, stderr=b"primary installation timeout\n")
+        real_run = subprocess.run
+        program = ("import time\n"
+                   "print('101 1 S 0.0 128 /private/synthetic/installd\\n"
+                   "102 1 S 0.0 128 /private/other --secret=excluded', flush=True)\n"
+                   "time.sleep(30)\n")
+
+        def effect(args, **kwargs):
+            if args[0] == "/bin/ps":
+                self.assertEqual(kwargs["timeout"], 1)
+                return real_run((sys.executable, "-c", program), **kwargs)
+            if args[0] == "/usr/bin/vm_stat":
+                return subprocess.CompletedProcess(args, 0, "Pages free: 7.\n", "private stderr")
+            if args[2] == "spawn":
+                self.assertEqual(args, ("xcrun", "simctl", "spawn", CREATED_PHONE, "launchctl", "list"))
+                return subprocess.CompletedProcess(args, 0, "123 0 com.apple.installd\n", "private stderr")
+            if args[2] == "install":
+                self.assertEqual(kwargs["timeout"], 180)
+                raise primary
+            if args[2] == "shutdown":
+                raise subprocess.TimeoutExpired(args, 60)
+            return self.completed(args, **kwargs)
+
+        started = time.monotonic()
+        with patch.object(SMOKE.subprocess, "run", side_effect=effect) as mocked, \
+                patch.object(SMOKE.os, "getloadavg", return_value=(1.0, 2.0, 3.0)), \
+                patch.object(SMOKE, "SNAPSHOT_TIMEOUT_SECONDS", 1), \
+                contextlib.redirect_stdout(self.stdout), contextlib.redirect_stderr(self.stderr), \
+                self.assertRaises(subprocess.TimeoutExpired) as caught:
+            SMOKE.main()
+        self.assertIs(caught.exception, primary)
+        self.assertLess(time.monotonic() - started, 10)
+        records = [json.loads(line) for line in self.stdout.getvalue().splitlines()
+                   if line.startswith("{") and '"smoke_snapshot"' in line]
+        self.assertEqual(len(records), 8)
+        self.assertEqual([r["smoke_snapshot"] for r in records], ["before-install"] * 4 + ["install-failed"] * 4)
+        self.assertTrue(all(r["owned_udid"] == CREATED_PHONE for r in records))
+        processes = [r for r in records if r.get("probe") == "processes"]
+        self.assertEqual([r["error"] for r in processes], ["timeout", "timeout"])
+        self.assertEqual([r["rows"] for r in processes], [["101 1 S 0.0 128 installd"]] * 2)
+        self.assertNotIn("/private/", self.stdout.getvalue())
+        self.assertNotIn("secret=excluded", self.stdout.getvalue())
+        self.assertNotIn("private stderr", self.stdout.getvalue())
+        calls = [c.args[0] for c in mocked.call_args_list]
+        self.assertEqual(sum(c[0] == "/bin/ps" for c in calls), 2)
+        actions = [c[2] for c in calls if c[0] == "xcrun"]
+        self.assertEqual(actions, ["list", "create", "boot", "bootstatus", "spawn",
+                                   "install", "spawn", "shutdown", "delete"])
+        self.assertEqual(calls[-1], ("xcrun", "simctl", "delete", CREATED_PHONE))
+        self.assertIn("primary installation timeout", self.stderr.getvalue())
+
+
     def test_failed_delete_fails_an_otherwise_successful_smoke(self):
         def effect(args, **kwargs):
             if args[2] == "delete":
@@ -457,8 +556,8 @@ class SimulatorSmokeTests(unittest.TestCase):
             ("shutdown", CREATED_PAD), ("delete", CREATED_PAD)])
         self.assertIn("primary launch remains failed", self.stdout.getvalue())
 
-    def test_runtime_snapshot_not_attempted_before_owned_successful_installation(self):
-        for action in ("create", "bootstatus", "install"):
+    def test_runtime_snapshot_not_attempted_before_owned_successful_boot(self):
+        for action in ("create", "boot", "bootstatus"):
             with self.subTest(action=action):
                 observed = []
                 def effect(args, **kwargs):
@@ -469,6 +568,101 @@ class SimulatorSmokeTests(unittest.TestCase):
                         self.assertRaises(subprocess.TimeoutExpired):
                     SMOKE.main()
                 self.assertEqual(observed, [])
+
+    def test_install_snapshots_follow_owned_boot_and_preserve_both_successful_launches(self):
+        events = []
+        def effect(args, **kwargs):
+            events.append((args[2], args[3] if len(args) > 3 else None))
+            return self.completed(args, **kwargs)
+        def snapshot(udid, phase):
+            events.append((phase, udid))
+        with self.commands(effect, snapshot_effect=snapshot):
+            SMOKE.main()
+        phases = ("bootstatus", "before-install", "install", "before-launch",
+                  "launch", "terminate", "shutdown", "delete")
+        self.assertEqual([event for event in events if event[0] in phases],
+                         [(phase, udid) for udid in (CREATED_PHONE, CREATED_PAD) for phase in phases])
+        self.assertNotIn("install-failed", [event[0] for event in events])
+
+    def test_install_failure_survives_failed_snapshot_probes_and_owned_cleanup_without_retry(self):
+        for failure in ("timeout", "nonzero", "unavailable"):
+            for cleanup_fails in (False, True):
+                with self.subTest(failure=failure, cleanup_fails=cleanup_fails):
+                    self.stdout, self.stderr = io.StringIO(), io.StringIO()
+                    primary = (subprocess.TimeoutExpired("install", 180,
+                               output=b"partial installation\n", stderr=b"installation pending\n")
+                               if failure == "timeout" else FileNotFoundError("install unavailable"))
+                    expected = subprocess.CalledProcessError if failure == "nonzero" else type(primary)
+                    probes = []
+                    def effect(args, **kwargs):
+                        if args[0] == "/usr/bin/vm_stat":
+                            probes.append((args, kwargs["timeout"]))
+                            raise subprocess.TimeoutExpired(args, 3, output=b"Pages free: 9.\nprivate=excluded")
+                        if args[0] == "/bin/ps":
+                            probes.append((args, kwargs["timeout"]))
+                            raise FileNotFoundError("private diagnostic path excluded")
+                        if args[2] == "spawn":
+                            probes.append((args, kwargs["timeout"]))
+                            self.assertEqual(args, ("xcrun", "simctl", "spawn", CREATED_PHONE, "launchctl", "list"))
+                            raise RuntimeError("private diagnostic detail excluded")
+                        if args[2] == "install":
+                            self.assertEqual(kwargs["timeout"], 180)
+                            if failure == "nonzero":
+                                return subprocess.CompletedProcess(args, 17, "partial installation\n", "installation refused\n")
+                            raise primary
+                        if cleanup_fails and args[2] in ("shutdown", "delete"):
+                            raise subprocess.TimeoutExpired(args, 60, stderr=b"cleanup stalled\n")
+                        return self.completed(args, **kwargs)
+                    with patch.object(SMOKE.subprocess, "run", side_effect=effect) as mocked, \
+                            patch.object(SMOKE.os, "getloadavg", side_effect=OSError("private load detail excluded")), \
+                            contextlib.redirect_stdout(self.stdout), contextlib.redirect_stderr(self.stderr), \
+                            self.assertRaises(expected) as caught:
+                        SMOKE.main()
+                    if failure == "nonzero":
+                        self.assertEqual(caught.exception.returncode, 17)
+                    else:
+                        self.assertIs(caught.exception, primary)
+                    calls = [c for c in mocked.call_args_list if c.args[0][:2] == ("xcrun", "simctl")
+                             and c.args[0][2] != "spawn"]
+                    self.assertEqual([c.args[0][2] for c in calls],
+                                     ["list", "create", "boot", "bootstatus", "install", "shutdown", "delete"])
+                    self.assertTrue(all(c.args[0][3] == CREATED_PHONE and c.kwargs["timeout"] == 60
+                                        for c in calls[-2:]))
+                    self.assertEqual(len(probes), 6)
+                    self.assertTrue(all(timeout == 3 for _, timeout in probes))
+                    records = [json.loads(line) for line in self.stdout.getvalue().splitlines() if line.startswith("{")]
+                    records = [record for record in records if "smoke_snapshot" in record]
+                    self.assertEqual([r["smoke_snapshot"] for r in records],
+                                     ["before-install"] * 4 + ["install-failed"] * 4)
+                    self.assertTrue(all(r["owned_udid"] == CREATED_PHONE for r in records))
+                    observations = [r for r in records if "probe" in r]
+                    self.assertEqual([r["error"] for r in observations],
+                                     ["timeout", "FileNotFoundError", "RuntimeError"] * 2)
+                    self.assertEqual(observations[0]["rows"], ["Pages free: 9."])
+                    self.assertEqual(observations[3]["rows"], ["Pages free: 9."])
+                    self.assertNotIn("private", self.stdout.getvalue() + self.stderr.getvalue())
+                    if failure != "unavailable":
+                        self.assertIn("partial installation", self.stdout.getvalue())
+
+    def test_second_install_failure_observes_only_its_owned_destination_after_phone_cleanup(self):
+        observed = []
+        primary = subprocess.TimeoutExpired("install", 180, output=b"tablet installation pending\n")
+        def effect(args, **kwargs):
+            if args[2] == "install" and args[3] == CREATED_PAD:
+                raise primary
+            return self.completed(args, **kwargs)
+        with self.commands(effect, snapshot_effect=lambda udid, phase: observed.append((phase, udid))) as mocked, \
+                self.assertRaises(subprocess.TimeoutExpired) as caught:
+            SMOKE.main()
+        self.assertIs(caught.exception, primary)
+        self.assertEqual(observed, [("before-install", CREATED_PHONE), ("before-launch", CREATED_PHONE),
+                                    ("before-install", CREATED_PAD), ("install-failed", CREATED_PAD)])
+        commands = [c.args[0] for c in mocked.call_args_list]
+        self.assertEqual([args[3] for args in commands if args[2] == "install"], [CREATED_PHONE, CREATED_PAD])
+        self.assertEqual([args[3] for args in commands if args[2] == "launch"], [CREATED_PHONE])
+        self.assertEqual([args[3] for args in commands if args[2] == "terminate"], [CREATED_PHONE])
+        self.assertEqual([args[3] for args in commands if args[2] == "delete"], [CREATED_PHONE, CREATED_PAD])
+        self.assertNotIn("get_app_container", [args[2] for args in commands])
 
 
 if __name__ == "__main__":

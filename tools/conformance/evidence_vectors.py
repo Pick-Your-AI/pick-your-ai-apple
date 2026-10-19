@@ -31,7 +31,8 @@ def bundle(root):
     # manifest and its covered files, never unrelated source scripts.
     with tempfile.TemporaryDirectory() as directory:
         snapshot = Path(directory)
-        shutil.copyfile(root / "IMPORT_MANIFEST.json", snapshot / "IMPORT_MANIFEST.json")
+        (snapshot / "IMPORT_MANIFEST.json").write_bytes(
+            reference.read_regular_bytes(root / "IMPORT_MANIFEST.json"))
         reference.copy_verified_source(root, snapshot, manifest)
         reference.verify_source(snapshot)
         return verified_bundle(snapshot, dependencies)

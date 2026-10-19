@@ -73,4 +73,76 @@ final class EvidencePresentationTests: XCTestCase {
         XCTAssertEqual(try EvidenceCaptureDate("2000-02-29").rawValue, "2000-02-29")
         XCTAssertEqual(try EvidenceCaptureDate("2024-02-29").rawValue, "2024-02-29")
     }
+
+    func testByteDistinctCorrectionTargetsPreserveUnrelatedEvidence() throws {
+        for (retained, unrelated) in try byteDistinctIdentityPairs() {
+            let original = EvidencePresentation(identity: retained, originalVerificationStatus: .verified,
+                source: try checked(), independentSupport: try support(),
+                freshness: .currentState(captureDate: try EvidenceCaptureDate("2001-01-01")))
+            for prior in [original, original.receiving(.newerSnapshotAvailable)] {
+                for event in [EvidenceChangeEvent.correction(unrelated), .retraction(unrelated)] {
+                    let received = prior.receiving(event)
+                    XCTAssertEqual(received.reviewRequirement, prior.reviewRequirement)
+                    XCTAssertEqual(received.displayGrade, .independentlyVerified)
+                    assertRetainedHistory(received, matches: prior)
+                }
+            }
+        }
+    }
+
+    func testExactCorrectionTargetsRequireRecheckAndPreserveHistory() throws {
+        for (retained, unrelated) in try byteDistinctIdentityPairs() {
+            let exactCopy = try RetainedEvidenceIdentity(
+                componentID: String(decoding: Array(retained.componentID.utf8), as: UTF8.self),
+                componentVersion: String(decoding: Array(retained.componentVersion.utf8), as: UTF8.self),
+                catalogSnapshotID: String(decoding: Array(retained.catalogSnapshotID.utf8), as: UTF8.self))
+            let original = EvidencePresentation(identity: retained, originalVerificationStatus: .verified,
+                source: try checked(), independentSupport: try support(), freshness: .versionPinned)
+            for event in [EvidenceChangeEvent.correction(exactCopy), .retraction(exactCopy)] {
+                let received = original.receiving(event)
+                XCTAssertEqual(received.reviewRequirement, .recheckRequired)
+                XCTAssertEqual(received.displayGrade, .unverified)
+                assertRetainedHistory(received, matches: original)
+
+                let later = received.receiving(.correction(unrelated)).receiving(.retraction(unrelated))
+                    .receiving(.newerSnapshotAvailable).receiving(.newerReleaseAvailable)
+                XCTAssertEqual(later.reviewRequirement, .recheckRequired)
+                XCTAssertEqual(later.displayGrade, .unverified)
+                assertRetainedHistory(later, matches: original)
+            }
+        }
+    }
+
+    private func byteDistinctIdentityPairs() throws -> [(RetainedEvidenceIdentity, RetainedEvidenceIdentity)] {
+        let composed = "opaque.caf\u{00e9}"
+        let decomposed = "opaque.cafe\u{0301}"
+        XCTAssertEqual(composed, decomposed)
+        XCTAssertFalse(composed.utf8.elementsEqual(decomposed.utf8))
+        var pairs: [(RetainedEvidenceIdentity, RetainedEvidenceIdentity)] = []
+        for field in 0..<3 {
+            for (selected, other) in [(composed, decomposed), (decomposed, composed)] {
+                var retained = ["component.fixture", "v1", "catalog.fixture.1"]
+                var unrelated = retained
+                retained[field] = selected
+                unrelated[field] = other
+                pairs.append((
+                    try RetainedEvidenceIdentity(componentID: retained[0], componentVersion: retained[1],
+                                                 catalogSnapshotID: retained[2]),
+                    try RetainedEvidenceIdentity(componentID: unrelated[0], componentVersion: unrelated[1],
+                                                 catalogSnapshotID: unrelated[2])))
+            }
+        }
+        return pairs
+    }
+
+    private func assertRetainedHistory(_ received: EvidencePresentation, matches original: EvidencePresentation,
+                                       file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertEqual(Array(received.identity.componentID.utf8), Array(original.identity.componentID.utf8), file: file, line: line)
+        XCTAssertEqual(Array(received.identity.componentVersion.utf8), Array(original.identity.componentVersion.utf8), file: file, line: line)
+        XCTAssertEqual(Array(received.identity.catalogSnapshotID.utf8), Array(original.identity.catalogSnapshotID.utf8), file: file, line: line)
+        XCTAssertEqual(received.originalVerificationStatus, original.originalVerificationStatus, file: file, line: line)
+        XCTAssertEqual(received.source, original.source, file: file, line: line)
+        XCTAssertEqual(received.independentSupport, original.independentSupport, file: file, line: line)
+        XCTAssertEqual(received.freshness, original.freshness, file: file, line: line)
+    }
 }
