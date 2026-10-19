@@ -139,6 +139,16 @@ Hosted exact-head compilation/tests are required. Actual Files-provider interact
 accessibility, complete cross-client UI round trips, process interruption and physical
 device/privacy receiving qualification remain unverified. Partial #82/#84/#102 only.
 
+Preview parsing and export validation/projection/encoding also use the existing
+detached preparation boundary. Export captures the selected row, qualification and
+public alias synchronously before its worker task is queued; alias changes invalidate
+both queued and in-flight results. Cancellation cannot publish prepared bytes or a
+late failure. Six controlled regressions block real preparation while another notes
+editor processes a main-actor edit, then check cancellation, invalidation, retained
+qualification and unchanged durable records. See the [preparation validation record](../docs/validation/import-preparation.md).
+Their exact hosted native execution remains required; this scheduling coverage does
+not establish a measured performance budget or full Files/lifecycle acceptance.
+
 ## Organize the imported-build library
 
 Each entry displays its local revision and the fact that imported evidence has not
