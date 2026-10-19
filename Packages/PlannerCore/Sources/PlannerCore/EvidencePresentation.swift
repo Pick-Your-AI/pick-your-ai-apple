@@ -47,6 +47,14 @@ public struct SourceInspectionReceipt: Equatable, Sendable {
     public let sourceReference: String
     public let inspectionReference: String
     public let retrievalMethod: String
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        // References identify retained receipts, not canonically equivalent text.
+        lhs.sourceReference.utf8.elementsEqual(rhs.sourceReference.utf8) &&
+        lhs.inspectionReference.utf8.elementsEqual(rhs.inspectionReference.utf8) &&
+        lhs.retrievalMethod == rhs.retrievalMethod
+    }
+
     public init(sourceReference: String, inspectionReference: String, retrievalMethod: String) throws {
         guard [sourceReference, inspectionReference, retrievalMethod].allSatisfy(nonblankEvidenceText) else {
             throw EvidencePresentationError.missingReceipt
@@ -63,6 +71,12 @@ public struct SourceInspectionReceipt: Equatable, Sendable {
 public struct AcceptedIndependentSupport: Equatable, Sendable {
     public let evidenceReference: String
     public let acceptanceReference: String
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.evidenceReference.utf8.elementsEqual(rhs.evidenceReference.utf8) &&
+        lhs.acceptanceReference.utf8.elementsEqual(rhs.acceptanceReference.utf8)
+    }
+
     public init(evidenceReference: String, acceptanceReference: String) throws {
         guard [evidenceReference, acceptanceReference].allSatisfy(nonblankEvidenceText) else {
             throw EvidencePresentationError.missingReceipt

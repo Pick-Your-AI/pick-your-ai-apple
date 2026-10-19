@@ -51,6 +51,11 @@ iOS 17 and macOS 13 for compilation; macOS is a test host, not an added product.
   separates source inspection from accepted independent support, and distinguishes
   newer-snapshot notices from selected-tuple corrections requiring recheck. Capture
   dates do not create automatic expiry or source-use permissions.
+  Source, inspection, independent-evidence and acceptance receipt references use
+  exact UTF-8 equality, including when compared through the enclosing evidence
+  presentation. Canonically equivalent text cannot substitute a different opaque
+  receipt reference. Retrieval-method descriptions retain ordinary text equality;
+  this identity boundary neither authenticates receipts nor changes evidence grades.
 - `EvidenceValuePresence` and `EvidenceCollectionPresence` preserve absent, null,
   literal-unknown, empty and supplied states without deriving an outcome or a
   completeness claim. The [evidence mapping and decoder/UI vectors](../PlannerUI/EVIDENCE_RENDERING.md)
