@@ -2,6 +2,51 @@ import Foundation
 import XCTest
 @testable import PlannerTransfer
 
+/// Mutable synthetic fixtures keep the frozen parser's Decimal and Boolean values.
+/// Foundation's untyped binary-number round trip is not a fixture admission boundary.
+enum CapacityFixtureJSON {
+    enum Failure: Error { case unsupportedValue }
+
+    static func decode(_ data: Data) throws -> Any {
+        var parser = try JSONParser(data)
+        return mutableValue(try parser.parse())
+    }
+
+    static func encode(_ value: Any) throws -> Data {
+        let expected = try frozenValue(value)
+        let encoder = JSONEncoder()
+        encoder.outputFormatting = [.sortedKeys]
+        let data = try encoder.encode(expected)
+        var parser = try JSONParser(data)
+        guard try parser.parse() == expected else { throw TransferError.unsupportedNumber }
+        return data
+    }
+
+    private static func mutableValue(_ value: JSONValue) -> Any {
+        switch value {
+        case .object(let object): return object.mapValues(mutableValue)
+        case .array(let array): return array.map(mutableValue)
+        case .string(let string): return string
+        case .number(let number): return number
+        case .bool(let flag): return flag
+        case .null: return NSNull()
+        }
+    }
+
+    private static func frozenValue(_ value: Any) throws -> JSONValue {
+        if let object = value as? [String: Any] { return .object(try object.mapValues(frozenValue)) }
+        if let array = value as? [Any] { return .array(try array.map(frozenValue)) }
+        if let string = value as? String { return .string(string) }
+        // Exact dynamic types avoid NSNumber's Boolean/integer bridging.
+        if type(of: value) == Bool.self, let flag = value as? Bool { return .bool(flag) }
+        if type(of: value) == Int.self, let number = value as? Int { return .number(Decimal(number)) }
+        if type(of: value) == Decimal.self, let number = value as? Decimal { return .number(number) }
+        if value is NSNull { return .null }
+        // Callers must explicitly construct exact decimals; never round a Double/Float here.
+        throw Failure.unsupportedValue
+    }
+}
+
 /// Synthetic originals and explicit caller assessments; none is a provider, hardware or source attestation.
 final class CapacityTestDraft {
     var build: [String: Any]
@@ -20,7 +65,7 @@ final class CapacityTestDraft {
     init() throws {
         func example(_ name: String) throws -> [String: Any] {
             let url = try XCTUnwrap(Bundle.module.url(forResource: name, withExtension: "json"))
-            return try XCTUnwrap(JSONSerialization.jsonObject(with: Data(contentsOf: url)) as? [String: Any])
+            return try XCTUnwrap(CapacityFixtureJSON.decode(Data(contentsOf: url)) as? [String: Any])
         }
         exampleBuild = try example("build")
         build = exampleBuild; catalog = try example("catalog")
@@ -133,7 +178,7 @@ final class CapacityTestDraft {
         let originalAnswers: [String: Any] = [
             "x_t0_answer_states": ["proposal_version": "cd1-0.2", "answers": entries]
         ]
-        func json(_ value: Any) throws -> Data { try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys]) }
+        func json(_ value: Any) throws -> Data { try CapacityFixtureJSON.encode(value) }
         var inputs = [
             try CapacityInput(name: "answers", kind: .answers, originalBytes: json(originalAnswers)),
             try CapacityInput(name: "catalog", kind: .catalog, originalBytes: json(catalog))

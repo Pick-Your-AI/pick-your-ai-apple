@@ -17,6 +17,62 @@ final class CapacityBasisQualificationTests: XCTestCase {
             sourcePolicy: "source-policy", inputs: inputs ?? context.inputs, catalogInputName: catalog)
     }
 
+    func testSyntheticFixtureRoundTripPreservesExactDecimalBooleanAndNullKinds() throws {
+        let original = Data(#"{"array":[true,false,1,0,0.4,0.85,1.23456789012345,null,"1"],"text":"cafe\u0301"}"#.utf8)
+        var before = try JSONParser(original)
+        let expected = try before.parse()
+        let encoded = try CapacityFixtureJSON.encode(CapacityFixtureJSON.decode(original))
+        var after = try JSONParser(encoded)
+        XCTAssertEqual(try after.parse(), expected)
+        let object = try XCTUnwrap(CapacityFixtureJSON.decode(encoded) as? [String: Any])
+        let array = try XCTUnwrap(object["array"] as? [Any])
+        XCTAssertTrue(type(of: array[0]) == Bool.self)
+        XCTAssertTrue(type(of: array[2]) == Decimal.self)
+        XCTAssertTrue(array[7] is NSNull)
+        let lossyValues: [Any] = [Double(0.4), Float(0.4), NSNumber(value: 1)]
+        for lossy in lossyValues {
+            XCTAssertThrowsError(try CapacityFixtureJSON.encode(["value": lossy])) {
+                XCTAssertTrue($0 is CapacityFixtureJSON.Failure)
+            }
+        }
+    }
+
+    func testSyntheticModelFixturePreservesDecimalAdmissionAndStrictDriftRejection() throws {
+        let draft = try CapacityTestDraft()
+        try draft.serving()
+        let exactBytes = try CapacityFixtureJSON.encode(draft.build)
+        let admitted = try BuildTransfer.snapshot(fromDraftJSON: exactBytes)
+        let selected = try XCTUnwrap(admitted.value.object?["selections"]?.array)
+        let model = try XCTUnwrap(selected.first { $0.object?["kind"] == .string("model") })
+        XCTAssertEqual(model.object?["settings"]?.object?["temperature"], .number(Decimal(string: "0.4")!))
+        let context = try draft.freeze()
+        XCTAssertEqual(context.basis.originalBuildBytes, exactBytes)
+
+        // This diagnostic records the old writer on the actual platform. It is not
+        // an expectation that every Foundation implementation emits the same spelling.
+        let legacyObject = try JSONSerialization.jsonObject(with: exactBytes)
+        let legacyBytes = try JSONSerialization.data(withJSONObject: legacyObject, options: [.sortedKeys])
+        do {
+            _ = try BuildTransfer.snapshot(fromDraftJSON: legacyBytes)
+            print("SYNTHETIC capacity legacy fixture admission: accepted")
+        } catch let error as TransferError {
+            print("SYNTHETIC capacity legacy fixture admission: \(error)")
+        }
+
+        let text = try XCTUnwrap(String(data: exactBytes, encoding: .utf8))
+        let malformed = text.replacingOccurrences(of: #""temperature":0.4"#,
+                                                  with: #""temperature":0.40000000000000002"#)
+        XCTAssertNotEqual(malformed, text)
+        let bytes = Data(malformed.utf8)
+        XCTAssertThrowsError(try BuildTransfer.snapshot(fromDraftJSON: bytes)) {
+            XCTAssertEqual($0 as? TransferError, .unsupportedNumber)
+        }
+        XCTAssertThrowsError(try basis(context, bytes: bytes)) {
+            XCTAssertEqual($0 as? CapacityError, .invalidFrozenBuild)
+        }
+        XCTAssertEqual(try draft.freeze().basis.sha256, context.basis.sha256)
+    }
+
     func testWholeOriginalBytesInvalidateEvidenceEvenWhenBuildIDAndRevisionMatch() throws {
         let original = try context()
         let answer = try original.answer("/deployment/sel_model/operator", .runtimeOperator)

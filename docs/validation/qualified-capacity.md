@@ -230,8 +230,8 @@ shortest-decimal admission rule. Count and byte arithmetic does not use Double
 or Int coercion. Exponent, Unicode, depth/size and digit exclusions are explicit
 consumer limits, not revisions to canonical wire maxima or general JSON parity.
 
-The new source declares **109 capacity XCTest methods**: five answer-reader,
-12 basis/qualification, 24 binding/deployment, 28 memory, 18 worked examples and
+The current source declares **111 capacity XCTest methods**: five answer-reader,
+14 basis/qualification, 24 binding/deployment, 28 memory, 18 worked examples and
 22 workload methods. The separate 249-case answer corpus has 125 canonical-reader
 positives, 123 selected-field positives and 120 native-profile positives.
 `1.0` and `1e0` account for the two reader/selected-field differences; the three
@@ -316,3 +316,47 @@ No physical-device measurement, live service, paid resource, production rollout,
 source-use rights, localization or complete accessibility journey is claimed.
 The existing archival #37 owner, context #346 route and comparison/presentation
 lanes retain their work. Main delivery of this preparation alone cannot close #73.
+
+## First native failure and preserving fixture correction
+
+The first combined native SDK execution is retained in
+[receipt 6270864687](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/346#issuecomment-6270864687).
+Its published source was `69969891fc3046e8d959f2663f9446214361fd9d`; the actual
+prepared checkout was `9ca714060eeca46c027b6fefa19ba78f2e8a7d49`, tree
+`98c401e0407b9486ee14741d4bac107bd4c37af8`, over accepted
+`2ba5136d09b639305aa87eda12cf7960881e7533`. SDK job `118134127669` used Xcode
+26.3 / 17C529, Apple Swift 6.2.4 and macOS 15.7.9 / 24G830. Core's 146 and
+Data's 31 methods passed. Transfer ran 268 methods: 95 capacity methods failed,
+14 capacity methods and all 159 other methods passed. All 113 failure assertions
+(108 unexpected) reported `CapacityError.invalidFrozenBuild`. Catalog/UI package
+execution and both unsigned Release product builds were not reached.
+
+The wrapped underlying Transfer error was absent from that original log.
+The concentration in model fixtures with decimal settings pointed to their
+`JSONSerialization` → untyped Foundation number → `JSONSerialization` round trip;
+that explanation was an inference when this correction was prepared, not an
+observed platform diagnosis. The failed archive remains 23,883 bytes, SHA-256
+`a2991bd24a660329c8d2fe3b1a5e4070bef5266e73b722abe33d84568ca74d02`,
+with its ten original members, full package logs and exact checkout/toolchain.
+
+The test-only fixture helper now reads the unchanged examples through the
+existing frozen JSON parser, keeps exact Decimal/Boolean values during mutation,
+and writes through the existing JSONValue encoder with a complete parse/equality
+check. Binary Float/Double and bridged NSNumber inputs are rejected by this
+synthetic writer. No original decimal setting is removed or rounded. The two
+new methods check decimal/Boolean/null preservation, the actual model constructor,
+strict rejection of an expanded unsupported number and unchanged valid recovery.
+One also records the old writer's sanitized admission result on the actual runner;
+it does not require identical Foundation spelling on every platform.
+
+Production capacity code, frozen decoder/schema bounds, all 249 original answer
+payloads, reference pins and configured gates are unchanged. The earlier 109-method
+portable observations remain attached to their original source and limitations;
+the two new methods and corrected current native tree require their own actual
+configured execution and independent receiving review.
+
+The earlier portable temporary log and receipt were lost in the 2026-10-19
+12:50 workspace reset. Their recorded hashes above remain historical observations,
+not reconstructed originals or substitute native evidence; the
+[independent source receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/73#issuecomment-6270300670)
+preserves that limitation.
