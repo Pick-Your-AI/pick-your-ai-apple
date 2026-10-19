@@ -1,0 +1,168 @@
+name: Recover exact Apple 37 placement metadata object
+
+# Temporary transport branch only; this workflow is excluded from the recovery PR.
+"on":
+  push:
+    branches: ['contrib/CompleteDotTech/apple37-placement-object-transport-7e9bab']
+    paths: ['.github/workflows/apple37-placement-object-transport.yml']
+
+permissions: {}
+
+jobs:
+  recover-exact-blob:
+    if: >-
+      github.event_name == 'push' &&
+      github.repository == 'Pick-Your-AI/pick-your-ai-apple' &&
+      github.ref == 'refs/heads/contrib/CompleteDotTech/apple37-placement-object-transport-7e9bab'
+    runs-on: ubuntu-24.04
+    timeout-minutes: 5
+    permissions:
+      contents: write
+    steps:
+      - name: Verify the original and metadata-only successor and create only its Git blob
+        env:
+          GH_TOKEN: ${{ github.token }}
+        shell: bash
+        run: |
+          set -euo pipefail
+          python3 - <<'PY'
+          import base64
+          from copy import deepcopy
+          import hashlib
+          import json
+          import os
+          import urllib.error
+          import urllib.request
+
+          REPOSITORY = 'Pick-Your-AI/pick-your-ai-apple'
+          BRANCH = 'refs/heads/contrib/CompleteDotTech/apple37-placement-object-transport-7e9bab'
+          ORIGINAL_BLOB = '69718936a83b83e91aca7a492e48720fd2fe6cce'
+          ORIGINAL_SIZE = 1273770
+          ORIGINAL_SHA256 = '499fd9a01780ac42fa9bf2ab8cf9e1195db27321fec36040451b553a8b9ea5f9'
+          RAW_SIZE = 1273952
+          RAW_SHA256 = '8151da7e58e21f29acc5e1594950f1425bc2fb77eb46863a24df91ee39205cf4'
+          BLOB = '1566506e4bbf22508be6f089bde9670d112a2feb'
+          API = 'https://api.github.com/repos/Pick-Your-AI/pick-your-ai-apple/git/blobs'
+          if (os.environ.get('GITHUB_REPOSITORY') != REPOSITORY
+                  or os.environ.get('GITHUB_REF') != BRANCH
+                  or os.environ.get('GITHUB_EVENT_NAME') != 'push'):
+              raise RuntimeError('Unexpected repository, branch or event')
+
+          class NoRedirect(urllib.request.HTTPRedirectHandler):
+              def redirect_request(self, req, fp, code, msg, headers, newurl):
+                  raise RuntimeError('Unexpected HTTP redirect; recovery stopped')
+
+          opener = urllib.request.build_opener(NoRedirect())
+          headers = {
+              'Authorization': 'Bearer ' + os.environ['GH_TOKEN'],
+              'Accept': 'application/vnd.github+json',
+              'Content-Type': 'application/json',
+              'X-GitHub-Api-Version': '2026-03-10',
+              'User-Agent': 'apple37-exact-object-recovery',
+          }
+
+          def bounded_response(request, limit, allowed_status):
+              with opener.open(request, timeout=30) as response:
+                  if response.status != allowed_status:
+                      raise RuntimeError('Unexpected HTTP response status')
+                  data = response.read(limit + 1)
+                  if len(data) > limit:
+                      raise RuntimeError('HTTP response exceeds the fixed bound')
+                  return data
+
+          def decode_blob(payload, expected_blob, expected_size, expected_sha256):
+              value = json.loads(payload)
+              if (value.get('sha') != expected_blob or value.get('size') != expected_size
+                      or value.get('encoding') != 'base64' or not isinstance(value.get('content'), str)):
+                  raise RuntimeError('Remote blob metadata mismatch')
+              decoded = base64.b64decode(value['content'].replace('\n', ''), validate=True)
+              actual_blob = hashlib.sha1(b'blob ' + str(len(decoded)).encode('ascii') + b'\0' + decoded).hexdigest()
+              if (len(decoded) != expected_size or hashlib.sha256(decoded).hexdigest() != expected_sha256
+                      or actual_blob != expected_blob):
+                  raise RuntimeError('Remote blob bytes differ from the reviewed fixture')
+              decoded.decode('utf-8', errors='strict')
+              return decoded
+
+          # Read only the already verified immutable original from this repository.
+          # No downloaded Python, generator, adapter, helper or other code executes.
+          try:
+              original = decode_blob(bounded_response(
+                  urllib.request.Request(API + '/' + ORIGINAL_BLOB, headers=headers), 2000000, 200),
+                  ORIGINAL_BLOB, ORIGINAL_SIZE, ORIGINAL_SHA256)
+          except urllib.error.HTTPError as error:
+              raise RuntimeError('Original blob read failed with HTTP ' + str(error.code)) from None
+          before = json.loads(original)
+          if set(before['inputPins']) != {'build', 'catalog', 'report', 'evidence', 'placement', 'placementAdapter'}:
+              raise RuntimeError('Original input pin inventory changed')
+          value = deepcopy(before)
+          adapter = value['inputPins']['placementAdapter']
+          if adapter != {
+                  'path': 'Packages/PlannerTransfer/Tools/placement_vectors.py',
+                  'sha256': 'cced478338c0bdcd4f79abb2cad8ebab68508343a36d4971d26a8e931aff834c'}:
+              raise RuntimeError('Original placement adapter pin changed')
+          adapter['sha256'] = 'c8174d141568598d55bae09f5fe0bd25d036bb215940f6b5e322455de12970ad'
+          value['inputPins']['placementChecks'] = {
+              'path': 'Packages/PlannerTransfer/Tools/contract_checks.py',
+              'sha256': 'ec74883a2d4b0febf1f1950e4694b4fd73ebb470e37e399cd7ae955595cedd1f',
+          }
+
+          def encoded(item):
+              return (json.dumps(item, sort_keys=True, indent=2, ensure_ascii=False) + '\n').encode('utf-8')
+
+          if (value['cases'] != before['cases'] or len(value['cases']) != 223
+                  or len({case['id'] for case in value['cases']}) != 223
+                  or sum(case['valid'] for case in value['cases']) != 141
+                  or any(type(case['valid']) is not bool
+                         or hashlib.sha256(case['payloadJSON'].encode('utf-8')).hexdigest() != case['payloadSHA256']
+                         for case in value['cases'])):
+              raise RuntimeError('Original complete wire cases changed')
+          inverse = deepcopy(value)
+          inverse['inputPins'] = before['inputPins']
+          if encoded(inverse) != original:
+              raise RuntimeError('Metadata-only inverse does not restore every original byte')
+          raw = encoded(value)
+          actual_blob = hashlib.sha1(b'blob ' + str(len(raw)).encode('ascii') + b'\0' + raw).hexdigest()
+          if (len(value['inputPins']) != 7 or len(raw) != RAW_SIZE
+                  or hashlib.sha256(raw).hexdigest() != RAW_SHA256 or actual_blob != BLOB):
+              raise RuntimeError('Reviewed metadata-only successor identity mismatch')
+
+          def read_exact_blob():
+              try:
+                  payload = bounded_response(urllib.request.Request(API + '/' + BLOB, headers=headers), 2000000, 200)
+              except urllib.error.HTTPError as error:
+                  if error.code == 404:
+                      return None
+                  raise RuntimeError('Blob read failed with HTTP ' + str(error.code)) from None
+              decoded = decode_blob(payload, BLOB, RAW_SIZE, RAW_SHA256)
+              if decoded != raw:
+                  raise RuntimeError('Remote blob differs from the reviewed metadata-only successor')
+              return decoded
+
+          already_present = read_exact_blob() is not None
+          if not already_present:
+              payload = json.dumps({'content': base64.b64encode(raw).decode('ascii'), 'encoding': 'base64'}).encode('utf-8')
+              request = urllib.request.Request(API, data=payload, headers=headers, method='POST')
+              try:
+                  created = json.loads(bounded_response(request, 65536, 201))
+              except urllib.error.HTTPError as error:
+                  raise RuntimeError('Blob creation failed with HTTP ' + str(error.code) + '; no retry was made') from None
+              if created.get('sha') != BLOB:
+                  raise RuntimeError('Created blob identity mismatch')
+              if read_exact_blob() is None:
+                  raise RuntimeError('Created object not readable; reconcile before any further action')
+
+          # Metadata only: no token, fixture body, executable payload, tree or ref write.
+          print(json.dumps({
+              'repository': REPOSITORY,
+              'workflow_source': os.environ['GITHUB_SHA'],
+              'source_blob': ORIGINAL_BLOB,
+              'verified_blob': BLOB,
+              'bytes': RAW_SIZE,
+              'sha256': RAW_SHA256,
+              'all223_case_rows_unchanged': True,
+              'whole_original_inverse_verified': True,
+              'already_present': already_present,
+              'object_only': True,
+              'ref_mutations': 0,
+          }, sort_keys=True))
+          PY
