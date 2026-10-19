@@ -45,6 +45,26 @@ final class CatalogDetailsModel: ObservableObject {
         self.row = row; self.source = source; self.sourceLinkPolicy = sourceLinkPolicy
     }
 
+    /// The explicit comparison action revalidates this still-active detail.
+    /// It neither dismisses inspection nor consumes the source-link review.
+    @discardableResult
+    func addToComparison(_ comparison: ComponentComparisonModel) -> Bool {
+        guard active, !isLoading, !unavailable, let result else {
+            comparison.reportUnavailable(); return false
+        }
+        let item = result.details.item
+        let displayed = [row.item.id, row.item.version, row.item.kind, row.item.title,
+                         row.snapshot.schemaVersion, row.snapshot.id, String(row.snapshot.revision), row.snapshot.capturedAt]
+        let received = [item.id, item.version, item.kind.rawValue, item.name,
+                        result.snapshot.schemaVersion, result.snapshot.id, String(result.snapshot.revision), result.snapshot.capturedAt]
+        guard zip(displayed, received).allSatisfy({ Data($0.0.utf8) == Data($0.1.utf8) }),
+              let candidate = try? ComponentComparisonCandidate(item: item,
+                  catalog: ArtifactPin(kind: .catalog, identity: result.snapshot, sha256: result.sha256)) else {
+            comparison.reportUnavailable(); return false
+        }
+        return comparison.add(candidate)
+    }
+
     func loadIfNeeded() {
         guard active, !attempted else { return }
         load()

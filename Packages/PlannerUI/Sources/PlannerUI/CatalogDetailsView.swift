@@ -6,10 +6,12 @@ import PlannerTransfer
 /// destination before a one-use system handoff; the preview approves no hosts.
 struct CatalogPreviewDetails: View {
     @StateObject private var model: CatalogDetailsModel
+    @ObservedObject private var comparison: ComponentComparisonModel
     @Environment(\.dismiss) private var dismiss
     @Environment(\.openURL) private var openURL
 
-    init(row: CatalogBrowserRow, source: any CatalogDetailSource) {
+    init(row: CatalogBrowserRow, source: any CatalogDetailSource, comparison: ComponentComparisonModel) {
+        self.comparison = comparison
         _model = StateObject(wrappedValue: CatalogDetailsModel(row: row, source: source))
     }
 
@@ -30,6 +32,21 @@ struct CatalogPreviewDetails: View {
                     if let result = model.result {
                         Text("Specifications: \(result.details.specifications.count) · Source records: \(result.details.provenance.count)")
                             .font(.footnote).accessibilityIdentifier("catalogDetailReady")
+                    }
+                }
+                if model.result != nil {
+                    Section("Read-only comparison") {
+                        Button("Add this exact version to comparison") { model.addToComparison(comparison) }
+                            .buttonStyle(.borderless)
+                            .frame(minHeight: 44)
+                            .accessibilityIdentifier("catalogDetailAddToComparison")
+                        Text("\(comparison.selections.count) of 4 components selected")
+                            .accessibilityIdentifier("catalogDetailComparisonCount")
+                        if let notice = comparison.notice {
+                            Text(notice.message).accessibilityIdentifier("catalogDetailComparisonNotice")
+                        }
+                        Text("This keeps the source inspection open. Adding here does not select a builder component.")
+                            .font(.footnote)
                     }
                 }
                 Section("Component") {

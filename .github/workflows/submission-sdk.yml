@@ -89,6 +89,7 @@ jobs:
               2>&1 | tee ".build/submission-evidence/$package-tests.txt"
             grep -E 'Executed [1-9][0-9]* tests?, with 0 failures' ".build/submission-evidence/$package-tests.txt"
           done
+          python3 tools/ci/require_swift_test_results.py component-comparison-catalog-ui .build/submission-evidence/PlannerUI-tests.txt
       - name: Build unsigned Release simulator product
         run: |
           set -euo pipefail

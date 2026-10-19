@@ -206,6 +206,72 @@ PROFILES["comparison-catalog-source-privacy-ui"] = (111, {
     ),
 })
 
+
+# Current accepted main contributes 23 editor methods; this isolated comparison
+# adds 18. Preserve the other profiles as source-bound historical inventories.
+PROFILES["component-comparison-main-ui"] = (41, {
+    "PlannerUITests.DraftLibraryModelTests": (
+        "testCreateSaveReopenDuplicateAndDelete",
+        "testConflictPreservesUnsavedInput",
+        "testUnknownEditorPayloadIsPreserved",
+        "testUnknownPayloadFieldsAreNotSilentlyDiscarded",
+        "testInvalidTitleRetainsEditsAndDoesNotAcknowledgeSave",
+        "testEditsArrivingDuringSaveRemainDirty",
+        "testRefreshFailureDoesNotRevokeDurableAcknowledgement",
+        "testSuccessfulRefreshClearsLibraryFailureAndLoadsCurrentRecords",
+        "testLibraryFailureAndRecoveryPreserveConflictGuidanceAndUnsavedInput",
+        "testDirtyNavigationGuardsAndSelectedDeletion",
+        "testEditorBindingsCannotChangeDuringDestructiveDelete",
+        "testLibraryKeepsOnlyOneBoundedPage",
+        "testPageRetryClearsItsFailureWithoutReplacingRowsOnFailedRead",
+        "testHistoryPageFailureKeepsContextAndSuccessfulRetryClearsItsNotice",
+        "testHistoryRecoveryPreservesIndependentConflictNotice",
+        "testHistoryRecoveryDoesNotClearOutstandingLibraryFailure",
+        "testRestoreAppendsHistoryAndReopensWithoutCurrentAnalysis",
+        "testRestoreCannotDiscardDirtyOrConcurrentSavedEdits",
+        "testEditsDuringRestorationRemainDirtyAndCanBeSaved",
+        "testHistoryIsBoundedAndClearedAcrossDrafts",
+        "testUnsupportedHistoryCannotBeRestoredFromEditor",
+        "testLifecycleSaveDuringHistoryReadIsDrainedWithLatestEdits",
+        "testLifecycleSaveDuringRestoreUsesNewRevisionAndLatestEdits",
+    ),
+    "PlannerUITests.ComponentComparisonModelTests": (
+        "testExplicitSelectionKeepsTwoToFourInOrderAndLimitRecoveryDoesNotReplaceAnyRecord",
+        "testDuplicateSelectionIsIdempotentButChangedRecordCannotClaimTheHeldIdentity",
+        "testCrossKindReuseOfOneItemVersionCannotBecomeASecondMemberOfTheSameCatalog",
+        "testConflictingCatalogBytesOrCaptureCannotReplaceAnImmutableCatalogRevision",
+        "testDifferentExactVersionsAndCatalogRevisionsRemainSeparateSelections",
+        "testUnicodeEquivalentVersionSpellingsStayByteDistinctWithoutLosingTheirDisplay",
+        "testExactDecimalZeroAndFalseRemainRecordedInsteadOfMissingOrRounded",
+        "testMissingExplicitUnknownEmptyAndSuppliedDeclarationsHaveDifferentStates",
+        "testNotApplicableRequiresAnAbsentKindDefinitionAndNeverAnAbsentOptionalValue",
+        "testFourUnitAndConditionTuplesAreRetainedWithoutConversionRankingOrTransfer",
+        "testWholeEvidenceLicenseAndTopLevelConditionsRemainInspectableWithoutAConfidenceUpgrade",
+        "testEmptyAndUnknownCollectionsDoNotTurnIntoSupportOrNotApplicable",
+        "testDifferenceFilteringNeverDropsHeldRecordsAndPreferencesSurviveAddFailureRemoveAndClear",
+        "testSourceFailurePreservesExactSelectionAndInspectionUntilAnExplicitRecovery",
+        "testInspectionReplacementAndRemovalRetireOnlyTheirCapturedIdentity",
+        "testInvalidCatalogPinsAndInvalidItemsCannotEnterOrReplaceTheComparison",
+        "testCompleteLiteralDisplayKeepsTypesLongConditionsAndEscapesInvisibleFormatting",
+        "testIndependentSessionsDoNotRestoreAnUnqualifiedImplicitSelection",
+    ),
+})
+
+
+# Exact signed 2206 UI source (111) plus 18 comparison and four adapter cases.
+# A later receiving source must retain this profile and recalculate its own union.
+PROFILES["component-comparison-catalog-ui"] = (133, {
+    **PROFILES["comparison-catalog-source-privacy-ui"][1],
+    "PlannerUITests.ComponentComparisonModelTests":
+        PROFILES["component-comparison-main-ui"][1]["PlannerUITests.ComponentComparisonModelTests"],
+    "PlannerUITests.CatalogComponentComparisonAdapterTests": (
+        "testQualifiedBundledDetailAddsExactRecordWithoutChangingFiltersRowsOrSourceReview",
+        "testUnavailableDetailRetryAddsOnlyItsRecoveredPinAndClosedActionsRemainRetired",
+        "testDismissedCancellationIgnoringDetailCannotPublishThroughARetainedAddAction",
+        "testByteDifferentVersionCannotCrossTheAdapterThroughCanonicalStringEquivalence",
+    ),
+})
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

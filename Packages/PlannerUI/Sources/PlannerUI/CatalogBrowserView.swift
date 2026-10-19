@@ -6,6 +6,8 @@ import PlannerCatalog
 public struct CatalogBrowserView: View {
     @StateObject private var model: CatalogBrowserModel
     @State private var inspected: CatalogBrowserRow?
+    @StateObject private var comparison = ComponentComparisonModel()
+    @State private var comparing = false
     @State private var choosingKinds = false
     @FocusState private var searchFocused: Bool
     private let detailSource: any CatalogDetailSource
@@ -24,6 +26,16 @@ public struct CatalogBrowserView: View {
                 Section {
                     Text("Sample data for exploring the planner. These fictional components have no current compatibility assessment or price estimate.")
                         .accessibilityIdentifier("catalogQualification")
+                }
+                Section("Read-only comparison") {
+                    Button("Compare selected components (\(comparison.selections.count) of 4)") {
+                        searchFocused = false
+                        comparing = true
+                    }
+                    .frame(minHeight: 44)
+                    .accessibilityIdentifier("catalogOpenComparison")
+                    Text("Inspect a component to add its exact recorded version. Your filters, details and saved builds are preserved.")
+                        .font(.footnote)
                 }
                 Section("Find components") {
                     TextField("Search name, kind or identifier", text: Binding(
@@ -116,8 +128,9 @@ public struct CatalogBrowserView: View {
             }
             .task { model.loadIfNeeded() }
             .sheet(item: $inspected) { row in
-                CatalogPreviewDetails(row: row, source: detailSource).id(CatalogDetailsIdentity(row))
+                CatalogPreviewDetails(row: row, source: detailSource, comparison: comparison).id(CatalogDetailsIdentity(row))
             }
+            .sheet(isPresented: $comparing) { ComponentComparisonView(model: comparison) }
             .sheet(isPresented: $choosingKinds) {
                 NavigationStack {
                     List {

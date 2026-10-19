@@ -89,7 +89,9 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                         "quality-catalog-editor-transfer", "catalog-source-ui",
                         "comparison-catalog-source-ui", "resource-quality-catalog-editor-transfer",
                         "comparison-catalog-source-privacy-ui",
-                        "graph-resource-quality-catalog-editor-transfer"):
+                        "graph-resource-quality-catalog-editor-transfer",
+                        "component-comparison-main-ui",
+                        "component-comparison-catalog-ui"):
             text = self.profile_log(profile)
             with self.subTest(profile=profile):
                 self.assertEqual(self.run_profile(profile, text), 0)
@@ -102,8 +104,21 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                     self.run_profile(profile, replaced)
                 self.assertEqual(rejection.exception.code, 1)
 
+    def test_old_editor_cases_padded_to_41_cannot_replace_component_comparison_execution(self):
+        profile = "component-comparison-main-ui"
+        text = self.profile_log(profile)
+        names = gate.PROFILES[profile][1]["PlannerUITests.ComponentComparisonModelTests"]
+        for index, name in enumerate(names):
+            text = text.replace(f"-[PlannerUITests.ComponentComparisonModelTests {name}]",
+                                f"-[UnrelatedTests.Padding testPlaceholder{index}]")
+        with self.assertRaises(SystemExit) as rejection:
+            self.run_profile(profile, text)
+        self.assertEqual(rejection.exception.code, 1)
+
     def test_padded_stacked_evidence_cannot_qualify_receiving_profile(self):
         for stacked, receiving in (
+                ("comparison-catalog-source-privacy-ui", "component-comparison-catalog-ui"),
+                ("component-comparison-main-ui", "component-comparison-catalog-ui"),
                 ("catalog-details-transfer", "catalog-editor-transfer"),
                 ("catalog-details-ui", "catalog-editor-ui"),
                 ("catalog-editor-ui", "comparison-catalog-editor-ui"),
