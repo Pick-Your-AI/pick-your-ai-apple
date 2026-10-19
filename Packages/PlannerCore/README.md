@@ -40,6 +40,12 @@ iOS 17 and macOS 13 for compilation; macOS is a test host, not an added product.
   still owns timeout, failure and cancellation. Report ID, evaluation time and
   verdicts do not replace input pins or define an additional ordering policy.
   The generic store remains available for other explicitly identified payloads.
+- `DependencyInvalidation` interprets eight explicit activation conditions and
+  finds direct participants across immutable before/after contexts. Context-only
+  activation changes include both endpoints; removed and disabled selection IDs
+  remain available for retirement. The [activation and participant contract](DEPENDENCY_INVALIDATION.md)
+  defines unknown handling, ordering, the validated Transfer adapter and the
+  caller's remaining full-identity/evaluator responsibilities.
 
 - `EvidencePresentation` retains original provenance and selected evidence identity,
   separates source inspection from accepted independent support, and distinguishes
@@ -93,6 +99,7 @@ Refer to the delivering PR and its exact Actions runs for observed results.
 | #36 | Presence projection, retained report outcomes and [37 shared evidence decoder/UI vectors](../PlannerUI/EVIDENCE_RENDERING.md) | Actual native rendering, final exact-source receiving review and signed-main criterion reconciliation |
 | #37 | Report/money decoding and explicit unknown/outcome states; pinned fixture roundtrip | Remaining contract/service and supported migration coverage under its own literal criteria |
 | #47, #75 | Request/response identity and generation gates; typed frozen-v1 report admission; deterministic races, cancellation, wrong-response and reconnect tests | Real service transport and governed input adapters, actual UI visible-revision integration and receiving acceptance |
+| #71 | Explicit activation and direct affected-kind/old-and-new-selection planning, with a validated frozen-graph adapter | Caller integration, complete-identity invalidation, governed evaluation, visible dirty/recheck state and actual UI/service receiving evidence |
 | #77, #78 | Exact decimal arithmetic, complete-versus-partial coverage and budget guards | Canonical service scenario parity, actual line-item rounding and UI cost/coverage presentation |
 | #42 | Evidence display grades, capture dates and retained-snapshot recheck state; [claim view mapping](../PlannerUI/EVIDENCE_RENDERING.md) | Catalog/service adapters, actual source inspection and acceptance receipts, saved-build integration and source-use gates |
 | #37, #104 | Shared report vectors, Debug/Release Swift regressions and semantic mutation checks alongside reference checks | All-kind/service parity, historical migration, complete app/domain coverage and receiving disposition |
