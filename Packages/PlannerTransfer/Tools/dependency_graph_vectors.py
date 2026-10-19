@@ -7,6 +7,7 @@ import argparse
 from copy import deepcopy
 import json
 from pathlib import Path
+from contract_checks import require
 
 ROOT = Path(__file__).resolve().parents[1]
 RESOURCES = ROOT / 'Sources/PlannerTransfer/Resources'
@@ -40,13 +41,14 @@ def vectors():
         add('edge-wrong-type-' + key, path, True)
     for key in ('dependent_kind', 'depends_on_kind'):
         kinds = edge_schema['properties'][key]['enum']
-        assert len(kinds) == 29
+        require(len(kinds) == 29, 'Expected exactly 29 dependency graph kinds')
         for kind in kinds:
             add(key + '-' + kind, ['edges', '0', key], kind, valid=True)
         add('unknown-' + key, ['edges', '0', key], 'future_unsupported')
     relationships = edge_schema['properties']['relationship']['enum']
     activations = edge_schema['properties']['activation']['enum']
-    assert len(relationships) == 4 and len(activations) == 8
+    require(len(relationships) == 4 and len(activations) == 8,
+            'Expected four dependency graph relationships and eight activations')
     for relationship in relationships:
         for activation in activations:
             edge = dict(first, relationship=relationship, activation=activation)
@@ -84,7 +86,8 @@ def vectors():
     add('unsupported-large-revision', ['revision'], 9_007_199_254_740_993, canonical=True)
     add('unsupported-terminal-newline-id', ['id'], 'graph.valid\n', canonical=True)
     add('unsupported-terminal-newline-edge-id', ['edges', '0', 'id'], 'edge.valid\n', canonical=True)
-    assert len({case['name'] for case in cases}) == len(cases)
+    require(len({case['name'] for case in cases}) == len(cases),
+            'Duplicate dependency graph vector names')
     return cases
 
 
@@ -101,5 +104,6 @@ if __name__ == '__main__':
     if args.write:
         OUTPUT.write_text(expected)
     else:
-        assert OUTPUT.read_text() == expected, 'Graph vectors are stale; run dependency_graph_vectors.py --write'
+        if OUTPUT.read_text() != expected:
+            raise SystemExit('Graph vectors are stale; run dependency_graph_vectors.py --write')
     print(f'Dependency graph vectors: {len(vectors())}; deterministic generation verified.')
