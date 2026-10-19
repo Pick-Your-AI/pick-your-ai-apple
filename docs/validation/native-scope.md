@@ -67,8 +67,9 @@ objects for the following dependency closure, including test targets:
 
 These are entire package trees, including sources, tests, fixtures, resources,
 tools and metadata. Transfer's durable boundary test imports PlannerData, and
-its synthetic fixture admission tests import Core and Catalog, even though its
-library target does not. PlannerUI depends on PlannerData and PlannerCore.
+its synthetic fixture admission tests import Core and Catalog. Its library target
+also links Core; Data and Catalog are test-target dependencies. PlannerUI depends
+on PlannerData and PlannerCore.
 The Core and UI jobs both execute EvidenceHarness, which explicitly links
 PlannerUI and PlannerCore and includes PlannerUI's transitive Data dependency.
 The Core package itself and Catalog declare no sibling package dependencies. A future

@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import sys
 
@@ -17,7 +18,18 @@ class SetupError(Exception):
 
 def read_bounded(path, maximum_bytes, oversized_message):
     """Read only the permitted input plus one byte needed to detect overflow."""
-    with path.open("rb") as stream:
+    def open_regular_file(name, flags):
+        # A FIFO must not wait for a writer before its opened type is checked.
+        descriptor = os.open(name, flags | getattr(os, "O_NONBLOCK", 0))
+        try:
+            if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+                raise ValueError("input must be a regular file")
+        except BaseException:
+            os.close(descriptor)
+            raise
+        return descriptor
+
+    with open(path, "rb", opener=open_regular_file) as stream:
         data = stream.read(maximum_bytes + 1)
     if len(data) > maximum_bytes:
         raise ValueError(oversized_message)
