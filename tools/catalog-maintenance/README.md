@@ -51,12 +51,14 @@ main-push events, macOS 15, Xcode 16.4/build 16F6 with Swift 6, and Python 3.12.
 It checks out immutable research commit `9db556b7fca485c8eb4396f9ee2ceeacdc119d79`
 for the canonical schemas, registry and seven pinned validation dependencies.
 It builds this executable with two jobs and explicitly runs all six original
-portable receipt tests plus three native receipt tests before the four real
-native processes. Native specimens test receipt rejection, not native execution.
+portable receipt tests, three native receipt tests and seven JSON-identity
+receipt tests before the four real native processes. Native specimens test
+receipt rejection, not native execution.
 The native controls include missing/duplicate cache pins, mixed releases,
 rewritten retained bytes, missing failure/cancellation/production-denial controls,
 and false currentness or synthetic status. Duplicate same-kind pins must not be
-collapsed into a seemingly complete pair.
+collapsed into a seemingly complete pair. JSON receipt comparisons distinguish
+Booleans from numbers while preserving integral numeric equivalence.
 
 The workflow always uploads the actual checkout/toolchain records, source and
 canonical-input archives, copied executable, build/dependency/test logs and any
