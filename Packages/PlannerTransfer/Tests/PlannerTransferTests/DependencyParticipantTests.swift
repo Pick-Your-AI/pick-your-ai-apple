@@ -134,13 +134,19 @@ final class DependencyParticipantTests: XCTestCase {
     }
 
     func testMalformedBuildAndGraphStillRejectBeforeAnyAdapterProjection() throws {
-        var build = try XCTUnwrap(JSONSerialization.jsonObject(with: fixture("build")) as? [String: Any])
-        var selections = try XCTUnwrap(build["selections"] as? [[String: Any]])
-        selections[0]["enabled"] = NSNull()
-        build["selections"] = selections
-        XCTAssertThrowsError(try BuildTransfer.snapshot(fromDraftJSON: JSONSerialization.data(withJSONObject: build)))
-        XCTAssertThrowsError(try graphWithEdges([row("dep.bad", "future_activation")]))
         let original = try BuildTransfer.snapshot(fromDraftJSON: fixture("build"))
+        var build = try XCTUnwrap(original.value.object)
+        var selections = try XCTUnwrap(build["selections"]?.array)
+        var first = try XCTUnwrap(selections[0].object)
+        first["enabled"] = .null
+        selections[0] = .object(first)
+        build["selections"] = .array(selections)
+        // Preserve every exact decimal so this negative control proves the
+        // enabled-field schema rejection, rather than an unrelated number error.
+        XCTAssertThrowsError(try BuildTransfer.snapshot(fromDraftJSON: JSONEncoder().encode(JSONValue.object(build)))) {
+            XCTAssertEqual($0 as? TransferError, .schemaViolation)
+        }
+        XCTAssertThrowsError(try graphWithEdges([row("dep.bad", "future_activation")]))
         XCTAssertFalse(original.dependencyContext(mode: nil, production: nil).selections.isEmpty)
     }
 }
