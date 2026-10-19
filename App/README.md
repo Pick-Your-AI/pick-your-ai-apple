@@ -51,6 +51,32 @@ cleanup. These are observations for diagnosis, not evidence of a launch cause.
 Apple describes simulator-specific tools in its [Simulator command-line guide](https://developer.apple.com/videos/play/wwdc2019/418/)
 and filtered log inspection in its [logging example](https://developer.apple.com/videos/play/wwdc2022/10119/).
 
+
+The current receiving attempt at `1f48f42f` timed out during the single plain
+iPhone launch after installation succeeded; its bounded container lookup also
+timed out. Earlier successful destinations retain their own source/run identities.
+The runner now records best-effort runtime snapshots immediately before launch
+and after a launch failure: host load averages, selected virtual-memory counters,
+PID/parent/state/CPU-percent/RSS for an allowlist of simulator processes, and
+selected service PID/status rows from that verified owned simulator. Host process
+rows are not proof that a process belongs to this destination; the separate
+service query carries the explicit destination scope.
+
+Each of the three read-only probes has a three-second deadline. Only filtered
+fields are emitted, with at most 40 rows and 4096 row-text characters per probe;
+process arguments, environment, unrelated labels and raw diagnostic stderr are
+not emitted. Empty, truncated or failed observations do not establish healthy
+readiness or absence of a service. The extra observations can perturb timing and
+supply no fix or causal conclusion. They add no readiness wait, retry, timeout
+increase or successful-launch fallback. The ordinary launch, explicit
+post-success termination and owned cleanup keep their existing requirements;
+actual native qualification still requires the successful launch/PID receipt.
+
+Seven additional portable cases exercise filtering, truncation, short-deadline
+partial output, unavailable probes, exact owned scope, launch/failure ordering
+and absence of snapshots before successful owned installation. They supplement
+the original 17 methods; portable execution does not establish a native outcome.
+
 Seventeen portable regressions cover these deadlines, partial output, failed install/launch,
 ownership and cleanup boundaries; one executes a real bounded synthetic subprocess.
 Launch-failure cases also cover diagnostic command failures, exact preservation

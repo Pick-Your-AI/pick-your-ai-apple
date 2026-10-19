@@ -1,6 +1,8 @@
 #!/usr/bin/env python3
 """Install/launch on an available iPhone and iPad simulator; no device claim."""
 import json
+import os
+import re
 import shlex
 import subprocess
 import sys
@@ -12,6 +14,103 @@ BOOT_TIMEOUT_SECONDS = 5 * 60
 CLEANUP_TIMEOUT_SECONDS = 60
 DIAGNOSTIC_TIMEOUT_SECONDS = 15
 APP_BUNDLE_ID = "invalid.pickyourai.localpreview"
+
+
+SNAPSHOT_TIMEOUT_SECONDS = 3
+SNAPSHOT_MAX_ROWS = 40
+SNAPSHOT_MAX_CHARS = 4096
+SNAPSHOT_PROCESSES = frozenset({
+    "simctl", "Simulator", "SimulatorTrampoline", "simulatord",
+    "CoreSimulatorService", "com.apple.CoreSimulator.CoreSimulatorService",
+    "launchd_sim", "SpringBoard", "backboardd", "runningboardd",
+    "launchservicesd", "installd", "Planner",
+})
+SNAPSHOT_SERVICES = frozenset({
+    "com.apple.SpringBoard", "com.apple.backboardd", "com.apple.runningboardd",
+    "com.apple.lsd", "com.apple.installd",
+})
+
+
+def snapshot_rows(kind, output):
+    """Release only fixed resource fields; never print raw process arguments."""
+    if isinstance(output, bytes):
+        output = output.decode("utf-8", errors="replace")
+    rows, size, truncated = [], 0, False
+    for line in (output or "").splitlines():
+        selected = None
+        if kind == "memory":
+            if re.fullmatch(r"Mach Virtual Memory Statistics: \(page size of [0-9]+ bytes\)", line):
+                selected = line
+            elif re.fullmatch(r"(Pages (free|active|inactive|speculative|wired down|purgeable|stored in compressor|occupied by compressor)|Pageouts|Swapins|Swapouts):\s+[0-9]+\.", line):
+                selected = " ".join(line.split())
+        elif kind == "processes":
+            fields = line.split(None, 5)
+            if len(fields) == 6:
+                pid, parent, state, cpu, rss, path = fields
+                name = path.rsplit("/", 1)[-1]
+                if (name in SNAPSHOT_PROCESSES and re.fullmatch(r"[0-9]+", pid)
+                        and re.fullmatch(r"[0-9]+", parent) and re.fullmatch(r"[A-Za-z+<>-]+", state)
+                        and re.fullmatch(r"[0-9]+(?:\.[0-9]+)?", cpu)
+                        and re.fullmatch(r"[0-9]+", rss)):
+                    selected = " ".join((pid, parent, state, cpu, rss, name))
+        elif kind == "services":
+            fields = line.split(None, 2)
+            if len(fields) == 3:
+                pid, status, label = fields
+                app_label = f"UIKitApplication:{APP_BUNDLE_ID}"
+                if label == app_label or label.startswith(app_label + "["):
+                    label = APP_BUNDLE_ID
+                if (label in SNAPSHOT_SERVICES or label == APP_BUNDLE_ID) and re.fullmatch(r"-|[0-9]+", pid) and re.fullmatch(r"-?[0-9]+", status):
+                    selected = " ".join((pid, status, label))
+        if selected is not None:
+            if len(rows) == SNAPSHOT_MAX_ROWS or size + len(selected) > SNAPSHOT_MAX_CHARS:
+                truncated = True
+                break
+            rows.append(selected)
+            size += len(selected)
+    return rows, truncated
+
+
+def snapshot_probe(kind, command):
+    """A short read-only observation; its failure cannot qualify or fail launch."""
+    output = None
+    try:
+        result = subprocess.run(command, capture_output=True, text=True, check=False,
+                                timeout=SNAPSHOT_TIMEOUT_SECONDS)
+        status = {"exit": result.returncode}
+        output = result.stdout
+    except subprocess.TimeoutExpired as error:
+        status = {"error": "timeout"}
+        output = error.stdout
+    except Exception as error:
+        status = {"error": type(error).__name__}
+    rows, truncated = snapshot_rows(kind, output)
+    return {"probe": kind, "deadline_seconds": SNAPSHOT_TIMEOUT_SECONDS,
+            **status, "rows": rows, "truncated": truncated}
+
+
+def collect_runtime_snapshot(udid, phase):
+    """Observe this verified owned destination without waiting for readiness."""
+    try:
+        load = list(os.getloadavg())
+    except Exception as error:
+        load = {"error": type(error).__name__}
+    print(json.dumps({"smoke_snapshot": phase, "owned_udid": udid,
+                      "host_load_averages": load}, sort_keys=True), flush=True)
+    commands = (
+        ("memory", ("/usr/bin/vm_stat",)),
+        ("processes", ("/bin/ps", "-axo", "pid=,ppid=,state=,%cpu=,rss=,comm=")),
+        ("services", ("xcrun", "simctl", "spawn", udid, "launchctl", "list")),
+    )
+    for kind, command in commands:
+        try:
+            observation = snapshot_probe(kind, command)
+            print(json.dumps({"smoke_snapshot": phase, "owned_udid": udid,
+                              **observation}, sort_keys=True), flush=True)
+        except Exception as error:
+            print(json.dumps({"smoke_snapshot": phase, "owned_udid": udid,
+                              "probe": kind, "error": type(error).__name__},
+                             sort_keys=True), flush=True)
 
 
 def emit_output(stdout, stderr):
@@ -87,11 +186,13 @@ def smoke_destination(device, runtime, family, existing_ids):
         run("xcrun", "simctl", "bootstatus", udid, "-b", timeout=BOOT_TIMEOUT_SECONDS)
         run("xcrun", "simctl", "install", udid,
             ".build/native/Build/Products/Debug-iphonesimulator/Planner.app", timeout=INSTALL_TIMEOUT_SECONDS)
+        collect_runtime_snapshot(udid, "before-launch")
         try:
             # This simulator was just created and the app just installed. There
             # is no earlier runner-owned app process to terminate before launch.
             run("xcrun", "simctl", "launch", udid, APP_BUNDLE_ID)
         except (OSError, subprocess.SubprocessError):
+            collect_runtime_snapshot(udid, "launch-failed")
             collect_launch_diagnostics(udid)
             raise
         run("xcrun", "simctl", "terminate", udid, APP_BUNDLE_ID)
