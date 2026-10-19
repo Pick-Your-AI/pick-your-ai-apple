@@ -85,13 +85,13 @@ class SimulatorSmokeTests(unittest.TestCase):
             self.assertEqual(call.kwargs["timeout"], expected_timeout)
             self.assertTrue(call.kwargs["capture_output"])
             if args[2] not in ("list", "create"):
-                udid = args[4] if args[2] == "launch" else args[3]
+                udid = args[3]
                 self.assertIn(udid, (CREATED_PHONE, CREATED_PAD))
         for udid in (CREATED_PHONE, CREATED_PAD):
             args = [c.args[0] for c in calls]
             self.assertIn(("xcrun", "simctl", "install", udid,
                            ".build/native/Build/Products/Debug-iphonesimulator/Planner.app"), args)
-            self.assertIn(("xcrun", "simctl", "launch", "--terminate-running-process", udid,
+            self.assertIn(("xcrun", "simctl", "launch", udid,
                            "invalid.pickyourai.localpreview"), args)
             self.assertIn(("xcrun", "simctl", "terminate", udid, "invalid.pickyourai.localpreview"), args)
             self.assertIn(("xcrun", "simctl", "shutdown", udid), args)
@@ -209,7 +209,7 @@ class SimulatorSmokeTests(unittest.TestCase):
 
     def test_second_destination_failure_diagnoses_only_its_own_simulator(self):
         def effect(args, **kwargs):
-            if args[2] == "launch" and args[4] == CREATED_PAD:
+            if args[2] == "launch" and args[3] == CREATED_PAD:
                 return subprocess.CompletedProcess(args, 23, "", "iPad launch refused")
             return self.completed(args, **kwargs)
 

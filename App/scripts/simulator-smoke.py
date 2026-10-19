@@ -88,7 +88,9 @@ def smoke_destination(device, runtime, family, existing_ids):
         run("xcrun", "simctl", "install", udid,
             ".build/native/Build/Products/Debug-iphonesimulator/Planner.app", timeout=INSTALL_TIMEOUT_SECONDS)
         try:
-            run("xcrun", "simctl", "launch", "--terminate-running-process", udid, APP_BUNDLE_ID)
+            # This simulator was just created and the app just installed. There
+            # is no earlier runner-owned app process to terminate before launch.
+            run("xcrun", "simctl", "launch", udid, APP_BUNDLE_ID)
         except (OSError, subprocess.SubprocessError):
             collect_launch_diagnostics(udid)
             raise

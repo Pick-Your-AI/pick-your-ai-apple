@@ -25,6 +25,13 @@ exit code and captured output is printed into the workflow's retained `launch.tx
 including partial stdout/stderr after a timeout. Each operation is attempted once;
 a timed-out or failed installation or launch command still fails the smoke gate.
 
+Each destination is a newly created simulator with a newly installed app. The
+runner uses one plain `simctl launch` and does not request pre-launch termination
+of an earlier app process. Successful launch must still be followed by the
+explicit `simctl terminate` command before owned shutdown and deletion. This
+removes an unnecessary pre-launch request; it does not retry a failed launch,
+change its 60-second deadline or establish a simulator failure's root cause.
+
 Only a successfully returned, parseable UUID absent from the original inventory is
 eligible for use or cleanup. Commands preserve that returned ID's original spelling.
 Each verified creation is protected by `finally`: shutdown and delete are separately
