@@ -139,7 +139,9 @@ final class MigrationFixtureTests: XCTestCase, @unchecked Sendable {
         let value: [String: Any] = ["fixtureVersion": "apple-local-migrations-1", "id": id,
                                     "phase": phase, "observed": values]
         let data = try JSONSerialization.data(withJSONObject: value, options: [.sortedKeys])
-        print("APPLE_MIGRATION_CASE " + (try XCTUnwrap(String(data: data, encoding: .utf8))))
+        // Keep each observation on XCTest's diagnostic stream before its method finishes.
+        let line = "APPLE_MIGRATION_CASE " + (try XCTUnwrap(String(data: data, encoding: .utf8))) + "\n"
+        try FileHandle.standardError.write(contentsOf: Data(line.utf8))
     }
 
     func testHistoricalFixturesMigrateAndReopenWithoutRewritingPayloads() async throws {

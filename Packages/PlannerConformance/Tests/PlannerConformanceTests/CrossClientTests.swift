@@ -100,7 +100,9 @@ final class CrossClientTests: XCTestCase {
             let observation: [String: Any] = ["bundleVersion": "apple-cross-client-1", "id": vector.id,
                                                "accepted": accepted, "preserved": preserved.map { $0 as Any } ?? NSNull()]
             let encoded = try JSONSerialization.data(withJSONObject: observation, options: [.sortedKeys])
-            print("APPLE_WIRE_CASE " + (try XCTUnwrap(String(data: encoded, encoding: .utf8))))
+            // Keep each observation on XCTest's diagnostic stream before its method finishes.
+            let line = "APPLE_WIRE_CASE " + (try XCTUnwrap(String(data: encoded, encoding: .utf8))) + "\n"
+            try FileHandle.standardError.write(contentsOf: Data(line.utf8))
         }
     }
 
