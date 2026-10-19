@@ -2,9 +2,11 @@
 
 This contributes bounded transport and preservation to Apple [#32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32),
 [#35](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/35) and
-[#71](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/71). It does not evaluate
-compatibility, activate dependencies, determine affected selections or approve the
-canonical example as executable policy.
+[#71](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/71). The decoder does
+not evaluate compatibility or interpret activation. The separate explicit
+[activation/participant consumer](../PlannerCore/DEPENDENCY_INVALIDATION.md)
+uses the preserved graph through `affectedParticipants(changedKinds:before:after:)`;
+calling the decoder alone does not run that consumer or approve compatibility.
 
 ## Contract and API
 
@@ -113,7 +115,7 @@ policy, application journeys, physical-device behavior or production activation.
 | --- | --- | --- |
 | #32 accepts valid frozen payloads and rejects incompatible ones | Graph schema/identity/edge validation, typed labels and shared reference vectors extend the accepted all-kind boundary | The [accepted #32 conformance record](README.md#32-receiving-conformance-record) governs its three literal criteria and immutable model strategy; this graph is a separate artifact boundary, not an added issue-closure requirement |
 | #35 preserves canonical relationships and exposes representation gaps | Existing kind-level edges round-trip without invented placement fields; `placement`, `component_role`, `memory_pool` and `hybrid` activation mutations reject | The [accepted #35 mapping](PLACEMENT_RELATIONSHIPS.md#literal-criterion-disposition-and-handoff) governs its satisfied v1-gap criteria; physical-pool adoption and runtime use retain separate decisions |
-| #71 rechecks affected components after changes | Exact directed graph is available to an eventual governed consumer | Activation policy, dirty-state propagation, evaluator binding, stale-result handling and real UI/service integration |
+| #71 rechecks affected components after changes | Exact directed graph plus an explicit [Core activation/participant consumer](../PlannerCore/DEPENDENCY_INVALIDATION.md) and validated Build selection projection | Caller integration, dirty-state propagation, evaluator/full-identity binding, stale-result handling and real UI/service integration |
 
 Frozen v1's kind-level dependency graph cannot encode the full hybrid placement,
 component-role or memory-pool tuple requested by #35. Those gaps remain
