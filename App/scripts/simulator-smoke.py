@@ -136,7 +136,10 @@ def run(*args, timeout=COMMAND_TIMEOUT_SECONDS):
     command = shlex.join(args)
     report(f"Smoke command (deadline {timeout}s): {command}", flush=True)
     try:
-        result = subprocess.run(args, capture_output=True, text=True, check=False, timeout=timeout)
+        # Invalid diagnostic text must not erase the process result before
+        # ownership and cleanup can use it. UUID/inventory parsers still apply.
+        result = subprocess.run(args, capture_output=True, text=True, errors="replace",
+                                check=False, timeout=timeout)
     except subprocess.TimeoutExpired as error:
         emit_output(error.stdout, error.stderr)
         report(f"Smoke command timed out after {timeout}s: {command}", file=sys.stderr, flush=True)
