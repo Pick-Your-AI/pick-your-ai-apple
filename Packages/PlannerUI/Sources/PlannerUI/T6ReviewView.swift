@@ -6,12 +6,20 @@ import UniformTypeIdentifiers
 
 /// Reusable destination; its parent owns the selected persisted Build and the
 /// current compatibility adapter. It does not approve, publish online or deploy.
+@MainActor
 public struct T6ReviewView: View {
     @ObservedObject private var model: T6ReviewModel
+    private let onDisappearance: @MainActor () -> Bool
     @State private var filePicker = false
     @State private var fileSelection: T6FileSelection?
 
-    public init(model: T6ReviewModel) { self.model = model }
+    public init(model: T6ReviewModel) {
+        self.init(model: model, onDisappearance: { model.handleDisappearance() })
+    }
+
+    init(model: T6ReviewModel, onDisappearance: @escaping @MainActor () -> Bool) {
+        self.model = model; self.onDisappearance = onDisappearance
+    }
 
     public var body: some View {
         ScrollView {
@@ -57,7 +65,7 @@ public struct T6ReviewView: View {
             }
         }
         .onDisappear {
-            if model.handleDisappearance() {
+            if onDisappearance() {
                 filePicker = false; fileSelection = nil
             }
         }

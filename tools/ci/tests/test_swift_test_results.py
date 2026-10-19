@@ -150,7 +150,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
     def test_integrated_profiles_match_every_current_source_method(self):
         root = Path(__file__).resolve().parents[3]
         for package, profile, count in (("PlannerTransfer", "integrated-retained-transfer", 181),
-                                        ("PlannerUI", "integrated-retained-ui", 192)):
+                                        ("PlannerUI", "integrated-retained-ui", 198)):
             expected, groups = gate.PROFILES[profile]
             actual = set()
             for path in (root / "Packages" / package / "Tests" / (package + "Tests")).glob("*.swift"):
@@ -184,6 +184,28 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
             padded = self.profile_log(old, total=gate.PROFILES[current][0])
             with self.subTest(profile=current), self.assertRaises(SystemExit):
                 self.run_profile(current, padded)
+
+    def test_before_child_disappearance_receipt_cannot_qualify_by_same_count_padding(self):
+        profile = "integrated-retained-ui"
+        suite = "PlannerUITests.ImportedBuildT6NavigationTests"
+        added = {
+            "testCapturedChildDisappearanceCannotCancelReopenedSameBuildWithoutFiles",
+            "testCapturedChildDisappearanceCannotCancelReopenedPendingWorkWithoutFiles",
+            "testCurrentChildDisappearanceCancelsCompletedReviewWithoutFiles",
+            "testCurrentChildDisappearanceCancelsPendingWorkWithoutFilesAndAllowsRetry",
+            "testCapturedChildDisappearancePreservesCurrentOwnedImporters",
+            "testCapturedChildDisappearancePreservesCurrentOwnedExporter",
+        }
+        required = set(gate.PROFILES[profile][1][suite])
+        self.assertTrue(added <= required)
+        text = self.profile_log(profile)
+        self.assertEqual(self.run_profile(profile, text), 0)
+        for index, name in enumerate(sorted(added)):
+            # A historical 192-case receipt padded with six unrelated passes
+            # has the current total but none of the new callback regressions.
+            text = text.replace(f"-[{suite} {name}]", f"-[{suite} testHistoricalPadding{index}]")
+        with self.assertRaises(SystemExit):
+            self.run_profile(profile, text)
 
 
 if __name__ == "__main__":

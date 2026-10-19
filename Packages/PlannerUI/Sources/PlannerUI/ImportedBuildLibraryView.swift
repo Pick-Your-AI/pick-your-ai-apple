@@ -39,6 +39,7 @@ public struct ImportedBuildLibraryView: View {
         self.navigation = navigation
     }
     public var body: some View {
+        let capturedT6Route = model.t6Route
         NavigationStack {
             Form {
                 Section {
@@ -163,8 +164,9 @@ public struct ImportedBuildLibraryView: View {
             .accessibilityIdentifier("importedBuildsForm")
             .disabled(model.busy)
             .navigationTitle("Imported builds")
-            .navigationDestination(isPresented: model.t6PresentationBinding(for: model.t6Route)) {
-                T6ReviewView(model: model.t6Review)
+            .navigationDestination(isPresented: model.t6PresentationBinding(for: capturedT6Route)) {
+                T6ReviewView(model: model.t6Review,
+                             onDisappearance: model.t6DisappearanceHandler(for: capturedT6Route))
             }
             .onAppear { navigation?.attach(model) }
             .task {

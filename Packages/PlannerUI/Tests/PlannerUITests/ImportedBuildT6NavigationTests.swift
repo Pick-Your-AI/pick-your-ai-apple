@@ -4,6 +4,29 @@ import PlannerTransfer
 import XCTest
 @testable import PlannerUI
 
+private enum T6NavigationTestFailure: Error { case synthetic }
+
+/// Keep the real receiver and its actual callback factory, while deliberately
+/// letting preparation finish after cancellation to test result admission.
+private actor SuspendedT6NavigationPreparation {
+    private var sequence = 0
+    private var requests: [Int: CheckedContinuation<T6ReviewContent, Error>] = [:]
+    private var started: [Int: CheckedContinuation<Void, Never>] = [:]
+    func prepare(_ build: BuildSnapshot, _ inputs: T6ArtifactInputs) async throws -> T6ReviewContent {
+        let index = sequence; sequence += 1
+        return try await withCheckedThrowingContinuation { continuation in
+            requests[index] = continuation; started.removeValue(forKey: index)?.resume()
+        }
+    }
+    func waitFor(_ index: Int) async {
+        if requests[index] != nil { return }
+        await withCheckedContinuation { started[index] = $0 }
+    }
+    func complete(_ index: Int, _ result: Result<T6ReviewContent, Error>) {
+        requests.removeValue(forKey: index)!.resume(with: result)
+    }
+}
+
 /// These use the real library, selected immutable Build and the very same
 /// navigation binding/tab owner used by the App. They do not simulate Files UI.
 @MainActor
@@ -40,6 +63,170 @@ final class ImportedBuildT6NavigationTests: XCTestCase {
         let task = try XCTUnwrap(model.t6Review.preparePlanExport())
         await task.value
         return try XCTUnwrap(model.t6Review.planExport)
+    }
+
+    private func setup(preparation: T6ArtifactPreparation) throws
+        -> (DraftStore, ImportedBuildLibraryModel, ImportedBuildLibraryNavigation, URL) {
+        let (store, _, navigation, folder) = try setup()
+        let model = ImportedBuildLibraryModel(store: store, preparation: .live,
+                                             t6Preparation: preparation)
+        navigation.attach(model)
+        return (store, model, navigation, folder)
+    }
+
+    func testCapturedChildDisappearanceCannotCancelReopenedSameBuildWithoutFiles() async throws {
+        let (store, model, _, folder) = try setup()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let row = try await save(build(), to: store)
+        await model.open(row)
+        let before = try XCTUnwrap(model.openT6Review())
+        let stale = model.t6DisappearanceHandler(for: before)
+        let absent = model.t6DisappearanceHandler(for: nil)
+        model.t6PresentationBinding(for: before).wrappedValue = false
+        let after = try XCTUnwrap(model.openT6Review())
+        XCTAssertNotEqual(before, after)
+        await model.t6Review.retry()
+        let accepted = try XCTUnwrap(model.t6Review.content)
+        XCTAssertEqual(accepted.guidance.record, .notSupplied)
+        XCTAssertNil(model.t6Review.planExport)
+        XCTAssertFalse(stale()); XCTAssertFalse(absent()); XCTAssertFalse(stale())
+        XCTAssertEqual(model.t6Review.content, accepted)
+        XCTAssertEqual(model.t6Route, after)
+        XCTAssertTrue(model.t6PresentationBinding(for: after).wrappedValue)
+        XCTAssertNil(model.t6Review.notice); XCTAssertFalse(model.t6Review.busy)
+        XCTAssertNil(model.t6Review.compatibility)
+        let retained = try await store.read(id: row.id)
+        XCTAssertEqual(retained.payload, row.payload)
+    }
+
+    func testCapturedChildDisappearanceCannotCancelReopenedPendingWorkWithoutFiles() async throws {
+        let gate = SuspendedT6NavigationPreparation()
+        let (store, model, _, folder) = try setup(preparation: .init(prepare: { try await gate.prepare($0, $1) }))
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let snapshot = try build(), row = try await save(snapshot, to: store)
+        await model.open(row)
+        let before = try XCTUnwrap(model.openT6Review())
+        let stale = model.t6DisappearanceHandler(for: before)
+        model.t6PresentationBinding(for: before).wrappedValue = false
+        let after = try XCTUnwrap(model.openT6Review())
+        let pending = Task { await model.t6Review.retry() }
+        await gate.waitFor(0)
+        XCTAssertTrue(model.t6Review.busy); XCTAssertNil(model.t6Review.content)
+        XCTAssertFalse(stale()); XCTAssertFalse(stale())
+        XCTAssertTrue(model.t6Review.busy); XCTAssertNil(model.t6Review.notice)
+        XCTAssertEqual(model.t6Route, after)
+        let expected = try T6ArtifactPreparation.evaluate(build: snapshot, quality: nil, manifest: nil)
+        await gate.complete(0, .success(expected)); await pending.value
+        XCTAssertEqual(model.t6Review.content, expected)
+        XCTAssertFalse(model.t6Review.busy); XCTAssertNil(model.t6Review.notice)
+        XCTAssertTrue(model.t6PresentationBinding(for: after).wrappedValue)
+        let retained = try await store.read(id: row.id)
+        XCTAssertEqual(retained.payload, row.payload)
+    }
+
+    func testCurrentChildDisappearanceCancelsCompletedReviewWithoutFiles() async throws {
+        let (store, model, _, folder) = try setup()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let row = try await save(build(), to: store)
+        await model.open(row)
+        let route = try XCTUnwrap(model.openT6Review())
+        let current = model.t6DisappearanceHandler(for: route)
+        await model.t6Review.retry()
+        XCTAssertNotNil(model.t6Review.content)
+        XCTAssertTrue(current())
+        XCTAssertNil(model.t6Review.content); XCTAssertFalse(model.t6Review.busy)
+        XCTAssertEqual(model.t6Review.notice, "Review cancelled. Retry to inspect the selected records.")
+        XCTAssertEqual(model.t6Route, route)
+        XCTAssertTrue(model.t6PresentationBinding(for: route).wrappedValue)
+        await model.t6Review.retry()
+        XCTAssertNotNil(model.t6Review.content); XCTAssertNil(model.t6Review.notice)
+        let retained = try await store.read(id: row.id)
+        XCTAssertEqual(retained.payload, row.payload)
+    }
+
+    func testCurrentChildDisappearanceCancelsPendingWorkWithoutFilesAndAllowsRetry() async throws {
+        for oldFailure in [false, true] {
+            let gate = SuspendedT6NavigationPreparation()
+            let (store, model, _, folder) = try setup(preparation: .init(prepare: { try await gate.prepare($0, $1) }))
+            defer { try? FileManager.default.removeItem(at: folder) }
+            let snapshot = try build(), row = try await save(snapshot, to: store)
+            await model.open(row)
+            let route = try XCTUnwrap(model.openT6Review())
+            let current = model.t6DisappearanceHandler(for: route)
+            let pending = Task { await model.t6Review.retry() }; await gate.waitFor(0)
+            XCTAssertTrue(model.t6Review.busy)
+            XCTAssertTrue(current())
+            let cancellation = model.t6Review.notice
+            XCTAssertFalse(model.t6Review.busy); XCTAssertNil(model.t6Review.content)
+            let expected = try T6ArtifactPreparation.evaluate(build: snapshot, quality: nil, manifest: nil)
+            await gate.complete(0, oldFailure ? .failure(T6NavigationTestFailure.synthetic) : .success(expected))
+            await pending.value
+            XCTAssertNil(model.t6Review.content); XCTAssertFalse(model.t6Review.busy)
+            XCTAssertEqual(model.t6Review.notice, cancellation)
+            XCTAssertEqual(cancellation, "Review cancelled. Retry to inspect the selected records.")
+            XCTAssertTrue(model.t6PresentationBinding(for: route).wrappedValue)
+            let retry = Task { await model.t6Review.retry() }; await gate.waitFor(1)
+            await gate.complete(1, .success(expected)); await retry.value
+            XCTAssertEqual(model.t6Review.content, expected); XCTAssertNil(model.t6Review.notice)
+            let retained = try await store.read(id: row.id)
+            XCTAssertEqual(retained.payload, row.payload)
+        }
+    }
+
+    func testCapturedChildDisappearancePreservesCurrentOwnedImporters() async throws {
+        let (store, model, _, folder) = try setup()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let row = try await save(build(), to: store)
+        await model.open(row)
+        for kind in [T6FileSelection.Kind.quality, .manifest] {
+            let before = try XCTUnwrap(model.openT6Review())
+            let stale = model.t6DisappearanceHandler(for: before)
+            model.t6PresentationBinding(for: before).wrappedValue = false
+            let after = try XCTUnwrap(model.openT6Review())
+            let current = model.t6DisappearanceHandler(for: after)
+            let request = try XCTUnwrap(model.t6Review.beginFileSelection(kind))
+            XCTAssertFalse(stale()); XCTAssertFalse(current())
+            XCTAssertNil(model.t6Review.notice); XCTAssertEqual(model.t6Route, after)
+            let bytes = try fixture(kind == .quality ? "t6-quality-evaluation-run" : "t6-deployment-manifest")
+            let url = folder.appendingPathComponent(kind == .quality ? "quality.json" : "manifest.json")
+            try bytes.write(to: url)
+            await model.t6Review.importFile(url, for: request)
+            let accepted = try XCTUnwrap(model.t6Review.content)
+            XCTAssertFalse(stale()) // The Files request has now ended.
+            XCTAssertEqual(model.t6Review.content, accepted); XCTAssertNil(model.t6Review.notice)
+            XCTAssertEqual(try Data(contentsOf: url), bytes)
+            model.t6PresentationBinding(for: after).wrappedValue = false
+        }
+        let retained = try await store.read(id: row.id)
+        XCTAssertEqual(retained.payload, row.payload)
+    }
+
+    func testCapturedChildDisappearancePreservesCurrentOwnedExporter() async throws {
+        let (store, model, _, folder) = try setup()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        let row = try await save(build(), to: store)
+        await model.open(row)
+        for outcome in [T6PlanExportOutcome.saved, .failed, .cancelled] {
+            let before = try XCTUnwrap(model.openT6Review())
+            let stale = model.t6DisappearanceHandler(for: before)
+            model.t6PresentationBinding(for: before).wrappedValue = false
+            let after = try XCTUnwrap(model.openT6Review())
+            let current = model.t6DisappearanceHandler(for: after)
+            try await review(model)
+            let request = try await export(model)
+            XCTAssertTrue(model.t6Review.beginPlanExport(request, disclosureReviewed: true))
+            XCTAssertFalse(stale()); XCTAssertFalse(current()); XCTAssertFalse(current())
+            XCTAssertEqual(model.t6Review.planExport, request); XCTAssertNil(model.t6Review.notice)
+            model.t6Review.finishPlanExport(outcome, for: request)
+            let accepted = try XCTUnwrap(model.t6Review.content), notice = model.t6Review.notice
+            XCTAssertNil(model.t6Review.planExport); XCTAssertNotNil(notice)
+            XCTAssertFalse(stale()) // No active exporter remains to mask a stale callback.
+            XCTAssertEqual(model.t6Review.content, accepted); XCTAssertEqual(model.t6Review.notice, notice)
+            XCTAssertEqual(model.t6Route, after)
+            model.t6PresentationBinding(for: after).wrappedValue = false
+        }
+        let retained = try await store.read(id: row.id)
+        XCTAssertEqual(retained.payload, row.payload)
     }
 
     func testRouteRequiresAnActiveSelectedBuildAndHasOnePresentation() async throws {

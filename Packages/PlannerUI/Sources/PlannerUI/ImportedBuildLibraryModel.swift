@@ -87,7 +87,7 @@ public final class ImportedBuildLibraryModel: ObservableObject {
     }
     /// Selection changes reach the retained-review owner on the same actor turn,
     /// before a queued picker or preparation callback can inspect the old Build.
-    public let t6Review = T6ReviewModel()
+    public let t6Review: T6ReviewModel
     @Published private(set) var t6Route: ImportedBuildT6Route?
     private var libraryActive = true
     @Published public private(set) var markedSynthetic = false
@@ -118,8 +118,10 @@ public final class ImportedBuildLibraryModel: ObservableObject {
     #endif
     public static let pageSize = 20
     public convenience init(store: DraftStore) { self.init(store: store, preparation: .live) }
-    init(store: DraftStore, preparation: ImportedBuildPreparation) {
+    init(store: DraftStore, preparation: ImportedBuildPreparation,
+         t6Preparation: T6ArtifactPreparation = .live) {
         self.store = store; self.preparation = preparation
+        self.t6Review = T6ReviewModel(build: nil, preparation: t6Preparation)
     }
 
     @discardableResult
@@ -141,6 +143,18 @@ public final class ImportedBuildLibraryModel: ObservableObject {
             guard !presented, let captured, self.t6Route == captured else { return }
             self.withdrawT6Review()
         })
+    }
+
+    /// A delayed child callback belongs to the route that created that child,
+    /// even when a later route selects exactly the same retained Build.
+    func t6DisappearanceHandler(for captured: ImportedBuildT6Route?) -> @MainActor () -> Bool {
+        { @MainActor [weak self] in
+            guard let self, let captured, self.libraryActive,
+                  self.t6Route == captured, self.selected?.id == captured.recordID,
+                  self.snapshot == captured.snapshot,
+                  self.t6Review.build == captured.snapshot else { return false }
+            return self.t6Review.handleDisappearance()
+        }
     }
 
     func setLibraryActive(_ active: Bool) {

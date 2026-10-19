@@ -1,5 +1,76 @@
 # New imported-build, catalog and T6 receiving preparation
 
+## Route-captured child disappearance correction
+
+Date: 2026-10-19. This bounded correction starts from actual published #391 source
+`545e8dfc2ae2c1bad7db53c428636cb20ffc567b`, tree
+`95167b7520bcdd19ec780fa673531750478a320e`. Production/test checkpoint
+`0eefbda58e14a376304fee9e0280374d529664a1`, tree
+`657c1fb8d40263c086b488b1e5844979fa011262`, is an isolated local child of that
+exact source. It is not a native execution or a published receiving revision.
+The complete earlier source, review and observation record remains below; its
+source-time inventory statements retain those historical identities.
+
+The actual [review 5575287272](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#pullrequestreview-5575287272)
+identified a source-control-flow counterexample. The real child destination shared
+one T6 model and called its unbound disappearance handler. After Back withdrew
+route A and the same retained Build reopened as route B, a delayed child callback
+from A could cancel B's completed content or pending work when no Files request
+was active. The earlier Back-binding ABA case created a fresh importer, so it
+did not cover that no-Files path. The separate Apple receiving read confirmed the
+chain in [6273900420](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6273900420).
+Neither finding observes SwiftUI delivering that callback order or claims an
+executed Swift regression/native failure.
+
+The library body now captures one immutable route value for both the actual Back
+binding and its destination. The destination supplies the model's
+`t6DisappearanceHandler(for:)` factory to `T6ReviewView`; the saved callback checks
+its captured opaque route, active library, selected row and full snapshot before
+calling the existing T6 disappearance method. A stale or absent route returns
+without mutating the current model. Both the factory and stored callback retain
+explicit MainActor isolation. The existing standalone `init(model:)` keeps the
+model's ordinary disappearance behavior; the route-aware initializer is internal.
+
+The existing Files check and explicit route-withdrawal cancellation remain intact.
+A current child with no owned Files request cancels ordinary review work/content;
+a current owned importer/exporter retains its exact terminal callback. Back, tab,
+selection and library-owner withdrawal still retire those requests explicitly.
+The new internal preparation argument reuses `T6ArtifactPreparation` and its
+Sendable closure for deterministic pending-work cases. The public initializer
+still selects the live preparation and starts with no Build; it grants no caller
+the ability to substitute a preselected T6 model.
+
+Six new real-store Swift method declarations use the same production callback
+factory as the destination. They specify stale same-Build completed-content and
+pending-work preservation without Files, current completed-content cancellation,
+current pending-work cancellation with late success/failure and fresh retry,
+both importer kinds, and all three exporter terminal outcomes. The latter cases
+also deliver the old callback after Files has finished so Files protection cannot
+mask the no-Files defect. Each checks retained row bytes. All eight earlier
+navigation method bodies and every other existing Swift test remain unchanged.
+These are required behavioral assertions, not locally executed Swift results.
+
+The current source inventory is **198 UI / 651 total package declarations**:
+146 Core, 34 Data, 181 Transfer, 92 Catalog and 198 UI. All six App journeys,
+their 24 runner controls, workflows, SDK/toolchain guards, historical audit pins,
+timeouts and the complete T6 evaluator/report preparation sources remain exact
+to `545e8dfc`. The mandatory UI profile adds all six exact class/method pairs;
+every receipt-parser function remains byte/AST-identical. An additional portable
+control rejects a modeled old 192-case receipt padded to the new count.
+
+At 18:18:57 UTC, before attendance registration, the same 15 Python controls
+reported two failures: the new identities were absent and the required source
+count was still 192. After registration, Python 3.12.14 ran all **15 controls** at
+18:19:17–18:19:18 UTC: **15 passed in 0.411 seconds**, no failures/errors/skips.
+The original red log is 4,237 bytes, SHA-256
+`04926a613e0ff89cfa4f44da1742f0377614352f66827f712390b5c01f78f9bf`;
+the original green log is 2,950 bytes, SHA-256
+`f575a2e99dae6c9c0f1469518121ff7f6e836fd6741329ec6916d8a80eb2fd13`.
+These executions qualify portable receipt controls and source attendance only.
+No local Swift compiler, pinned Xcode compilation, simulator, Files UI or native
+journey is claimed. The queued `545e8dfc` jobs keep their exact original scope;
+the corrected receiving source still requires its own configured native evidence.
+
 ## Current regular-file admission carry
 
 Date: 2026-10-19. After the fixed `761e8952` composition below was prepared,

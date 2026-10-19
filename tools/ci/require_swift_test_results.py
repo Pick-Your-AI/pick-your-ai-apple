@@ -556,7 +556,7 @@ PROFILES['integrated-retained-transfer'] = (181, {
     ),
 })
 
-PROFILES['integrated-retained-ui'] = (192, {
+PROFILES['integrated-retained-ui'] = (198, {
     'PlannerUITests.CatalogBrowserModelTests': (
         'testBundledPreviewValidatesAllKindsAndRemainsVisiblySynthetic',
         'testConcurrentPreviewLoadsPreserveBothIssuedPageTokens',
@@ -786,6 +786,12 @@ PROFILES['integrated-retained-ui'] = (192, {
         'testDeletingAnotherRowKeepsOwnedRequestAndDeletingSelectedClearsIt',
         'testClosingSelectedBuildClearsOwnedExportWithoutDeletingRetainedRow',
         'testFailedStorageActionPreservesRouteUntilActualLibraryOwnerReplacement',
+        'testCapturedChildDisappearanceCannotCancelReopenedSameBuildWithoutFiles',
+        'testCapturedChildDisappearanceCannotCancelReopenedPendingWorkWithoutFiles',
+        'testCurrentChildDisappearanceCancelsCompletedReviewWithoutFiles',
+        'testCurrentChildDisappearanceCancelsPendingWorkWithoutFilesAndAllowsRetry',
+        'testCapturedChildDisappearancePreservesCurrentOwnedImporters',
+        'testCapturedChildDisappearancePreservesCurrentOwnedExporter',
     ),
 })
 
