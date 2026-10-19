@@ -1,0 +1,131 @@
+name: Synthetic catalog maintenance rehearsal
+
+on:
+  pull_request:
+  push:
+    branches: [main]
+
+concurrency:
+  group: ${{ github.workflow }}-${{ github.event_name }}-${{ github.event.pull_request.number || github.run_id }}
+  cancel-in-progress: true
+
+permissions:
+  contents: read
+
+jobs:
+  macos-catalog-maintenance:
+    runs-on: macos-15
+    timeout-minutes: 20
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+      MAINTENANCE_EVIDENCE: ${{ runner.temp }}/catalog-maintenance-evidence
+      MAINTENANCE_BUILD: ${{ runner.temp }}/catalog-maintenance-build
+      MAINTENANCE_RESEARCH: 9db556b7fca485c8eb4396f9ee2ceeacdc119d79
+      PYTHONDONTWRITEBYTECODE: '1'
+    defaults:
+      run:
+        shell: bash
+    steps:
+      - name: Check out the actual receiving source
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+          fetch-depth: 2
+      - name: Record source and selected native toolchain
+        run: |
+          set -euo pipefail
+          mkdir "$MAINTENANCE_EVIDENCE"
+          git show -s --format='commit %H%ntree %T%nparents %P' HEAD | tee "$MAINTENANCE_EVIDENCE/apple-checkout.txt"
+          git archive --format=tar HEAD .github/workflows/catalog-maintenance.yml tools/catalog-maintenance Packages/PlannerCore Packages/PlannerData Packages/PlannerCatalog Packages/PlannerTransfer > "$MAINTENANCE_EVIDENCE/apple-source.tar"
+          /usr/bin/xcodebuild -version | tee "$MAINTENANCE_EVIDENCE/xcode.txt"
+          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') "$MAINTENANCE_EVIDENCE/xcode.txt"
+          /usr/bin/xcrun swift --version | tee "$MAINTENANCE_EVIDENCE/swift.txt"
+          grep -E '(^|[[:space:]])Apple Swift version 6\.' "$MAINTENANCE_EVIDENCE/swift.txt"
+          sw_vers | tee "$MAINTENANCE_EVIDENCE/macos.txt"
+          printf 'ImageOS=%s\nImageVersion=%s\n' "${ImageOS:-unknown}" "${ImageVersion:-unknown}" > "$MAINTENANCE_EVIDENCE/runner-image.txt"
+      - name: Check out immutable canonical schemas and validation requirements
+        uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          repository: Pick-Your-AI/pick-your-ai-research
+          ref: 9db556b7fca485c8eb4396f9ee2ceeacdc119d79
+          path: .maintenance-research
+          persist-credentials: false
+      - name: Select the pinned validation Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12.14'
+      - name: Prepare an isolated canonical validation environment
+        run: |
+          set -euo pipefail
+          test "$(git -C .maintenance-research rev-parse HEAD)" = "$MAINTENANCE_RESEARCH"
+          git -C .maintenance-research show -s --format='commit %H%ntree %T%nparents %P' HEAD > "$MAINTENANCE_EVIDENCE/research-checkout.txt"
+          git -C .maintenance-research archive --format=tar HEAD contracts/v1/schemas requirements-research.txt > "$MAINTENANCE_EVIDENCE/research-inputs.tar"
+          python --version | tee "$MAINTENANCE_EVIDENCE/python.txt"
+          python -c 'import sys; sys.version_info[:3] == (3, 12, 14) or sys.exit("Expected Python 3.12.14")'
+          maintenance_environment=$(mktemp -d "$RUNNER_TEMP/apple-maintenance-python.XXXXXX")
+          python -m venv "$maintenance_environment"
+          maintenance_python="$maintenance_environment/bin/python"
+          "$maintenance_python" -m pip --isolated install --index-url https://pypi.org/simple --only-binary=:all: -r .maintenance-research/requirements-research.txt 2>&1 | tee "$MAINTENANCE_EVIDENCE/dependency-install.log"
+          "$maintenance_python" -m pip --isolated check 2>&1 | tee "$MAINTENANCE_EVIDENCE/dependency-check.log"
+          "$maintenance_python" -m pip --isolated freeze --all > "$MAINTENANCE_EVIDENCE/dependencies.txt"
+          printf 'MAINTENANCE_PYTHON=%s\n' "$maintenance_python" >> "$GITHUB_ENV"
+      - name: Require every portable and native receipt guard
+        working-directory: tools/catalog-maintenance
+        run: |
+          set -euo pipefail
+          "$MAINTENANCE_PYTHON" -m unittest -v \
+            test_qualification.QualificationTests.test_complete_scoped_specimen_and_missing_or_duplicate_process \
+            test_qualification.QualificationTests.test_reopened_payload_or_historical_revision_rewrite_fails \
+            test_qualification.QualificationTests.test_consistently_fabricated_currentness_cannot_pass \
+            test_qualification.QualificationTests.test_wrong_target_or_missing_warning_fails \
+            test_qualification.QualificationTests.test_portable_output_cannot_claim_cache_execution \
+            test_qualification.QualificationTests.test_byte_distinct_target_control_is_mandatory \
+            test_qualification.NativeQualificationTests.test_native_requires_actual_recovery_denial_and_unknown_controls \
+            test_qualification.NativeQualificationTests.test_native_rejects_duplicate_missing_or_wrong_identity_pins \
+            test_qualification.NativeQualificationTests.test_native_rejects_mixed_releases_rewritten_history_and_tampered_bytes \
+            2>&1 | tee "$MAINTENANCE_EVIDENCE/qualification-tests.log"
+      - name: Build the real cross-package executable with two jobs
+        run: |
+          set -euo pipefail
+          test ! -e "$MAINTENANCE_BUILD"
+          /usr/bin/xcrun swift build --package-path tools/catalog-maintenance --scratch-path "$MAINTENANCE_BUILD" --jobs 2 2>&1 | tee "$MAINTENANCE_EVIDENCE/build.log"
+          maintenance_binary_directory=$(/usr/bin/xcrun swift build --package-path tools/catalog-maintenance --scratch-path "$MAINTENANCE_BUILD" --show-bin-path)
+          test -f "$maintenance_binary_directory/MaintenanceDrill"
+          cp "$maintenance_binary_directory/MaintenanceDrill" "$MAINTENANCE_EVIDENCE/MaintenanceDrill"
+          printf 'MAINTENANCE_EXECUTABLE=%s\n' "$maintenance_binary_directory/MaintenanceDrill" >> "$GITHUB_ENV"
+      - name: Execute and qualify all four original native processes
+        run: |
+          set -euo pipefail
+          "$MAINTENANCE_PYTHON" tools/catalog-maintenance/run.py \
+            --contracts .maintenance-research/contracts/v1 \
+            --executable "$MAINTENANCE_EXECUTABLE" \
+            --mode native --output "$MAINTENANCE_EVIDENCE/native" \
+            2>&1 | tee "$MAINTENANCE_EVIDENCE/driver.log"
+          "$MAINTENANCE_PYTHON" - <<'PY'
+          import hashlib
+          import json
+          import os
+          from pathlib import Path
+          evidence = Path(os.environ["MAINTENANCE_EVIDENCE"])
+          receipt = json.loads((evidence / "native/receipt.json").read_bytes())
+          if receipt["mode"] != "native" or receipt["status"] != "passed" or receipt["full_rehearsal_qualified"] is not True:
+              raise SystemExit("The original native rehearsal did not fully qualify")
+          if len(receipt["commands"]) != 4 or [item["argv"][2] for item in receipt["commands"]] != ["seed", "maintain", "reopen", "exact-target"]:
+              raise SystemExit("Missing or repeated original process phase")
+          if any(item["exit"] != 0 or item["timed_out"] for item in receipt["commands"]):
+              raise SystemExit("Failed original process cannot qualify")
+          binary_hash = hashlib.sha256((evidence / "MaintenanceDrill").read_bytes()).hexdigest()
+          if receipt["executable_sha256"] != binary_hash:
+              raise SystemExit("Retained executable is not the observed input")
+          if receipt["source_inputs"] != receipt["source_after"]:
+              raise SystemExit("Source changed during the original rehearsal")
+          print("Four original native processes qualified; synthetic scope only.")
+          PY
+      - name: Retain original maintenance inputs and observations
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: synthetic-catalog-maintenance-${{ github.run_id }}-${{ github.run_attempt }}
+          path: ${{ runner.temp }}/catalog-maintenance-evidence
+          if-no-files-found: error
+          retention-days: 14
