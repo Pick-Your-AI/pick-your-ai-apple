@@ -15,11 +15,18 @@ class SetupError(Exception):
     pass
 
 
+def read_bounded(path, maximum_bytes, oversized_message):
+    """Read only the permitted input plus one byte needed to detect overflow."""
+    with path.open("rb") as stream:
+        data = stream.read(maximum_bytes + 1)
+    if len(data) > maximum_bytes:
+        raise ValueError(oversized_message)
+    return data
+
+
 def load_pin(path):
     try:
-        data = path.read_bytes()
-        if len(data) > 4096:
-            raise ValueError("pin file exceeds 4096 bytes")
+        data = read_bounded(path, 4096, "pin file exceeds 4096 bytes")
         pin = json.loads(data)
         if not isinstance(pin, dict) or set(pin) != {"developerDirectory", "xcodeVersion", "xcodeBuildVersion"}:
             raise ValueError("expected exactly the documented pin fields")
