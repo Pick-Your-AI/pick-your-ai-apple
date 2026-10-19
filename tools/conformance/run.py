@@ -1,6 +1,7 @@
 #!/usr/bin/env python3
 """Read-only frozen-v1 preparation runner; not an Apple runtime implementation."""
 import argparse
+from contextlib import contextmanager
 import copy
 import hashlib
 import importlib.metadata
@@ -9,6 +10,7 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
 import subprocess
 import sys
 import tempfile
@@ -33,15 +35,34 @@ def read(path):
     return json.loads(path.read_text())
 
 
+@contextmanager
+def open_regular_input(path):
+    """Admit and read the same regular file without waiting for a FIFO writer."""
+    descriptor = os.open(path, os.O_RDONLY | os.O_NONBLOCK)
+    try:
+        if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+            raise ValueError(f'Conformance input must be a regular file: {path}')
+        with os.fdopen(descriptor, 'rb', closefd=False) as stream:
+            yield stream
+    finally:
+        os.close(descriptor)
+
+
+def read_regular_bytes(path):
+    with open_regular_input(path) as stream:
+        return stream.read()
+
+
 def digest(path):
-    return hashlib.sha256(path.read_bytes()).hexdigest()
+    return hashlib.sha256(read_regular_bytes(path)).hexdigest()
 
 
 def verify_source(root):
     """Trust only the pinned manifest, then verify every frozen import byte."""
-    if digest(root / 'IMPORT_MANIFEST.json') != LOCK['import_manifest_sha256']:
+    manifest_bytes = read_regular_bytes(root / 'IMPORT_MANIFEST.json')
+    if hashlib.sha256(manifest_bytes).hexdigest() != LOCK['import_manifest_sha256']:
         raise ValueError('Frozen import manifest differs from contract-lock.json')
-    manifest = read(root / 'IMPORT_MANIFEST.json')
+    manifest = json.loads(manifest_bytes)
     if manifest['contract_version'] != LOCK['contract_version']:
         raise ValueError('Unexpected contract version')
     for entry in manifest['files']:
@@ -49,6 +70,24 @@ def verify_source(root):
         if not path.is_relative_to(root.resolve()) or digest(path) != entry['sha256']:
             raise ValueError(f"Frozen import hash mismatch: {entry['path']}")
     return manifest
+
+
+def copy_verified_source(root, snapshot, manifest):
+    """Copy listed inputs, then verify the complete copy before consumption."""
+    root = root.resolve()
+    for entry in manifest['files']:
+        source = (root / entry['path']).resolve()
+        if not source.is_relative_to(root):
+            raise ValueError(f"Frozen import hash mismatch: {entry['path']}")
+        target = snapshot / entry['path']
+        target.parent.mkdir(parents=True, exist_ok=True)
+        with open_regular_input(source) as incoming, target.open('wb') as outgoing:
+            shutil.copyfileobj(incoming, outgoing)
+    # The source checkout can change after verify_source. Pin the bytes that
+    # will actually be consumed, using its already verified in-memory manifest.
+    for entry in manifest['files']:
+        if digest(snapshot / entry['path']) != entry['sha256']:
+            raise ValueError(f"Frozen import hash mismatch: {entry['path']}")
 
 
 def versions():
@@ -165,10 +204,7 @@ def run(root):
     # Copy exactly manifest-covered files, excluding untracked scripts or bytecode.
     with tempfile.TemporaryDirectory() as tmp:
         snapshot = Path(tmp) / 'v1'
-        for entry in manifest['files']:
-            target = snapshot / entry['path']
-            target.parent.mkdir(parents=True, exist_ok=True)
-            shutil.copyfile(root / entry['path'], target)
+        copy_verified_source(root, snapshot, manifest)
         cases = vectors(snapshot)
         schema = schema_results(snapshot, cases)
         domain = domain_results(snapshot)
@@ -187,16 +223,66 @@ def run(root):
                                  'Swift/Apple runtime, migrations, device and receiving acceptance unverified'])
 
 
+def resolve_directory(path):
+    """Validate native traversal before resolving aliases or removing '..'."""
+    before = path.stat()
+    if not stat.S_ISDIR(before.st_mode):
+        raise ValueError(f'Conformance path must be an existing directory: {path}')
+    resolved = path.resolve(strict=True)
+    if not os.path.samestat(before, resolved.stat()):
+        raise ValueError(f'Conformance directory changed during preflight: {path}')
+    return resolved
+
+
+def prepare_output(root, output):
+    """Invalidate an accepted receipt without unlinking source inputs or link targets."""
+    # Resolve parent aliases, but keep the final component so unlink never follows it.
+    parent = resolve_directory(output.parent)
+    output = parent / output.name
+    if output.is_relative_to(root) or output.is_relative_to(HERE):
+        raise ValueError('Output must be outside the frozen contract and conformance tool directories')
+    # A case-insensitive filesystem can give distinct spellings the same identity.
+    protected = [root.stat(), HERE.stat()]
+    for directory in (parent, *parent.parents):
+        current = directory.stat()
+        if any(os.path.samestat(current, boundary) for boundary in protected):
+            raise ValueError('Output must be outside the frozen contract and conformance tool directories')
+    try:
+        existing = output.lstat()
+    except FileNotFoundError:
+        return output
+    if not stat.S_ISREG(existing.st_mode) or existing.st_nlink != 1:
+        raise ValueError('Output must be an unshared regular file (no links or directories)')
+    output.unlink()
+    return output
+
+
+def write_report(output, result):
+    contents = json.dumps(result, sort_keys=True, indent=2) + '\n'
+    temporary = None
+    try:
+        with tempfile.NamedTemporaryFile(mode='w', encoding='utf-8', dir=output.parent,
+                                         prefix='.conformance-', suffix='.tmp', delete=False) as stream:
+            temporary = Path(stream.name)
+            stream.write(contents)
+        temporary.replace(output)
+    finally:
+        if temporary is not None:
+            temporary.unlink(missing_ok=True)
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--contract-root', type=Path, required=True)
     parser.add_argument('--output', type=Path, required=True)
     args = parser.parse_args()
     try:
-        result = run(args.contract_root.resolve())
+        root = resolve_directory(args.contract_root)
+        output = prepare_output(root, args.output)
+        result = run(root)
+        write_report(output, result)
     except (ValueError, OSError, subprocess.TimeoutExpired) as error:
         parser.exit(1, f'Conformance failed: {error}\n')
-    args.output.write_text(json.dumps(result, sort_keys=True, indent=2) + '\n')
     print(f"PASS {len(result['schema_results'])} schema vectors, {len(result['domain_results'])} domain checks, "
           f"3 detected mutations; contract {LOCK['contract_version']}; {LOCK['fixture_bundle_version']}")
 

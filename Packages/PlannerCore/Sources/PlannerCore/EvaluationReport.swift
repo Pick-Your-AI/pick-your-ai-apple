@@ -16,6 +16,26 @@ public enum EvaluationSeverity: String, Codable, Sendable { case error, warning,
 public indirect enum EvaluationJSONValue: Codable, Equatable, Sendable {
     case null, bool(Bool), string(String), number(Decimal)
     case array([EvaluationJSONValue]), object([String: EvaluationJSONValue])
+
+    /// Compare decoded JSON text without Unicode normalization. Escape spelling
+    /// and object member order do not change the represented value.
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        switch (lhs, rhs) {
+        case (.null, .null): return true
+        case let (.bool(left), .bool(right)): return left == right
+        case let (.string(left), .string(right)): return left.utf8.elementsEqual(right.utf8)
+        case let (.number(left), .number(right)): return left == right
+        case let (.array(left), .array(right)): return left == right
+        case let (.object(left), .object(right)):
+            guard left.count == right.count else { return false }
+            return left.allSatisfy { entry in
+                guard let index = right.index(forKey: entry.key) else { return false }
+                let other = right[index]
+                return entry.key.utf8.elementsEqual(other.key.utf8) && entry.value == other.value
+            }
+        default: return false
+        }
+    }
     public init(from decoder: Decoder) throws {
         try self.init(from: decoder, depth: 0)
     }
@@ -267,7 +287,12 @@ extension EvaluationReport {
     /// This representation limit is a client constraint, not a wire-schema change.
     public static func decode(_ data: Data) throws -> EvaluationReport {
         guard data.count <= maximumPayloadBytes else { throw EvaluationBoundaryError.payloadTooLarge }
-        guard let text = String(data: data, encoding: .utf8) else { throw EvaluationBoundaryError.invalidUTF8 }
+        // Raw NUL is invalid JSON and can hide UTF-16/32 tokens from the UTF-8
+        // numeric scan while Foundation detects a different encoding. Escaped
+        // \u0000 remains valid; scan and decode must see the same numeric text.
+        guard !data.contains(0), let text = String(data: data, encoding: .utf8)
+        else { throw EvaluationBoundaryError.invalidUTF8 }
+        try ContractJSONPreflight.validate(text)
         // Match strings first so digit sequences in IDs/messages are not numbers.
         let tokens = try NSRegularExpression(pattern: #""(?:[^"\\]|\\.)*"|(-?[0-9]+(?:\.[0-9]+)?(?:[eE][+-]?[0-9]+)?)"#)
         let ns = text as NSString

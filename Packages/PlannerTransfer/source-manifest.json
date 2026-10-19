@@ -6,6 +6,18 @@
     "schemas/build.schema.json": "1beacb0b01fcdea0b8b47357cdf2e99d80a10b8a4218aaac9e3b6af55391b42a",
     "schemas/selection.schema.json": "f8f189c6555fec41e616c32f081d06fab9f966b0fa4891ddca55580f577d51a8",
     "schemas/common.schema.json": "0342ce2f1114e7276fc7f6a08ff5b86e8727caadd83ae4f443de9a7e1431c43c",
-    "examples/build.json": "26762208769a8cf1012b4f33b1c1608556d275187ce21117d0b9632cdf951864"
+    "examples/build.json": "26762208769a8cf1012b4f33b1c1608556d275187ce21117d0b9632cdf951864",
+    "schemas/catalog-item.schema.json": "81c960c6e7dfe046634062e3f9ce5a1089b1d88adbd9fd45d9a67dcfc0339a25",
+    "examples/catalog.json": "2e9120db823faef3e1e330a7d2e8067b3ab064328e2faed699d15cf41880fbf8",
+    "schemas/quality-evaluation-run.schema.json": "ed6b3f60805428e3788ce27fa224fb3d5008998f0637f24723bf65eea546a959",
+    "examples/quality-evaluation-run.json": "bc0abc0b33e2b6bf77fc4609ac88a73981068eac6fabf604c255f58fec954a6d",
+    "schemas/cost-estimate.schema.json": "ef7cf8c0492022c1a8a1f971e49eb86dfad5b66ce6a4b2cf72a965fc9ba81259",
+    "examples/cost-estimate.json": "4b7c3889881d3c424ed98cc47b146b25b05df21c5459c9558717f21b6198b7e4",
+    "schemas/resource-estimate.schema.json": "39ab5d061f9021ce14e1f987717441cff04d1a40f76db5582d343d599a5d876c",
+    "examples/resource-estimate.json": "41469a377c0b428e779c269eb052fa8f455b4768e2add3c137b5e465a79a362f",
+    "schemas/dependency-graph.schema.json": "fb6a8bb42a9424d4ff2b520301f816c247789a3d70d1124afea1a8dc5ed5bd75",
+    "examples/dependency-graph.json": "e9b3bca19a9cf8241fd74f6618824882a3413649822add88be1ac93cb3f1bacc",
+    "schemas/ruleset.schema.json": "b251e49774d7e6a34522555adefd40f56f5e647a8a2b4a69a0be0a4618b1a8d3",
+    "examples/ruleset.json": "05474568204fdbfd407cb4e4cfc9334e22fdf24e75111bed8990868926fab418"
   }
 }

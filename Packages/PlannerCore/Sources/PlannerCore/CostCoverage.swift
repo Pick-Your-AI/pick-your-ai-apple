@@ -81,8 +81,10 @@ public struct CostSummary: Sendable {
     /// an exact quote. Partial subtotals cannot satisfy this gate, even at zero.
     public func assessMonthlyBudget(_ limit: ContractMoney, currentBuildID: String,
                                     currentBuildRevision: Int) -> BudgetAssessment {
+        // Build identity is the supplied UTF-8 spelling, not display-text equality.
         guard !currentBuildID.isEmpty, currentBuildRevision > 0,
-              buildID == currentBuildID, buildRevision == currentBuildRevision else { return .unknown(.staleBuild) }
+              buildID.utf8.elementsEqual(currentBuildID.utf8),
+              buildRevision == currentBuildRevision else { return .unknown(.staleBuild) }
         guard periodDays == 30 else { return .unknown(.unsupportedPeriod) }
         switch rateApplicability {
         case .expired: return .unknown(.expiredRates)

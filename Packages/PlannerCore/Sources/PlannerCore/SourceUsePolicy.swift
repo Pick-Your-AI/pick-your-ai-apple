@@ -16,6 +16,10 @@ private func sourceUseNonblank(_ value: String) -> Bool {
 private func sourceUseHex(_ value: String, count: Int) -> Bool {
     value.utf8.count == count && value.utf8.allSatisfy { (48...57).contains($0) || (97...102).contains($0) }
 }
+private func sourceUseHashExactText(_ value: String, into hasher: inout Hasher) {
+    hasher.combine(value.utf8.count)
+    for byte in value.utf8 { hasher.combine(byte) }
+}
 
 /// Identifies the exact bytes, claim, source version, snapshot and intended use.
 /// Scope identifies the reviewed use context (for example, metadata versus
@@ -45,6 +49,27 @@ public struct SourceUseRequest: Hashable, Sendable {
         self.operation = operation
         self.scopeID = scopeID
         self.materialKind = materialKind
+    }
+
+    // These are opaque receipt identities, not display text. Swift String's
+    // canonical equivalence must not transfer approval to different UTF-8 bytes.
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.sourceID.utf8.elementsEqual(rhs.sourceID.utf8)
+            && lhs.claimID.utf8.elementsEqual(rhs.claimID.utf8)
+            && lhs.sourceVersion.utf8.elementsEqual(rhs.sourceVersion.utf8)
+            && lhs.snapshotID.utf8.elementsEqual(rhs.snapshotID.utf8)
+            && lhs.claimSHA256.utf8.elementsEqual(rhs.claimSHA256.utf8)
+            && lhs.operation == rhs.operation
+            && lhs.scopeID.utf8.elementsEqual(rhs.scopeID.utf8)
+            && lhs.materialKind == rhs.materialKind
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        for value in [sourceID, claimID, sourceVersion, snapshotID, claimSHA256, scopeID] {
+            sourceUseHashExactText(value, into: &hasher)
+        }
+        hasher.combine(operation)
+        hasher.combine(materialKind)
     }
 }
 
@@ -77,6 +102,20 @@ public struct SourceRightsRow: Hashable, Sendable {
         self.rowID = rowID
         self.termsReference = termsReference
         self.termsCheckedDate = termsCheckedDate
+    }
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.recordReference.utf8.elementsEqual(rhs.recordReference.utf8)
+            && lhs.recordRevision.utf8.elementsEqual(rhs.recordRevision.utf8)
+            && lhs.rowID.utf8.elementsEqual(rhs.rowID.utf8)
+            && lhs.termsReference.utf8.elementsEqual(rhs.termsReference.utf8)
+            && lhs.termsCheckedDate.utf8.elementsEqual(rhs.termsCheckedDate.utf8)
+    }
+
+    public func hash(into hasher: inout Hasher) {
+        for value in [recordReference, recordRevision, rowID, termsReference, termsCheckedDate] {
+            sourceUseHashExactText(value, into: &hasher)
+        }
     }
 }
 

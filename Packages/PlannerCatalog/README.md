@@ -1,6 +1,6 @@
 # Atomic public catalog preview cache
 
-Partial implementation for [Apple #87](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/87), [#88](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/88) and [#31](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/31). This standalone Swift 6 package stores an entire catalog/pricebook pair in one bounded local envelope. It neither downloads from an invented service nor publishes catalogs.
+Partial implementation for [Apple #87](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/87), [#88](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/88) and [#31](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/31). This standalone Swift 6 package stores complete catalog/pricebook pairs and their active selection in one bounded local envelope. It neither downloads from an invented service nor publishes catalogs.
 
 ## Frozen input and cache boundary
 
@@ -15,14 +15,46 @@ The package only admits `syntheticPreview`. Every returned snapshot is explicitl
 - Use an app-controlled directory and one `CatalogCache` actor per directory; it is a single-process component, not an app-extension shared cache. A concurrent refresh is rejected; an old refresh cannot overwrite a later completion.
 - Downloads remain in memory until both pins, digests, sizes and contract validators pass. The transport adapter must also bound streaming downloads before constructing `Data`; this package checks size after the callback returns.
 - Activation uses one Foundation atomic file replacement. Cancellation is checked before and after each await and before synchronous commit. Cancellation after that commit boundary does not roll back a completed release. Retry starts the pair again and is safe after interrupted or duplicate delivery; byte-range resume is not claimed.
-- A bounded ledger retains up to 2,048 observed artifact-version pins across restart and refresh. Reusing the same kind/schema/id/revision with different timestamp or digest is rejected, including previously active historical versions. Exhausting this bound fails closed until a separately reviewed migration/retention strategy exists; history is never silently evicted. The envelope size is checked identically before commit and before load.
+- A bounded ledger retains up to 2,048 observed artifact-version pins across restart and refresh. Reusing the same kind/schema/id/revision with different timestamp or digest is rejected, including previously active historical versions. Exhausting this bound fails closed until a separately reviewed migration/retention strategy exists; history is never silently evicted. The same envelope limit applies before commit and on load. Loading reads from one open file handle in chunks of at most 64 KiB and consumes at most the envelope limit plus one byte before rejecting oversize data. A separate path-size check cannot enforce that bound if a file grows or the path is a small symlink to a larger target.
 - Failed validation/download/cancellation leaves the previous file untouched. Restart revalidates the complete envelope; corrupt on-disk active data is unavailable and retained for diagnosis, never returned partially or silently repaired. A corrupt active envelope also blocks refresh, preserving its version ledger for explicit diagnosis/recovery rather than silently forgetting immutable versions. This is not a guarantee against device power loss, disk hardware failure, or malicious modification of both manifest and data. Digests establish consistency, not publisher authenticity.
-- Cached time and age are exposed. Current checks are always `unknown`; cached content alone does not prove current compatibility or pricing. Historical selection lookup and rules caching are not implemented here.
+- Cached time and age are exposed. Current checks are always `unknown`; cached content alone does not prove current compatibility or pricing. [Exact historical pair lookup](HISTORY.md) retains original bytes within explicit count and encoded-byte limits, without changing active selection. Rules caching and draft/UI integration remain separate work.
 - The directory contains only public preview artifacts. Draft persistence belongs to the separate persistence package; account-private content must not use this cache. iOS writes select protection until first unlock. Locked-device behavior needs a device test.
 
 Platform references inspected: [Foundation atomic writing](https://developer.apple.com/documentation/foundation/nsdata/writingoptions/atomic), [CryptoKit SHA256](https://developer.apple.com/documentation/cryptokit/sha256). The documentation endpoint served its JavaScript shell in this environment; the macOS/iOS SDK compile and runtime tests remain the concrete API verification. This cache provides cancellation semantics for a future foreground/background coordinator, not BGTaskScheduler registration or an assertion of OS scheduling.
 
+The bounded-reader regressions distinguish exactly-at-limit invalid JSON from an
+oversized envelope, reject a symlink whose target exceeds the limit even though
+the link's own size is small, and retain both the link and target after rejection.
+A separate recovery regression explicitly restores the original valid envelope
+and checks the complete pair, cached date, synthetic status and unknown current
+checks after restart. The two rejection tests do not require CryptoKit; successful
+validated recovery requires the Apple hashing implementation. These controlled
+filesystem tests do not simulate device interruption or prove a release receipt.
+API references checked 2026-10-18:
+[bounded FileHandle read](https://developer.apple.com/documentation/foundation/filehandle/read(uptocount:))
+and [path attributes describe a symlink itself](https://developer.apple.com/documentation/foundation/filemanager/attributesofitem(atpath:)).
+
 ## Validation and remaining acceptance
+
+### Package privacy manifest
+
+The target explicitly bundles [PrivacyInfo.xcprivacy](Sources/PlannerCatalog/PrivacyInfo.xcprivacy).
+The bounded reader uses `fstat` to check the opened cache object's regular-file
+type. Apple lists `fstat` in the file-timestamp API category even when the caller
+uses another field in that metadata structure. Reason `C617.1` covers metadata
+access inside the app's own container. Keep the cache in that container; the
+manifest does not justify inspecting arbitrary external paths. This component
+uses the metadata locally and does not include it in transport requests.
+
+`PrivacyManifestTests.testPackagedManifestDeclaresOnlyAppContainerFileMetadataReason`
+loads the manifest from the built SwiftPM resource bundle and verifies its exact
+category and reason. The package record does not determine the integrating app's
+tracking, collection or store answers. The [#101 source inventory and release
+reconciliation record](../../docs/validation/issue-101-privacy.md) retains the
+required app-level checks and primary Apple references. Reassess the manifest
+when API use, cache location or SDK composition changes.
+
+### Package execution
 
 Run `swift test` from this directory on macOS. The dedicated `macos-catalog-cache` workflow uses Xcode 16.4 / Swift 6, records the toolchain, exercises CryptoKit and compiles for iOS Simulator without signing. Linux can compile and run non-hashing guards, but hashing returns `unsupportedHashPlatform`; hash-dependent tests explicitly skip, not pass. Initial Linux Swift 6.0.3 check: 17 tests discovered, 5 executed successfully, 12 skipped, zero failures. Hosted Apple-platform results must be attached to the PR before merge.
 
@@ -69,3 +101,79 @@ must pass for the exact PR head before merge. Related partial work: #44, #45, #8
 Primary API references checked 2026-10-18:
 [streaming bytes](https://developer.apple.com/documentation/foundation/urlsession/bytes(for:delegate:))
 and [underlying task](https://developer.apple.com/documentation/foundation/urlsession/asyncbytes).
+
+
+## Snapshot-consistent local discovery
+
+`CatalogSearchIndex` searches a bounded local projection of already validated
+canonical records. `CatalogSearchEntry` is an internal display projection, not a
+new wire schema. An adapter must validate the original artifact and retain its
+source-use/evidence semantics before installing entries; this index never promotes
+data, infers compatibility, or turns a synthetic fixture into real product facts.
+
+It installs at most 10,000 bounded entries atomically, rejects duplicate `(id, version)` keys and
+changed bytes under the currently installed identity, and sorts deterministically
+by folded title, kind, ID and version. Distinct versions of one item remain separate, preserving the frozen selection pin fields `catalog_item_id` and `catalog_item_version`. Kind is a filter and display field, not an extra namespace for a duplicate pin. The durable cache remains responsible for historical
+immutable-version enforcement. Query/filter/page-size/sort-bound opaque tokens are valid
+only for the issuing index and exact installed generation. Refresh during paging
+throws `stalePage`; callers must discard the old displayed page collection and
+restart, never concatenate different revisions. A failed install preserves the old
+release. Reinstalling the identical release preserves active cursors.
+
+Eight regression tests cover page boundaries, stable ordering, no duplicate composite keys and preservation of distinct versions,
+refresh between pages and clean restart, foreign cursors, query/filter/limit drift,
+normalized text search, immutable identity conflict, clear/missing state and input
+bounds. Existing hosted catalog CI must execute these tests and compile iOS for the
+exact final head. This is partial #45/#59 behavior; no actual API cursor contract,
+live staging handoff, full canonical catalog decoder, UI, source inspection or
+physical-device acceptance is claimed.
+
+### Explicit local sort selection
+
+`CatalogSearchSort.title` keeps the existing folded-title, kind, ID and version
+order. Callers can instead request `.kind`, which orders by exact kind, folded
+title, ID and version. Both are ascending display orders with deterministic
+identity/version ties; neither sorts by compatibility, evidence, price or a
+semantic interpretation of version strings. Missing specification values are
+not evaluated by this display projection.
+
+Sort is part of each opaque page token. Reusing a token after changing sort throws
+`mismatchedPage`; restarting without a token produces the requested order from
+the same immutable snapshot. An omitted sort means `.title`, so callers continuing
+a kind-sorted page must pass `.kind` again. Query and kind filters retain their
+existing normalization and exact-match behavior, and counts cover all matching
+entries before pagination. The index has no access to drafts or selections.
+
+Three additional regressions cover deterministic duplicate-label/version ties,
+identical reinstall during pagination, both directions of sort mismatch, a clean
+restart, and combined normalized query/kind filters with an empty result. Native
+execution remains required on the exact candidate. This advances the local sorting portion of
+[Apple #59](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/59). It does not
+provide the catalog screen, saved filters, unknown-spec sorting policy, network
+page failure/retry, accessibility journey or whole-issue receiving acceptance.
+
+### Exact version pins and immutable display text
+
+The [frozen catalog item's `version`](../PlannerTransfer/Sources/PlannerTransfer/Resources/catalog-item.schema.json)
+is a nonempty string; it is not restricted to ASCII or normalized Unicode.
+`CatalogSearchEntry` compares its supplied fields
+by their original UTF-8 sequences, and duplicate `(id, version)` keys use those
+same exact sequences. Composed and decomposed version strings can therefore
+remain separate candidates. All entry bounds are checked before allocating the
+bounded duplicate-key byte arrays.
+
+Changing a version or supplied title under the same installed artifact identity
+throws `immutableIdentityConflict` and retains the prior snapshot and cursors.
+Ordinary text ordering remains unchanged; canonical-equality ties use the original
+bytes in both sort modes, so input reordering cannot move a version between pages.
+Case/diacritic folding remains part of search and display-title ordering. The index
+does not normalize version pins or assign a semantic version order.
+
+Four focused regressions cover distinct Unicode versions in both paged sort modes,
+identical reinstall with reversed input, both directions of immutable version and
+title changes, retained pages after rejection, new-revision recovery, and exact
+duplicate rejection with folded search preserved. Run the complete local search
+cohort with `swift test --package-path Packages/PlannerCatalog --filter CatalogSearch`.
+The configured native catalog and SDK gates must qualify the actual receiving
+source; local model tests do not establish catalog UI, live service, accessibility,
+physical-device or whole-issue #59 acceptance.

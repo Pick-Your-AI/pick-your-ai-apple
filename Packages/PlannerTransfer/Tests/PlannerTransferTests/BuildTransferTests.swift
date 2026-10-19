@@ -62,6 +62,44 @@ final class BuildTransferTests: XCTestCase {
         var complete = try fixture(); complete["selections"] = .array([])
         XCTAssertThrowsError(try BuildTransfer.snapshot(fromDraftJSON: encode(complete)))
     }
+    func testLocalSnapshotEncodingPreservesPrivateFieldsAndReopensExactly() throws {
+        var source = try fixture()
+        var selections = try XCTUnwrap(source["selections"]?.array)
+        var selection = try XCTUnwrap(selections.first?.object)
+        selection["notes"] = .string("Private local workload notes")
+        selections[0] = .object(selection)
+        source["selections"] = .array(selections)
+        source["extensions"] = .object(["x_private": .string("Private local metadata")])
+        let snapshot = try BuildTransfer.snapshot(fromDraftJSON: encode(source))
+        let reopened = try BuildTransfer.snapshot(fromDraftJSON: snapshot.encoded())
+        XCTAssertEqual(reopened, snapshot)
+        XCTAssertEqual(reopened.value, .object(source))
+        XCTAssertEqual(reopened.locks, source["locks"])
+        // A successful local serialization must not silently become a disclosure
+        // projection, and private fields still cannot pass the import boundary.
+        XCTAssertThrowsError(try BuildTransfer.preview(snapshot.encoded())) {
+            XCTAssertEqual($0 as? TransferError, .sensitiveContent)
+        }
+    }
+    func testSnapshotEncodingRejectsExpansionPastItsDecodeLimit() throws {
+        var source = try fixture()
+        source["extensions"] = .object(["x_padding": .string(String(repeating: "/", count: 270_000))])
+        // Keep JSONValue's exact Decimal encoding. JSONSerialization would bridge
+        // fractional fixture numbers through NSNumber and can change their digits.
+        let compactEncoder = JSONEncoder()
+        compactEncoder.outputFormatting = [.sortedKeys, .withoutEscapingSlashes]
+        let compact = try compactEncoder.encode(JSONValue.object(source))
+        XCTAssertLessThan(compact.count, BuildTransfer.maximumBytes)
+        let snapshot = try BuildTransfer.snapshot(fromDraftJSON: compact)
+        let encoder = JSONEncoder(); encoder.outputFormatting = [.sortedKeys]
+        XCTAssertGreaterThan(try encoder.encode(snapshot.value).count, BuildTransfer.maximumBytes)
+        XCTAssertThrowsError(try snapshot.encoded()) {
+            XCTAssertEqual($0 as? TransferError, .oversized)
+        }
+        // Rejection leaves the original validated immutable value and its input
+        // available; it does not return bytes that a persistence reader cannot use.
+        XCTAssertEqual(try BuildTransfer.snapshot(fromDraftJSON: compact), snapshot)
+    }
     func testAll29SelectionKindsUseTheirConditionalSettings() throws {
         let validator = try FrozenValidator()
         let schema = try XCTUnwrap(validator.schemas["selection.schema.json"])
