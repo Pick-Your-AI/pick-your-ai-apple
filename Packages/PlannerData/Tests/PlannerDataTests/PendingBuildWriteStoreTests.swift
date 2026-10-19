@@ -477,6 +477,15 @@ final class PendingBuildWriteStoreTests: XCTestCase, @unchecked Sendable {
         let session = try await store.activate(partition()); try await store.enqueue(intent(), session: session)
         try sql(source, "PRAGMA user_version=99")
         let copy = try interruptedCopy(source, update: "PRAGMA user_version=1; UPDATE queue_writes SET body=zeroblob(1048576)")
+        // Cache flushing excludes page 1. Construct the interrupted page-1 write
+        // directly on this synthetic copy; never open it through SQLite first.
+        // The retained hot journal must restore the committed version and body.
+        let journal = URL(fileURLWithPath: copy.path + "-journal")
+        let rollback = try Data(contentsOf: journal)
+        var interrupted = try Data(contentsOf: copy)
+        interrupted.replaceSubrange(60..<64, with: Data([0, 0, 0, 1]))
+        try interrupted.write(to: copy)
+        XCTAssertEqual(try Data(contentsOf: journal), rollback)
         XCTAssertEqual(Array(try Data(contentsOf: copy)[60..<64]), [0, 0, 0, 1])
         XCTAssertThrowsError(try PendingBuildWriteStore(url: copy)) { XCTAssertEqual($0 as? PendingWriteError, .unsupportedSchema(99)) }
         XCTAssertEqual(try scalar(copy, "PRAGMA user_version"), 99)
