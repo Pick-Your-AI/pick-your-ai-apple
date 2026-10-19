@@ -44,4 +44,35 @@ final class T6ReviewJourneyTests: XCTestCase {
         XCTAssertFalse(app.buttons["Deploy"].exists)
         XCTAssertFalse(app.buttons["Share private plan"].exists)
     }
+
+    @MainActor func testReportDisclosurePreviewAndFilesCancellationKeepThePrivatePlan() {
+        let app = open("quality-failed-proposed")
+        let scroll = app.scrollViews["t6-review"]
+        let previewButton = app.buttons["t6-preview-report"]
+        for _ in 0..<12 where !previewButton.isHittable { scroll.swipeUp() }
+        XCTAssertTrue(previewButton.waitForExistence(timeout: 5)); previewButton.tap()
+        let preview = app.staticTexts["t6-report-preview"]
+        XCTAssertTrue(preview.waitForExistence(timeout: 5))
+        XCTAssertTrue(preview.label.hasPrefix("PROPOSED DEPLOYMENT PLAN"))
+        XCTAssertTrue(preview.label.contains("Lock \"pricebook_id\": \"prices.fixture.1\""))
+        XCTAssertFalse(preview.label.contains("user.fixture"))
+        XCTAssertFalse(preview.label.contains("SYNTHETIC private owner note"))
+        let disclosure = app.switches["t6-report-disclosure"]
+        let save = app.buttons["t6-save-report"]
+        for _ in 0..<12 where !disclosure.isHittable { scroll.swipeUp() }
+        XCTAssertTrue(disclosure.waitForExistence(timeout: 5))
+        XCTAssertFalse(save.isEnabled)
+        disclosure.tap()
+        XCTAssertTrue(save.isEnabled); save.tap()
+        // Exercise the real system presentation. Missing receiver/Files behavior
+        // fails this journey; no injected success or test-only save is accepted.
+        let cancel = app.buttons["Cancel"].firstMatch
+        XCTAssertTrue(cancel.waitForExistence(timeout: 10)); cancel.tap()
+        let notice = app.staticTexts["t6-notice"]
+        for _ in 0..<12 where !notice.isHittable { scroll.swipeDown() }
+        XCTAssertTrue(notice.waitForExistence(timeout: 5))
+        XCTAssertEqual(notice.label, "Plan report export was cancelled. No save was confirmed; the retained declarations were not changed.")
+        XCTAssertFalse(app.staticTexts["t6-report-preview"].exists)
+        XCTAssertFalse(app.buttons["Deploy"].exists)
+    }
 }
