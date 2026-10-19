@@ -21,6 +21,7 @@ CORPORA = (
     ("quality", "quality_vectors"),
     ("cost", "cost_vectors"),
     ("resource-estimate", "resource_estimate_vectors"),
+    ("catalog-snapshot", "catalog_snapshot_vectors"),
     ("placement", "placement_vectors"),
     ("dependency-graph", "dependency_graph_vectors"),
     ("ruleset", "ruleset_vectors"),
@@ -69,13 +70,14 @@ class VerifyContractChecks(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stderr, "")
         lines = result.stdout.splitlines()
-        self.assertEqual(len(lines), 8, result.stdout)
+        self.assertEqual(len(lines), 9, result.stdout)
         for line, expected in zip(lines, (
-            "Verified 16 source hashes and 129 canonical conformance cases.",
+            "Verified 17 source hashes and 129 canonical conformance cases.",
             "Verified all 29 catalog kinds and 1635 canonical catalog cases;",
             "Verified 202 canonical quality cases;",
             "Verified 520 canonical cost cases;",
             "Verified 223 canonical resource estimate cases;",
+            "Verified 77 canonical catalog snapshot cases;",
             "Verified 98 canonical placement cases:",
             "Verified 150 canonical dependency graph cases;",
             "Verified 321 canonical ruleset syntax cases;",

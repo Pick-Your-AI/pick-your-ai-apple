@@ -18,6 +18,7 @@ PACKAGE = Path(__file__).resolve().parents[2]
 CORPUS_FILES = (
     'conformance.json', 'catalog-conformance.json', 'quality-conformance.json',
     'cost-conformance.json', 'resource-estimate-conformance.json',
+    'catalog-snapshot-conformance.json',
     'placement-conformance.json',
     'dependency-graph-conformance.json',
     'ruleset-conformance.json',
@@ -155,7 +156,7 @@ class ReferenceHelperChecks(unittest.TestCase):
                 self.require_failure(result, 'Stale ')
 
     def test_environment_optimization_preserves_generator_freshness(self):
-        for name in ('catalog', 'quality', 'cost', 'placement', 'dependency-graph', 'ruleset'):
+        for name in ('catalog', 'quality', 'cost', 'catalog-snapshot', 'placement', 'dependency-graph', 'ruleset'):
             def stale(root):
                 path = root / 'Tests/PlannerTransferTests/Fixtures' / (name + '-conformance.json')
                 path.write_text(path.read_text() + '\n')
@@ -163,4 +164,18 @@ class ReferenceHelperChecks(unittest.TestCase):
             with self.subTest(generator=name):
                 result, _ = self.run_copy('environment', stale, script=name.replace('-', '_') + '_vectors.py')
                 self.require_failure(result, 'vectors are stale')
+                self.assertNotIn('deterministic generation verified', result.stdout)
+
+    def test_catalog_snapshot_generator_rejects_duplicate_names_in_all_python_modes(self):
+        def duplicate_required_field(root):
+            path = root / 'Sources/PlannerTransfer/Resources/catalog-snapshot.schema.json'
+            schema = json.loads(path.read_text())
+            schema['required'].append(schema['required'][0])
+            path.write_text(json.dumps(schema))
+
+        for mode in MODES:
+            with self.subTest(mode=mode):
+                result, _ = self.run_copy(mode, duplicate_required_field,
+                                          script='catalog_snapshot_vectors.py')
+                self.require_failure(result, 'Duplicate catalog snapshot vector names')
                 self.assertNotIn('deterministic generation verified', result.stdout)
