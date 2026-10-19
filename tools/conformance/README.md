@@ -11,6 +11,11 @@ The runner consumes the canonical research import from a read-only checkout.
 `contract-lock.json` pins its revision, contract/fixture versions and import
 manifest hash; every imported file must match that manifest before reference
 code executes. Research branches may advance without changing the frozen bytes.
+Manifest verification and parsing use the same bytes. Both the runner and Swift
+vector exporter also verify every completed copy against that trusted manifest
+before reading copied fixtures or executing copied reference code. Copied-byte
+drift fails without a success result; restoring the pinned bytes permits a normal
+retry. Copying also rechecks source-path containment.
 The copied executable inputs are exactly those listed in the verified manifest;
 no network schema retrieval or untracked source code is needed. The
 [adoption limitations](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/contracts/v1/ADOPTION.md)
@@ -20,15 +25,27 @@ apply: reference rules are proposals, not accepted vendor facts or deployment po
 
 Use Python 3.12 and a checkout of research at the pinned revision. The runner
 requires the exact dependency versions in `requirements.txt` and records the
-actual Python version. From this repository:
+actual Python version. Install their reviewed wheel hashes from
+`requirements-lock.txt`; [the environment record](environment-lock.md) lists
+its platform coverage, primary artifact provenance and remaining limits. The
+version manifest and existing runtime check are unchanged. Use a newly created
+virtual environment for each installation so existing same-version packages
+cannot bypass artifact checking. The selected Python's pip manages that environment
+using its [supported `--python` option](https://pip.pypa.io/en/stable/topics/python-option/)
+(pip 22.3 or newer). From this repository:
 
 ```sh
-python3.12 -m venv /tmp/apple-conformance-venv
-/tmp/apple-conformance-venv/bin/pip install -r tools/conformance/requirements.txt
+conformance_env=$(mktemp -d "${TMPDIR:-/tmp}/apple-conformance.XXXXXX")
+python3.12 -m venv --without-pip "$conformance_env"
+python3.12 -m pip --python "$conformance_env/bin/python" --isolated install \
+  --index-url https://pypi.org/simple --require-hashes --only-binary=:all: \
+  -r tools/conformance/requirements-lock.txt
+python3.12 -m pip --python "$conformance_env/bin/python" --isolated check
+export APPLE_CONFORMANCE_PYTHON="$conformance_env/bin/python"
 export CONTRACT_ROOT=/path/to/pick-your-ai-research/contracts/v1
-/tmp/apple-conformance-venv/bin/python tools/conformance/run.py \
+"$APPLE_CONFORMANCE_PYTHON" tools/conformance/run.py \
   --contract-root "$CONTRACT_ROOT" --output /tmp/apple-conformance.json
-/tmp/apple-conformance-venv/bin/python -m unittest discover \
+"$APPLE_CONFORMANCE_PYTHON" -m unittest discover \
   -s tools/conformance/tests -v
 ```
 
@@ -81,7 +98,7 @@ invalid enums and every outcome/severity combination with absent, null and liter
 `unknown` evidence. Valid reports round-trip without collapsing outcome/severity.
 
 ```sh
-python tools/conformance/export_swift_vectors.py \
+"$APPLE_CONFORMANCE_PYTHON" tools/conformance/export_swift_vectors.py \
   --contract-root "$CONTRACT_ROOT" \
   --output Packages/PlannerCore/Tests/PlannerCoreTests/Fixtures/evaluation-vectors.json \
   --check

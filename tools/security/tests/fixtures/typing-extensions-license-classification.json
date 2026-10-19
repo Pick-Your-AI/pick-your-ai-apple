@@ -1,0 +1,150 @@
+{
+  "schema_version": 1,
+  "kind": "retained-dependency-license-classification",
+  "observed_job_id": 117692891082,
+  "head": "cbbec29ec1087db88f867982d95f52b8dfad9b0d",
+  "base": "074ae4bffec6066d3fe6e6a5fe47ab429dde54ed",
+  "prepared_commit": "39d83c4f2b0aeb1911c28f35505862136925e28c",
+  "prepared_tree": "b79ee3cf0a77b484d2248ec1789363ecffc29a16",
+  "decoded_log_bytes": 27774,
+  "decoded_log_sha256": "8f5f79bb34e0ebd4c246a491b37064a4e19c901d97a41822c4792821ed1ee22d",
+  "snapshot_matched_dependencies": 7,
+  "snapshot_warnings": false,
+  "upstream_outcome": "failure",
+  "dependency_changes": [
+    {
+      "change_type": "added",
+      "manifest": "tools/conformance/requirements-lock.txt",
+      "ecosystem": "pip",
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "package_url": "pkg:pypi/pyyaml@6.0.3",
+      "license": "MIT",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "tools/conformance/requirements-lock.txt",
+      "ecosystem": "pip",
+      "name": "attrs",
+      "version": "26.1.0",
+      "package_url": "pkg:pypi/attrs@26.1.0",
+      "license": "MIT",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "tools/conformance/requirements-lock.txt",
+      "ecosystem": "pip",
+      "name": "jsonschema",
+      "version": "4.25.1",
+      "package_url": "pkg:pypi/jsonschema@4.25.1",
+      "license": "MIT",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "tools/conformance/requirements-lock.txt",
+      "ecosystem": "pip",
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "package_url": "pkg:pypi/jsonschema-specifications@2025.9.1",
+      "license": "MIT",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "tools/conformance/requirements-lock.txt",
+      "ecosystem": "pip",
+      "name": "referencing",
+      "version": "0.37.0",
+      "package_url": "pkg:pypi/referencing@0.37.0",
+      "license": "MIT",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "tools/conformance/requirements-lock.txt",
+      "ecosystem": "pip",
+      "name": "rpds-py",
+      "version": "0.30.0",
+      "package_url": "pkg:pypi/rpds-py@0.30.0",
+      "license": "MIT",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    },
+    {
+      "change_type": "added",
+      "manifest": "tools/conformance/requirements-lock.txt",
+      "ecosystem": "pip",
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "package_url": "pkg:pypi/typing-extensions@4.16.0",
+      "license": "Python-2.0 AND GPL-1.0-or-later AND Python-2.0 AND BSD-3-Clause AND Python-2.0 AND BSD-3-Clause AND 0BSD",
+      "source_repository_url": null,
+      "scope": "runtime",
+      "vulnerabilities": []
+    }
+  ],
+  "invalid_license_changes": {
+    "unlicensed": [],
+    "unresolved": [],
+    "forbidden": [
+      {
+        "change_type": "added",
+        "manifest": "tools/conformance/requirements-lock.txt",
+        "ecosystem": "pip",
+        "name": "typing-extensions",
+        "version": "4.16.0",
+        "package_url": "pkg:pypi/typing-extensions@4.16.0",
+        "license": "Python-2.0 AND GPL-1.0-or-later AND Python-2.0 AND BSD-3-Clause AND Python-2.0 AND BSD-3-Clause AND 0BSD",
+        "source_repository_url": null,
+        "scope": "runtime",
+        "vulnerabilities": []
+      }
+    ]
+  },
+  "source_evidence": {
+    "pypi_metadata": {
+      "metadata_url": "https://pypi.org/pypi/typing-extensions/4.16.0/json",
+      "metadata_bytes": 5631,
+      "metadata_sha256": "2140da00d62dde967f52d0be0ae28444f1d6a3fe603f52c83c23988c32122d5a",
+      "license_expression": "PSF-2.0"
+    },
+    "wheel": {
+      "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+      "url": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+      "bytes": 45571,
+      "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+      "wheel_tags": [
+        "py3-none-any"
+      ],
+      "metadata_path": "typing_extensions-4.16.0.dist-info/METADATA",
+      "metadata_sha256": "b05084ca1d50879865178d9fff9fabeab61bdfb1f361bfbde95421ffc8f9be46",
+      "license_files": [
+        {
+          "path": "typing_extensions-4.16.0.dist-info/licenses/LICENSE",
+          "bytes": 13936,
+          "sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"
+        }
+      ]
+    },
+    "upstream_commit": "f29cd28d8ed7642cafb1d18daf5aa41be6a5c0aa",
+    "upstream_license_sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf",
+    "upstream_pyproject_sha256": "78bc1fcc5e354c7586d13a9d3311f1c6475c2de5354b170924ebdbef956a9528",
+    "lock_path": "tools/conformance/requirements-lock.txt",
+    "lock_bytes": 1359,
+    "lock_sha256": "39f16918d39968c6e26183c2d09399b49cc071bf751a7c3beff4577dd3717c23"
+  }
+}

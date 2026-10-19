@@ -117,7 +117,7 @@ class PinnedTransferLicenseTests(unittest.TestCase):
 
     def test_other_manifest_identity_scope_or_classification_cannot_borrow_proof(self):
         mutations = {
-            "manifest": "tools/conformance/requirements-lock.txt", "ecosystem": "npm",
+            "manifest": "tools/unreviewed/requirements-lock.txt", "ecosystem": "npm",
             "name": "another-package", "version": "4.16.1", "change_type": "removed",
             "package_url": "pkg:pypi/typing-extensions@4.16.1", "scope": "development",
             "license": "GPL-3.0-only", "source_repository_url": "https://example.invalid/private",
@@ -195,7 +195,7 @@ class PinnedTransferLicenseTests(unittest.TestCase):
             self.assertEqual(status, 1)
             self.assertEqual(transport.requests, [])
             row = copy.deepcopy(OBSERVED["invalid_licenses"]["forbidden"][0])
-            row["manifest"] = "tools/conformance/requirements-lock.txt"
+            row["manifest"] = "tools/unreviewed/requirements-lock.txt"
             status, result, _, transport = execute(
                 [row], {"forbidden": [row], "unresolved": [], "unlicensed": []}
             )

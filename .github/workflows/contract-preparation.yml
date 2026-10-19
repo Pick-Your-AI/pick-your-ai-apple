@@ -32,24 +32,30 @@ jobs:
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
           python-version: '3.12.14'
-      - name: Install exact validation dependencies
-        run: python -m pip install -r tools/conformance/requirements.txt
+      - name: Install hash-verified validation wheels in a fresh environment
+        run: |
+          set -euo pipefail
+          conformance_env=$(mktemp -d "$RUNNER_TEMP/apple-conformance.XXXXXX")
+          python -m venv --without-pip "$conformance_env"
+          python -m pip --python "$conformance_env/bin/python" --isolated install --index-url https://pypi.org/simple --require-hashes --only-binary=:all: -r tools/conformance/requirements-lock.txt
+          python -m pip --python "$conformance_env/bin/python" --isolated check
+          printf 'APPLE_CONFORMANCE_PYTHON=%s\n' "$conformance_env/bin/python" >> "$GITHUB_ENV"
       - name: Run frozen reference, vectors and mutation checks
         run: >-
-          python tools/conformance/run.py
+          "$APPLE_CONFORMANCE_PYTHON" tools/conformance/run.py
           --contract-root .canonical-research/contracts/v1
           --output contract-preparation.json
       - name: Replay shared Swift pricebook vectors against the pinned schema
-        run: python tools/conformance/pricebook_vectors.py --contract-root .canonical-research/contracts/v1
+        run: '"$APPLE_CONFORMANCE_PYTHON" tools/conformance/pricebook_vectors.py --contract-root .canonical-research/contracts/v1'
       - name: Replay raw JSON without collapsing repeated keys
-        run: python tools/conformance/raw_core_vectors.py --contract-root .canonical-research/contracts/v1
+        run: '"$APPLE_CONFORMANCE_PYTHON" tools/conformance/raw_core_vectors.py --contract-root .canonical-research/contracts/v1'
       - name: Test preparation harness failure and recovery
         env:
           CONTRACT_ROOT: .canonical-research/contracts/v1
-        run: python -m unittest discover -s tools/conformance/tests -v
+        run: '"$APPLE_CONFORMANCE_PYTHON" -m unittest discover -s tools/conformance/tests -v'
       - name: Verify identical Swift vectors and source fixture provenance
         run: >-
-          python tools/conformance/export_swift_vectors.py
+          "$APPLE_CONFORMANCE_PYTHON" tools/conformance/export_swift_vectors.py
           --contract-root .canonical-research/contracts/v1
           --output Packages/PlannerCore/Tests/PlannerCoreTests/Fixtures/evaluation-vectors.json
           --check

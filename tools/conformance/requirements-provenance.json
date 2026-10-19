@@ -1,0 +1,347 @@
+{
+  "schema_version": 1,
+  "scope": "Conformance preparation only; preserves all seven requirements.txt versions and adds no extras or format providers.",
+  "observed_date_utc": "2026-10-18",
+  "version_manifest": {
+    "path": "tools/conformance/requirements.txt",
+    "sha256": "e56b1e9223306faefd848502e2b181a8cfa1ff674212f6c36fd7896999f2b3eb"
+  },
+  "installer_manifest": {
+    "path": "tools/conformance/requirements-lock.txt",
+    "sha256": "39f16918d39968c6e26183c2d09399b49cc071bf751a7c3beff4577dd3717c23"
+  },
+  "reviewed_targets": [
+    "regular CPython 3.12, manylinux x86_64 (CI ubuntu-24.04)",
+    "regular CPython 3.12, macOS x86_64",
+    "regular CPython 3.12, macOS arm64"
+  ],
+  "artifact_verification": "All eleven wheel byte counts, SHA-256 digests, embedded package names/versions, wheel tags and license-file digests were checked against the retained primary PyPI release metadata. Foreign-platform wheels were inspected without execution.",
+  "limits": [
+    "Only listed wheel hashes are admitted; no source distribution or build backend is used.",
+    "Other interpreters, Python minors, operating systems and architectures require a separately reviewed compatible artifact lock.",
+    "The interpreter, pip bootstrap, OS and system libraries are outside this seven-package validation lock.",
+    "Package metadata and integrity review do not establish absence of vulnerabilities, deployed release inventory or credential rotation."
+  ],
+  "packages": [
+    {
+      "name": "jsonschema",
+      "version": "4.25.1",
+      "metadata_url": "https://pypi.org/pypi/jsonschema/4.25.1/json",
+      "metadata_bytes": 9482,
+      "metadata_sha256": "89147a276d194f27bdf626f63c3cb3cb6b8ad6313ce5e87a59ba789835ef23fb",
+      "requires_python": ">=3.9",
+      "requires_dist": [
+        "attrs>=22.2.0",
+        "jsonschema-specifications>=2023.03.6",
+        "referencing>=0.28.4",
+        "rpds-py>=0.7.1",
+        "fqdn; extra == \"format\"",
+        "idna; extra == \"format\"",
+        "isoduration; extra == \"format\"",
+        "jsonpointer>1.13; extra == \"format\"",
+        "rfc3339-validator; extra == \"format\"",
+        "rfc3987; extra == \"format\"",
+        "uri-template; extra == \"format\"",
+        "webcolors>=1.11; extra == \"format\"",
+        "fqdn; extra == \"format-nongpl\"",
+        "idna; extra == \"format-nongpl\"",
+        "isoduration; extra == \"format-nongpl\"",
+        "jsonpointer>1.13; extra == \"format-nongpl\"",
+        "rfc3339-validator; extra == \"format-nongpl\"",
+        "rfc3986-validator>0.1.0; extra == \"format-nongpl\"",
+        "rfc3987-syntax>=1.1.0; extra == \"format-nongpl\"",
+        "uri-template; extra == \"format-nongpl\"",
+        "webcolors>=24.6.0; extra == \"format-nongpl\""
+      ],
+      "license_expression": "MIT",
+      "license": null,
+      "wheels": [
+        {
+          "filename": "jsonschema-4.25.1-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/bf/9c/8c95d856233c1f82500c2450b8c68576b4cf1c871db3afac5c34ff84e6fd/jsonschema-4.25.1-py3-none-any.whl",
+          "bytes": 90040,
+          "sha256": "3fba0169e345c7175110351d456342c364814cfcf3b964ba4587f22915230a63",
+          "wheel_tags": [
+            "py3-none-any"
+          ],
+          "metadata_path": "jsonschema-4.25.1.dist-info/METADATA",
+          "metadata_sha256": "31f83c1579e46e1af62269cefa5d83534ef155f3ee21914f7881bbd544bc125c",
+          "license_files": [
+            {
+              "path": "jsonschema-4.25.1.dist-info/licenses/COPYING",
+              "bytes": 1057,
+              "sha256": "4f92a015a13c4d1a040bef018aa13430b4f1bc73b41b16bb846c346766de7439"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "referencing",
+      "version": "0.37.0",
+      "metadata_url": "https://pypi.org/pypi/referencing/0.37.0/json",
+      "metadata_bytes": 4842,
+      "metadata_sha256": "a67968d8e03aa45e650fc2ff0d07796676db1a7841ce8e810bf2dba5af689464",
+      "requires_python": ">=3.10",
+      "requires_dist": [
+        "attrs>=22.2.0",
+        "rpds-py>=0.7.0",
+        "typing-extensions>=4.4.0; python_version < \"3.13\""
+      ],
+      "license_expression": "MIT",
+      "license": null,
+      "wheels": [
+        {
+          "filename": "referencing-0.37.0-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/2c/58/ca301544e1fa93ed4f80d724bf5b194f6e4b945841c5bfd555878eea9fcb/referencing-0.37.0-py3-none-any.whl",
+          "bytes": 26766,
+          "sha256": "381329a9f99628c9069361716891d34ad94af76e461dcb0335825aecc7692231",
+          "wheel_tags": [
+            "py3-none-any"
+          ],
+          "metadata_path": "referencing-0.37.0.dist-info/METADATA",
+          "metadata_sha256": "c93b00e6ab1524fd60848376604c189a114374776475c25a31d57be47b29de6a",
+          "license_files": [
+            {
+              "path": "referencing-0.37.0.dist-info/licenses/COPYING",
+              "bytes": 1057,
+              "sha256": "42dcd63495f87b4eb7c7757afa379bb55a53f94afd7a5f657d9adf57236e515c"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "jsonschema-specifications",
+      "version": "2025.9.1",
+      "metadata_url": "https://pypi.org/pypi/jsonschema-specifications/2025.9.1/json",
+      "metadata_bytes": 5037,
+      "metadata_sha256": "91810d8f79384375ad0c0cf631e06903e2790b030d3fad2f1ad657b20ddd839e",
+      "requires_python": ">=3.9",
+      "requires_dist": [
+        "referencing>=0.31.0"
+      ],
+      "license_expression": "MIT",
+      "license": null,
+      "wheels": [
+        {
+          "filename": "jsonschema_specifications-2025.9.1-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/41/45/1a4ed80516f02155c51f51e8cedb3c1902296743db0bbc66608a0db2814f/jsonschema_specifications-2025.9.1-py3-none-any.whl",
+          "bytes": 18437,
+          "sha256": "98802fee3a11ee76ecaca44429fda8a41bff98b00a0f2838151b113f210cc6fe",
+          "wheel_tags": [
+            "py3-none-any"
+          ],
+          "metadata_path": "jsonschema_specifications-2025.9.1.dist-info/METADATA",
+          "metadata_sha256": "35abd41757f32b4ea24756920ded47b70173d77cbc052a5a6d3ab583b2e8d89d",
+          "license_files": [
+            {
+              "path": "jsonschema_specifications-2025.9.1.dist-info/licenses/COPYING",
+              "bytes": 1057,
+              "sha256": "42dcd63495f87b4eb7c7757afa379bb55a53f94afd7a5f657d9adf57236e515c"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "attrs",
+      "version": "26.1.0",
+      "metadata_url": "https://pypi.org/pypi/attrs/26.1.0/json",
+      "metadata_bytes": 11038,
+      "metadata_sha256": "a882bf941fb4a0bb748d0194df544121cc130f5fb15a710ab6b804c17d2899b7",
+      "requires_python": ">=3.9",
+      "requires_dist": [],
+      "license_expression": "MIT",
+      "license": null,
+      "wheels": [
+        {
+          "filename": "attrs-26.1.0-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/64/b4/17d4b0b2a2dc85a6df63d1157e028ed19f90d4cd97c36717afef2bc2f395/attrs-26.1.0-py3-none-any.whl",
+          "bytes": 67548,
+          "sha256": "c647aa4a12dfbad9333ca4e71fe62ddc36f4e63b2d260a37a8b83d2f043ac309",
+          "wheel_tags": [
+            "py3-none-any"
+          ],
+          "metadata_path": "attrs-26.1.0.dist-info/METADATA",
+          "metadata_sha256": "4cd40e690f23bf37cbcad34efd6758e062df1df07c86833f7e3ce95bf1fa38cc",
+          "license_files": [
+            {
+              "path": "attrs-26.1.0.dist-info/licenses/LICENSE",
+              "bytes": 1109,
+              "sha256": "882115c95dfc2af1eeb6714f8ec6d5cbcabf667caff8729f42420da63f714e9f"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "rpds-py",
+      "version": "0.30.0",
+      "metadata_url": "https://pypi.org/pypi/rpds-py/0.30.0/json",
+      "metadata_bytes": 104792,
+      "metadata_sha256": "3d483a85d90018b0d75e321e3795121cb4658e7e8296e5f2af3a27ed53f88d61",
+      "requires_python": ">=3.10",
+      "requires_dist": [],
+      "license_expression": "MIT",
+      "license": null,
+      "wheels": [
+        {
+          "filename": "rpds_py-0.30.0-cp312-cp312-macosx_10_12_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/03/e7/98a2f4ac921d82f33e03f3835f5bf3a4a40aa1bfdc57975e74a97b2b4bdd/rpds_py-0.30.0-cp312-cp312-macosx_10_12_x86_64.whl",
+          "bytes": 375086,
+          "sha256": "a161f20d9a43006833cd7068375a94d035714d73a172b681d8881820600abfad",
+          "wheel_tags": [
+            "cp312-cp312-macosx_10_12_x86_64"
+          ],
+          "metadata_path": "rpds_py-0.30.0.dist-info/METADATA",
+          "metadata_sha256": "cc01d097ddb9c7e07a29c9553ee8dd35cf920e85fb574f7b0c23d68138a716bf",
+          "license_files": [
+            {
+              "path": "rpds_py-0.30.0.dist-info/licenses/LICENSE",
+              "bytes": 1057,
+              "sha256": "314e4e91be3baa93c0fb4bccc9e4e97cd643eb839b065af921782c2175fe9909"
+            }
+          ]
+        },
+        {
+          "filename": "rpds_py-0.30.0-cp312-cp312-macosx_11_0_arm64.whl",
+          "url": "https://files.pythonhosted.org/packages/4d/a1/bca7fd3d452b272e13335db8d6b0b3ecde0f90ad6f16f3328c6fb150c889/rpds_py-0.30.0-cp312-cp312-macosx_11_0_arm64.whl",
+          "bytes": 359053,
+          "sha256": "6abc8880d9d036ecaafe709079969f56e876fcf107f7a8e9920ba6d5a3878d05",
+          "wheel_tags": [
+            "cp312-cp312-macosx_11_0_arm64"
+          ],
+          "metadata_path": "rpds_py-0.30.0.dist-info/METADATA",
+          "metadata_sha256": "cc01d097ddb9c7e07a29c9553ee8dd35cf920e85fb574f7b0c23d68138a716bf",
+          "license_files": [
+            {
+              "path": "rpds_py-0.30.0.dist-info/licenses/LICENSE",
+              "bytes": 1057,
+              "sha256": "314e4e91be3baa93c0fb4bccc9e4e97cd643eb839b065af921782c2175fe9909"
+            }
+          ]
+        },
+        {
+          "filename": "rpds_py-0.30.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/60/1b/6f8f29f3f995c7ffdde46a626ddccd7c63aefc0efae881dc13b6e5d5bb16/rpds_py-0.30.0-cp312-cp312-manylinux_2_17_x86_64.manylinux2014_x86_64.whl",
+          "bytes": 394080,
+          "sha256": "47f236970bccb2233267d89173d3ad2703cd36a0e2a6e92d0560d333871a3d23",
+          "wheel_tags": [
+            "cp312-cp312-manylinux_2_17_x86_64",
+            "cp312-cp312-manylinux2014_x86_64"
+          ],
+          "metadata_path": "rpds_py-0.30.0.dist-info/METADATA",
+          "metadata_sha256": "cc01d097ddb9c7e07a29c9553ee8dd35cf920e85fb574f7b0c23d68138a716bf",
+          "license_files": [
+            {
+              "path": "rpds_py-0.30.0.dist-info/licenses/LICENSE",
+              "bytes": 1057,
+              "sha256": "314e4e91be3baa93c0fb4bccc9e4e97cd643eb839b065af921782c2175fe9909"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "PyYAML",
+      "version": "6.0.3",
+      "metadata_url": "https://pypi.org/pypi/PyYAML/6.0.3/json",
+      "metadata_bytes": 66402,
+      "metadata_sha256": "c3f35597bc2f08cc990c2a5fe57bef6687b3a3d7c61d8b0ba4cc067777eb1def",
+      "requires_python": ">=3.8",
+      "requires_dist": [],
+      "license_expression": null,
+      "license": "MIT",
+      "wheels": [
+        {
+          "filename": "pyyaml-6.0.3-cp312-cp312-macosx_10_13_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/d1/33/422b98d2195232ca1826284a76852ad5a86fe23e31b009c9886b2d0fb8b2/pyyaml-6.0.3-cp312-cp312-macosx_10_13_x86_64.whl",
+          "bytes": 182063,
+          "sha256": "7f047e29dcae44602496db43be01ad42fc6f1cc0d8cd6c83d342306c32270196",
+          "wheel_tags": [
+            "cp312-cp312-macosx_10_13_x86_64"
+          ],
+          "metadata_path": "pyyaml-6.0.3.dist-info/METADATA",
+          "metadata_sha256": "03c3b415ed38d09faedc49360e930769b40c58f68585e6de00e2e4916a858d34",
+          "license_files": [
+            {
+              "path": "pyyaml-6.0.3.dist-info/licenses/LICENSE",
+              "bytes": 1101,
+              "sha256": "8d3928f9dc4490fd635707cb88eb26bd764102a7282954307d3e5167a577e8a4"
+            }
+          ]
+        },
+        {
+          "filename": "pyyaml-6.0.3-cp312-cp312-macosx_11_0_arm64.whl",
+          "url": "https://files.pythonhosted.org/packages/89/a0/6cf41a19a1f2f3feab0e9c0b74134aa2ce6849093d5517a0c550fe37a648/pyyaml-6.0.3-cp312-cp312-macosx_11_0_arm64.whl",
+          "bytes": 173973,
+          "sha256": "fc09d0aa354569bc501d4e787133afc08552722d3ab34836a80547331bb5d4a0",
+          "wheel_tags": [
+            "cp312-cp312-macosx_11_0_arm64"
+          ],
+          "metadata_path": "pyyaml-6.0.3.dist-info/METADATA",
+          "metadata_sha256": "03c3b415ed38d09faedc49360e930769b40c58f68585e6de00e2e4916a858d34",
+          "license_files": [
+            {
+              "path": "pyyaml-6.0.3.dist-info/licenses/LICENSE",
+              "bytes": 1101,
+              "sha256": "8d3928f9dc4490fd635707cb88eb26bd764102a7282954307d3e5167a577e8a4"
+            }
+          ]
+        },
+        {
+          "filename": "pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+          "url": "https://files.pythonhosted.org/packages/8b/9d/b3589d3877982d4f2329302ef98a8026e7f4443c765c46cfecc8858c6b4b/pyyaml-6.0.3-cp312-cp312-manylinux2014_x86_64.manylinux_2_17_x86_64.manylinux_2_28_x86_64.whl",
+          "bytes": 807870,
+          "sha256": "ba1cc08a7ccde2d2ec775841541641e4548226580ab850948cbfda66a1befcdc",
+          "wheel_tags": [
+            "cp312-cp312-manylinux_2_17_x86_64",
+            "cp312-cp312-manylinux2014_x86_64",
+            "cp312-cp312-manylinux_2_28_x86_64"
+          ],
+          "metadata_path": "pyyaml-6.0.3.dist-info/METADATA",
+          "metadata_sha256": "03c3b415ed38d09faedc49360e930769b40c58f68585e6de00e2e4916a858d34",
+          "license_files": [
+            {
+              "path": "pyyaml-6.0.3.dist-info/licenses/LICENSE",
+              "bytes": 1101,
+              "sha256": "8d3928f9dc4490fd635707cb88eb26bd764102a7282954307d3e5167a577e8a4"
+            }
+          ]
+        }
+      ]
+    },
+    {
+      "name": "typing-extensions",
+      "version": "4.16.0",
+      "metadata_url": "https://pypi.org/pypi/typing-extensions/4.16.0/json",
+      "metadata_bytes": 5631,
+      "metadata_sha256": "2140da00d62dde967f52d0be0ae28444f1d6a3fe603f52c83c23988c32122d5a",
+      "requires_python": ">=3.9",
+      "requires_dist": [],
+      "license_expression": "PSF-2.0",
+      "license": null,
+      "wheels": [
+        {
+          "filename": "typing_extensions-4.16.0-py3-none-any.whl",
+          "url": "https://files.pythonhosted.org/packages/49/d3/b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/typing_extensions-4.16.0-py3-none-any.whl",
+          "bytes": 45571,
+          "sha256": "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8",
+          "wheel_tags": [
+            "py3-none-any"
+          ],
+          "metadata_path": "typing_extensions-4.16.0.dist-info/METADATA",
+          "metadata_sha256": "b05084ca1d50879865178d9fff9fabeab61bdfb1f361bfbde95421ffc8f9be46",
+          "license_files": [
+            {
+              "path": "typing_extensions-4.16.0.dist-info/licenses/LICENSE",
+              "bytes": 13936,
+              "sha256": "3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf"
+            }
+          ]
+        }
+      ]
+    }
+  ]
+}
