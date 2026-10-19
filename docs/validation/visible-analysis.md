@@ -208,3 +208,11 @@ This environment has no Apple SDK or Xcode. These source corrections do not
 establish a recovered native result. All six configured rendering methods,
 all seven analysis scenarios, current-source package/SDK checks and the selected
 editor receiving integration remain required before accepting this contribution.
+
+The later [original-artifact inspection](visible-analysis-pending-caption.md)
+receives #402's additional failure evidence into this correction. Independently
+verified original ZIP and movie bytes show the caption visibly absent in the
+original macOS pending presentation. This adds direct presentation evidence;
+the original accessibility representation and current-source native recovery
+remain separate questions. All correction, assertion and scope bytes above
+remain unchanged by that evidence-only supplement.
