@@ -1,19 +1,41 @@
 #!/usr/bin/env python3
 """Real abrupt-process-exit replay, using synthetic drafts only."""
+import argparse
+import math
 import pathlib
 import sqlite3
 import subprocess
-import sys
 import tempfile
 
-probe = str(pathlib.Path(sys.argv[1]).resolve())
+
+def positive_seconds(value):
+    try:
+        seconds = float(value)
+    except ValueError as error:
+        raise argparse.ArgumentTypeError("must be a finite positive number of seconds") from error
+    if not math.isfinite(seconds) or seconds <= 0:
+        raise argparse.ArgumentTypeError("must be a finite positive number of seconds")
+    return seconds
+
+
+parser = argparse.ArgumentParser(description=__doc__)
+parser.add_argument("probe", type=pathlib.Path, help="built DraftCrashProbe executable")
+parser.add_argument("--timeout-seconds", type=positive_seconds, default=60.0,
+                    help="deadline for each probe phase (default: 60 seconds)")
+args = parser.parse_args()
+probe = str(args.probe.resolve())
 
 def require(condition, message):
     if not condition:
         raise SystemExit(message)
 
 def run(mode, path, expected=0):
-    result = subprocess.run([probe, mode, str(path)], capture_output=True, text=True)
+    try:
+        result = subprocess.run([probe, mode, str(path)], capture_output=True,
+                                text=True, timeout=args.timeout_seconds)
+    except subprocess.TimeoutExpired as error:
+        raise SystemExit(f"{mode}: probe exceeded {args.timeout_seconds:g}-second deadline; "
+                         f"stdout={error.stdout!r}; stderr={error.stderr!r}") from None
     require(result.returncode == expected,
             f"{mode}: expected exit {expected}, observed {result.returncode}; "
             f"stdout={result.stdout!r}; stderr={result.stderr!r}")
