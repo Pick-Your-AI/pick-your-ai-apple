@@ -54,6 +54,18 @@ for case in quality_cases:
     assert validator.is_valid(payload) == case['canonicalValid'], case['name']
 print(f'Verified {len(quality_cases)} canonical quality cases; recorded labels and client subsets remain explicit.')
 
+# Cost records retain decimal strings and reported results without pricing them.
+from cost_vectors import apply_vector as apply_cost_vector, encoded_vectors as encoded_cost_vectors
+cost_cases_path = FIXTURES / 'cost-conformance.json'
+assert cost_cases_path.read_text() == encoded_cost_vectors(), 'Stale cost vectors'
+cost_cases = json.loads(cost_cases_path.read_text())
+cost = json.loads((FIXTURES / 'cost-estimate.json').read_text())
+validator = Draft202012Validator(schemas['cost-estimate.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in cost_cases:
+    payload = apply_cost_vector(cost, case)
+    assert validator.is_valid(payload) == case['canonicalValid'], case['name']
+print(f'Verified {len(cost_cases)} canonical cost cases; decimal strings and reported coverage remain explicit.')
+
 from resource_estimate_vectors import encoded_vectors as encoded_resource_vectors
 resource_cases_path = FIXTURES / 'resource-estimate-conformance.json'
 assert resource_cases_path.read_text() == encoded_resource_vectors(), 'Stale resource estimate vectors'
