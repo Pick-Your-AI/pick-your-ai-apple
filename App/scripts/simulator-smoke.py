@@ -7,8 +7,11 @@ import sys
 import uuid
 
 COMMAND_TIMEOUT_SECONDS = 60
+INSTALL_TIMEOUT_SECONDS = 3 * 60
 BOOT_TIMEOUT_SECONDS = 5 * 60
 CLEANUP_TIMEOUT_SECONDS = 60
+DIAGNOSTIC_TIMEOUT_SECONDS = 15
+APP_BUNDLE_ID = "invalid.pickyourai.localpreview"
 
 
 def emit_output(stdout, stderr):
@@ -50,6 +53,23 @@ def cleanup_simulator(udid):
     return deleted
 
 
+def collect_launch_diagnostics(udid):
+    """Read only the verified owned simulator after its launch command failed."""
+    commands = (
+        ("xcrun", "simctl", "get_app_container", udid, APP_BUNDLE_ID, "app"),
+        ("xcrun", "simctl", "spawn", udid, "log", "show", "--style", "compact",
+         "--last", "2m", "--info", "--predicate",
+         f'process == "Planner" OR eventMessage CONTAINS "{APP_BUNDLE_ID}"'),
+    )
+    for command in commands:
+        try:
+            run(*command, timeout=DIAGNOSTIC_TIMEOUT_SECONDS)
+        except Exception as error:
+            # Diagnostics are best effort. Their failure must not replace the
+            # original launch failure or prevent the remaining finally cleanup.
+            print(f"Launch diagnostic did not complete for {udid}: {error}", file=sys.stderr, flush=True)
+
+
 def smoke_destination(device, runtime, family, existing_ids):
     udid = None
     cleanup_succeeded = False
@@ -65,9 +85,16 @@ def smoke_destination(device, runtime, family, existing_ids):
         print(f"Smoke launch: {device['name']}, iOS {runtime['version']}", flush=True)
         run("xcrun", "simctl", "boot", udid)
         run("xcrun", "simctl", "bootstatus", udid, "-b", timeout=BOOT_TIMEOUT_SECONDS)
-        run("xcrun", "simctl", "install", udid, ".build/native/Build/Products/Debug-iphonesimulator/Planner.app")
-        run("xcrun", "simctl", "launch", "--terminate-running-process", udid, "invalid.pickyourai.localpreview")
-        run("xcrun", "simctl", "terminate", udid, "invalid.pickyourai.localpreview")
+        run("xcrun", "simctl", "install", udid,
+            ".build/native/Build/Products/Debug-iphonesimulator/Planner.app", timeout=INSTALL_TIMEOUT_SECONDS)
+        try:
+            # This simulator was just created and the app just installed. There
+            # is no earlier runner-owned app process to terminate before launch.
+            run("xcrun", "simctl", "launch", udid, APP_BUNDLE_ID)
+        except (OSError, subprocess.SubprocessError):
+            collect_launch_diagnostics(udid)
+            raise
+        run("xcrun", "simctl", "terminate", udid, APP_BUNDLE_ID)
     finally:
         if udid is not None:
             cleanup_succeeded = cleanup_simulator(udid)
