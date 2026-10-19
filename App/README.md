@@ -16,6 +16,10 @@ The workflow records the actual compiler/SDK/runtime and runs model tests, an un
 simulator build, and iPhone/iPad launch smoke checks. It contains no signing secrets.
 The smoke script is not an accessibility or complete journey test.
 
+The simulator qualification job uses the existing Xcode 26.3 / 17C529 and SDK 26.2
+pins described in the [toolchain continuation](#simulator-toolchain-continuation-2026-10-19).
+The Xcode 16.4 development pin and rendering/package baseline remain unchanged.
+
 The [launch-smoke runner](scripts/simulator-smoke.py) retains its existing selection:
 the newest available iOS runtime and the first available iPhone and iPad types in
 that runtime's inventory. Its inventory/create/boot/launch/terminate commands have
@@ -94,8 +98,8 @@ repository uses a standard runner; this change adds no paid or self-hosted runne
 
 The [Intel image inventory](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md),
 checked on the same date, lists Xcode 16.4 / 16F6 and an iOS 26.2 simulator runtime.
-An image inventory is not execution evidence. The existing verifier still requires
-that exact Xcode directory/version/build, and the smoke runner still selects the
+An image inventory is not execution evidence. This initial Intel trial required
+that exact Xcode directory/version/build. The smoke runner still selects the
 newest actually available iOS runtime and its first iPhone and iPad types. The
 actual image, compiler, SDK, runtime, devices and launch outputs must be recorded
 by the new job. No runtime substitution or destination shortcut is introduced.
@@ -140,7 +144,7 @@ The workflow now runs two separately required jobs from the same event checkout:
 | Job | Required work and original artifact |
 | --- | --- |
 | `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all four real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
-| `native-simulator` | The unchanged eight Xcode and 24 smoke-runner guards, fresh-cache checks, actual toolchain recording, all 23 current model methods, unsigned Simulator build and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
+| `native-simulator` | Eight Xcode-pin, 29 smoke-runner and 17 SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
 
 Each native job uses its own fresh standard `macos-15-intel` host and retains the
 same 20-minute job limit. The rendering command, source and qualifier are moved
@@ -219,11 +223,59 @@ Each reached installation phase adds nine nominal probe seconds plus process
 and output overhead; it supplies no job-completion guarantee.
 These are portable regression cases, not a new simulator execution.
 
-The split workflow, required result gate, both device families, selected
-toolchain/runtime, every command deadline and both 20-minute job limits remain
-unchanged. This source still needs its own actual hosted qualification. All
-earlier guard counts and failed, cancelled or successful native observations
-above retain their original source and run identities.
+This installation-observation revision preserved the split workflow, required
+result gate, both device families, selected toolchain/runtime, every command
+deadline and both 20-minute job limits. All earlier guard counts and failed,
+cancelled or successful native observations above retain their original source
+and run identities.
+
+### Simulator toolchain continuation (2026-10-19)
+
+The next actual receiving checkout, `3b4624f94742da16d4f0c7044ab9fd7c95bdf43c`
+(tree `638edd7f86b562de783b1907b46c89fe59283c0d`), failed earlier, during
+[first-phone boot readiness](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/317#issuecomment-6265594183).
+Its inventory, creation and boot commands returned success, but the single
+300-second `bootstatus` attempt retained only nonterminal progress through data
+migration and then waiting for the system app. Owned shutdown timed out at
+60 seconds, deletion returned success, and the original boot-readiness exception
+remained the failure. Installation, all runtime-snapshot phases, app launch and
+the tablet sequence were never reached. The job completed as failed within its
+20-minute limit; this was not another outer-job cancellation.
+
+The original selected Xcode 16.4 / 16F6 on Intel macOS 15.7.9 / 24G830, built the
+unsigned app with SDK 18.5, and selected the available iOS 26.2 / 23C54 runtime.
+Apple's [Xcode support matrix](https://developer.apple.com/xcode/system-requirements/)
+lists macOS Sequoia 15.6 through Tahoe 26.x and SDK 26.2 for Xcode 26.3. Its separate Simulator
+range for Xcode 16.4 is iOS 15 or later; this does not establish that the original
+16.4 / 26.2 pairing is prohibited. The
+[exact official Intel image inventory](https://github.com/actions/runner-images/blob/macos-15/20260824.0482/images/macos/macos-15-Readme.md)
+for image `20260824.0482.1` lists Xcode 26.3 / 17C529 and the iOS 26.2 Simulator
+SDK and runtime. Published compatibility and co-installation do not establish
+successful cold boot on the failed host.
+
+The bounded next trial changes only the simulator job's selected Xcode bundle,
+compiler, SDK and Simulator tools together. It reuses the existing
+[submission toolchain pin](submission-toolchain.json),
+[SDK pin](submission-sdk.json) and guarded verifier. Exact Xcode identity and
+both installed SDK versions must match before the verifier publishes
+`DEVELOPER_DIR`; there is no alternate-toolchain or SDK fallback. The job also
+runs the existing 17 SDK guards and verifies the unsigned Debug Simulator
+product's Xcode build, SDK 26.2 and minimum iOS 17 metadata. The earlier SDK 18.5
+build remains evidence only for its original source and run.
+
+The standard Intel host, newest-available-runtime selection, fresh owned phone
+and iPad, 29 smoke guards, model methods, clean caches, all command deadlines,
+both 20-minute job limits and strict required result gate remain unchanged.
+The 16.4 rendering/package baseline and separate submission workflow also remain
+unchanged. This experiment adds no retry, readiness shortcut, runtime download or
+destination reduction. It changes coupled toolchain inputs, so even a later
+success cannot isolate the old failure's cause or qualify the old environment.
+
+The next configured execution must record its actual image, Xcode, SDK and runtime
+and complete both full cold-device launch and cleanup sequences. Portable guards
+and product metadata cannot supply those native results. The first-phone boot
+failure, earlier installation and launch failures, cancellation histories and
+broader physical-device, minimum-OS and release criteria remain separately open.
 
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
@@ -307,3 +359,6 @@ testing all five packages and building both unsigned Release products. The
 existing 16.4 development pin remains a regression baseline. Consult the dated
 [#113 policy matrix](../docs/validation/issue-113-policy.md) for current Apple
 requirements and the signed-artifact, privacy and channel evidence still needed.
+The native simulator launch job now reuses these pins and verifier for its Debug
+product; the separate Release-product lane does not supply its required launch
+or cleanup results.

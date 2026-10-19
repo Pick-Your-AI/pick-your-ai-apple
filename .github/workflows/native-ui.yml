@@ -97,13 +97,14 @@ jobs:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
         with:
           persist-credentials: false
-      - name: Verify Xcode pins and smoke runner guards
+      - name: Verify simulator toolchain, SDKs and smoke runner guards
         run: |
           set -e -o pipefail
           mkdir -p .build/native-evidence
           python3 -m unittest discover -s App/scripts/tests -p 'test_toolchain.py' -v 2>&1 | tee .build/native-evidence/pin-tests.txt
           python3 -m unittest discover -s App/scripts/tests -p 'test_simulator_smoke.py' -v 2>&1 | tee .build/native-evidence/smoke-runner-tests.txt
-          python3 App/scripts/toolchain.py --github-env "$GITHUB_ENV" 2>&1 | tee .build/native-evidence/pin-selection.txt
+          python3 -m unittest discover -s App/scripts/tests -p 'test_*sdk.py' -v 2>&1 | tee .build/native-evidence/sdk-tests.txt
+          python3 App/scripts/submission_sdk.py verify --github-env "$GITHUB_ENV" --output .build/native-evidence/sdk-selection.json 2>&1 | tee .build/native-evidence/pin-selection.txt
       - name: Verify fresh dependency and build caches
         run: |
           set -o pipefail
@@ -119,7 +120,7 @@ jobs:
         run: |
           mkdir -p .build/native-evidence
           xcodebuild -version | tee .build/native-evidence/xcode.txt
-          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') .build/native-evidence/xcode.txt
+          diff -u <(printf 'Xcode 26.3\nBuild version 17C529\n') .build/native-evidence/xcode.txt
           sw_vers | tee .build/native-evidence/macos.txt
           swift --version | tee .build/native-evidence/swift.txt
           xcrun simctl list runtimes | tee .build/native-evidence/runtimes.txt
@@ -131,6 +132,7 @@ jobs:
         run: |
           set -o pipefail
           xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/native -clonedSourcePackagesDirPath .build/native-source-packages CODE_SIGNING_ALLOWED=NO build 2>&1 | tee .build/native-evidence/build.txt
+          python3 App/scripts/submission_sdk.py inspect --sdk iphonesimulator --app .build/native/Build/Products/Debug-iphonesimulator/Planner.app --output .build/native-evidence/simulator-product.json
           cp .build/native/Build/Products/Debug-iphonesimulator/Planner.app/Info.plist .build/native-evidence/app-Info.plist
           plutil -p .build/native-evidence/app-Info.plist | tee .build/native-evidence/app-Info.txt
       - name: Launch on iPhone and iPad simulators
