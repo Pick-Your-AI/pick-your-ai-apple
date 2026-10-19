@@ -52,7 +52,7 @@ Apple describes simulator-specific tools in its [Simulator command-line guide](h
 and filtered log inspection in its [logging example](https://developer.apple.com/videos/play/wwdc2022/10119/).
 
 
-The current receiving attempt at `1f48f42f` timed out during the single plain
+The earlier receiving attempt at `1f48f42f` timed out during the single plain
 iPhone launch after installation succeeded; its bounded container lookup also
 timed out. Earlier successful destinations retain their own source/run identities.
 The runner now records best-effort runtime snapshots immediately before launch
@@ -84,6 +84,43 @@ of the original timeout, and isolation to the failing iPhone or iPad's owned UUI
 The mandatory native CI step runs them separately from the Xcode-pin guards and
 retains their complete output in `smoke-runner-tests.txt` with the native evidence.
 Actual macOS simulator execution remains required for a changed runner.
+
+**Standard Intel runner trial — 2026-10-19.** The native UI workflow selects
+GitHub's standard `macos-15-intel` hosted runner for one changed-environment
+qualification. GitHub's [public runner specification](https://docs.github.com/en/actions/reference/runners/github-hosted-runners),
+checked on this date, lists four Intel CPUs and 14 GB RAM for this label, compared
+with three M1 CPUs and 7 GB RAM for the previous `macos-15` label. This public
+repository uses a standard runner; this change adds no paid or self-hosted runner.
+
+The [Intel image inventory](https://github.com/actions/runner-images/blob/main/images/macos/macos-15-Readme.md),
+checked on the same date, lists Xcode 16.4 / 16F6 and an iOS 26.2 simulator runtime.
+An image inventory is not execution evidence. The existing verifier still requires
+that exact Xcode directory/version/build, and the smoke runner still selects the
+newest actually available iOS runtime and its first iPhone and iPad types. The
+actual image, compiler, SDK, runtime, devices and launch outputs must be recorded
+by the new job. No runtime substitution or destination shortcut is introduced.
+
+The original arm64 job at receiving checkout `1c06b3d29346037e7bb82aa3718fb17aa89d2037`
+is still [failed](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/317#issuecomment-6261553869):
+the iPhone launch returned PID 19822, while the iPad's single launch timed out at
+60 seconds after successful installation. Its owned service queries also timed
+out, and the recorded host load was high. Those observations do not establish a
+cause; the phone succeeded with a higher recorded load. All original logs, artifact
+hashes and earlier `1f48f42f` failures retain their own scope.
+
+This trial changes host architecture, image and resource capacity together, so a
+later success cannot isolate a cause or qualify the prior arm64 host. The same
+24 smoke guards, Xcode guards, model tests, four actual macOS rendering methods,
+clean-cache assertions, unsigned build, both device families, command/job
+deadlines, explicit successful-launch termination, owned cleanup and retained
+failure diagnostics remain required. There is no retry or success fallback.
+Fresh source and actual receiving checks must qualify this changed environment.
+
+The [#22 ADR](../docs/decisions/issue-22-platform.md) retains its initial
+`macos-15` package-workflow observation and the selected Xcode toolchain. This
+host choice is limited to the native UI job; package and submission-SDK workflows
+are unchanged. It does not add a product platform, physical-device observation,
+minimum-OS coverage or broader native/release acceptance.
 
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
