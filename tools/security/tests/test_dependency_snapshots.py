@@ -4,14 +4,17 @@ from __future__ import annotations
 
 import base64
 from contextlib import redirect_stderr, redirect_stdout
+from email.message import Message
+from http.client import BadStatusLine, IncompleteRead, LineTooLong
 import importlib.util
 import io
 import json
 import os
 from pathlib import Path
 import sys
+import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 from urllib.request import Request
 
 
@@ -163,6 +166,43 @@ class DependencySnapshotTests(unittest.TestCase):
                 self.assertEqual(SNAPSHOT.main(), 1)
         self.assertNotIn(marker, out.getvalue() + err.getvalue())
         self.assertEqual(out.getvalue(), "")
+
+    def test_http_protocol_failures_during_open_or_read_do_not_echo_values(self) -> None:
+        marker = "PRIVATE-SYNTHETIC-HTTP-DETAIL"
+        token = "PRIVATE-SYNTHETIC-TOKEN-DO-NOT-ECHO"
+        with tempfile.TemporaryDirectory() as temporary:
+            event_path = Path(temporary) / "event.json"
+            event_path.write_text(json.dumps(event()), encoding="utf-8")
+            env = {
+                "GITHUB_EVENT_NAME": "pull_request", "GITHUB_REPOSITORY": SNAPSHOT.REPOSITORY,
+                "GITHUB_EVENT_PATH": str(event_path), "DEPENDENCY_REVIEW_TOKEN": token,
+                "DEPENDENCY_CHANGES": json.dumps([dependency()]),
+            }
+            for phase in ("open", "read"):
+                for error in (BadStatusLine(marker), LineTooLong(marker), IncompleteRead(marker.encode())):
+                    with self.subTest(phase=phase, error=type(error).__name__):
+                        response = io.BytesIO(json.dumps([dependency()]).encode())
+                        response.status, response.headers = 200, Message()
+                        response.read1 = Mock(side_effect=error)
+                        opener = Mock()
+                        opener.open.side_effect = error if phase == "open" else None
+                        opener.open.return_value = response
+                        out, err = io.StringIO(), io.StringIO()
+                        with (
+                            patch.dict(os.environ, env, clear=True),
+                            patch.object(SNAPSHOT, "build_opener", return_value=opener),
+                            redirect_stdout(out), redirect_stderr(err),
+                        ):
+                            self.assertEqual(SNAPSHOT.main(), 1)
+                        self.assertEqual(opener.open.call_count, 1)
+                        self.assertEqual(response.read1.call_count, int(phase == "read"))
+                        self.assertEqual(out.getvalue(), "")
+                        self.assertEqual(
+                            err.getvalue(),
+                            "Dependency snapshot verification failed; no complete matching review is established.\n",
+                        )
+                        self.assertNotIn(marker, err.getvalue())
+                        self.assertNotIn(token, err.getvalue())
 
 
 if __name__ == "__main__":
