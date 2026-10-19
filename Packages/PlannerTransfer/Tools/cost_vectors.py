@@ -194,5 +194,6 @@ if __name__ == '__main__':
     if args.write:
         OUTPUT.write_text(expected)
     else:
-        assert OUTPUT.read_text() == expected, 'Cost vectors are stale; run cost_vectors.py --write'
+        if OUTPUT.read_text() != expected:
+            raise SystemExit('Cost vectors are stale; run cost_vectors.py --write')
     print(f'Cost vectors: {len(vectors())}; deterministic generation verified.')

@@ -228,5 +228,6 @@ if __name__ == '__main__':
     if args.write:
         OUTPUT.write_text(expected)
     else:
-        assert OUTPUT.read_text() == expected, 'Placement vectors are stale; run placement_vectors.py --write'
+        if OUTPUT.read_text() != expected:
+            raise SystemExit('Placement vectors are stale; run placement_vectors.py --write')
     print(f'Placement vectors: {len(vectors())}; deterministic generation verified.')
