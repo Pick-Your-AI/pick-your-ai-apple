@@ -64,6 +64,16 @@ location facts.
 | Current-state facts | Exact capture date and retained snapshot; no guessed time-to-live. |
 | New release / new snapshot | Distinct notices; neither silently replaces the retained tuple. |
 
+The #58 date extension adds a localized **Capture date (Gregorian)** label to
+`ClaimEvidenceView` through the existing `EvidenceCaptureDate` API and SwiftUI's
+locale. The original **Current-state facts as of** line retains its exact ISO
+date. Formatting uses the validated proleptic Gregorian day, independent of
+caller time zones and alternate-calendar preferences. It changes no grade,
+receipt, retained identity, expiry or correction/recheck rule. If Foundation
+cannot format the date exactly, the original recorded date remains available.
+The [date contract, primary references and focused test obligations](../../tools/evidence-rendering/README.md#captured-date-presentation-under-58)
+keep current date work separate from the historical #36 results below.
+
 The two conflict fixtures deliberately preserve different centrally supplied
 dispositions. One contains numeric disagreement with a producer-reported
 conservative failure; the other contains equally ranked opposite yes/no claims
@@ -116,7 +126,7 @@ launch/readiness, the exact selected fixture and sequence, and native static-tex
 elements. Empty or missing output fails. Bounded scrolling materializes lazy
 content and keeps later observed text in the negative outcome/grade assertions.
 
-Four methods render all 28 valid shared cases, test independent outcome/severity
+The four original methods render all 28 valid shared cases, test independent outcome/severity
 labels, exercise compact and wide widths at an accessibility text size, and cover
 the claim grades and retained-identity change events. A horizontal viewport
 exposes the requested wide report on a compact screen. This checks native
@@ -124,15 +134,21 @@ accessibility text; it is not evidence of physical-device layout, visual contras
 localization or a complete VoiceOver journey.
 
 The existing native UI job runs the original package model tests and the separate
-host's four macOS UI tests. The existing Core workflow runs the same four selected
+host's five macOS UI tests. The existing Core workflow runs the same five selected
 UI tests on its already inventoried iPhone and iPad. At this source baseline the pin is Xcode 16.4/16F6 and iOS
 18.5; each delivering run must retain its actual selected toolchain and destination
 identities. The new log gate reuses the strict XCTest parser with explicit module
 `PlannerEvidenceUITests`, keeping `PlannerCoreTests` as its unchanged default.
-It requires all four exact methods, unique starts and passes, exactly one complete
+It requires all five exact methods, unique starts and passes, exactly one complete
 matching `All tests` or `Selected tests` session and zero failures or skips. Its
 synthetic adversarial logs qualify the parser only; the older `PlannerUITests`
 module cannot qualify this host.
+The fifth method adds ten date/locale cases on one retained view identity,
+including Arabic text, calendar and time-zone overrides, the Gregorian switch,
+year limits and recovery with a required recheck. The four original native
+method bodies and all 37 frozen vectors remain unchanged. Their prior results
+do not establish execution of this additional method; the delivering date PR
+must retain its own actual configured native results.
 Independent review reproduced a false acceptance of bare class/method names in
 the initial qualifier. The corrected UI call requires an explicit module prefix;
 the regression rejects those same bare names while Core's existing default
