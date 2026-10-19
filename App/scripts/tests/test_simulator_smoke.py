@@ -404,6 +404,56 @@ class SimulatorSmokeTests(unittest.TestCase):
         self.assertIn("boot not ready", self.stdout.getvalue())
         self.assertIn("cleanup stalled", self.stderr.getvalue())
 
+    def test_cleanup_reporting_failure_preserves_primary_error_and_deletion_requirement(self):
+        for launch_fails in (False, True):
+            for failed_actions in (("shutdown",), ("delete",), ("shutdown", "delete")):
+                for sink_fails in (False, True):
+                    with self.subTest(launch_fails=launch_fails, failed_actions=failed_actions,
+                                      sink_fails=sink_fails):
+                        self.stdout, self.stderr = io.StringIO(), io.StringIO()
+                        primary = subprocess.TimeoutExpired("launch", 60)
+
+                        def effect(args, **kwargs):
+                            if launch_fails and args[2] == "launch":
+                                raise primary
+                            if args[2] in failed_actions:
+                                raise subprocess.TimeoutExpired(args, 60)
+                            return self.completed(args, **kwargs)
+
+                        def cleanup_output(*args, **kwargs):
+                            if (sink_fails and args and str(args[0]).startswith("Owned simulator ")
+                                    and " did not complete for " in str(args[0])):
+                                raise BrokenPipeError("synthetic cleanup-warning output failure")
+                            print(*args, **kwargs)
+
+                        with self.commands(effect) as mocked, \
+                                patch.object(SMOKE, "print", side_effect=cleanup_output, create=True):
+                            if launch_fails:
+                                with self.assertRaises(subprocess.TimeoutExpired) as caught:
+                                    SMOKE.main()
+                                self.assertIs(caught.exception, primary)
+                            elif "delete" in failed_actions:
+                                with self.assertRaisesRegex(ValueError,
+                                                            "Owned simulator cleanup did not delete " + CREATED_PHONE):
+                                    SMOKE.main()
+                            else:
+                                SMOKE.main()
+
+                        calls = mocked.call_args_list
+                        destinations = ((CREATED_PHONE,) if launch_fails or "delete" in failed_actions
+                                        else (CREATED_PHONE, CREATED_PAD))
+                        cleanup = [call for call in calls if call.args[0][2] in ("shutdown", "delete")]
+                        self.assertEqual([call.args[0] for call in cleanup],
+                                         [("xcrun", "simctl", action, udid)
+                                          for udid in destinations for action in ("shutdown", "delete")])
+                        self.assertTrue(all(call.kwargs["timeout"] == 60 for call in cleanup))
+                        self.assertEqual(sum(call.args[0][2] == "launch" for call in calls), len(destinations))
+                        self.assertEqual(sum(call.args[0][2] == "terminate" for call in calls),
+                                         0 if launch_fails else len(destinations))
+                        self.assertEqual([call.args[0][2] for call in calls
+                                          if call.args[0][2] in ("get_app_container", "spawn")],
+                                         ["get_app_container", "spawn"] if launch_fails else [])
+
     def test_create_timeout_never_uses_or_cleans_its_partial_id(self):
         def effect(args, **kwargs):
             if args[2] == "create":

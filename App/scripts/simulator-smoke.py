@@ -146,7 +146,12 @@ def cleanup_simulator(udid):
             if action == "delete":
                 deleted = True
         except (OSError, subprocess.SubprocessError) as error:
-            print(f"Owned simulator {action} did not complete for {udid}: {error}", file=sys.stderr, flush=True)
+            try:
+                print(f"Owned simulator {action} did not complete for {udid}: {error}", file=sys.stderr, flush=True)
+            except Exception:
+                # Warning output must not stop owned cleanup or replace the
+                # original operation failure.
+                pass
     # An already-shutdown simulator can reject shutdown. Successful deletion
     # remains the decisive receipt, matching the actual UI runner's convention.
     return deleted
