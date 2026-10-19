@@ -59,17 +59,20 @@ objects for the following dependency closure, including test targets:
 
 | Native job | Complete package trees that must match at both endpoints |
 | --- | --- |
-| `macos-core` | `PlannerCore` |
+| `macos-core` | `PlannerCore`, `PlannerUI`, `PlannerData` |
 | `macos-storage` | `PlannerData` |
 | `macos-transfer` | `PlannerTransfer`, `PlannerData`, `PlannerCore`, `PlannerCatalog` |
 | `macos-catalog-cache` | `PlannerCatalog` |
-| `native-ui` | `PlannerUI`, `PlannerData` |
+| `native-ui` | `PlannerUI`, `PlannerData`, `PlannerCore` |
 
 These are entire package trees, including sources, tests, fixtures, resources,
 tools and metadata. Transfer's durable boundary test imports PlannerData, and
-its synthetic fixture admission tests import Core and Catalog, even though its
-library target does not. PlannerUI and the app also depend on PlannerData.
-Core and Catalog declare no sibling package dependencies. A future
+its synthetic fixture admission tests import Core and Catalog. Its library target
+also links Core; Data and Catalog are test-target dependencies. PlannerUI depends
+on PlannerData and PlannerCore.
+The Core and UI jobs both execute EvidenceHarness, which explicitly links
+PlannerUI and PlannerCore and includes PlannerUI's transitive Data dependency.
+The Core package itself and Catalog declare no sibling package dependencies. A future
 test that reads another package's fixture without changing `Package.swift` still
 changes its own package tree, so that job remains allocated until explicitly
 reviewed again. Source additions, deletions and renames participate in the same
@@ -334,6 +337,47 @@ verify the complete surrounding set independently. The audit file is not itself
 a package or allowlisted document: its update, like a selector or workflow change,
 allocates every native job and must pass its own review and applicable gates.
 
+### Rendering dependency correction without a pin refresh
+
+Source inspection at accepted main
+`a3365dac377263aa2595f5d210c0918f1e29b5ab` found three missing job/package
+relationships. The Core workflow's actual iPhone/iPad rendering command and the
+UI workflow's macOS rendering command both use the checked-in
+[`EvidenceHarness` project](../../tools/evidence-rendering/EvidenceHarness.xcodeproj/project.pbxproj).
+Its local package products are PlannerUI and PlannerCore; the
+[`PlannerUI` manifest](../../Packages/PlannerUI/Package.swift) additionally links
+PlannerData. The Core scope therefore needs UI and Data as well as Core, and
+the UI scope needs Core as well as UI and Data. These inputs are required by
+existing commands, even when the primary package's own test command is unchanged.
+
+The current audit's older manifest, surrounding-input and package pins already
+retain native allocation on current source. No skipped real workflow is claimed.
+The unsafe case is a future refresh that updates object hashes but retains the
+old incomplete job matrix. A new real-Git regression, run against the unchanged
+selector at `a3365dac`, reproduced all three false skips: UI and Data changes
+skipped `macos-core`, and a Core change skipped `native-ui`.
+
+The correction conservatively expands those two required closures. The audit
+adds the same historical Core, Data and UI tree objects already pinned in its
+other job entries. Its source revision `cd098e8e`, all existing object pins,
+dependency entries and surrounding-input entries remain unchanged. **This is
+not a pin refresh and does not authorize new skips for current source.** A later
+refresh still needs the complete independent input review described above.
+
+The two new methods cover rejection of all three legacy closures and six added
+or deleted dependency-resource cases. The independent 25-combination matrix and
+existing Transfer-resource expectations now include the rendering dependencies;
+unrelated Catalog and Storage cases still verify legitimate selective allocation.
+These are Python tests in disposable Git repositories, with no Swift, Xcode,
+simulator or app execution. The corrected complete suite passed all 36 methods
+with zero failures, errors or skips in 8.627 seconds on Linux CPython 3.12.14.
+The original single-method reproduction reported three assertion failures in
+0.273 seconds; the later pass does not relabel that failure. Workflow bodies,
+action pins, contexts, runtime
+assertions, timeouts, permissions, concurrency and current runs are unchanged.
+The correction itself requires all applicable hosted/native gates and independent
+review before ordinary delivery. Whole #30 remains open.
+
 ## Preserved checks and evidence
 
 All existing native job names, steps, commands, assertions, action pins, permissions,
@@ -344,7 +388,7 @@ reported as an executed Swift test, SDK build or device journey. No required-che
 setting or repository protection is changed. Future branch-protection setup must
 include meaningful preparation/scope checks and retain the native job names.
 
-The [34 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
+The [36 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
 PR test merges and main comparisons, a 3,006-file mixed change, source deletion and
 rename, unknown Markdown/fixtures, executable files, indirect symlink/submodule
 inputs, newline paths, invalid identities, divergent history, empty changes and the
@@ -384,7 +428,7 @@ with `--no-detach`, and zero detach regions. Fresh hosted scope results remain
 required for delivery.
 
 That 15-method lifetime receipt belongs to the linked editor checkpoint. The
-selector's current 34-method suite shares the same corrected setup across its original
+selector's current 36-method suite shares the same corrected setup across its original
 and audited-package classes; no assertion or cleanup error is suppressed.
 
 This change schedules future runs. It neither cancels existing main/current-head
