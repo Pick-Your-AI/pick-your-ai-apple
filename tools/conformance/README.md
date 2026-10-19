@@ -155,6 +155,16 @@ trigger that test's expected assertion, and complete with a matching failed
 XCTest suite summary. A class or method that only contains the expected name
 does not qualify. Duplicate results, unexpected failures, truncated output,
 compile errors, crashes, timeouts and changed anchors do not qualify.
+Each invocation keeps its configured deadline (`--timeout`, default 300 seconds).
+On POSIX hosts, it starts a new session and terminates only that invocation's
+process group after a wait timeout, then reaps the driver before propagating the
+failure. An interrupted wait applies the same cleanup while the driver remains
+unreaped; an already reaped PID is never reused for signaling. Compiler or test children that retain the group
+cannot continue writing after a timeout. A child that deliberately starts another
+session is outside this group boundary. Normal completions preserve their actual
+exit status and combined output; no retry is added. Non-POSIX hosts retain
+direct-child termination without a process-group claim. The implementation uses
+Python's documented [new-session process creation and wait semantics](https://docs.python.org/3.12/library/subprocess.html#subprocess.Popen).
 The source package is never changed. The selected package path must pass native
 directory lookup before normalization or output cleanup. A regular-file or
 missing prefix before `..`, including one inside a symlink target, cannot be
@@ -228,6 +238,18 @@ synthetic transcript producer; they do not execute Swift. The identity-mismatch
 test models the changed resolution observation without claiming a concurrent
 filesystem reproduction. All prior 22 methods and the three mutation anchors
 remain intact. Actual current-source macOS qualification remains required.
+
+The process-group correction was reproduced on accepted
+`677be39da2472a859c204f4e6db0507e30a38559` using an owned synthetic Swift driver
+that starts a compiler child. At each of the four invocation phases, the prior
+runner timed out and reaped the driver while the child kept its sole FIFO writer
+open. The corrected regression observes FIFO EOF, confirms driver reaping and
+preserves an unrelated running process. It also checks retained partial logs,
+absence of later-phase logs and the success receipt, and unchanged package bytes.
+Another actual subprocess control preserves exit codes 0 and 7, argument order,
+combined stdout/stderr and replacement decoding of invalid output bytes. These
+two added methods extend the existing 25-method suite; they execute only bounded
+Python fixtures and do not establish new Swift, macOS or simulator results.
 
 Supported historical migration, rollback, approved executable policy, actual
 service parity, simulator execution, device results and receiving acceptance are
