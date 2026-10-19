@@ -54,7 +54,7 @@ jobs:
       - name: Select the pinned validation Python
         uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
         with:
-          python-version: '3.12.14'
+          python-version: '3.12.10'
       - name: Prepare an isolated canonical validation environment
         run: |
           set -euo pipefail
@@ -62,7 +62,7 @@ jobs:
           git -C .maintenance-research show -s --format='commit %H%ntree %T%nparents %P' HEAD > "$MAINTENANCE_EVIDENCE/research-checkout.txt"
           git -C .maintenance-research archive --format=tar HEAD contracts/v1/schemas requirements-research.txt > "$MAINTENANCE_EVIDENCE/research-inputs.tar"
           python --version | tee "$MAINTENANCE_EVIDENCE/python.txt"
-          python -c 'import sys; sys.version_info[:3] == (3, 12, 14) or sys.exit("Expected Python 3.12.14")'
+          python -c 'import sys; sys.version_info[:3] == (3, 12, 10) or sys.exit("Expected Python 3.12.10")'
           maintenance_environment=$(mktemp -d "$RUNNER_TEMP/apple-maintenance-python.XXXXXX")
           python -m venv "$maintenance_environment"
           maintenance_python="$maintenance_environment/bin/python"

@@ -47,7 +47,7 @@ stderr, commands, process outcomes, executable/source/input hashes and qualified
 observations are retained there. The host unit tests challenge receipt false
 positives with synthetic specimens; they are not Swift or native execution.
 The dedicated `catalog-maintenance.yml` workflow uses normal pull-request and
-main-push events, macOS 15, Xcode 16.4/build 16F6 with Swift 6, and Python 3.12.14.
+main-push events, macOS 15, Xcode 16.4/build 16F6 with Swift 6, and Python 3.12.10.
 It checks out immutable research commit `9db556b7fca485c8eb4396f9ee2ceeacdc119d79`
 for the canonical schemas, registry and seven pinned validation dependencies.
 It builds this executable with two jobs and explicitly runs all six original
