@@ -16,6 +16,49 @@ The workflow records the actual compiler/SDK/runtime and runs model tests, an un
 simulator build, and iPhone/iPad launch smoke checks. It contains no signing secrets.
 The smoke script is not an accessibility or complete journey test.
 
+The [launch-smoke runner](scripts/simulator-smoke.py) retains its existing selection:
+the newest available iOS runtime and the first available iPhone and iPad types in
+that runtime's inventory. Its inventory/create/boot/launch/terminate commands have
+60-second deadlines. Installation has a dedicated three-minute budget, and waiting
+for boot readiness has a separate five-minute deadline. Each command, deadline,
+exit code and captured output is printed into the workflow's retained `launch.txt`,
+including partial stdout/stderr after a timeout. Each operation is attempted once;
+a timed-out or failed installation or launch command still fails the smoke gate.
+
+Each destination is a newly created simulator with a newly installed app. The
+runner uses one plain `simctl launch` and does not request pre-launch termination
+of an earlier app process. Successful launch must still be followed by the
+explicit `simctl terminate` command before owned shutdown and deletion. This
+removes an unnecessary pre-launch request; it does not retry a failed launch,
+change its 60-second deadline or establish a simulator failure's root cause.
+
+Only a successfully returned, parseable UUID absent from the original inventory is
+eligible for use or cleanup. Commands preserve that returned ID's original spelling.
+Each verified creation is protected by `finally`: shutdown and delete are separately
+bounded to 60 seconds, and delete is attempted even if shutdown fails or times out.
+Successful deletion is required; an already-shutdown result alone is not a cleanup
+failure. If creation times out, even a partial UUID does not authorize cleanup, and
+the retained command/name/output is the evidence for later inspection. The runner
+never shuts down or deletes a pre-existing device, guesses an ID, or erases a device.
+After a failed launch, two read-only diagnostic commands target that same verified
+owned UUID before cleanup: the installed app-bundle container query and the last
+two minutes of simulator logs filtered to the Planner process or its exact bundle
+identifier. Each has its own 15-second limit. Diagnostic output or failure is
+retained in `launch.txt`; neither can turn the failed launch into a pass, retry it,
+or replace its original error. The 60-second launch limit and separate cleanup
+limits are unchanged. The outer job deadline can still interrupt diagnostics or
+cleanup. These are observations for diagnosis, not evidence of a launch cause.
+Apple describes simulator-specific tools in its [Simulator command-line guide](https://developer.apple.com/videos/play/wwdc2019/418/)
+and filtered log inspection in its [logging example](https://developer.apple.com/videos/play/wwdc2022/10119/).
+
+Seventeen portable regressions cover these deadlines, partial output, failed install/launch,
+ownership and cleanup boundaries; one executes a real bounded synthetic subprocess.
+Launch-failure cases also cover diagnostic command failures, exact preservation
+of the original timeout, and isolation to the failing iPhone or iPad's owned UUID.
+The mandatory native CI step runs them separately from the Xcode-pin guards and
+retains their complete output in `smoke-runner-tests.txt` with the native evidence.
+Actual macOS simulator execution remains required for a changed runner.
+
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
 | #26 pinned clean checkout; #30 native CI | Checked-in project/local packages, explicit Xcode pin, actual CLI missing-pin regression and isolated-cache workflow | Exact-head hosted evidence and receiving review; #30 untrusted-PR and release-secret gates remain separate |
