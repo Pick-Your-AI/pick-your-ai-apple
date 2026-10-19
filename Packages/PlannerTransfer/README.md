@@ -8,6 +8,7 @@ This portable Swift 6 package implements part of Apple [#32](https://github.com/
 - `QualityEvaluationRun.decode(_:)` validates a frozen-v1 quality record and retains the supplied build/suite identities, timestamps, recorded status and measurements. Typed views preserve exact supported decimals, optional absence and array order. This structural boundary performs no evaluation, evidence authentication or current-build binding.
 - `CostEstimateRecord.decode(_:)` validates a frozen-v1 cost record and preserves exact decimal strings, build/pricebook identity, ordered items and reported coverage. The [cost boundary](COST_ESTIMATE.md) performs no pricing, arithmetic correction, rate authentication or current-build qualification.
 - `ResourceEstimate.decode(_:)` validates a frozen-v1 resource estimate artifact while preserving its exact decimal strings, ordered declarations and optional source absence. Parsing performs no capacity evaluation, dimensional qualification or current-build binding.
+- `DependencyGraph.decode(_:)` preserves all directed frozen-v1 edges with typed kind, relationship and activation labels. Its [boundary and conformance record](DEPENDENCY_GRAPH.md) distinguishes structural decoding from executable graph or placement policy.
 - `BuildTransfer.snapshot(fromDraftJSON:)` validates a complete frozen-v1 BuildSnapshot and returns an immutable value. Missing fields and fewer than two selections fail; no defaults, locks or synthetic values are inserted. Keep editor drafts in PlannerData even when this transition fails.
 - `BuildTransfer.preview(_:)` accepts a bare snapshot or the existing web `pickyour.ai/build-export` version-1 envelope. Envelope provenance is untrusted metadata, not a verified catalog activation. `usesSyntheticData` is nil for bare imports; do not interpret that as production evidence.
 - `ImportPreview.fork(localOwner:timestamp:)` explicitly creates a new UUID-based build identity, revision 1 and draft lifecycle. Source owner is replaced by the caller's local identity. Every lock, selection and link is retained. This API cannot overwrite an existing record; the integration must insert the returned value as a new draft only after user confirmation.
@@ -42,7 +43,7 @@ Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. D
 
 ## Pinned inputs and validation
 
-`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/quality-evaluation-run/cost-estimate/resource-estimate schemas and synthetic build/catalog/quality/cost/resource-estimate fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared build corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. The additional CatalogItem, QualityEvaluationRun and ResourceEstimate corpora are described below; the CostEstimateRecord corpus is described in the [cost boundary](COST_ESTIMATE.md). Swift and Python Draft202012Validator with FormatChecker replay the same concrete payloads. Synthetic fixtures are not real catalog or installed-application evidence.
+`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/quality-evaluation-run/cost-estimate/resource-estimate/dependency-graph schemas and synthetic build/catalog/quality/cost/resource-estimate/graph fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared build corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. The additional CatalogItem, QualityEvaluationRun and ResourceEstimate corpora are described below; the CostEstimateRecord corpus is described in the [cost boundary](COST_ESTIMATE.md). Swift and Python Draft202012Validator with FormatChecker replay the same concrete payloads. Synthetic fixtures are not real catalog or installed-application evidence.
 
 Run:
 
@@ -315,8 +316,9 @@ This advances #32 transport coverage and #49 quality-record preparation. It does
 not establish qualified evaluation execution, exact-current-workload evidence,
 resource-estimate binding, live service/fault handling, UI delivery or receiving
 acceptance. The existing #49 prerequisites (Apple #44, Apple #34 and Android #79)
-and its remaining criteria remain open. The separate #32 all-kind boundary
-disposition is recorded above. Frozen contracts, service ownership and other active
+and the remaining #49 criteria remain open. The [accepted #32 conformance record](#32-receiving-conformance-record)
+already governs its completed criteria; this separate quality artifact adds no new
+#32 closure requirement. Frozen contracts, service ownership and other active
 artifact-boundary implementations are unchanged.
 
 ## External resource estimate artifact boundary
