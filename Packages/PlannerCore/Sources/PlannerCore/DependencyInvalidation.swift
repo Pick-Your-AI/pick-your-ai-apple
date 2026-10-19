@@ -14,6 +14,7 @@ public protocol DependencyParticipantKind: Hashable, Sendable {
 public enum DependencyInvalidation {
     public enum Mode: String, CaseIterable, Sendable {
         case api
+        case managed
         case selfHosted = "self_hosted"
         case hybrid
     }
@@ -114,7 +115,10 @@ public enum DependencyInvalidation {
         switch edge.activation {
         case .always:
             return .active
-        case .selfHosted, .nonAPI:
+        case .selfHosted:
+            guard let mode = context.mode else { return .unknown }
+            return state(mode == .selfHosted || mode == .hybrid)
+        case .nonAPI:
             guard let mode = context.mode else { return .unknown }
             return state(mode != .api)
         case .ragEnabled:

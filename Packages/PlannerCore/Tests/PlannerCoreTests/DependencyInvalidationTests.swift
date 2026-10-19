@@ -27,14 +27,40 @@ final class DependencyInvalidationTests: XCTestCase {
     }
 
     func testServingModeActivationUsesExplicitUnknownAndHybrid() {
-        let modes: [DependencyInvalidation.Mode?] = [nil, .api, .selfHosted, .hybrid]
-        let expected: [Activity] = [.unknown, .inactive, .active, .active]
-        for activation in [DependencyInvalidation.Activation.selfHosted, .nonAPI] {
+        let modes: [DependencyInvalidation.Mode?] = [nil, .api, .managed, .selfHosted, .hybrid]
+        let cases: [(DependencyInvalidation.Activation, [Activity])] = [
+            (.selfHosted, [.unknown, .inactive, .inactive, .active, .active]),
+            (.nonAPI, [.unknown, .inactive, .active, .active, .active])
+        ]
+        for (activation, expected) in cases {
             for (mode, result) in zip(modes, expected) {
                 XCTAssertEqual(DependencyInvalidation.activity(of: edge(activation), in: context(mode)), result)
             }
         }
         XCTAssertEqual(DependencyInvalidation.activity(of: edge(.always), in: context(nil, production: nil)), .active)
+        XCTAssertEqual(DependencyInvalidation.Mode(rawValue: "managed"), .managed)
+    }
+
+    func testManagedTransitionsKeepNonAPIAndLocalServingParticipationDistinct() {
+        let edges = [edge(.selfHosted, .accelerator, .model), edge(.nonAPI, .contextPolicy, .model)]
+        let selections = [selection(.deploymentMode), selection(.model), selection(.contextPolicy), selection(.accelerator)]
+        let api = context(.api, selections: selections)
+        let managed = context(.managed, selections: selections)
+        let local = context(.selfHosted, selections: selections)
+        for (before, after) in [(api, managed), (managed, api)] {
+            let result = DependencyInvalidation.affectedParticipants(edges: edges,
+                changedKinds: [.deploymentMode], before: before, after: after)
+            XCTAssertEqual(result.participatingEdges.map(\.edgeIndex), [1])
+            XCTAssertEqual(result.affectedKinds, [.deploymentMode, .model, .contextPolicy])
+            XCTAssertFalse(result.affectedSelectionIDs.contains("selection_accelerator"))
+        }
+        for (before, after) in [(managed, local), (local, managed)] {
+            let result = DependencyInvalidation.affectedParticipants(edges: edges,
+                changedKinds: [.deploymentMode], before: before, after: after)
+            XCTAssertEqual(result.participatingEdges.map(\.edgeIndex), [0])
+            XCTAssertEqual(result.affectedKinds, [.deploymentMode, .model, .accelerator])
+            XCTAssertFalse(result.affectedSelectionIDs.contains("selection_contextPolicy"))
+        }
     }
 
     func testProductionIsUnknownWithoutAnExplicitDecision() {

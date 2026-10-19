@@ -57,6 +57,7 @@ final class DependencyParticipantTests: XCTestCase {
         let graph = try graphWithEdges(labels.enumerated().map { row("dep.synthetic.\($0.offset)", $0.element.rawValue) })
         let before = context()
         let cases: [(Context, Set<DependencyActivation>)] = [
+            (context(.managed), [.nonAPI]),
             (context(.selfHosted), [.selfHosted, .nonAPI]),
             (context(.hybrid), [.selfHosted, .nonAPI]),
             (context(kinds: [.ragPipeline]), [.ragEnabled]),

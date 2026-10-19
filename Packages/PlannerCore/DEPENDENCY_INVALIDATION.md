@@ -26,14 +26,17 @@ needed by the predicates; Transfer's existing `CatalogKind` supplies them.
 | --- | --- | --- |
 | `always` | Always | Never |
 | `self_hosted` | Mode is self-hosted or hybrid | Mode is unresolved |
-| `non_api` | Mode is self-hosted or hybrid | Mode is unresolved |
+| `non_api` | Mode is managed, self-hosted or hybrid | Mode is unresolved |
 | `rag_enabled` | An enabled RAG pipeline exists | Never for a complete supplied selection projection |
 | `agents_enabled` | An enabled agent framework exists | Never for a complete supplied selection projection |
 | `fine_tuning_enabled` | Any enabled training framework, training compute, training dataset or fine-tuned model exists | Never for a complete supplied selection projection |
 | `if_selected` | Both endpoint kinds have enabled selections | Never for a complete supplied selection projection |
 | `production_only` | The caller supplies `production: true` | Production is unresolved |
 
-Otherwise the condition is inactive. Removing one T5 kind does not disable
+The four representable modes match the frozen catalog's `spec_deployment_mode`
+enum: API, managed, self-hosted and hybrid. Managed is non-API, but does not enable
+the local-serving `self_hosted` predicate. Otherwise the condition is inactive.
+Removing one T5 kind does not disable
 fine-tuning while another enabled T5 kind remains. Missing mode or production is
 `unknown`, never guessed from catalog identifiers, lifecycle labels or a default
 API decision. An incomplete selection list is not a complete context: callers
@@ -105,8 +108,9 @@ edits even if activation is unchanged. A pin/revision change still invalidates
 the whole analysis identity; this helper cannot authorize reuse of unaffected
 fragments. Existing `AnalysisStore` admission and generation behavior is unchanged.
 
-The source adds sixteen Core XCTest methods and five Transfer methods. They cover
-mode-only transitions on the actual frozen edge, all activation labels, all
+The source adds seventeen Core XCTest methods and five Transfer methods. They cover
+mode-only transitions on the actual frozen edge, distinct managed/local-serving
+participation, all activation labels, all
 unknown/known mode pairs, production transitions, optional disable/removal, T5
 membership, immutable old/new IDs, byte-exact identity deduplication, duplicate/
 self/cyclic rows, finite direct behavior, all four retained relationships and
