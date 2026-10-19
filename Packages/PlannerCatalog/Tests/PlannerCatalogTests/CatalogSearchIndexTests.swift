@@ -32,6 +32,37 @@ final class CatalogSearchIndexTests: XCTestCase {
         let conflict = CatalogSearchEntry(id: "a", version: "1", kind: "accelerator", title: "Other kind")
         do { try await index.install(identity: identity(2), entries: [first, conflict]); XCTFail("Duplicate id/version accepted") }
         catch { XCTAssertEqual(error as? CatalogSearchError, .invalidSnapshot) }
+
+        let composed = CatalogSearchEntry(id: "cat.model.fixture", version: "release.caf\u{00e9}",
+                                          kind: "model", title: "FICTIONAL Model")
+        let decomposed = CatalogSearchEntry(id: "cat.model.fixture", version: "release.cafe\u{0301}",
+                                            kind: "model", title: "FICTIONAL Model")
+        let expectedVersions = [decomposed, composed].map { Array($0.version.utf8) }
+        for sort in [CatalogSearchSort.title, .kind] {
+            let unicodeIndex = CatalogSearchIndex()
+            try await unicodeIndex.install(identity: identity(), entries: [composed, decomposed])
+            let page = try await unicodeIndex.search(query: " FICTIONAL MODEL ", kinds: ["model"], limit: 1, sort: sort)
+            XCTAssertEqual(page.totalCount, 2)
+            XCTAssertEqual(page.entries.map { Array($0.version.utf8) }, [expectedVersions[0]])
+
+            // Reversing the exact inputs must preserve both the order and cursor.
+            try await unicodeIndex.install(identity: identity(), entries: [decomposed, composed])
+            let next = try await unicodeIndex.search(query: "fictional model", kinds: ["model"], limit: 1,
+                                                    sort: sort, after: XCTUnwrap(page.next))
+            XCTAssertEqual(next.entries.map { Array($0.version.utf8) }, [expectedVersions[1]])
+            XCTAssertEqual(next.totalCount, 2)
+            XCTAssertNil(next.next)
+
+            let duplicate = CatalogSearchEntry(id: composed.id, version: composed.version,
+                                               kind: "accelerator", title: "Different metadata")
+            do {
+                try await unicodeIndex.install(identity: identity(2), entries: [composed, duplicate])
+                XCTFail("Exact duplicate pin accepted after distinct Unicode versions")
+            } catch { XCTAssertEqual(error as? CatalogSearchError, .invalidSnapshot) }
+            let retained = try await unicodeIndex.search(sort: sort)
+            XCTAssertEqual(retained.identity.revision, 1)
+            XCTAssertEqual(retained.entries.map { Array($0.version.utf8) }, expectedVersions)
+        }
     }
     func testRefreshBetweenPagesRejectsOldCursorAndRestartsCleanly() async throws {
         let index = CatalogSearchIndex()
@@ -73,6 +104,43 @@ final class CatalogSearchIndexTests: XCTestCase {
         try await index.install(identity: identity(), entries: Array(values.reversed()))
         let second = try await index.search(limit: 1, after: XCTUnwrap(first.next))
         XCTAssertEqual(second.entries.map(\.id), ["b"])
+
+        let original = CatalogSearchEntry(id: "cat.model.fixture", version: "release.caf\u{00e9}",
+                                         kind: "model", title: "FICTIONAL Caf\u{00e9} Model")
+        let changedVersion = CatalogSearchEntry(id: original.id, version: "release.cafe\u{0301}",
+                                               kind: original.kind, title: original.title)
+        let changedTitle = CatalogSearchEntry(id: original.id, version: original.version,
+                                             kind: original.kind, title: "FICTIONAL Cafe\u{0301} Model")
+        let other = entry("cat.other.fixture", "Zeta")
+        for changed in [changedVersion, changedTitle] {
+            let unicodeIndex = CatalogSearchIndex()
+            try await unicodeIndex.install(identity: identity(), entries: [original, other])
+            let page = try await unicodeIndex.search(limit: 1)
+            do {
+                try await unicodeIndex.install(identity: identity(), entries: [changed, other])
+                XCTFail("Changed decoded entry bytes accepted as an identical release")
+            } catch { XCTAssertEqual(error as? CatalogSearchError, .immutableIdentityConflict) }
+            let retained = try await unicodeIndex.search(query: " CAFE ")
+            XCTAssertEqual(retained.entries.map { Array($0.version.utf8) }, [Array(original.version.utf8)])
+            XCTAssertEqual(retained.entries.map { Array($0.title.utf8) }, [Array(original.title.utf8)])
+
+            let exactCopy = CatalogSearchEntry(id: original.id, version: original.version,
+                                              kind: original.kind, title: original.title)
+            try await unicodeIndex.install(identity: identity(), entries: [other, exactCopy])
+            let next = try await unicodeIndex.search(limit: 1, after: XCTUnwrap(page.next))
+            XCTAssertEqual(next.entries.map(\.id), [other.id])
+            XCTAssertNil(next.next)
+
+            try await unicodeIndex.install(identity: identity(2), entries: [changed, other])
+            do {
+                _ = try await unicodeIndex.search(limit: 1, after: XCTUnwrap(page.next))
+                XCTFail("Old cursor survived the changed release")
+            } catch { XCTAssertEqual(error as? CatalogSearchError, .stalePage) }
+            let recovered = try await unicodeIndex.search(query: " CAFE ")
+            XCTAssertEqual(recovered.identity.revision, 2)
+            XCTAssertEqual(recovered.entries.map { Array($0.version.utf8) }, [Array(changed.version.utf8)])
+            XCTAssertEqual(recovered.entries.map { Array($0.title.utf8) }, [Array(changed.title.utf8)])
+        }
     }
     func testMissingSnapshotClearAndForeignCursor() async throws {
         let index = CatalogSearchIndex(), other = CatalogSearchIndex()

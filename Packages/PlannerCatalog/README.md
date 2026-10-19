@@ -151,3 +151,29 @@ execution remains required on the exact candidate. This advances the local sorti
 [Apple #59](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/59). It does not
 provide the catalog screen, saved filters, unknown-spec sorting policy, network
 page failure/retry, accessibility journey or whole-issue receiving acceptance.
+
+### Exact version pins and immutable display text
+
+The [frozen catalog item's `version`](../PlannerTransfer/Sources/PlannerTransfer/Resources/catalog-item.schema.json)
+is a nonempty string; it is not restricted to ASCII or normalized Unicode.
+`CatalogSearchEntry` compares its supplied fields
+by their original UTF-8 sequences, and duplicate `(id, version)` keys use those
+same exact sequences. Composed and decomposed version strings can therefore
+remain separate candidates. All entry bounds are checked before allocating the
+bounded duplicate-key byte arrays.
+
+Changing a version or supplied title under the same installed artifact identity
+throws `immutableIdentityConflict` and retains the prior snapshot and cursors.
+Ordinary text ordering remains unchanged; canonical-equality ties use the original
+bytes in both sort modes, so input reordering cannot move a version between pages.
+Case/diacritic folding remains part of search and display-title ordering. The index
+does not normalize version pins or assign a semantic version order.
+
+Four focused regressions cover distinct Unicode versions in both paged sort modes,
+identical reinstall with reversed input, both directions of immutable version and
+title changes, retained pages after rejection, new-revision recovery, and exact
+duplicate rejection with folded search preserved. Run the complete local search
+cohort with `swift test --package-path Packages/PlannerCatalog --filter CatalogSearch`.
+The configured native catalog and SDK gates must qualify the actual receiving
+source; local model tests do not establish catalog UI, live service, accessibility,
+physical-device or whole-issue #59 acceptance.

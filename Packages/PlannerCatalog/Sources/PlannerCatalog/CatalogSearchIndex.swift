@@ -10,6 +10,12 @@ public struct CatalogSearchEntry: Equatable, Sendable {
     public init(id: String, version: String, kind: String, title: String) {
         self.id = id; self.version = version; self.kind = kind; self.title = title
     }
+    public static func == (lhs: CatalogSearchEntry, rhs: CatalogSearchEntry) -> Bool {
+        lhs.id.utf8.elementsEqual(rhs.id.utf8) &&
+        lhs.version.utf8.elementsEqual(rhs.version.utf8) &&
+        lhs.kind.utf8.elementsEqual(rhs.kind.utf8) &&
+        lhs.title.utf8.elementsEqual(rhs.title.utf8)
+    }
 }
 
 public enum CatalogSearchError: Error, Equatable, Sendable {
@@ -45,9 +51,11 @@ public struct CatalogSearchPage: Sendable {
 /// network, cache promotion, persistence, evidence grading, or compatibility logic.
 public actor CatalogSearchIndex {
     private struct EntryKey: Hashable {
-        let id: String
-        let version: String
-        init(_ entry: CatalogSearchEntry) { id = entry.id; version = entry.version }
+        let id: [UInt8]
+        let version: [UInt8]
+        init(_ entry: CatalogSearchEntry) {
+            id = Array(entry.id.utf8); version = Array(entry.version.utf8)
+        }
     }
     private struct IndexedEntry: Sendable {
         let entry: CatalogSearchEntry
@@ -63,21 +71,23 @@ public actor CatalogSearchIndex {
         guard identity.schemaVersion == "1.0.0", identity.revision >= 1,
               !identity.id.isEmpty, identity.id.utf8.count <= 256,
               !identity.capturedAt.isEmpty, identity.capturedAt.utf8.count <= 128,
-              entries.count <= 10_000, Set(entries.map(EntryKey.init)).count == entries.count,
+              entries.count <= 10_000,
               entries.allSatisfy({ entry in
                   !entry.id.isEmpty && entry.id.utf8.count <= 256 &&
                   !entry.version.isEmpty && entry.version.utf8.count <= 128 &&
                   !entry.kind.isEmpty && entry.kind.utf8.count <= 64 &&
                   !entry.title.isEmpty && entry.title.utf8.count <= 1_024
-              }) else { throw CatalogSearchError.invalidSnapshot }
+              }), Set(entries.map(EntryKey.init)).count == entries.count else {
+            throw CatalogSearchError.invalidSnapshot
+        }
         let indexed = entries.map { entry in
             IndexedEntry(entry: entry, search: Self.normalize(entry.title + " " + entry.id + " " + entry.kind),
                          title: Self.normalize(entry.title))
         }.sorted { a, b in
             if a.title != b.title { return a.title < b.title }
-            if a.entry.kind != b.entry.kind { return a.entry.kind < b.entry.kind }
-            if a.entry.id != b.entry.id { return a.entry.id < b.entry.id }
-            return a.entry.version < b.entry.version
+            if !a.entry.kind.utf8.elementsEqual(b.entry.kind.utf8) { return Self.textPrecedes(a.entry.kind, b.entry.kind) }
+            if !a.entry.id.utf8.elementsEqual(b.entry.id.utf8) { return Self.textPrecedes(a.entry.id, b.entry.id) }
+            return Self.textPrecedes(a.entry.version, b.entry.version)
         }
         if let current = self.identity, current.id == identity.id, current.revision == identity.revision {
             guard current == identity, self.entries.map(\.entry) == indexed.map(\.entry) else {
@@ -118,10 +128,10 @@ public actor CatalogSearchIndex {
             matching = filtered // Retain the original folded-title/kind/ID/version order.
         case .kind:
             matching = filtered.sorted { a, b in
-                if a.entry.kind != b.entry.kind { return a.entry.kind < b.entry.kind }
+                if !a.entry.kind.utf8.elementsEqual(b.entry.kind.utf8) { return Self.textPrecedes(a.entry.kind, b.entry.kind) }
                 if a.title != b.title { return a.title < b.title }
-                if a.entry.id != b.entry.id { return a.entry.id < b.entry.id }
-                return a.entry.version < b.entry.version
+                if !a.entry.id.utf8.elementsEqual(b.entry.id.utf8) { return Self.textPrecedes(a.entry.id, b.entry.id) }
+                return Self.textPrecedes(a.entry.version, b.entry.version)
             }
         }
         let start = token?.offset ?? 0
@@ -130,6 +140,12 @@ public actor CatalogSearchIndex {
             query: query, kinds: kinds, limit: limit, sort: sort) : nil
         return CatalogSearchPage(identity: identity, entries: matching[start..<end].map(\.entry),
                                  totalCount: matching.count, next: next)
+    }
+
+    private static func textPrecedes(_ lhs: String, _ rhs: String) -> Bool {
+        // Preserve the existing text order; distinguish canonically equal pins
+        // with their original bytes so reversing input cannot reorder a page.
+        lhs == rhs ? lhs.utf8.lexicographicallyPrecedes(rhs.utf8) : lhs < rhs
     }
 
     private static func normalize(_ value: String) -> String {
