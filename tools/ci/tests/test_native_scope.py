@@ -163,12 +163,12 @@ class AuditedPackageScopeTests(unittest.TestCase):
     commit = NativeScopeTests.commit
     packages = ("PlannerCore", "PlannerData", "PlannerTransfer", "PlannerCatalog", "PlannerUI")
     # Independent expected matrix from package tests and the two jobs' actual
-    # EvidenceHarness commands, including PlannerUI's Core/Data dependencies.
+    # Evidence/Cost harnesses and the App, including all four PlannerUI dependencies.
     affected = {
         "PlannerCore": {"macos-core", "macos-transfer", "native-ui"},
         "PlannerData": {"macos-core", "macos-storage", "macos-transfer", "native-ui"},
-        "PlannerTransfer": {"macos-transfer"},
-        "PlannerCatalog": {"macos-catalog-cache", "macos-transfer"},
+        "PlannerTransfer": {"macos-core", "macos-transfer", "native-ui"},
+        "PlannerCatalog": {"macos-core", "macos-catalog-cache", "macos-transfer", "native-ui"},
         "PlannerUI": {"macos-core", "native-ui"},
     }
 
@@ -264,8 +264,7 @@ class AuditedPackageScopeTests(unittest.TestCase):
                     self.commit()
                     self.assertTrue(self.decide("macos-transfer").native_required)
                     self.assertFalse(self.decide("macos-storage").native_required)
-                    self.assertEqual(self.decide("native-ui").native_required,
-                                     package == "PlannerCore")
+                    self.assertTrue(self.decide("native-ui").native_required)
 
     def test_legacy_rendering_closures_with_refreshed_pins_are_rejected(self):
         # Current workflows render the UI through EvidenceHarness. Refreshing
@@ -300,6 +299,40 @@ class AuditedPackageScopeTests(unittest.TestCase):
                     self.commit()
                     self.assertTrue(self.decide(job).native_required)
                     self.assertFalse(self.decide("macos-catalog-cache").native_required)
+
+    def test_legacy_imported_build_closures_with_refreshed_pins_are_rejected(self):
+        # The selected real PlannerUI manifest now links Catalog and Transfer.
+        # Neither a renderer nor the App may retain the earlier three-tree closure.
+        original = json.dumps(self.audit)
+        for job in ("macos-core", "native-ui"):
+            for package in ("PlannerCatalog", "PlannerTransfer"):
+                with self.subTest(job=job, package=package):
+                    self.command("reset", "--hard", self.initial)
+                    self.audit = json.loads(original)
+                    for affected_job in ("macos-core", "native-ui"):
+                        self.audit["jobs"][affected_job].pop("Packages/PlannerCatalog", None)
+                        self.audit["jobs"][affected_job].pop("Packages/PlannerTransfer", None)
+                    self.save_audit()
+                    refreshed = self.commit()
+                    self.change_package(package)
+                    self.assertTrue(self.decide(job, refreshed).native_required)
+
+    def test_imported_build_dependencies_include_added_and_deleted_resources(self):
+        for job in ("macos-core", "native-ui"):
+            for package in ("PlannerCatalog", "PlannerTransfer"):
+                for action in ("add", "delete"):
+                    with self.subTest(job=job, package=package, action=action):
+                        self.command("reset", "--hard", self.initial)
+                        if action == "add":
+                            self.write(f"Packages/{package}/Tests/Fixtures/imported-build.json",
+                                       '{"synthetic": "imported-build dependency"}\n')
+                        else:
+                            (self.repo / f"Packages/{package}/Tests/Fixtures/value.json").unlink()
+                        self.commit()
+                        self.assertTrue(self.decide(job).native_required)
+                        self.assertFalse(self.decide("macos-storage").native_required)
+                        self.assertEqual(self.decide("macos-catalog-cache").native_required,
+                                         package == "PlannerCatalog")
 
     def test_added_test_resource_is_part_of_entire_package_tree(self):
         self.write("Packages/PlannerCore/Tests/NewTests/extra.md", "Synthetic executable test input\n")

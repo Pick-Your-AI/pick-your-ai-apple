@@ -1,0 +1,534 @@
+{
+  "record_version": 1,
+  "issue": "Pick-Your-AI/pick-your-ai-apple#102",
+  "prepared_on": "2026-10-18",
+  "documentation_base": "40ca8ed3065c04b63dc05e0e26ae0e84489083bf",
+  "scope": "Existing local BuildTransfer adversarial/recovery execution and an explicit unexecuted app/link/service replay plan; documentation only.",
+  "whole_issue_status": "open; no complete criterion acceptance asserted",
+  "api_consumer_requirements": {
+    "status": "Signed consumer preparation only; current-main receiving and approved-extension/live adapter acceptance remain separate.",
+    "source_commit": "928bfd59ce9de4dfa611717448dd45622b02fc37",
+    "path": "docs/proposals/issue-34-api-consumer-intake.md",
+    "git_blob": "42e99538ab7c1314e32b23b8f2689eacba71ca16",
+    "bytes": 28064,
+    "sha256": "54fdcbe99319fc10e734fb05990f80ccadd2fc39eab25dab3bc213c03537b5c4",
+    "source_preparation_pr": 310,
+    "current_receiving_pr": 314,
+    "proposed_combined_receiver_pr": 198,
+    "canonical_openapi_revision": "7acbefbf4e4e700231e88be272bc89e3a73dde15",
+    "canonical_openapi_sha256": "6a08d7230c23576889167da6cff48d95093da9dc04d4bfa6ece443ff35089a79",
+    "frozen_paths": 13,
+    "frozen_operations": 14,
+    "all_operations_inherit_bearer_authentication": true,
+    "relative_server_is_not_an_observed_origin": "/v1",
+    "synthetic_shape_cases": 38,
+    "api_case_execution_adopted_here": false,
+    "account_scope": "Guest local editing remains registration-free. Remote guest actions need canonical server authority. Account-specific cases apply only if accepted Apple #24 scope activates them.",
+    "unclaimed_requirement_scope": [
+      "R1 discovery/paging",
+      "R4 resource/evidence reads"
+    ],
+    "authority": "Android #36 / Research #40 and existing website service owners; no new routes, token formats, response statuses, retry rules, operating endpoint or service result is supplied."
+  },
+  "evidence": {
+    "id": "E1",
+    "run_id": 39159638438,
+    "job_id": 117770068995,
+    "url": "https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39159638438/job/117770068995",
+    "checkout": "75ac49322b317252e206c456cd05458309dfd7d9",
+    "tree": "7053d26ee6d221f27105441054f5488a3ff7bc1a",
+    "ordered_parents": [
+      "0a40568f66b4ec58186a432d51a01a8d3b0111e1",
+      "d73c4b105702e18a3440e2697c1334d76e2e392f"
+    ],
+    "environment": {
+      "xcode": "16.4",
+      "xcode_build": "16F6",
+      "swift": "6.1.2",
+      "swift_build": "swiftlang-6.1.2.1.2 clang-1700.0.13.5",
+      "macos": "15.7.9",
+      "macos_build": "24G830"
+    },
+    "decoded_log": {
+      "encoding": "UTF-8",
+      "bytes": 127118,
+      "sha256": "8029017c2d9e550eea01668e8f77b2e2b858547e0b95547cafbe8c8c23171ed1"
+    },
+    "complete_suite": {
+      "methods": 53,
+      "failures": 0,
+      "skips": 0
+    },
+    "selected_methods": {
+      "PlannerTransferTests.BuildTransferTests.testAll29SelectionKindsUseTheirConditionalSettings": "2026-10-18T19:59:37.6053560Z Test Case '-[PlannerTransferTests.BuildTransferTests testAll29SelectionKindsUseTheirConditionalSettings]' passed (0.027 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testCanonicalConformanceCorpus": "2026-10-18T19:59:37.6055090Z Test Case '-[PlannerTransferTests.BuildTransferTests testCanonicalConformanceCorpus]' passed (0.125 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testCanonicalFixtureAndExactLockPreservation": "2026-10-18T19:59:37.6056690Z Test Case '-[PlannerTransferTests.BuildTransferTests testCanonicalFixtureAndExactLockPreservation]' passed (0.160 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testEmptyDraftRejectedWithoutMutation": "2026-10-18T19:59:37.6058560Z Test Case '-[PlannerTransferTests.BuildTransferTests testEmptyDraftRejectedWithoutMutation]' passed (0.046 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testEnvelopeAndUntrustedOwner": "2026-10-18T19:59:37.6059950Z Test Case '-[PlannerTransferTests.BuildTransferTests testEnvelopeAndUntrustedOwner]' passed (0.217 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testExponentNumbersRemainAcceptedAfterEncoding": "2026-10-18T19:59:37.6061510Z Test Case '-[PlannerTransferTests.BuildTransferTests testExponentNumbersRemainAcceptedAfterEncoding]' passed (0.001 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testExponentRevisionSurvivesSnapshotExportAndPreview": "2026-10-18T19:59:37.6063210Z Test Case '-[PlannerTransferTests.BuildTransferTests testExponentRevisionSurvivesSnapshotExportAndPreview]' passed (0.156 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testLocalSnapshotEncodingPreservesPrivateFieldsAndReopensExactly": "2026-10-18T19:59:37.6065320Z Test Case '-[PlannerTransferTests.BuildTransferTests testLocalSnapshotEncodingPreservesPrivateFieldsAndReopensExactly]' passed (0.073 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testMaliciousBoundariesAndRedactedErrors": "2026-10-18T19:59:37.6067160Z Test Case '-[PlannerTransferTests.BuildTransferTests testMaliciousBoundariesAndRedactedErrors]' passed (0.017 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testPrivateProjectionAndSecretReferences": "2026-10-18T19:59:37.6069750Z Test Case '-[PlannerTransferTests.BuildTransferTests testPrivateProjectionAndSecretReferences]' passed (0.170 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testResourceAndPrivateInfrastructureLimits": "2026-10-18T19:59:37.6071540Z Test Case '-[PlannerTransferTests.BuildTransferTests testResourceAndPrivateInfrastructureLimits]' passed (0.227 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testSnapshotEncodingRejectsExpansionPastItsDecodeLimit": "2026-10-18T19:59:37.6073810Z Test Case '-[PlannerTransferTests.BuildTransferTests testSnapshotEncodingRejectsExpansionPastItsDecodeLimit]' passed (0.080 seconds).",
+      "PlannerTransferTests.BuildTransferTests.testUnknownFieldsDecimalTypesDatesAndEnums": "2026-10-18T19:59:37.6076010Z Test Case '-[PlannerTransferTests.BuildTransferTests testUnknownFieldsDecimalTypesDatesAndEnums]' passed (0.187 seconds).",
+      "PlannerTransferTests.DurableTransferTests.testEmptyAutosaveSurvivesRejectedExportAndStoreReopen": "2026-10-18T19:59:37.6094720Z Test Case '-[PlannerTransferTests.DurableTransferTests testEmptyAutosaveSurvivesRejectedExportAndStoreReopen]' passed (0.022 seconds)."
+    },
+    "unsigned_simulator_sdk_build_succeeded": true,
+    "recheck_for_this_record": "Decoded log hash and all 14 distinct selected actual pass lines matched; exact Git source and fixture bytes were re-read. No new Swift, simulator, device or server execution.",
+    "limits": "MacOS package execution and unsigned iOS Simulator SDK compilation. No installed Files journey, physical device, server authority, production signing or release claim; no locked Python-environment or final license-gate claim."
+  },
+  "source_pins": [
+    {
+      "path": "Packages/PlannerTransfer/Sources/PlannerTransfer/BuildTransfer.swift",
+      "tested_blob": "767da0e5edfc8941b1923a50b56d0efac2620b34",
+      "tested_sha256": "eafe701afc88befcb14025b9078603b0427b8e6c4a77a6aaecc7688de57e4258",
+      "tested_bytes": 6247,
+      "documentation_base_blob": "767da0e5edfc8941b1923a50b56d0efac2620b34",
+      "unchanged_at_documentation_base": true
+    },
+    {
+      "path": "Packages/PlannerTransfer/Sources/PlannerTransfer/JSONValue.swift",
+      "tested_blob": "e60b92c5b13843206a42b6338bc7c9827d548baa",
+      "tested_sha256": "129abad7a912d9eba8f14945c69b218fa0282aa82f18e1bcb77b5d1fd6123218",
+      "tested_bytes": 5686,
+      "documentation_base_blob": "e60b92c5b13843206a42b6338bc7c9827d548baa",
+      "unchanged_at_documentation_base": true
+    },
+    {
+      "path": "Packages/PlannerTransfer/Sources/PlannerTransfer/FrozenValidator.swift",
+      "tested_blob": "d80506b195d5e9ae0661a2598edfdf16b79925b1",
+      "tested_sha256": "17b81e6b1d85a45a9dc6dc52ddd1765e447ada449b682b36779facc89e27bd0b",
+      "tested_bytes": 9521,
+      "documentation_base_blob": "d80506b195d5e9ae0661a2598edfdf16b79925b1",
+      "unchanged_at_documentation_base": true
+    },
+    {
+      "path": "Packages/PlannerTransfer/Tests/PlannerTransferTests/BuildTransferTests.swift",
+      "tested_blob": "a36aa12c7659d4c35f7579bbf070f3fa22b0aa2b",
+      "tested_sha256": "5654b79a83e0015d0bac5792e3cf9d936a1db949e6f07b6af3c3c8b25196033e",
+      "tested_bytes": 14118,
+      "documentation_base_blob": "a36aa12c7659d4c35f7579bbf070f3fa22b0aa2b",
+      "unchanged_at_documentation_base": true
+    },
+    {
+      "path": "Packages/PlannerTransfer/Tests/PlannerTransferTests/DurableTransferTests.swift",
+      "tested_blob": "7d19385990ebe28be2bc53c020ca4bc764382f71",
+      "tested_sha256": "95f803d263313cd8c7827fbe7b89bfe7f92cb6357b4d9d7c29f814c60be77307",
+      "tested_bytes": 1683,
+      "documentation_base_blob": "7d19385990ebe28be2bc53c020ca4bc764382f71",
+      "unchanged_at_documentation_base": true
+    },
+    {
+      "path": "Packages/PlannerData/Sources/PlannerData/DraftStore.swift",
+      "tested_blob": "ca8c21cd51da6338c2b79b8ae9a43604519982c2",
+      "tested_sha256": "1cb21e3dafe2214c4bdeac26705304e1d8fde1941fadb039af97c661b39d1e56",
+      "tested_bytes": 15364,
+      "documentation_base_blob": "710e0728584b7875e57c8bb7143ec4c490fd4e02",
+      "unchanged_at_documentation_base": false
+    },
+    {
+      "path": "Packages/PlannerData/Sources/CSQLite/shim.h",
+      "tested_blob": "f52e1f09e6bbfc8a3cb0c03c6f4624b77a664277",
+      "tested_sha256": "b052d8e561e942f97b503033ecd2eaa2b35213bdbf374983efe9e68eabdfc024",
+      "tested_bytes": 21,
+      "documentation_base_blob": "d74a314aba21ebe6856b650884072a0d8490f555",
+      "unchanged_at_documentation_base": false
+    },
+    {
+      "path": "Packages/PlannerTransfer/Package.swift",
+      "tested_blob": "2f31c824fa3cac1961274abd0357049b84110c85",
+      "tested_sha256": "4bf3eead2dfdce47f5cc3819f566256969ad8dd819e0598c2cdb765fdce9de88",
+      "tested_bytes": 573,
+      "documentation_base_blob": "702d6f7bdd2b9e1ccabe185702c67bb90a1c4763",
+      "unchanged_at_documentation_base": false
+    },
+    {
+      "path": ".github/workflows/swift-transfer.yml",
+      "tested_blob": "877138c5dccc61c5714a13b9215cad0133b2faaa",
+      "tested_sha256": "12e5b0de8ba3ef0dd24602c06f9ec45e34cb0057dacc10dcf67eb9e6fbc8135e",
+      "tested_bytes": 2498,
+      "documentation_base_blob": "877138c5dccc61c5714a13b9215cad0133b2faaa",
+      "unchanged_at_documentation_base": true
+    }
+  ],
+  "fixture_pins": [
+    {
+      "path": "Packages/PlannerTransfer/Sources/PlannerTransfer/Resources/build.schema.json",
+      "git_blob": "2b173755b1665dea3d9cddf0d33062cf1adc94b5",
+      "bytes": 5121,
+      "sha256": "1beacb0b01fcdea0b8b47357cdf2e99d80a10b8a4218aaac9e3b6af55391b42a"
+    },
+    {
+      "path": "Packages/PlannerTransfer/Sources/PlannerTransfer/Resources/selection.schema.json",
+      "git_blob": "9a66cceb442c50c93c6e214b760a357146fa3c69",
+      "bytes": 27630,
+      "sha256": "f8f189c6555fec41e616c32f081d06fab9f966b0fa4891ddca55580f577d51a8"
+    },
+    {
+      "path": "Packages/PlannerTransfer/Sources/PlannerTransfer/Resources/common.schema.json",
+      "git_blob": "fc55e2aa32a9cd63a16ee1ea90709b6ca733f6b5",
+      "bytes": 2490,
+      "sha256": "0342ce2f1114e7276fc7f6a08ff5b86e8727caadd83ae4f443de9a7e1431c43c"
+    },
+    {
+      "path": "Packages/PlannerTransfer/Tests/PlannerTransferTests/Fixtures/build.json",
+      "git_blob": "8309dfa05518fe86b86cae790299977473942eb4",
+      "bytes": 14681,
+      "sha256": "26762208769a8cf1012b4f33b1c1608556d275187ce21117d0b9632cdf951864"
+    },
+    {
+      "path": "Packages/PlannerTransfer/Tests/PlannerTransferTests/Fixtures/conformance.json",
+      "git_blob": "8944b6be9ed1c31149fff93241c6ee7fa7feb6ab",
+      "bytes": 149477,
+      "sha256": "e4f336bc3071637655b8f825856b6f9b5ad99ee88684481779938d846a7d08be"
+    }
+  ],
+  "case_families": [
+    {
+      "id": "AT-01",
+      "name": "Malformed, oversized and sensitive raw input",
+      "threats": [
+        "T01"
+      ],
+      "methods": [
+        "PlannerTransferTests.BuildTransferTests.testMaliciousBoundariesAndRedactedErrors"
+      ],
+      "synthetic_inputs": [
+        "524289 ASCII spaces: one byte above the 512 KiB input bound",
+        "{\"a\":1,\"\\u0061\":2}: duplicate decoded key",
+        "50 opening brackets, the number 0, then 50 closing brackets",
+        "{\"secret\":\"do-not-echo\"}",
+        "{\"schema_version\":\"2.0.0\"}",
+        "The single byte 0xff",
+        "{\"x\":1e999}"
+      ],
+      "asserted_result": "Every preview throws. For each caught error, String(describing:) must omit the literal do-not-echo sentinel. This method does not assert a particular error case or measure memory/time.",
+      "recovery_evidence": "No per-input successful retry is asserted in this method. The valid fixture, export and fork controls in AT-03/05/09 pass in the same recorded suite.",
+      "limits": "A raw Data boundary test, not a real Files provider or a general sensitive-diagnostic audit.",
+      "status": "passed_at_recorded_source",
+      "evidence": "E1"
+    },
+    {
+      "id": "AT-02",
+      "name": "Aggregate node limit",
+      "threats": [
+        "T01"
+      ],
+      "methods": [
+        "PlannerTransferTests.BuildTransferTests.testResourceAndPrivateInfrastructureLimits"
+      ],
+      "synthetic_inputs": [
+        "An array containing 16384 zero values; the containing array is an additional parser node"
+      ],
+      "asserted_result": "Preview throws the exact TransferError.tooComplex case.",
+      "recovery_evidence": "The method proceeds to structural URI controls and a valid local canonical snapshot; no accepted near-node-limit preview is asserted.",
+      "limits": "This establishes the declared node rejection, not a device memory or latency budget.",
+      "status": "passed_at_recorded_source",
+      "evidence": "E1"
+    },
+    {
+      "id": "AT-03",
+      "name": "Frozen shape, kinds, types and missing inputs",
+      "threats": [
+        "T01"
+      ],
+      "methods": [
+        "PlannerTransferTests.BuildTransferTests.testCanonicalConformanceCorpus",
+        "PlannerTransferTests.BuildTransferTests.testAll29SelectionKindsUseTheirConditionalSettings",
+        "PlannerTransferTests.BuildTransferTests.testUnknownFieldsDecimalTypesDatesAndEnums"
+      ],
+      "synthetic_inputs": [
+        "The unchanged 129-record conformance.json corpus",
+        "All 29 schema-derived selection kinds: valid minimal settings, then an unrecognized settings property and numeric enabled=1",
+        "Canonical build mutations: unexpected=true, revision=true, lifecycle=approved, created_at=2026-02-30T00:00:00Z, an ID ending in newline, absent locks, and numeric monthly_budget_amount=100"
+      ],
+      "asserted_result": "Every corpus outcome matches its declared valid flag; each kind first validates, then both invalid mutations throw. All seven malformed complete-build variants throw.",
+      "recovery_evidence": "Positive corpus members and the valid per-kind value are checked in the same tests. Invalid complete-build mutations use independent copies of the original fixture.",
+      "limits": "The schema evaluator is bounded to the bundled frozen keywords and the documented client representation subset. These are not compatibility or public-source approvals.",
+      "status": "passed_at_recorded_source",
+      "evidence": "E1"
+    },
+    {
+      "id": "AT-04",
+      "name": "Exact numeric encoding and unsupported numbers",
+      "threats": [
+        "T01"
+      ],
+      "methods": [
+        "PlannerTransferTests.BuildTransferTests.testExponentNumbersRemainAcceptedAfterEncoding",
+        "PlannerTransferTests.BuildTransferTests.testExponentRevisionSurvivesSnapshotExportAndPreview"
+      ],
+      "synthetic_inputs": [
+        "Accepted tokens: 1e15, 1.23456789e-12, 1000000000000000, 0.00000000000123456789, 1.230000000000000000, -0, 0e-64, -0.000e+64",
+        "Rejected tokens: 1e-999, 1e999, 1.234567890123456, 0.0000000000001, and 0. followed by 60 zeros then 1e-64",
+        "The public fixture with revision 1000000000000000 represented as 1e15 on the wire"
+      ],
+      "asserted_result": "All eight supported tokens re-encode and parse to equal JSONValue values; all five unsupported tokens throw. The exponent revision remains exact through snapshot, export, preview and a repeated export/preview.",
+      "recovery_evidence": "Successful repeated encode/decode is explicit. No rounding of unsupported inputs or fabricated replacement value is accepted.",
+      "limits": "The existing numeric subset is not arbitrary JSON-number interoperability; money fields remain schema-constrained decimal strings.",
+      "status": "passed_at_recorded_source",
+      "evidence": "E1"
+    },
+    {
+      "id": "AT-05",
+      "name": "Private export projection and secret references",
+      "threats": [
+        "T03"
+      ],
+      "methods": [
+        "PlannerTransferTests.BuildTransferTests.testPrivateProjectionAndSecretReferences"
+      ],
+      "synthetic_inputs": [
+        "The public canonical fixture plus extensions.x_private=PRIVATE",
+        "The projected build with name=secret://private/ref"
+      ],
+      "asserted_result": "The private local snapshot cannot be preview-imported. Export omits PRIVATE and supplies the explicit public.alias owner. The secret-reference name is rejected by both export and preview.",
+      "recovery_evidence": "The projected output successfully reopens through preview before the separate secret-reference mutation is attempted.",
+      "limits": "This does not prove arbitrary free-text secret detection, every field spelling, user disclosure review, destination-provider behavior or remote-copy revocation.",
+      "status": "passed_at_recorded_source",
+      "evidence": "E1"
+    },
+    {
+      "id": "AT-06",
+      "name": "Private local serialization stays separate from import",
+      "threats": [
+        "T03"
+      ],
+      "methods": [
+        "PlannerTransferTests.BuildTransferTests.testLocalSnapshotEncodingPreservesPrivateFieldsAndReopensExactly"
+      ],
+      "synthetic_inputs": [
+        "Canonical local build with selection notes=Private local workload notes and extensions.x_private=Private local metadata"
+      ],
+      "asserted_result": "Local encoding and reopening preserve the complete immutable value and locks, including private fields. Sending the same bytes to preview throws exact TransferError.sensitiveContent.",
+      "recovery_evidence": "The successful local round trip is explicit and is not replaced by a sanitizing persistence projection.",
+      "limits": "Local encoded bytes remain private. This is not authorization to send them to Files or a service.",
+      "status": "passed_at_recorded_source",
+      "evidence": "E1"
+    },
+    {
+      "id": "AT-07",
+      "name": "Canonical private infrastructure cannot be exported",
+      "threats": [
+        "T03"
+      ],
+      "methods": [
+        "PlannerTransferTests.BuildTransferTests.testResourceAndPrivateInfrastructureLimits"
+      ],
+      "synthetic_inputs": [
+        "The unchanged canonical build, including its index_name setting"
+      ],
+      "asserted_result": "The complete local snapshot validates, but export with public.alias throws exact TransferError.sensitiveContent.",
+      "recovery_evidence": "AT-05/09 use the test helper publicSource(), which explicitly removes index_name to construct a separate synthetic transferable fixture; they do not silently sanitize this rejected input.",
+      "limits": "Only the named canonical private field is dynamically exercised here. The source guard has additional known-field and normalized credential-name checks; complete spelling-family tests are not inferred.",
+      "status": "passed_at_recorded_source",
+      "evidence": "E1"
+    },
+    {
+      "id": "AT-08",
+      "name": "Output expansion cannot create an unreadable local snapshot",
+      "threats": [
+        "T01",
+        "T04"
+      ],
+      "methods": [
+        "PlannerTransferTests.BuildTransferTests.testSnapshotEncodingRejectsExpansionPastItsDecodeLimit"
+      ],
+      "synthetic_inputs": [
+        "Canonical build plus extensions.x_padding containing 270000 slash characters, initially encoded with sortedKeys and withoutEscapingSlashes"
+      ],
+      "asserted_result": "Compact input is below the byte bound and validates. Ordinary JSONEncoder output is above the bound. BuildSnapshot.encoded() throws exact TransferError.oversized instead of returning those bytes.",
+      "recovery_evidence": "The untouched original compact input decodes again to the same immutable snapshot after rejection.",
+      "limits": "This is a local serialization guard. No persistence write, actual disk failure or Files destination is exercised by this method.",
+      "status": "passed_at_recorded_source",
+      "evidence": "E1"
+    },
+    {
+      "id": "AT-09",
+      "name": "Untrusted import identity becomes a distinct local fork",
+      "threats": [
+        "T02"
+      ],
+      "methods": [
+        "PlannerTransferTests.BuildTransferTests.testCanonicalFixtureAndExactLockPreservation",
+        "PlannerTransferTests.BuildTransferTests.testEnvelopeAndUntrustedOwner"
+      ],
+      "synthetic_inputs": [
+        "A valid public bare fixture",
+        "A format-version-1 fixture envelope with a syntactically valid, untrusted a repeated 40 times sourceSha",
+        "The same envelope with formatVersion=2",
+        "An empty localOwner supplied to fork"
+      ],
+      "asserted_result": "The fork has a different build ID, supplied local.test owner, revision 1 and draft lifecycle, preserving every lock and selection and leaving the original snapshot equal. The fixture envelope reports synthetic=true; version 2 and empty localOwner throw.",
+      "recovery_evidence": "A valid preview and valid local fork are both directly exercised. No successful retry after the invalid envelope or invalid owner is asserted within that method.",
+      "limits": "A parser-accepted sourceSha/dataMode is untrusted metadata, not authentication. A new value does not prove UI confirmation, collision-free database insertion or cross-user server authorization.",
+      "status": "passed_at_recorded_source",
+      "evidence": "E1"
+    },
+    {
+      "id": "AT-10",
+      "name": "Rejected transitions preserve an acknowledged draft",
+      "threats": [
+        "T01",
+        "T02",
+        "T04"
+      ],
+      "methods": [
+        "PlannerTransferTests.BuildTransferTests.testEmptyDraftRejectedWithoutMutation",
+        "PlannerTransferTests.DurableTransferTests.testEmptyAutosaveSurvivesRejectedExportAndStoreReopen"
+      ],
+      "synthetic_inputs": [
+        "An incomplete draft with an empty selection list",
+        "A complete canonical build changed to zero selections",
+        "An acknowledged SQLite draft with selections=[] and locks.catalog_snapshot_id=catalog.pinned",
+        "{\"schema_version\":\"2.0.0\",\"secret\":\"private\"} passed to preview while that draft exists"
+      ],
+      "asserted_result": "Invalid draft-to-snapshot transitions throw without changing input Data. Separate DraftStore instances reopen the saved row with equal payload, revision 1, one history record and analysisIsCurrent=false. The malicious preview throws and the row remains equal afterward.",
+      "recovery_evidence": "Actual SQLite reopen and reread after each rejected transition are explicit. The test does not add a new valid imported fork to the store.",
+      "limits": "This result belongs to the tested DraftStore source in E1. Accepted #306 changes admission on the documentation base; this record does not reassign E1 to that newer store or claim native UI termination/provider behavior.",
+      "status": "passed_at_recorded_source",
+      "evidence": "E1"
+    }
+  ],
+  "pending_cases": [
+    {
+      "id": "P-01",
+      "threats": [
+        "T01",
+        "T02",
+        "T03"
+      ],
+      "issue": 82,
+      "scenario": "Actual Files/share-sheet malicious-input and round-trip journey",
+      "required_inputs": "Exact reviewed integrated app binary, synthetic existing unsaved and acknowledged drafts, oversized/wrong-version/secret-bearing files, and supported file-provider destinations.",
+      "required_result": "Safe rejection or explicit preview; no existing row or unsaved text change; confirmed fork uses new local identity; only the reviewed allowed projection reaches the selected export destination; successful valid retry and reopen.",
+      "gap": "Package execution is recorded here. Canonical #198 remains an independently owned draft integration; this register adopts none of its candidate model/UI or device results.",
+      "status": "unexecuted",
+      "actual_result": null,
+      "receiving_role": "Apple security/privacy reviewer and the affected service or routing reviewer; no named human assignment inferred"
+    },
+    {
+      "id": "P-02",
+      "threats": [
+        "T01",
+        "T04"
+      ],
+      "issue": 82,
+      "scenario": "Deceptive file metadata, interrupted read and provider cancellation",
+      "required_inputs": "Supported Files providers with an underspecified/changed actual length, bounded-read cancellation and read failure at the real app entry point.",
+      "required_result": "Count actual bytes, close handles and security-scoped access, discard late preview, preserve existing drafts and retry the original valid file.",
+      "gap": "Raw Data bounds and pure parser failures do not execute provider handles or OS lifecycle.",
+      "status": "unexecuted",
+      "actual_result": null,
+      "receiving_role": "Apple security/privacy reviewer and the affected service or routing reviewer; no named human assignment inferred"
+    },
+    {
+      "id": "P-03",
+      "threats": [
+        "T10"
+      ],
+      "issue": 85,
+      "scenario": "Crafted Universal Links and associated-domain/browser fallback",
+      "required_inputs": "Accepted HTTPS origin/routes, deployed AASA and matching signed entitlement, valid/malformed/wrong-host/encoded/expired/revoked synthetic routes, installed and uninstalled app plus signed-out browser.",
+      "required_result": "Exact routing and safe browser fallback with no private response or existing-draft mutation; successful same valid share across supported app and web paths.",
+      "gap": "No AASA/entitlement physical-device/browser matrix is executed by E1. An inert schema URI or sourceSha is not a link-routing test.",
+      "status": "unexecuted",
+      "actual_result": null,
+      "receiving_role": "Apple security/privacy reviewer and the affected service or routing reviewer; no named human assignment inferred",
+      "api_requirement_ids": [
+        "R3",
+        "R7"
+      ]
+    },
+    {
+      "id": "P-04",
+      "threats": [
+        "T10"
+      ],
+      "issue": 50,
+      "scenario": "Cross-user guest authority, renewal and conditional account isolation",
+      "required_inputs": "Canonical accepted guest-authorization contract and controlled staging service, separately authorized synthetic guest identities A/B, known private resources and scoped tokens. Account variants require activation under accepted Apple #24 before execution.",
+      "required_result": "B cannot read or mutate A resources; wrong revision and revoked/expired tokens fail server-side; renewal and retry cannot replay another identity work; valid owner recovery still works.",
+      "gap": "No cross-user server requests were made. Unassigned #50 and a local fork-owner check are not server-authority evidence. Signed #310 consumer requirements remain on the independently owned #314/#198 receiving route; R5/R6/R7 require adopted authority, retry and transport outputs before live acceptance.",
+      "status": "unexecuted",
+      "actual_result": null,
+      "receiving_role": "Apple security/privacy reviewer and the affected service or routing reviewer; no named human assignment inferred",
+      "api_requirement_ids": [
+        "R5",
+        "R6",
+        "R7"
+      ]
+    },
+    {
+      "id": "P-05",
+      "threats": [
+        "T10"
+      ],
+      "issue": 48,
+      "related_issues": [
+        83
+      ],
+      "scenario": "Share capability guessing, scope confusion and leakage",
+      "required_inputs": "Accepted share-capability semantics and authorized staging fixture shares with exact rights, target identities and expiry.",
+      "required_result": "Absent/guessed/malformed/wrong-target capabilities reveal no private body or mutation authority; read-only scope cannot authorize writes; diagnostics and navigation do not disclose usable capabilities.",
+      "gap": "No share endpoint or capability authority is exercised by BuildTransfer.",
+      "status": "unexecuted",
+      "actual_result": null,
+      "receiving_role": "Apple security/privacy reviewer and the affected service or routing reviewer; no named human assignment inferred",
+      "api_requirement_ids": [
+        "R3",
+        "R5"
+      ]
+    },
+    {
+      "id": "P-06",
+      "threats": [
+        "T07",
+        "T10"
+      ],
+      "issue": 48,
+      "related_issues": [
+        83,
+        99,
+        100
+      ],
+      "scenario": "Revocation and deletion race/failure recovery",
+      "required_inputs": "Accepted service revocation/deletion flows, delayed authorized requests, offline/reconnected clients and controlled failure responses.",
+      "required_result": "A stale response cannot restore revoked private state or publish after revocation; failed deletion stays visibly unresolved; confirmed service deletion and valid recovery retain exact identity.",
+      "gap": "A local logical delete does not revoke remote copies. No such service/device execution is recorded here; preserve #99/#100 scope decisions.",
+      "status": "unexecuted",
+      "actual_result": null,
+      "receiving_role": "Apple security/privacy reviewer and the affected service or routing reviewer; no named human assignment inferred",
+      "api_requirement_ids": [
+        "R3",
+        "R6",
+        "R7"
+      ]
+    },
+    {
+      "id": "P-07",
+      "threats": [
+        "T03",
+        "T06",
+        "T11"
+      ],
+      "issue": 99,
+      "scenario": "Allowed free text, complete diagnostics and release/device disclosure",
+      "required_inputs": "Explicitly synthetic sentinel text in every allowed display/export field and malformed-key family, complete app/SDK/network/crash traces, supported locked-device and backup/export destinations.",
+      "required_result": "Deliberate disclosure review governs allowed free text; rejected inputs/credential values do not appear in diagnostics; actual app/device/SDK handling matches the accepted privacy policy.",
+      "gap": "The one do-not-echo assertion and known projection checks are not an arbitrary-secret detector, complete credential-spelling matrix, OS-log audit, backup-erasure result or release acceptance.",
+      "status": "unexecuted",
+      "actual_result": null,
+      "receiving_role": "Apple security/privacy reviewer and the affected service or routing reviewer; no named human assignment inferred",
+      "api_requirement_ids": [
+        "R7"
+      ]
+    }
+  ],
+  "receiving_review": {
+    "status": "pending independent review of this record",
+    "affected_service_execution": "unexecuted"
+  }
+}

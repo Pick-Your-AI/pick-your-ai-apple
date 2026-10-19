@@ -138,6 +138,23 @@ jobs:
             # passes and summaries; compile-only, empty and skipped runs fail.
             python3 tools/conformance/qualify_evidence_rendering.py "$RUNNER_TEMP/evidence-rendering/evidence-$label-test.log"
           done < Packages/PlannerCore/simulator-selection.tsv
+      - name: Render cost coverage on the selected iPhone and iPad simulators
+        working-directory: .
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/cost-rendering"
+          while IFS=$'\t' read -r label udid; do
+            xcodebuild test -project tools/cost-rendering/CostHarness.xcodeproj -scheme CostHarness \
+              -sdk iphonesimulator -destination "platform=iOS Simulator,id=$udid" \
+              -destination-timeout 120 \
+              -parallel-testing-enabled NO \
+              -only-testing:PlannerCostUITests/CostRenderingTests \
+              -derivedDataPath "$RUNNER_TEMP/cost-rendering-derived" \
+              -resultBundlePath "$RUNNER_TEMP/cost-rendering/cost-$label.xcresult" \
+              CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES \
+              2>&1 | tee "$RUNNER_TEMP/cost-rendering/cost-$label-test.log"
+            python3 tools/cost-rendering/qualify.py "$RUNNER_TEMP/cost-rendering/cost-$label-test.log"
+          done < Packages/PlannerCore/simulator-selection.tsv
       - name: Prove a failing Swift test returns failure
         run: |
           set -euo pipefail
@@ -176,6 +193,7 @@ jobs:
             Packages/PlannerCore/simulator-selection.tsv
             Packages/PlannerCore/simulator-*.xcresult
             ${{ runner.temp }}/evidence-rendering/
+            ${{ runner.temp }}/cost-rendering/
             swift-mutation-evidence/
           if-no-files-found: warn
           retention-days: 14

@@ -59,18 +59,20 @@ objects for the following dependency closure, including test targets:
 
 | Native job | Complete package trees that must match at both endpoints |
 | --- | --- |
-| `macos-core` | `PlannerCore`, `PlannerUI`, `PlannerData` |
+| `macos-core` | `PlannerCore`, `PlannerUI`, `PlannerData`, `PlannerCatalog`, `PlannerTransfer` |
 | `macos-storage` | `PlannerData` |
 | `macos-transfer` | `PlannerTransfer`, `PlannerData`, `PlannerCore`, `PlannerCatalog` |
 | `macos-catalog-cache` | `PlannerCatalog` |
-| `native-ui` | `PlannerUI`, `PlannerData`, `PlannerCore` |
+| `native-ui` | `PlannerUI`, `PlannerData`, `PlannerCore`, `PlannerCatalog`, `PlannerTransfer` |
 
 These are entire package trees, including sources, tests, fixtures, resources,
-tools and metadata. Transfer's durable boundary test imports PlannerData, and
-its synthetic fixture admission tests import Core and Catalog, even though its
-library target does not. PlannerUI depends on PlannerData and PlannerCore.
-The Core and UI jobs both execute EvidenceHarness, which explicitly links
-PlannerUI and PlannerCore and includes PlannerUI's transitive Data dependency.
+tools and metadata. The PlannerTransfer library target links PlannerCore. Its
+test target additionally links PlannerData and PlannerCatalog for durable
+boundary and synthetic fixture admission checks. The selected PlannerUI manifest
+depends on PlannerData,
+PlannerCore, PlannerCatalog and PlannerTransfer. The Core and UI jobs execute
+EvidenceHarness and CostHarness; the UI workflow also executes the App journeys.
+These hosts link PlannerUI and therefore include all four of its dependencies.
 The Core package itself and Catalog declare no sibling package dependencies. A future
 test that reads another package's fixture without changing `Package.swift` still
 changes its own package tree, so that job remains allocated until explicitly
@@ -377,6 +379,40 @@ assertions, timeouts, permissions, concurrency and current runs are unchanged.
 The correction itself requires all applicable hosted/native gates and independent
 review before ordinary delivery. Whole #30 remains open.
 
+### Imported-build integration dependency extension
+
+The [new imported-build integration](imported-build-integration.md) carries the
+accepted `0e289d81428068a0a3196cde064fda536c71691b` rendering correction above.
+Its selected [PlannerUI manifest](../../Packages/PlannerUI/Package.swift) adds
+Catalog and Transfer to the earlier Core/Data dependencies. Both checked-in
+rendering hosts link PlannerUI, and the ordinary App and T6 journeys consume that
+same package. The Core and native UI footprints therefore add Catalog and Transfer;
+the other three job footprints remain unchanged.
+
+The four added audit entries copy the exact historical package-tree values already
+present in the other job entries. Every previous audit value, source revision,
+dependency pin and surrounding-input pin remains unchanged. Removing only these
+four additions restores the accepted audit bytes exactly. This extends the required
+dependency closure without refreshing an audit or granting current source a skip.
+
+A real-Git regression runs against the unchanged accepted selector with synthetic
+refreshed pins and the older three-tree closures. It reproduces all four false-skip
+decisions for Catalog/Transfer changes in Core/native UI. This is a hypothetical
+refreshed audit in disposable repositories, not an observed skipped hosted run.
+The same test bytes pass after the closure extension. A second method checks all
+eight added/deleted resource combinations and retains genuine selective Catalog
+and Storage behavior. The independent 25-combination matrix includes the new
+relationships, and its existing Catalog-resource UI expectation now reflects the
+actual imported-build dependency.
+
+At the exact corrected selector and guard bytes, all 38 portable methods passed
+with zero failures or skips in 11.026 seconds on Python 3.12.14. The original
+one-method reproduction retains its four failures in 0.329 seconds. These are
+Git/Python controls; no Swift, application or simulator execution is inferred.
+The earlier accepted 36-method observation above retains its own source and time.
+Every workflow body, job deadline and native result requirement remains unchanged
+by this closure extension. Actual combined-source native qualification is required.
+
 ## Preserved checks and evidence
 
 All existing native job names, steps, commands, assertions, action pins, permissions,
@@ -387,7 +423,7 @@ reported as an executed Swift test, SDK build or device journey. No required-che
 setting or repository protection is changed. Future branch-protection setup must
 include meaningful preparation/scope checks and retain the native job names.
 
-The [36 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
+The [38 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
 PR test merges and main comparisons, a 3,006-file mixed change, source deletion and
 rename, unknown Markdown/fixtures, executable files, indirect symlink/submodule
 inputs, newline paths, invalid identities, divergent history, empty changes and the
@@ -427,7 +463,7 @@ with `--no-detach`, and zero detach regions. Fresh hosted scope results remain
 required for delivery.
 
 That 15-method lifetime receipt belongs to the linked editor checkpoint. The
-selector's current 36-method suite shares the same corrected setup across its original
+selector's current 38-method suite shares the same corrected setup across its original
 and audited-package classes; no assertion or cleanup error is suppressed.
 
 This change schedules future runs. It neither cancels existing main/current-head
