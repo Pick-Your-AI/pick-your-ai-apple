@@ -53,13 +53,22 @@ is changed.
 ## Reproduce and observed evidence
 
 ```sh
-python3 Packages/PlannerTransfer/Tools/dependency_graph_vectors.py
-python3 Packages/PlannerTransfer/Tools/verify_contract.py
+transfer_validation_dir=$(mktemp -d)
+python3 -m venv "$transfer_validation_dir"
+"$transfer_validation_dir/bin/python" --version
+"$transfer_validation_dir/bin/python" -m pip --isolated install --require-hashes --only-binary=:all: -r Packages/PlannerTransfer/Tools/requirements.txt
+"$transfer_validation_dir/bin/python" -m pip check
+"$transfer_validation_dir/bin/python" Packages/PlannerTransfer/Tools/dependency_graph_vectors.py
+"$transfer_validation_dir/bin/python" Packages/PlannerTransfer/Tools/verify_contract.py
 swift test --package-path Packages/PlannerTransfer
 ```
 
-Use the existing pinned `jsonschema[format]==4.26.0` reference environment. The
-graph generator writes only its synthetic compact mutation resource when invoked
+Use the [locked Transfer reference environment](Tools/reference-environment.md)
+with its complete hash-pinned requirements in a fresh virtual environment. The
+validator remains `jsonschema==4.26.0`; the combined verifier expects fourteen
+pins and seven corpora. These are current source expectations; the historical
+execution records below retain their actual counts and environments.
+The graph generator writes only its synthetic compact mutation resource when invoked
 with `--write`; its default mode verifies deterministic bytes. The same 150 cases
 run through Python Draft202012Validator/FormatChecker and the public Swift decode
 boundary. They cover every endpoint kind and relationship/activation combination,
@@ -100,18 +109,20 @@ policy, application journeys, physical-device behavior or production activation.
 
 ## Issue-specific limits
 
-| Required output | Implemented boundary | Remaining acceptance |
+| Required output | Implemented boundary | Accepted disposition and remaining work |
 | --- | --- | --- |
 | #32 accepts valid frozen payloads and rejects incompatible ones | Graph schema/identity/edge validation, typed labels and shared reference vectors extend the accepted all-kind boundary | The [accepted #32 conformance record](README.md#32-receiving-conformance-record) governs its three literal criteria and immutable model strategy; this graph is a separate artifact boundary, not an added issue-closure requirement |
-| #35 preserves canonical relationships and exposes representation gaps | Existing kind-level edges round-trip without invented placement fields; `placement`, `component_role`, `memory_pool` and `hybrid` activation mutations reject | Accepted per-selection hybrid/role/memory-pool representation, versioned migration and Apple integration |
+| #35 preserves canonical relationships and exposes representation gaps | Existing kind-level edges round-trip without invented placement fields; `placement`, `component_role`, `memory_pool` and `hybrid` activation mutations reject | The [accepted #35 mapping](PLACEMENT_RELATIONSHIPS.md#literal-criterion-disposition-and-handoff) governs its satisfied v1-gap criteria; physical-pool adoption and runtime use retain separate decisions |
 | #71 rechecks affected components after changes | Exact directed graph is available to an eventual governed consumer | Activation policy, dirty-state propagation, evaluator binding, stale-result handling and real UI/service integration |
 
 Frozen v1's kind-level dependency graph cannot encode the full hybrid placement,
 component-role or memory-pool tuple requested by #35. Those gaps remain
 unsupported and route to research [#40](https://github.com/Pick-Your-AI/pick-your-ai-research/issues/40)
 for a versioned contract decision. No undocumented field or inferred default is
-added here. #35 and #71 remain open until their complete criteria and receiving
-evidence are satisfied.
+added here. The [completed #35 receiving receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/35#issuecomment-6255505233)
+accepts the native mapping and explicit unsupported-v1 branch; it does not adopt
+physical pools or approve runtime execution. #71 remains open until its own
+criteria and receiving evidence are satisfied.
 
 [#32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32) was completed
 through the independently reviewed [#252 conformance record](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/252),
@@ -119,5 +130,6 @@ delivered on verified signed main `971e8ea6500c52a5be0493c7686ffc7dc7792cb4`.
 Its accepted immutable model strategy and all-kind criterion mapping supersede
 earlier preparation statements that grouped generated per-field DTOs, other
 top-level artifacts and migration into additional #32 closure requirements.
-The graph's separate integration neither reopens those criteria nor completes
-#35's placement representation or #71's governed evaluation and UI work.
+The graph's separate integration reopens neither #32's criteria nor #35's accepted
+mapping and unsupported-v1 disposition. It does not complete #71's governed
+evaluation and UI work.
