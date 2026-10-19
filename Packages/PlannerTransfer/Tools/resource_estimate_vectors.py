@@ -6,6 +6,7 @@ metric/unit semantics, current-build binding, coverage or measured quality.
 import copy
 import json
 from pathlib import Path
+from contract_checks import require
 
 ROOT = Path(__file__).resolve().parents[1]
 
@@ -130,7 +131,7 @@ def vectors():
     late_invalid = copy.deepcopy(base['estimates'][0])
     late_invalid['value'] = 20
     replace('invalid-later-estimate-rejects-entire-artifact', ['estimates'], [base['estimates'][0], late_invalid], False)
-    assert len({case['name'] for case in cases}) == len(cases)
+    require(len({case['name'] for case in cases}) == len(cases), 'Duplicate resource estimate vector names')
     return cases
 
 
