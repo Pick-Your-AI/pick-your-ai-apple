@@ -221,5 +221,8 @@ class VerifyContractChecks(unittest.TestCase):
                 self.require_success(self.verify(optimized))
 
 
+from reference_helper_checks import ReferenceHelperChecks
+
+
 if __name__ == "__main__":
     unittest.main()
