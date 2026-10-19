@@ -813,6 +813,102 @@ PROFILES['integrated-retained-ui'] = (211, {
 })
 
 
+# Current #391 composition retains both complete independently contributed storage suites.
+PROFILES['integrated-pending-data'] = (69, {
+    'PlannerDataTests.DraftStoreTests': (
+        'testEmptyDraftSurvivesRestartWithoutInventedContractFields',
+        'testExactBytesAndLocksSurviveReopen',
+        'testCASRejectsStaleWritesAcrossConnections',
+        'testCreateNeverOverwritesExistingID',
+        'testRestoreAppendsHistoryAndRejectsStaleUndo',
+        'testRestoreRejectsFutureHistoryWithoutChangingReadableDrafts',
+        'testDuplicateCreatesIndependentIdentityAndDeleteIsScoped',
+        'testPreparedDuplicatePersistsDistinctPayloadAndPreservesSourceHistory',
+        'testPreparedDuplicateRejectsSourceChangedAfterPreparation',
+        'testPreparedDuplicateRejectsSourceDeletedAfterPreparation',
+        'testRenameCreatesRevisionAndStaleDeleteFails',
+        'testDeletedIDCannotBeReusedByDelayedCreateOrWrite',
+        'testFailedDeleteDoesNotRetireIdentity',
+        'testVersionTwoMigratesWithoutChangingExistingHistory',
+        'testInvalidPayloadsAndOversizeAreRejectedWithoutChangingDraft',
+        'testInvalidTitlesDoNotTruncateOrWrite',
+        'testFailureAfterHistoryWriteRollsBackAndCanRetry',
+        'testFailureBeforeCommitRollsBackDelete',
+        'testLegacyMigrationPreservesHistoryAndIsIdempotent',
+        'testInterruptedMigrationRollsBackSchemaThenRecovers',
+        'testUnknownSchemaNeverResetsDatabase',
+        'testUnknownWALSchemaPreservesDatabaseBytesAndJournalMode',
+        'testUnknownSchemaInOrphanedWALIsRejectedWithoutCheckpoint',
+        'testSupportedWALSchemaMigratesAndRemainsWritable',
+        'testSupportedHotJournalRecoversAndRemainsWritable',
+        'testUnknownSchemaAfterHotJournalRecoveryRejectsRecoveredVersion',
+        'testCorruptDatabaseNeverResetsFile',
+        'testLargeLibraryCorruptRowIsolationAndPagination',
+        'testMalformedCurrentRowIsNotOverwritten',
+        'testMissingHistoryIsDisclosedNotSilentlyDropped',
+        'testSeparateDatabasesDoNotShareIdentity',
+        'testActualSQLiteFullRollsBackThenUnconstrainedReopenRecovers',
+        'testCorruptTextAndRestorationTypesAreDisclosed',
+        'testDatabaseDiagnosticsDoNotContainPayloadOrPath',
+    ),
+    'PlannerDataTests.PendingBuildWriteStoreTests': (
+        'testIntentSurvivesReopenWithExactBodyAndPrecondition',
+        'testCallerAndReturnedDataCannotMutateIntent',
+        'testExactUTF8ValueEqualityAndSQLiteIdentity',
+        'testExactUTF8PartitionsDoNotShareReadsOrCallbacks',
+        'testIdenticalEnqueueAtCapacityReturnsExistingRecord',
+        'testChangedDuplicateIntentIsRejectedWithoutAnyFileChange',
+        'testReusedKeyOrOperationAcrossPartitionRejectsWithoutDisclosure',
+        'testInvalidIntentAndLimitBounds',
+        'testBodyAndAggregateLimitsRetainConfirmedRecords',
+        'testOpeningParallelHandleDoesNotInvalidateLiveAttempt',
+        'testParallelActivationAtomicallyInvalidatesOldSessionAndCallback',
+        'testSwitchAwayAndBackCannotReviveOldToken',
+        'testReopenRecoversCommittedAttemptAsUncertainWithoutResend',
+        'testForeignStoreCannotUseSessionOrAttempt',
+        'testSameBuildWaitsForConfirmationWhileOtherBuildCanProceed',
+        'testConflictInvalidAndUncertainRetainImmutableIntentAndBlockFollowers',
+        'testDuplicateCompletionAndDuplicateAttemptDoNotWrite',
+        'testFailedEnqueueCommitRollsBackEverything',
+        'testFailedAttemptCommitLeavesPendingIntentUnchanged',
+        'testFailedActivationCommitPreservesGenerationAndAttempt',
+        'testFailedOutcomeCommitPreservesAttempt',
+        'testFailedDeactivationCommitRetainsLiveSession',
+        'testActualSQLiteFullRetainsQueueThenUnconstrainedReopenRecovers',
+        'testUnsupportedQueueWALRetainsDatabaseAndWALBytes',
+        'testFutureVersionOnlyInOrphanedWALIsRejected',
+        'testForeignApplicationInOrphanedWALKeepsOriginalBytes',
+        'testSupportedWALQueueRemainsReadableAndWritable',
+        'testSupportedHotRollbackJournalRecoversBeforeQueueRead',
+        'testRollbackRestoresCommittedFutureVersionBeforeRejection',
+        'testDraftAndForeignDatabaseAreNeverAdopted',
+        'testCorruptDatabaseIsRetainedWithoutSensitiveDiagnostics',
+        'testCorruptPredecessorCannotBeSkippedForDispatch',
+        'testMalformedSessionOrAttemptMetadataBlocksAllWrites',
+        'testCapacityAcrossPartitionsIsGlobalAndNeverEvicts',
+        'testConcurrentEnqueueAndActivationHaveOneConsistentCommitOrder',
+    ),
+})
+
+
+# The accepted Ruleset cache adapter adds nine exact Transfer identities.
+# Keep the earlier 181-method receiver unchanged for its original source.
+PROFILES['integrated-ruleset-cache-transfer'] = (190, {
+    **PROFILES['integrated-retained-transfer'][1],
+    'PlannerTransferTests.RulesetCacheValidatorTests': (
+        'testCompleteFrozenRulesetReturnsItsAdmittedCacheIdentity',
+        'testAdmittedVersionAndTimestampSpellingsAreNotNormalized',
+        'testPlausibleHeadersAndMalformedNestedRulesDoNotProduceIdentity',
+        'testWholeDecoderDuplicateKeyAndByteBoundErrorsRemainIntact',
+        'testOriginalBytesAndDistinctLiteralVersionsSurviveCacheRestart',
+        'testRejectedWholeBodyPreservesHistoryAndPermitsCorrectedRetention',
+        'testMismatchedPinsLeavePriorBytesUnchangedBeforeValidRecovery',
+        'testEveryRetainedBodyIsValidatedBeforeOtherOrMissingPinReads',
+        'testFailedRulesPreparationPreservesSelectedReleaseUntilExplicitCorrection',
+    ),
+})
+
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

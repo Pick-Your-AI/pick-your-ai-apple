@@ -32,7 +32,7 @@ Notes journey passes on both pinned simulators, with successful owned cleanup;
 see the [completed editor receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution).
 Its separate scope-cleanup failure remains recorded. The earlier 110 UI / 57
 Transfer composition is historical input. The current preparation requires all
-211 UI and 181 Transfer methods plus all six complete journeys on each destination;
+211 UI and 190 Transfer methods plus all six complete journeys on each destination;
 none of those expanded results is inferred from the earlier editor run.
 
 ## Current receiving source and required validation
@@ -40,13 +40,13 @@ none of those expanded results is inferred from the earlier editor run.
 The [integration record](../docs/validation/imported-build-integration.md) names the
 actual 2026-10-19 selection, immutable donors, current-module joins and remaining
 receiving gates. The fixed preparation selected on `888cb7e7` carried accepted
-main through `0e289d81`; the current composition carries accepted `bd289eb0`.
+main through `0e289d81`; the current composition carries accepted `7431b7d6`.
 It does not recover an absent old #198 tree or deliver its signed
 staging branch to main. The separately prepared T6 report/route follow-up starts
 on published #391 source `9e7cc629`, with the exact donor `394ff3ba` and
 [explicit route ownership](../docs/validation/imported-build-integration.md#t6-report-and-route-lifecycle-follow-up).
 Its local source checkpoint is not a native or main-delivery observation. The
-[current-main intake](../docs/validation/imported-build-integration.md#accepted-main-composition-and-original-portable-observation)
+[current-main intake](../docs/validation/imported-build-integration.md#accepted-ruleset-cache-adapter-carry)
 preserves the bounded SDK inputs, regular-file admission, accepted catalog-envelope delivery and later
 documentation changes with their original source identities. The existing
 Build configuration comparison is independent of the separately owned catalog
@@ -111,10 +111,12 @@ fourth T6 journey exercises actual tab withdrawal, reopen and retained-input ret
 | `native-ui` | Result-only aggregate requires successful scope and every selected job's success; only an audited false scope permits all native jobs to skip. |
 
 Core retains every existing package, mutation, guard and Evidence-rendering step
-and adds the three Cost methods on each pinned simulator. Storage requires all 34
-methods and its actual crash/recovery controls. Transfer requires 181 exact methods,
+and adds the three Cost methods on each pinned simulator. Storage requires all 69
+methods: 34 retained draft cases and 35 accepted pending-write cases, with both
+actual crash/recovery probes. The strict Data receiver checks every identity in
+the macOS, iPhone, iPad and submission SDK logs. Transfer requires 190 exact methods,
 the original nine reference phases and the separate Manifest controls. Submission
-SDK requires all five packages (146 Core, 34 Data, 181 Transfer, 92 Catalog, 211 UI),
+SDK requires all five packages (146 Core, 69 Data, 190 Transfer, 92 Catalog, 211 UI),
 all current App guards and both unsigned Release products with their separate SDK
 and privacy receipts. Static inventories are not execution observations.
 

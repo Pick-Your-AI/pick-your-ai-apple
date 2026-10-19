@@ -1,5 +1,118 @@
 # New imported-build, catalog and T6 receiving preparation
 
+## Accepted Ruleset cache adapter carry
+
+Accepted main moved to valid-signed
+`7431b7d666d46d37d0218b63e49b0f93ff04485d`, tree
+`b891bf9fd1473523fdbaa503f026ba1a200490a1`, before publication of the reviewed
+queue/descriptor composition. This receiver preserves the exact five delivered
+[#395](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/395) files: the
+Ruleset cache adapter, all nine regression methods, the Transfer manifest and
+both receiving guides. Its [delivery handoff](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/395#issuecomment-6278259922)
+and [independent source review](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/395#pullrequestreview-5578167501)
+retain their original scope. The adapter obtains identity only after complete
+Ruleset decoding and preserves original retained bytes and admitted identity
+spellings. No app receiver, publisher authority or currentness result is added.
+
+The fixed, independently reviewed receiving input remains local
+`4e64512d4b5d7778e9299901d3366550d89b7026`, tree
+`1b10819a55229bcf960600963e59cb22e104ac65`. Every prior Swift source and fixture
+remains exact except the manifest selected directly from accepted main; the two
+new Swift files are also exact main inputs. DraftStore's 34 cases, the queue's
+35 cases, the seven descriptor controls, exact T6 fixtures, captured route and
+the signed #208 handoff remain intact.
+
+The complete current inventory is **708 declarations**: 146 Core, 69 Data,
+190 Transfer, 92 Catalog and 211 UI. The new
+`integrated-ruleset-cache-transfer` profile retains every earlier 181-method
+Transfer identity and adds the nine exact `RulesetCacheValidatorTests` methods.
+The existing strict parser checks that profile in the Transfer and submission
+SDK jobs. Earlier profiles and parser behavior remain byte-for-byte intact.
+The existing source-inventory, identity-substitution and historical-padding
+portable controls cover the new profile; they do not execute Swift. The native
+scope guide now states the actual Core-and-Catalog library dependency, with
+Data additionally required by the test target; its closure table is unchanged.
+
+The queue/descriptor section and its 17-method portable original below describe
+the preceding fixed input. The adapter's nine actual original Transfer passes
+belong to prepared `f35cf8ced46547462c62c9820f906ad186e558a6`, as recorded in its
+delivery handoff. The separately qualified [original Storage result](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6278227634)
+belongs to signed `a41d1ff955999399d5073af0885c122224cce097`: 34 DraftStore methods
+on each of macOS, iPhone and iPad. None of those observations executes the new
+708-method composition or supplies a corrected SDK, current-main, provider,
+physical-device or whole-issue acceptance result. Configured checks must qualify
+the actual new preparation; no manual rerun or workflow exception is introduced.
+
+## Current-main queue and descriptor composition
+
+This receiving composition retains published #391 source
+`9e83640075037bb23a1703a5c03f40befe0b5580`, receives the reviewed descriptor donor
+`58486404a86d525e3c6df9e05cb2e4e1048c6a42` from
+[#409](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/409), and composes
+accepted main `294a152d96a8ee6e31e975f4303fc58e17842f40` from
+[#382](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/382).
+The [descriptor review](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/409#pullrequestreview-5577348841)
+and [queue receiving handoff](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#pullrequestreview-5577658521)
+retain their original source and execution scopes.
+
+All runtime Swift files are selected unchanged from those reviewed sources.
+The descriptor admission, exact T6 fixture handling and captured child route
+remain intact. DraftStore and its 34 tests remain exact from the #391 source;
+the pending-write store, 35 tests, crash probe and replay driver remain exact from
+accepted main. The pending-write queue still makes no network request and does
+not activate a remote lifecycle in the app.
+
+The one Git content conflict was the storage workflow's old count requirements.
+The receiver keeps all existing draft and queue-specific attendance assertions,
+both real process-replay invocations and both simulator destinations. It now
+requires **69 distinct Data identities**, including all 34 draft and 35 queue
+cases. The new `integrated-pending-data` profile applies the existing fail-closed
+parser to every macOS/iPhone/iPad storage result and to the submission SDK's Data
+log. The portable source-inventory and every-identity substitution controls also
+include Data. Every older receipt profile and parser function remains intact.
+There is no new test retry, runner purchase, weaker check, deadline extension or
+scope exemption.
+
+The resulting package inventory is **699 declarations**: 146 Core, 69 Data,
+181 Transfer, 92 Catalog and 211 UI. This count is not an executed 699-test result.
+The descriptor donor's 664 total and accepted queue donor's 66 Data cases belong
+to their original preparations. Likewise, the original `a41d1ff9` portable results
+and still-pending native jobs belong to the preceding `9e836400` source. The
+earlier `545e8dfc` / `02ef64ea` SDK failure and its 52 UI failures remain retained
+below; this composition does not establish their native recovery.
+
+The [#208 signed staging handoff](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/208#issuecomment-6275642563)
+at `f1f859670db4f084811383059206b0d00b0497b1` also retains its own 48 UI methods,
+20 import methods and two launches. The current combined implementation and
+public-enum assertion repair are preserved; no older staging file replaces the
+newer retained import, preparation, test or workflow source. That signed stage is
+neither current combined native qualification nor main delivery.
+
+### Original portable observation for this composition
+
+The frozen code/guard checkpoint is
+`e09ef9c247c05f928ee6eef089cff3c91b793dc4`, tree
+`bb27ec5bd397bf93e6b8765fdcdc5af1f4719ef0`, with ordered parents
+`58486404a86d525e3c6df9e05cb2e4e1048c6a42` and
+`294a152d96a8ee6e31e975f4303fc58e17842f40`.
+At 2026-10-19 21:40:24 UTC, Python 3.12.14 executed the existing receipt suite:
+**17/17 methods passed in 0.395 seconds**, with no failures, errors or skips.
+The two expanded controls check the actual Data source identities and reject
+every individual identity substitution, alongside the retained Transfer/UI
+checks. The original log is 3,370 bytes, SHA-256
+`41267c008c69346b4d91998884fa9abf53896922bcfd813e94beec34b6c3d486`.
+Whitespace validation exited zero without diagnostics; all 35 relative Markdown
+references in the three edited guides exist. All 392 tracked input hashes were
+unchanged before and after these observations. This later documentation addition
+does not change any executable, test, fixture, workflow or dependency input.
+These are portable receipt checks; they do not execute the 699 Swift declarations.
+
+Independent review of this exact composition, its original applicable configured
+checks, ordinary signed delivery and actual main readback remain required.
+Predecessor and whole-issue closure requires criterion-specific evidence beyond
+source inclusion. No new native, Files-provider, physical-device, service or
+release result is claimed here.
+
 ## Regular import descriptor admission
 
 This bounded correction starts from published #391 source

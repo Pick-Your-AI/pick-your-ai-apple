@@ -89,10 +89,11 @@ jobs:
               2>&1 | tee ".build/submission-evidence/$package-tests.txt"
             grep -E 'Executed [1-9][0-9]* tests?, with 0 failures' ".build/submission-evidence/$package-tests.txt"
           done
-      - name: Require complete integrated Transfer and UI execution
+      - name: Require complete integrated Data, Transfer and UI execution
         run: |
           set -euo pipefail
-          python3 tools/ci/require_swift_test_results.py integrated-retained-transfer .build/submission-evidence/PlannerTransfer-tests.txt
+          python3 tools/ci/require_swift_test_results.py integrated-pending-data .build/submission-evidence/PlannerData-tests.txt
+          python3 tools/ci/require_swift_test_results.py integrated-ruleset-cache-transfer .build/submission-evidence/PlannerTransfer-tests.txt
           python3 tools/ci/require_swift_test_results.py integrated-retained-ui .build/submission-evidence/PlannerUI-tests.txt
       - name: Build unsigned Release simulator product
         run: |
