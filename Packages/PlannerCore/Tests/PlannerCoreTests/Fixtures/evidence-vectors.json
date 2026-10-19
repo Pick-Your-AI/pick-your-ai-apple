@@ -1,0 +1,666 @@
+{
+  "cases": [
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/pass/error",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "pass",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/pass/warning",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "pass",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"warning\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "warning",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/pass/info",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "pass",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"info\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "info",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/fail/error",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "fail",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"fail\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/fail/warning",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "fail",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"fail\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"warning\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "warning",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/fail/info",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "fail",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"fail\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"info\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "info",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/unknown/error",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/unknown/warning",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"warning\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "warning",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/unknown/info",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"info\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "info",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/skipped/error",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "skipped",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"skipped\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/skipped/warning",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "skipped",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"skipped\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"warning\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "warning",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "id": "evidence/outcome/skipped/info",
+      "observed": [
+        "absent",
+        "explicitNull",
+        "literalUnknown"
+      ],
+      "outcome": "skipped",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"absent\"},{\"expected\":null,\"observed\":null,\"path\":\"null\"},{\"expected\":\"unknown\",\"observed\":\"unknown\",\"path\":\"literal\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"skipped\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"info\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "info",
+      "valid": true,
+      "visibleText": [
+        "Observed: not provided (unanswered)",
+        "Observed: explicit null",
+        "Observed: literal string \"unknown\""
+      ]
+    },
+    {
+      "collection": "absent",
+      "expected": [],
+      "id": "evidence/absent-collection",
+      "observed": [],
+      "outcome": "pass",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Evidence was not provided. Support is unknown."
+      ]
+    },
+    {
+      "collection": "empty",
+      "expected": [],
+      "id": "evidence/empty-collection",
+      "observed": [],
+      "outcome": "pass",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "The evidence list is empty. Support is unknown."
+      ]
+    },
+    {
+      "collection": "absent",
+      "expected": [],
+      "id": "evidence/reported-pass-without-support",
+      "observed": [],
+      "outcome": "pass",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"ready\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Reported rule outcome: pass",
+        "Evidence was not provided. Support is unknown."
+      ]
+    },
+    {
+      "collection": null,
+      "expected": [],
+      "id": "evidence/no-findings",
+      "observed": [],
+      "outcome": null,
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"ready\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": null,
+      "valid": true,
+      "visibleText": [
+        "No findings were supplied. This does not establish a pass."
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "supplied",
+        "supplied"
+      ],
+      "id": "evidence/contradictory-evidence",
+      "observed": [
+        "supplied",
+        "supplied"
+      ],
+      "outcome": "fail",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"CONTRADICTORY_EVIDENCE\",\"evidence\":[{\"expected\":48,\"observed\":24,\"path\":\"model.memory\",\"source_version\":\"source-a/1\"},{\"expected\":24,\"observed\":48,\"path\":\"model.memory\",\"source_version\":\"source-b/2\"}],\"message\":\"The synthetic producer resolved eligible numeric disagreement conservatively; the reported rule failed.\",\"outcome\":\"fail\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"warning\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "warning",
+      "valid": true,
+      "visibleText": [
+        "The synthetic producer resolved eligible numeric disagreement conservatively; the reported rule failed.",
+        "Observed: 24",
+        "Observed: 48",
+        "Source version: \"source-a/1\"",
+        "Source version: \"source-b/2\""
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "supplied",
+        "supplied"
+      ],
+      "id": "evidence/unresolved-opposite-claims",
+      "observed": [
+        "supplied",
+        "supplied"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"OPPOSITE_CLAIMS\",\"evidence\":[{\"expected\":true,\"observed\":true,\"path\":\"engine.support\",\"source_version\":\"source-a/1\"},{\"expected\":true,\"observed\":false,\"path\":\"engine.support\",\"source_version\":\"source-b/2\"}],\"message\":\"The synthetic producer reports equally ranked opposite yes/no claims; a reproducible test is required.\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"warning\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "warning",
+      "valid": true,
+      "visibleText": [
+        "The synthetic producer reports equally ranked opposite yes/no claims; a reproducible test is required.",
+        "Observed: true",
+        "Observed: false"
+      ]
+    },
+    {
+      "collection": "empty",
+      "expected": [],
+      "id": "evidence/not-applicable-reason",
+      "observed": [],
+      "outcome": "skipped",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"NOT_APPLICABLE\",\"evidence\":[],\"message\":\"The synthetic component is not applicable to this rule.\",\"outcome\":\"skipped\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"info\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "info",
+      "valid": true,
+      "visibleText": [
+        "Reported rule outcome: skipped",
+        "The synthetic component is not applicable to this rule."
+      ]
+    },
+    {
+      "collection": "empty",
+      "expected": [],
+      "id": "evidence/skipped-without-applicability",
+      "observed": [],
+      "outcome": "skipped",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"SKIPPED_INPUT\",\"evidence\":[],\"message\":\"Evaluation was skipped; applicability is not established.\",\"outcome\":\"skipped\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"info\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "info",
+      "valid": true,
+      "visibleText": [
+        "Reported rule outcome: skipped",
+        "Evaluation was skipped; applicability is not established."
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent"
+      ],
+      "id": "evidence/false-is-data",
+      "observed": [
+        "supplied"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"observed\":false,\"path\":\"synthetic\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: false",
+        "Reported rule outcome: unknown"
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent"
+      ],
+      "id": "evidence/zero-is-data",
+      "observed": [
+        "supplied"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"observed\":0,\"path\":\"synthetic\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: 0",
+        "Reported rule outcome: unknown"
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent"
+      ],
+      "id": "evidence/empty-string",
+      "observed": [
+        "supplied"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"observed\":\"\",\"path\":\"synthetic\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: \"\"",
+        "Reported rule outcome: unknown"
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent"
+      ],
+      "id": "evidence/literal-not-applicable",
+      "observed": [
+        "supplied"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"observed\":\"not_applicable\",\"path\":\"synthetic\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: \"not_applicable\"",
+        "Reported rule outcome: unknown"
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent"
+      ],
+      "id": "evidence/literal-pass",
+      "observed": [
+        "supplied"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"observed\":\"pass\",\"path\":\"synthetic\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: \"pass\"",
+        "Reported rule outcome: unknown"
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent"
+      ],
+      "id": "evidence/literal-null-string",
+      "observed": [
+        "supplied"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"observed\":\"null\",\"path\":\"synthetic\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: \"null\"",
+        "Reported rule outcome: unknown"
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent"
+      ],
+      "id": "evidence/nested-unknown",
+      "observed": [
+        "supplied"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"observed\":{\"detail\":\"unknown\"},\"path\":\"synthetic\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: {\"detail\":\"unknown\"}",
+        "Reported rule outcome: unknown"
+      ]
+    },
+    {
+      "collection": "supplied",
+      "expected": [
+        "absent"
+      ],
+      "id": "evidence/escaped-controls",
+      "observed": [
+        "supplied"
+      ],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"observed\":\"line\\n\\u0000next\",\"path\":\"synthetic\"}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"unknown\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": "error",
+      "valid": true,
+      "visibleText": [
+        "Observed: \"line\\n\\u0000next\"",
+        "Reported rule outcome: unknown"
+      ]
+    },
+    {
+      "collection": null,
+      "expected": [],
+      "id": "evidence/unsupported-version/0.9.0",
+      "observed": [],
+      "outcome": null,
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"0.9.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": null,
+      "valid": false,
+      "visibleText": []
+    },
+    {
+      "collection": null,
+      "expected": [],
+      "id": "evidence/unsupported-version/1.0.1",
+      "observed": [],
+      "outcome": null,
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.1\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": null,
+      "valid": false,
+      "visibleText": []
+    },
+    {
+      "collection": null,
+      "expected": [],
+      "id": "evidence/unsupported-version/2.0.0",
+      "observed": [],
+      "outcome": null,
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"2.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": null,
+      "valid": false,
+      "visibleText": []
+    },
+    {
+      "collection": null,
+      "expected": [],
+      "id": "evidence/missing-finding/outcome",
+      "observed": [],
+      "outcome": null,
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"message\":\"rule.required.foundation: pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": null,
+      "valid": false,
+      "visibleText": []
+    },
+    {
+      "collection": null,
+      "expected": [],
+      "id": "evidence/missing-finding/severity",
+      "observed": [],
+      "outcome": null,
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"]}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": null,
+      "valid": false,
+      "visibleText": []
+    },
+    {
+      "collection": null,
+      "expected": [],
+      "id": "evidence/missing-finding/message",
+      "observed": [],
+      "outcome": null,
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": null,
+      "valid": false,
+      "visibleText": []
+    },
+    {
+      "collection": null,
+      "expected": [],
+      "id": "evidence/unsupported-verification-field",
+      "observed": [],
+      "outcome": null,
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"is_verified\":true,\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": null,
+      "valid": false,
+      "visibleText": []
+    },
+    {
+      "collection": null,
+      "expected": [],
+      "id": "evidence/unsupported-evidence-field",
+      "observed": [],
+      "outcome": null,
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":[{\"path\":\"synthetic\",\"verified\":true}],\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": null,
+      "valid": false,
+      "visibleText": []
+    },
+    {
+      "collection": null,
+      "expected": [],
+      "id": "evidence/null-collection",
+      "observed": [],
+      "outcome": null,
+      "payloadJSON": "{\"build_id\":\"build.fixture.1\",\"build_revision\":1,\"catalog_snapshot_id\":\"catalog.fixture.1\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"RULE_REQUIRED_FOUNDATION\",\"evidence\":null,\"message\":\"rule.required.foundation: pass\",\"outcome\":\"pass\",\"remediation\":\"\",\"rule_id\":\"rule.required.foundation\",\"selection_ids\":[\"sel_context_policy\",\"sel_deployment_mode\",\"sel_model\",\"sel_workload\"],\"severity\":\"error\"}],\"id\":\"evaluation.build.fixture.1.r1\",\"result\":\"valid\",\"ruleset_id\":\"rules.fixture.1\",\"ruleset_version\":\"1.0.0\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":41,\"skipped\":4,\"unknown\":0}}",
+      "severity": null,
+      "valid": false,
+      "visibleText": []
+    }
+  ],
+  "dependencies": {
+    "PyYAML": "6.0.3",
+    "attrs": "26.1.0",
+    "jsonschema": "4.25.1",
+    "jsonschema-specifications": "2025.9.1",
+    "referencing": "0.37.0",
+    "rpds-py": "0.30.0",
+    "typing-extensions": "4.16.0"
+  },
+  "fixture_sha256": "039626962ef0f2c4f706614d775ad47eda1d148c58f736c98ad169fc153221f3",
+  "lock": {
+    "contract_version": "1.0.0",
+    "fixture_bundle_version": "apple-contract-preparation-1",
+    "import_manifest_sha256": "ef6d5801eec10f3169e2bf84653e7026b33088e305a987991ec52faadcd7f554",
+    "source_repository": "https://github.com/Pick-Your-AI/pick-your-ai-research",
+    "source_revision": "7acbefbf4e4e700231e88be272bc89e3a73dde15"
+  },
+  "schema": "evaluation-report.schema.json"
+}
