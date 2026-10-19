@@ -48,12 +48,14 @@ Run:
 
 ```sh
 swift test --package-path Packages/PlannerTransfer
-python3 -m venv /tmp/planner-transfer-validation
-/tmp/planner-transfer-validation/bin/pip install 'jsonschema[format]==4.26.0'
-/tmp/planner-transfer-validation/bin/python Packages/PlannerTransfer/Tools/verify_contract.py
+transfer_validation_dir=$(mktemp -d)
+python3 -m venv "$transfer_validation_dir"
+"$transfer_validation_dir/bin/python" -m pip --isolated install --require-hashes --only-binary=:all: -r Packages/PlannerTransfer/Tools/requirements.txt
+"$transfer_validation_dir/bin/python" -m pip check
+"$transfer_validation_dir/bin/python" Packages/PlannerTransfer/Tools/verify_contract.py
 ```
 
-The verifier explicitly requires date-time and URI format support; plain jsonschema without format dependencies can silently skip these checks. `.github/workflows/swift-transfer.yml` runs hash/reference parity, macOS Swift tests and unsigned iOS Simulator compilation with Xcode 16.4 (16F6). Local execution: Swift 6.0.3 on Ubuntu 24.04, ten tests passed; four source hashes and 129 canonical cases passed with Python 3.12/jsonschema 4.26.0. Hosted/physical evidence must be recorded separately when actually observed.
+The verifier explicitly requires date-time and URI format support; plain jsonschema without format dependencies can silently skip these checks. The [locked reference environment](Tools/reference-environment.md) keeps jsonschema 4.26.0, selects the two supported format providers used by these frozen schemas, and pins their complete Python dependencies and wheel hashes. Use a fresh virtual environment so unrelated installed format providers cannot change selection. `.github/workflows/swift-transfer.yml` runs hash/reference parity, macOS Swift tests and unsigned iOS Simulator compilation with Xcode 16.4 (16F6). Original local execution: Swift 6.0.3 on Ubuntu 24.04, ten tests passed; four source hashes and 129 canonical cases passed with Python 3.12/jsonschema 4.26.0. Hosted/physical evidence must be recorded separately when actually observed.
 
 Implementation uses Foundation JSONDecoder only for individual JSON strings and JSONEncoder for value serialization; an explicit bounded parser detects duplicate keys before decoding. Apple [JSONDecoder documentation](https://developer.apple.com/documentation/foundation/jsondecoder) was checked on 2026-10-18 but returned a JavaScript shell; runtime behavior is covered by executable tests instead of claiming newly verified documentation semantics.
 
