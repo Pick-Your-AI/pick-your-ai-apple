@@ -86,6 +86,36 @@ expiry rule or action. [Copy and native coverage](../../tools/evidence-rendering
 remain separate from whole-app language/market acceptance and #75's current
 analysis/response integration.
 
+The original copy-source macOS screenshot at
+`c6d7d313d723b924bb675a13c4f25208f8d55452` / prepared
+`f142c713bf667e25a69422384e38b348842f7452` exposed a visual defect in the
+Arabic card: neutral punctuation in values such as `method:%@` and
+`receipt:**literal**` could reorder beside the RTL label. The six original
+automated methods passed; their logical accessibility strings did not prove
+visual identifier order. The original artifact remains
+[artifact 12192650675 from run 39258577523](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39258577523/artifacts/12192650675).
+Its five selected PNG payloads and metadata were decoded without a new rendering
+run, and the Arabic image was independently inspected.
+
+The correction isolates each displayed value with Unicode FSI/PDI. Labels retain
+the view's language and layout, while each value takes its own first-strong
+direction. The production accessibility label uses those same real label/value
+inputs without presentation controls; stored values, dates, grades, receipts and
+the test host remain unchanged. No expected fixture text is injected into the
+production view. The mechanism follows
+[Unicode UAX #9 revision 52, sections 2.4–2.5](https://www.unicode.org/reports/tr9/tr9-52.html#Explicit_Directional_Isolates)
+(read on 2026-10-19). This uses the existing SwiftUI text/accessibility APIs rather
+than a newer-platform writing-direction API.
+
+The unchanged 14-scenario sixth method already includes the observed
+punctuation-heavy Arabic case, exact logical values, locale changes, recheck and
+English recovery, with all five selected viewport attachments. The correction
+requires new actual source-bound native results and inspection of the new Arabic
+PNG beside the original; the old successful run does not qualify the corrected
+pixels. Accessibility-string equality remains a logical-content check. Neither
+that equality nor these scoped screenshots establish a complete VoiceOver,
+physical-device or arbitrary mixed-script text-safety qualification.
+
 The two conflict fixtures deliberately preserve different centrally supplied
 dispositions. One contains numeric disagreement with a producer-reported
 conservative failure; the other contains equally ranked opposite yes/no claims
