@@ -9,6 +9,7 @@ This portable Swift 6 package implements part of Apple [#32](https://github.com/
 - `CostEstimateRecord.decode(_:)` validates a frozen-v1 cost record and preserves exact decimal strings, build/pricebook identity, ordered items and reported coverage. The [cost boundary](COST_ESTIMATE.md) performs no pricing, arithmetic correction, rate authentication or current-build qualification.
 - `ResourceEstimate.decode(_:)` validates a frozen-v1 resource estimate artifact while preserving its exact decimal strings, ordered declarations and optional source absence. Parsing performs no capacity evaluation, dimensional qualification or current-build binding.
 - `DependencyGraph.decode(_:)` preserves all directed frozen-v1 edges with typed kind, relationship and activation labels. Its [boundary and conformance record](DEPENDENCY_GRAPH.md) distinguishes structural decoding from executable graph or placement policy.
+- `Ruleset.decode(_:)` validates a whole frozen-v1 rules artifact, including every recursive expression and operand alternative. It preserves all declarations and literals without evaluating compatibility or accepting a policy.
 - `BuildTransfer.snapshot(fromDraftJSON:)` validates a complete frozen-v1 BuildSnapshot and returns an immutable value. Missing fields and fewer than two selections fail; no defaults, locks or synthetic values are inserted. Keep editor drafts in PlannerData even when this transition fails.
 - `BuildTransfer.preview(_:)` accepts a bare snapshot or the existing web `pickyour.ai/build-export` version-1 envelope. Envelope provenance is untrusted metadata, not a verified catalog activation. `usesSyntheticData` is nil for bare imports; do not interpret that as production evidence.
 - `ImportPreview.fork(localOwner:timestamp:)` explicitly creates a new UUID-based build identity, revision 1 and draft lifecycle. Source owner is replaced by the caller's local identity. Every lock, selection and link is retained. This API cannot overwrite an existing record; the integration must insert the returned value as a new draft only after user confirmation.
@@ -43,7 +44,7 @@ Input is bounded to 512 KiB of UTF-8, 48 nesting levels and 16,384 JSON nodes. D
 
 ## Pinned inputs and validation
 
-`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/quality-evaluation-run/cost-estimate/resource-estimate/dependency-graph schemas and synthetic build/catalog/quality/cost/resource-estimate/graph fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared build corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. The additional CatalogItem, QualityEvaluationRun and ResourceEstimate corpora are described below; the CostEstimateRecord corpus is described in the [cost boundary](COST_ESTIMATE.md). Swift and Python Draft202012Validator with FormatChecker replay the same concrete payloads. Synthetic fixtures are not real catalog or installed-application evidence.
+`source-manifest.json` names the canonical research revision and SHA-256 hashes for the unchanged frozen build/selection/common/catalog-item/quality-evaluation-run/cost-estimate/resource-estimate/dependency-graph/ruleset schemas and synthetic build/catalog/quality/cost/resource-estimate/graph/ruleset fixtures. These hashes were compared with the research import manifest. Bundled schemas resolve locally; schema `$id` values never cause network requests. The evaluator implements only the keywords used by these resources. The 129-case shared build corpus includes positive settings for all 29 selection kinds, per-kind unknown settings, wrong Boolean types, missing catalog version pins, and build version/date/decimal/empty-selection failures. The additional CatalogItem, QualityEvaluationRun and ResourceEstimate corpora are described below; the CostEstimateRecord corpus is described in the [cost boundary](COST_ESTIMATE.md). Swift and Python Draft202012Validator with FormatChecker replay the same concrete payloads. Synthetic fixtures are not real catalog or installed-application evidence.
 
 Run:
 
@@ -373,3 +374,61 @@ This API computes neither capacity nor measured quality, accepts no source right
 and sends no requests. #49's service, exact-tuple rejection, UI and receiving
 conformance requirements remain open. The separate #32 all-kind boundary
 disposition is recorded above.
+
+## Frozen Ruleset boundary: narrow current-main receiving preparation
+
+This preparation carries the original unique ten-path Ruleset slice from
+[#214](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/214),
+source `fbc7b043418688c514f9664789014753dc358be8`, onto accepted main
+`84c05bb0034f604580077f1ea403386b94128b7e`. The six Ruleset-specific
+source, test, fixture and generator files remain byte-identical to that original.
+The four shared joins preserve the complete accepted validator, every existing
+reference replay and all fourteen preceding manifest pins. The only validator
+additions are the original Ruleset entry and exact-one `oneOf` handling.
+Only a schema mismatch is absorbed while checking alternatives; unavailable
+resources and other representation failures propagate.
+
+`Ruleset.decode(_:)` retains the complete bounded immutable value, publication
+identity and ordered rule declarations. Its unchanged schema and 45-rule synthetic
+example have SHA-256 values
+`b251e49774d7e6a34522555adefd40f56f5e647a8a2b4a69a0be0a4618b1a8d3` and
+`05474568204fdbfd407cb4e4cfc9334e22fdf24e75111bed8990868926fab418`.
+Both come from the existing frozen research revision
+`7acbefbf4e4e700231e88be272bc89e3a73dde15`. The whole-document parser
+bounds and exact normalized-output readback apply. Optional owner absence,
+literal null/false, repeated rule IDs, rule order and unknown-policy declarations
+remain distinct and unevaluated.
+
+The unchanged deterministic Ruleset corpus contains 321 exact JSON-text cases
+covering all fifteen expression operators, three operand forms, seven metrics,
+three reference scopes and twenty-nine affected kinds. Its three documented
+canonical-positive client refusals remain the large literal, small literal and
+terminal-newline ID. Eight unchanged Swift methods check that corpus, the full
+artifact, exact-one matching and resource failures in both branch orders, literal
+and ordering preservation, duplicate keys, aggregate bounds and output expansion.
+
+On this source, sixteen manifest pins and eight corpora describe 3,278 reference
+inputs (129 build/selection, 1,635 catalog, 202 quality, 520 cost, 223 resource,
+98 placement, 150 graph and 321 Ruleset). The combined Transfer source declares
+109 XCTest methods, including the eight Ruleset methods. These are input and
+source inventories, not execution results. The current locked reference
+environment and all applicable native, SDK and app gates remain unchanged and
+must qualify this actual composition before delivery.
+
+The [original complete source review](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/214#pullrequestreview-5561790372)
+and [44-case macOS/SDK receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/214#issuecomment-6247194707)
+keep their original inputs and attribution. The later 59/67/91-case preparations,
+their failures or prerequisite skips, and the broader editor/envelope receiving
+offers remain separately recorded on #214; none is execution of this narrow union.
+The [narrow receiving option](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/214#issuecomment-6258099318)
+establishes that this wrapper loads only Ruleset/common and that its generator
+reuses the existing catalog-vector helper. It does not require the unpublished
+catalog-envelope or editor source. This preparation does not change that broader
+lane's selected source or acceptance.
+
+Decoding is not rule evaluation, policy adoption, cache activation or a qualified
+cost/capacity result. Repeated IDs remain a receiving-policy decision. This source
+does not wire the separate Ruleset cache, choose a default or current version,
+fetch any network resource, alter an app caller, or grant publisher/source-use
+rights. Accepted #32 evidence and the remaining separate service, editor,
+device and release outcomes above retain their scope.
