@@ -133,6 +133,13 @@ actually executed the changed module against the earlier per-file-check order.
 The correction checks all completed copies after all writes; this synthetic fault
 and recovery do not execute Swift or establish native conformance.
 
+The private temporary root is resolved before copying so the later resolved
+module locations use the same physical directory identity. A temporary-root
+symlink therefore preserves valid imports while a module outside that root still
+rejects. The additional portable regression exercises both the outside-location
+rejection and valid retry through an actual directory symlink, verifies the copied
+bytes, and requires module/bytecode restoration and temporary-copy cleanup.
+
 The neutral corpus has **137 record cases**, **331 numeric tokens** and **six
 effective-limit cases**. The record inventory has 73 canonical-valid rows, of
 which 71 are supported by this native profile, and 64 canonical-invalid rows.
@@ -173,6 +180,25 @@ with jsonschema 4.26.0. Swift and Xcode are unavailable in this local workspace;
 no Swift compilation, XCTest, simulator or physical-device success is claimed.
 The actual prepared-source workflow must qualify the selected native tree and
 the real locked reference environment before receiving acceptance.
+
+The original hosted [Transfer job 117899207147](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39202788274/job/117899207147)
+checked out signed `0e14ad25e8e0e934a4ba1c7899327d52edc18fb0`, tree
+`575f68447d7fffc923151a833d7b2e24a86f31be`. Its fresh Python 3.14.7 environment
+installed the locked dependencies and verified that source's twelve pins and six
+frozen corpora, then the copy regression's valid retry failed with
+`context oracle imported outside verified copy`; Swift steps did not execute.
+A controlled Linux run of the unchanged loader reproduced that same rejection
+only when the valid temporary directory was reached through a symlink. Resolving
+the existing temporary root corrects that path-identity mismatch without removing
+the complete-copy check or the outside-module rejection. This portable probe and
+the original failure do not qualify the corrected macOS workflow; its exact
+prepared-source run remains required.
+
+The two portable methods ran on Python 3.12.14 / jsonschema 4.25.1. With the
+unchanged loader, the added alias method failed its valid retry while the existing
+late-copy method passed (0.112 seconds). With the correction, both methods passed
+in 0.097 seconds and complete regeneration retained the exact 367,497-byte corpus
+above. These controlled local results remain separate from hosted macOS execution.
 
 Primary language references checked on 2026-10-19:
 [Swift strings and characters](https://docs.swift.org/latest/documentation/the-swift-programming-language/stringsandcharacters/),

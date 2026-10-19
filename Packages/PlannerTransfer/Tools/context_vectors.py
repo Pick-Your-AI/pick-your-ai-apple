@@ -58,7 +58,9 @@ def reference():
                    if name == "tests" or name.startswith("tests.")}
     old_bytecode = sys.dont_write_bytecode
     with tempfile.TemporaryDirectory(prefix="apple-context-reference-") as directory:
-        target = Path(directory)
+        # macOS temporary roots may be reached through a filesystem alias.
+        # Compare resolved module paths with the same existing physical root.
+        target = Path(directory).resolve(strict=True)
         for name, raw in copies.items():
             path = target / name
             path.parent.mkdir(parents=True, exist_ok=True)
