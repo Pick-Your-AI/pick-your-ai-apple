@@ -146,7 +146,12 @@ def cleanup_simulator(udid):
             if action == "delete":
                 deleted = True
         except (OSError, subprocess.SubprocessError) as error:
-            print(f"Owned simulator {action} did not complete for {udid}: {error}", file=sys.stderr, flush=True)
+            try:
+                print(f"Owned simulator {action} did not complete for {udid}: {error}", file=sys.stderr, flush=True)
+            except Exception:
+                # Warning output must not stop owned cleanup or replace the
+                # original operation failure.
+                pass
     # An already-shutdown simulator can reject shutdown. Successful deletion
     # remains the decisive receipt, matching the actual UI runner's convention.
     return deleted
@@ -166,11 +171,15 @@ def collect_launch_diagnostics(udid):
         except Exception as error:
             # Diagnostics are best effort. Their failure must not replace the
             # original launch failure or prevent the remaining finally cleanup.
-            print(f"Launch diagnostic did not complete for {udid}: {error}", file=sys.stderr, flush=True)
+            try:
+                print(f"Launch diagnostic did not complete for {udid}: {error}", file=sys.stderr, flush=True)
+            except Exception:
+                # An unavailable output sink cannot stop the remaining probes.
+                pass
 
 
 def observe_runtime(udid, phase):
-    """Reuse bounded filtered probes without changing boot, install or cleanup."""
+    """Reuse bounded filtered probes without changing required operations or cleanup."""
     try:
         collect_runtime_snapshot(udid, phase)
     except Exception as error:
@@ -210,13 +219,13 @@ def smoke_destination(device, runtime, family, existing_ids):
         except (OSError, subprocess.SubprocessError):
             observe_runtime(udid, "install-failed")
             raise
-        collect_runtime_snapshot(udid, "before-launch")
+        observe_runtime(udid, "before-launch")
         try:
             # This simulator was just created and the app just installed. There
             # is no earlier runner-owned app process to terminate before launch.
             run("xcrun", "simctl", "launch", udid, APP_BUNDLE_ID)
         except (OSError, subprocess.SubprocessError):
-            collect_runtime_snapshot(udid, "launch-failed")
+            observe_runtime(udid, "launch-failed")
             collect_launch_diagnostics(udid)
             raise
         run("xcrun", "simctl", "terminate", udid, APP_BUNDLE_ID)

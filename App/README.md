@@ -436,3 +436,24 @@ requirements and the signed-artifact, privacy and channel evidence still needed.
 The native simulator launch job now reuses these pins and verifier for its Debug
 product; the separate Release-product lane does not supply its required launch
 or cleanup results.
+
+## Launch observation failure boundary
+
+The `before-launch` and `launch-failed` snapshots use the same guarded
+`observe_runtime` path as boot and installation. A collector exception or an
+unavailable observation output must not prevent the single launch attempt,
+replace its original failure, or skip its two bounded launch diagnostics. The
+existing owned shutdown/delete cleanup still applies. Commands, destinations,
+deadlines, runtime selection and successful-launch requirements are unchanged.
+
+A controlled Python probe on accepted source `0e289d81428068a0a3196cde064fda536c71691b`
+preserved two normal controls and demonstrated four violations: collector and
+output failures before launch prevented the attempt, and those failures after a
+launch timeout replaced its exact exception and skipped diagnostics. These are
+synthetic exception-ordering observations, not a cause assigned to any historical
+macOS simulator failure. Four new portable regression methods cover both device
+families, exact original failure identity, both diagnostic commands, owned
+cleanup, redaction and unchanged deadlines. All 32 earlier smoke test methods
+remain unchanged. Run the complete focused suite with
+`python3 -m unittest discover -s App/scripts/tests -p 'test_simulator_smoke.py' -v`.
+Actual changed-runner native qualification remains separate.
