@@ -52,7 +52,7 @@ class VerifiedSnapshotTests(unittest.TestCase):
             altered_manifest = json.loads(manifest_bytes)
             next(entry for entry in altered_manifest['files']
                  if entry['path'] == 'examples/build.json')['sha256'] = hashlib.sha256(replacement).hexdigest()
-            original_read = Path.read_bytes
+            original_read = reference.read_regular_bytes
             changed = []
 
             def replace_after_read(path):
@@ -64,7 +64,7 @@ class VerifiedSnapshotTests(unittest.TestCase):
                 return value
 
             try:
-                with patch.object(Path, 'read_bytes', replace_after_read):
+                with patch.object(reference, 'read_regular_bytes', replace_after_read):
                     with self.assertRaisesRegex(ValueError, 'hash mismatch: examples/build.json'):
                         reference.verify_source(root)
                 self.assertEqual(changed, [True])

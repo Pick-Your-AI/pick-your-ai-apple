@@ -5,8 +5,11 @@ import json
 import os
 from pathlib import Path
 import shutil
+import stat
+import subprocess
 import sys
 import tempfile
+import textwrap
 import unittest
 from unittest.mock import patch
 
@@ -57,15 +60,17 @@ class EvidenceVectorTests(unittest.TestCase):
                     exporter.main()
 
     def test_source_change_during_copy_is_rejected_before_any_case_is_accepted(self):
-        copyfile = shutil.copyfile
+        copyfileobj = shutil.copyfileobj
 
         def corrupted_snapshot(source, target, *args, **kwargs):
-            result = copyfile(source, target, *args, **kwargs)
-            if Path(target).name == "evaluation-report.json":
-                Path(target).write_bytes(Path(target).read_bytes() + b" ")
+            result = copyfileobj(source, target, *args, **kwargs)
+            target.flush()
+            copied_path = Path(target.name)
+            if copied_path.name == "evaluation-report.json":
+                copied_path.write_bytes(copied_path.read_bytes() + b" ")
             return result
 
-        with patch.object(exporter.shutil, "copyfile", side_effect=corrupted_snapshot):
+        with patch.object(exporter.shutil, "copyfileobj", side_effect=corrupted_snapshot):
             with self.assertRaisesRegex(ValueError, "hash mismatch: examples/evaluation-report.json"):
                 exporter.bundle(self.root)
         self.assertEqual(len(exporter.bundle(self.root)["cases"]), 37)
@@ -104,6 +109,91 @@ class EvidenceVectorTests(unittest.TestCase):
                 source.write_bytes(original)
             exporter.reference.verify_source(root)
             self.assertEqual(exporter.bundle(root), baseline)
+
+    def test_manifest_copy_rejects_fifo_replacement_before_consumption_and_recovers(self):
+        probe = textwrap.dedent(r'''
+            import json, os, stat, sys
+            from pathlib import Path
+            from unittest.mock import patch
+            sys.path.insert(0, sys.argv[1])
+            import evidence_vectors as exporter
+            root = Path(sys.argv[2])
+            manifest = root / "IMPORT_MANIFEST.json"
+            original_stat = exporter.shutil._stat
+            original_read = exporter.reference.read_regular_bytes
+            original_versions = exporter.reference.versions
+            verified = False
+            replaced = []
+
+            def after_verification():
+                global verified
+                result = original_versions()
+                verified = True
+                return result
+
+            def replace(site):
+                manifest.unlink()
+                os.mkfifo(manifest)
+                replaced.append(site)
+                print(json.dumps({"event": "fifo-replacement", "site": site}), flush=True)
+
+            def checked_stat(path):
+                result = original_stat(path)
+                if verified and not replaced and Path(path) == manifest:
+                    replace("copyfile-source-stat")
+                return result
+
+            def checked_read(path):
+                if verified and not replaced and Path(path) == manifest:
+                    replace("regular-input-open")
+                return original_read(path)
+
+            with patch.object(exporter.reference, "versions", side_effect=after_verification), \
+                    patch.object(exporter.shutil, "_stat", side_effect=checked_stat), \
+                    patch.object(exporter.reference, "read_regular_bytes", side_effect=checked_read), \
+                    patch.object(exporter, "verified_bundle", wraps=exporter.verified_bundle) as consume:
+                try:
+                    exporter.bundle(root)
+                except ValueError as error:
+                    if "Conformance input must be a regular file:" not in str(error):
+                        raise
+                else:
+                    raise AssertionError("Replaced manifest was accepted")
+                consume.assert_not_called()
+            if replaced != ["regular-input-open"]:
+                raise AssertionError(replaced)
+            if not stat.S_ISFIFO(manifest.stat().st_mode):
+                raise AssertionError("FIFO identity changed")
+            print(json.dumps({"event": "rejected-before-consumption"}), flush=True)
+        ''')
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory) / "v1"
+            shutil.copytree(self.root, root)
+            manifest = root / "IMPORT_MANIFEST.json"
+            original = manifest.read_bytes()
+            baseline = exporter.bundle(root)
+            result = None
+            timeout_output = ""
+            try:
+                try:
+                    result = subprocess.run(
+                        [sys.executable, "-B", "-u", "-c", probe, str(HERE), str(root)],
+                        capture_output=True, text=True, timeout=3)
+                except subprocess.TimeoutExpired as error:
+                    output = error.stdout or b""
+                    timeout_output = output.decode() if isinstance(output, bytes) else output
+                self.assertTrue(stat.S_ISFIFO(manifest.stat().st_mode))
+            finally:
+                manifest.unlink()
+                manifest.write_bytes(original)
+                self.assertEqual(exporter.bundle(root), baseline)
+            self.assertIsNotNone(result, "Manifest copy blocked after replacement: " + timeout_output)
+            self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+            events = [json.loads(line) for line in result.stdout.splitlines()]
+            self.assertEqual(events, [
+                {"event": "fifo-replacement", "site": "regular-input-open"},
+                {"event": "rejected-before-consumption"},
+            ])
 
     def test_reference_rejects_a_falsely_accepted_incompatible_payload(self):
         schema_results = exporter.reference.schema_results
