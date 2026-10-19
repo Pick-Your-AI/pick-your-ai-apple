@@ -6,7 +6,8 @@ import PlannerCore
 
 // Complete, unchanged frozen-v1 examples. These test resources are never product
 // defaults, live prices, source-use receipts or permission to activate real data.
-private enum CanonicalFixture: String, CaseIterable {
+// Shared only within this test target, including the real-transport recovery suite.
+enum CanonicalFixture: String, CaseIterable {
     case build, catalog, pricebook
 
     var sha256: String {
@@ -35,7 +36,7 @@ private enum FixtureAdmissionError: Error {
     case changedCanonicalFixture, unexpectedArtifact
 }
 
-private struct CanonicalPair: Sendable {
+struct CanonicalPair: Sendable {
     let manifest: CacheManifest
     let artifacts: [CatalogArtifact: Data]
 
