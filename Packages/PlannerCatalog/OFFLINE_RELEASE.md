@@ -85,9 +85,12 @@ compatibility nor that prices, evidence or rules are current.
 Only public synthetic preview data is supported. Production mode fails before
 filesystem or cache access. A private local selection is not a canonical
 publisher manifest, source-use receipt, compatibility/graph/build result or
-promotion approval. The full frozen Ruleset validator adapter remains the
-separate [PR #214](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/214)
-contribution; test header decoders are not that adapter. Do not store drafts,
+promotion approval. A receiver can now supply PlannerTransfer's
+[`FrozenRulesetCacheValidator.identity(for:)`](../PlannerTransfer/Sources/PlannerTransfer/RulesetCacheValidator.swift)
+to its RulesetCache, as described in [rules admission](RULES_CACHE.md#admission-and-identity).
+It validates the complete Ruleset before returning identity; it does not validate
+cross-artifact compatibility or replace the required Catalog/Pricebook validator.
+The existing selector tests' header decoders remain storage fixtures. Do not store drafts,
 accounts, credentials or raw evidence in this directory.
 
 ## Regression and receiving scope
@@ -112,3 +115,13 @@ actual receiving source, with the existing storage regression/process-exit
 and hosted storage gates applicable to this new durable selector. No simulator,
 physical-device, OS scheduling or whole-issue acceptance follows from these
 package results.
+
+The separate receiving `RulesetCacheValidatorTests` in PlannerTransfer exercise
+this selector with the real full-body Ruleset adapter and an explicitly closed
+synthetic pair-fixture allowlist. Their failed-rules case first prepares pair B,
+then proves that invalid rules cannot replace selected A or rewrite either cache
+during the failed activation. A restart resolves the exact A tuple; corrected B
+becomes selected only after valid rules retention and explicit activation.
+Run `swift test --package-path Packages/PlannerTransfer --filter RulesetCacheValidatorTests`
+and qualify its actual native results separately. These integration tests do not
+turn controlled pair fixtures into publisher, app-editing or real-OS evidence.
