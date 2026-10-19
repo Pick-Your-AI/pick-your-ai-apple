@@ -18,7 +18,7 @@ used by this package:
 | [cost-estimate.json](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/7acbefbf4e4e700231e88be272bc89e3a73dde15/contracts/v1/examples/cost-estimate.json) | `4b7c3889881d3c424ed98cc47b146b25b05df21c5459c9558717f21b6198b7e4` |
 
 The [source manifest](source-manifest.json) appends only these two pins. Its
-previous eight hashes, revision and metadata remain unchanged. The existing
+previous hashes, revision and metadata remain unchanged. The existing
 common schema supplies identifiers, decimal strings, money and timestamps.
 Schema references resolve only to bundled resources. No remote resolver or new
 schema engine is introduced.
@@ -124,7 +124,7 @@ swift test --package-path Packages/PlannerTransfer
 ```
 
 The existing build, catalog and quality checks run unchanged before the added
-loop over all 520 cost cases. The verifier checks all ten source
+loop over all 520 cost cases. The verifier checks all listed source
 hashes. The [deterministic generator](Tools/cost_vectors.py) and Swift test
 renderer apply the same compact mutations, retaining raw replacement number
 tokens until the public decoder sees them.
