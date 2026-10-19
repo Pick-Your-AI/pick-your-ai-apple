@@ -2,12 +2,17 @@
 
 ## Current canonical receiving boundary
 
-The canonical #391 composition now receives this exact reviewed donor
+The reviewed #391 planning composition receives this exact reviewed donor
 `3f7f48ecf9cb5a5da37829b0e8bf17b4d0ccc62e` together with accepted main
 `4632c72ad26b3d4500090316d107292994982457`. Its unchanged 228 UI methods and
 seven App journeys join the accepted nineteen historical-resource methods and
 six-method localized Evidence host. The [current requirements](../../App/README.md#current-receiving-source-and-required-validation)
-require 744 package declarations, including all 209 Transfer identities.
+require 749 package declarations, including all 209 Transfer identities.
+Accepted main `c512e99d9042669171cf418ddace3e3769fc854f` adds five Core
+receipt-identity methods to the published `086492dd` source. Its first signed
+preparation is `c81a2806e41608856d799d47a51c82ebcd7e42c4`; the current
+documentation reconciliation preserves that complete executable union. The
+earlier 744-declaration public source retains its own original qualification.
 
 The source-time 725/190 counts and portable observations below remain attributed
 to this donor's preceding `682f04a8` join. They do not qualify the new combined

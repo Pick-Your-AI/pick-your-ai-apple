@@ -2,7 +2,7 @@
 
 ## Accepted historical-resource, localization and planning carry
 
-The current isolated #391 receiving composition joins the reviewed planning donor
+The reviewed #391 planning composition joins the reviewed planning donor
 `3f7f48ecf9cb5a5da37829b0e8bf17b4d0ccc62e`, tree
 `f5bdeaa6acc1cea263e8926955de76904d34ab29`, and accepted main
 `4632c72ad26b3d4500090316d107292994982457`, tree
@@ -11,13 +11,25 @@ The current isolated #391 receiving composition joins the reviewed planning dono
 The [current App requirements](../../App/README.md#current-receiving-source-and-required-validation)
 and [planning boundary](issue-64-planning-inputs.md) describe the combined source.
 
-Required package declarations are 146 Core, 69 Data, 209 Transfer, 92 Catalog and
-228 UI: 744 total, plus all seven App journeys per selected destination and all
+Required package declarations are 151 Core, 69 Data, 209 Transfer, 92 Catalog and
+228 UI: 749 total, plus all seven App journeys per selected destination and all
 six Evidence-rendering methods. The nineteen accepted historical-resource methods
 extend the strict Transfer map without changing any earlier map or parser. The
 complete planning and accepted main Swift/test bodies, resource values, canonical
 four-package UI dependencies and privacy processing are retained. No prior native
 pass is promoted to this combined source; its configured results remain required.
+
+The current follow-up additionally receives accepted main
+`c512e99d9042669171cf418ddace3e3769fc854f` onto published
+`086492dd4c78306fe5c9add8b6d8753dcea33073`. Its first valid-signed preparation
+`c81a2806e41608856d799d47a51c82ebcd7e42c4`, tree
+`cfde13b48c82da69eb540ce02036df5da972b479`, preserves that complete union.
+The five additional Core methods cover exact receipt-reference identity. The
+accepted simulator-output and literal-checkbox corrections remain exact as well.
+This follow-up reconciles documentation counts only; executable code, tests,
+resources, gates, deadlines and the original 17-control inputs remain unchanged.
+The 744-declaration public source and every original native receipt keep their
+own immutable source and preparation identities.
 
 The following source-time records and counts retain their named earlier inputs.
 They preserve the actual original failures and handoffs; source inclusion does not

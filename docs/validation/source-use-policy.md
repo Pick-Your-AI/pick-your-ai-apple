@@ -22,7 +22,7 @@ Known frozen synthetic catalog identifiers and the exact `2026.10-demo` componen
 
 Synthetic requests return a distinct `syntheticOnly` result, never production authorization. This assumes intake truthfully labels material: calling real source content synthetic cannot grant rights. The production path must handle only `authorized`; the library does not activate data or fetch it. Conditions include notices, attribution, estimate labels and product-scope restrictions; their actual satisfaction remains a receiving-review responsibility.
 
-`SourceUsePolicyTests` covers thirteen tests: exact receipt/audit trace; public URL without rights and research without promotion; all identity/scope dimensions; byte-distinct Unicode request/row identities and exact-receipt recovery; display/cache/export/retrieval separation; unknown/denied/revoked rights; unmet conditions and pending/rejected/revoked promotions; changed dated rows and recovery; conflict/revocation order; synthetic isolation and known-fixture relabel rejection; malformed identities, digests and Gregorian dates. Every scenario is synthetic.
+`SourceUsePolicyTests` covers fourteen tests: exact receipt/audit trace; public URL without rights and research without promotion; all identity/scope dimensions; byte-distinct Unicode request/row identities and exact-receipt recovery; exact audit receipt-reference equality; display/cache/export/retrieval separation; unknown/denied/revoked rights; unmet conditions and pending/rejected/revoked promotions; changed dated rows and recovery; conflict/revocation order; synthetic isolation and known-fixture relabel rejection; malformed identities, digests and Gregorian dates. Every scenario is synthetic.
 
 Reproduce with the selected Swift toolchain:
 
@@ -64,6 +64,33 @@ This is portable policy execution on synthetic receipts. The selected Xcode
 toolchain, native simulator checks and current-main receiving review remain
 required before delivery. It does not supply actual rights, verify a receipt's
 authenticity or complete the integrated source-use criteria below.
+
+### Audit receipt-reference regression — 2026-10-19
+
+`SourceUseAudit` also compares its conditions and promotion receipt references
+by exact UTF-8 bytes. Its prior synthesized equality could treat two audits as
+equal when either reference changed between canonically equivalent spellings.
+The enclosing `SourceUseAssessment.authorized` comparison inherited that result.
+Request and rights-row matching already used exact byte identity.
+
+The added test creates audits through the real policy with synthetic, separately
+supplied conditions and promotion receipts. It changes each reference in both
+Unicode encoding directions, checks both audit and assessment inequality,
+retains the exact request/dated row/reference bytes, and confirms that an
+independently reconstructed exact copy remains equal.
+
+Against unchanged production at `a3365dac377263aa2595f5d210c0918f1e29b5ab`,
+this test failed with **8 assertions**. After the equality correction, the complete
+PlannerCore package passed **140 tests, zero failures**, including all **14**
+source-use policy methods, on Linux Swift **6.1.2** with task-local caches and
+`--jobs 1`. The observed package summary was 6.95 seconds. The existing
+`swift test --package-path Packages/PlannerCore` command above reproduces the
+suite with the selected toolchain.
+
+This is equality coverage for returned provenance. Authorization decisions,
+receipt authenticity, rights intake and production activation retain their
+existing boundaries. Current macOS/iOS workflow execution and receiving review
+remain required; this local regression supplies no real-source or device receipt.
 
 ## Criterion disposition
 

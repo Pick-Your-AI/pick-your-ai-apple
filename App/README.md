@@ -42,7 +42,7 @@ The [integration record](../docs/validation/imported-build-integration.md) names
 actual 2026-10-19 selection, immutable donors, current-module joins and remaining
 receiving gates. The fixed preparation selected on `888cb7e7` carried accepted
 main through `0e289d81`; the preceding composition carried accepted `7431b7d6`.
-The current composition additionally receives accepted main `4632c72a` and
+The reviewed planning composition receives accepted main `4632c72a` and
 the exact planning donor `3f7f48ec`, with their boundaries below.
 It does not recover an absent old #198 tree or deliver its signed
 staging branch to main. The separately prepared T6 report/route follow-up starts
@@ -119,7 +119,7 @@ methods: 34 retained draft cases and 35 accepted pending-write cases, with both
 actual crash/recovery probes. The strict Data receiver checks every identity in
 the macOS, iPhone, iPad and submission SDK logs. Transfer requires 209 exact methods,
 the original nine reference phases and the separate Manifest controls. Submission
-SDK requires all five packages (146 Core, 69 Data, 209 Transfer, 92 Catalog, 228 UI; 744 total),
+SDK requires all five packages (151 Core, 69 Data, 209 Transfer, 92 Catalog, 228 UI; 749 total),
 all current App guards and both unsigned Release products with their separate SDK
 and privacy receipts. Static inventories are not execution observations.
 
@@ -167,9 +167,21 @@ package/target dependencies and both Resources and privacy-manifest processing.
 The original `682f04a8` / prepared `1e5b90b6` and planning donor `3f7f48ec` /
 prepared `228840ae` results describe their own source and base. Earlier original
 comparison and renderer results likewise retain their exact execution identities.
-Their receipt counts do not qualify this 744-method, seven-journey composition;
+Their receipt counts do not qualify this 749-method, seven-journey composition;
 the configured current-source native jobs and ordinary review/merge gates remain
 required. No native command, destination, attempt, deadline or cleanup rule changes.
+
+The later accepted main `c512e99d9042669171cf418ddace3e3769fc854f`
+adds five Core methods for exact evidence/audit receipt identity, preserves
+simulator command outcomes when observation or output reporting fails, and
+requires literal Boolean acceptance-map states. Its complete runtime, regression
+and documentation changes join the reviewed public `086492dd` source. The first
+signed receiving commit `c81a2806e41608856d799d47a51c82ebcd7e42c4`, tree
+`cfde13b48c82da69eb540ce02036df5da972b479`, binds that actual current-main union.
+The present documentation reconciliation leaves every executable input in that
+union unchanged. The earlier 744-declaration public source, its 17 portable
+controls, and each native preparation retain their original identities; no
+old native result qualifies this 749-declaration source.
 
 ## Retained smoke and toolchain history
 
@@ -805,3 +817,38 @@ requirements and the signed-artifact, privacy and channel evidence still needed.
 The native simulator launch job now reuses these pins and verifier for its Debug
 product; the separate Release-product lane does not supply its required launch
 or cleanup results.
+
+## Launch observation failure boundary
+
+The `before-launch` and `launch-failed` snapshots use the same guarded
+`observe_runtime` path as boot and installation. A collector exception or an
+unavailable observation output must not prevent the single launch attempt,
+replace its original failure, or skip its two bounded launch diagnostics. The
+existing owned shutdown/delete cleanup still applies. Commands, destinations,
+deadlines, runtime selection and successful-launch requirements are unchanged.
+
+A controlled Python probe on accepted source `0e289d81428068a0a3196cde064fda536c71691b`
+preserved two normal controls and demonstrated four violations: collector and
+output failures before launch prevented the attempt, and those failures after a
+launch timeout replaced its exact exception and skipped diagnostics. These are
+synthetic exception-ordering observations, not a cause assigned to any historical
+macOS simulator failure. Four new portable regression methods cover both device
+families, exact original failure identity, both diagnostic commands, owned
+cleanup, redaction and unchanged deadlines. All 32 earlier smoke test methods
+remain unchanged. Run the complete focused suite with
+`python3 -m unittest discover -s App/scripts/tests -p 'test_simulator_smoke.py' -v`.
+Actual changed-runner native qualification remains separate.
+
+Captured command text replaces undecodable bytes so a malformed diagnostic
+stream cannot erase a successful creation UUID, hide the actual exit status, or
+interrupt owned cleanup. These logs contain decoded text with replacement
+characters; they are not byte-exact raw process output. Returned UUID and
+inventory text still pass the existing parsers, nonzero statuses still fail,
+and unsuccessful deletion still prevents a successful smoke result.
+
+Four additional portable methods use real Python children to cover success,
+nonzero exits, valid creation output with malformed stderr, a real launch
+timeout followed by both owned cleanup attempts, and a failed deletion. All 43
+preceding method bodies remain unchanged. These controlled child processes
+demonstrate exception ordering; they do not assign a cause to any historical
+simulator failure or establish native recovery.
