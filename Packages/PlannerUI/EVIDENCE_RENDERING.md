@@ -74,6 +74,18 @@ cannot format the date exactly, the original recorded date remains available.
 The [date contract, primary references and focused test obligations](../../tools/evidence-rendering/README.md#captured-date-presentation-under-58)
 keep current date work separate from the historical #36 results below.
 
+The separate #58 explanatory-copy extension uses the `PlannerUI` resource bundle
+for the claim card's static labels and closed grade/review messages. English,
+German and Arabic are explicit presentation examples; other languages fall back
+to English. Resource selection follows this view's current locale on each render.
+The original status, component/version/snapshot, raw capture date, source,
+retrieval method and both receipt types remain verbatim, including values that
+look like translation keys or Markdown. The existing Core mapping alone chooses
+the grade and review requirement. This adds no source inspection, acceptance,
+expiry rule or action. [Copy and native coverage](../../tools/evidence-rendering/README.md#claim-card-explanatory-copy-under-58)
+remain separate from whole-app language/market acceptance and #75's current
+analysis/response integration.
+
 The two conflict fixtures deliberately preserve different centrally supplied
 dispositions. One contains numeric disagreement with a producer-reported
 conservative failure; the other contains equally ranked opposite yes/no claims
@@ -134,12 +146,12 @@ accessibility text; it is not evidence of physical-device layout, visual contras
 localization or a complete VoiceOver journey.
 
 The existing native UI job runs the original package model tests and the separate
-host's five macOS UI tests. The existing Core workflow runs the same five selected
+host's six macOS UI tests. The existing Core workflow runs the same six selected
 UI tests on its already inventoried iPhone and iPad. At this source baseline the pin is Xcode 16.4/16F6 and iOS
 18.5; each delivering run must retain its actual selected toolchain and destination
 identities. The new log gate reuses the strict XCTest parser with explicit module
 `PlannerEvidenceUITests`, keeping `PlannerCoreTests` as its unchanged default.
-It requires all five exact methods, unique starts and passes, exactly one complete
+It requires all six exact methods, unique starts and passes, exactly one complete
 matching `All tests` or `Selected tests` session and zero failures or skips. Its
 synthetic adversarial logs qualify the parser only; the older `PlannerUITests`
 module cannot qualify this host.
@@ -149,6 +161,18 @@ year limits and recovery with a required recheck. The four original native
 method bodies and all 37 frozen vectors remain unchanged. Their prior results
 do not establish execution of this additional method; the delivering date PR
 must retain its own actual configured native results.
+The sixth method adds 14 same-view copy scenarios: English/German/Arabic,
+Arabic right-to-left layout, unsupported-language English fallback, literal
+identifiers/receipts and return to English with the recheck still required.
+They use accessibility-sized text and retain named PNG attachments from the final
+visible viewport for five selected scenarios. These are scoped screenshots,
+not full scroll-content captures or an app-wide visual matrix. The first four
+method bodies remain exact; the fifth retains all ten date cases and assertions,
+with translated German/Arabic explanatory-label expectations and additional
+negative-label checks. All five old method identities remain required. A prior
+five-method receipt cannot qualify the six-method extension. Local source and
+synthetic receipt checks do not establish Swift compilation or native rendering;
+the new configured results and attachment review remain pending.
 Independent review reproduced a false acceptance of bare class/method names in
 the initial qualifier. The corrected UI call requires an explicit module prefix;
 the regression rejects those same bare names while Core's existing default
