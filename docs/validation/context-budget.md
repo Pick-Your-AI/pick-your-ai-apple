@@ -33,7 +33,7 @@ The digest establishes byte identity; it says nothing about source eligibility.
 unused records, duplicate keys, pointer syntax, parent/child overlap and numeric
 admission. It then reads the seven fixed context fields using their reviewed
 types. There is no arbitrary caller-supplied schema evaluator or rule dispatcher.
-The existing `JSONValue`, frozen schemas, source manifest and six frozen corpora
+The existing `JSONValue`, frozen schemas, source manifest and accepted frozen corpora
 remain unchanged.
 
 ## Preservation and conservative evaluation
