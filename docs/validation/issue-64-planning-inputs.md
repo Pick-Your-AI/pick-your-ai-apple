@@ -3,7 +3,8 @@
 This bounded implementation candidate addresses the missing input editor in
 [Apple #64](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/64). It is a donor
 on the existing [#391 app integration](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391)
-source `9e83640075037bb23a1703a5c03f40befe0b5580`, not another main integration route.
+source initially `9e83640075037bb23a1703a5c03f40befe0b5580`. The current preserving
+join receives `682f04a88bd3a5b709beed695e0b8fbac2c78272` on that same branch.
 The [scope/ownership receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/64#issuecomment-6276489324)
 records the fresh inspection and preparation boundary. No issue criterion is closed
 by this document, a portable test result, or source inclusion.
@@ -101,12 +102,14 @@ cover v1 history preservation, invalid text/absence after reopen and duplication
 stale callbacks, undo/redo, in-flight saves, restoration, revision conflict, queued
 lifecycle save, autosave/discard and unsupported-record preservation.
 
-All **204 preceding Swift test method bodies remain unchanged**. The new current
+All **204 preceding Swift test method bodies remain unchanged**. The initial
 `planning-inputs-ui` receipt profile requires **221 exact class/method identities**.
 The original 204-method profile and every older profile/parser function remain
-intact for their historical sources. Both native model and submission SDK jobs now
-select the 221-method profile; job selection, toolchains, deadlines, cleanup and
-other native acceptance requirements are unchanged.
+intact for their historical sources. Both native model and submission SDK jobs
+selected the 221-method profile at the initial preparation; the current receiving
+join below additionally requires all seven descriptor-admission methods. Job
+selection, toolchains, deadlines, cleanup and other native acceptance requirements
+are unchanged.
 
 | Actual local observation, 2026-10-19 | What it establishes |
 | --- | --- |
@@ -120,7 +123,7 @@ Reproduce native model execution with the pinned supported Apple toolchain:
 ```sh
 set -o pipefail
 swift test --package-path Packages/PlannerUI 2>&1 | tee model-tests.txt
-python3 tools/ci/require_swift_test_results.py planning-inputs-ui model-tests.txt
+python3 tools/ci/require_swift_test_results.py planning-inputs-descriptor-ui model-tests.txt
 ```
 
 The hosted workflows retain their stricter cache, toolchain, product and artifact
@@ -155,8 +158,8 @@ package-test profile is unchanged. The original two/four local/T6 selector group
 are unchanged; the existing native workflow's `--suite all` additionally requires
 the seventh App method. All runner functions, destinations, deadlines, single
 attempts and cleanup remain unchanged. The workflow edit only makes its step name
-describe the complete current selection. Current App documentation now names the
-221 package methods and seven App journeys, preserving dated prior receipts.
+describe the complete selection at that source. The follow-up App documentation
+named 221 package methods and seven App journeys, preserving dated prior receipts.
 
 The actual local registration control first ran the same 24 Python methods with
 the new Swift method absent from the runner selection: one expected missing-method
@@ -166,6 +169,43 @@ source/receipt attendance and rejection of older or substituted output, not
 execution of the Swift journey. A Swift 6.2.4 frontend syntax parse of the changed
 native test is separately recorded; syntax parsing is not Apple SDK type checking
 or native behavioral execution.
+
+## Receiving queue, Ruleset and descriptor contributions
+
+The canonical #391 target advanced to `682f04a88bd3a5b709beed695e0b8fbac2c78272`,
+tree `cb8fa66907377f1696523e8bddc3f00ea2212753`. It preserves accepted main through
+`575ffe5a7e1bd4fe0a01e2d4cb9e39b9bfd953e7`, including the pending-build write store,
+the whole Ruleset/cache adapter and the corrected dependency paragraph. It also
+receives the separately reviewed regular-file descriptor admission correction.
+The earlier planning donor `2d74aab92fc82553858f6bfe106c4f30cd040f79`, tree
+`6b69a92c258ad71846d68f5d96c41f19e2da6605`, retains its own original preparation,
+source review and native outcomes.
+
+The preserving join changes no Swift application or test body from either source.
+The only four textual conflicts concern the submission receiver, App README and
+two portable receipt/inventory files. The exact receiving Data and Transfer
+profiles still require 69 and 190 methods. The historical 204-method UI mapping is
+retained as `integrated-retained-ui-before-descriptor`; the target's complete
+211-method `integrated-retained-ui` mapping and the donor's complete 221-method
+`planning-inputs-ui` mapping are preserved. The added
+`planning-inputs-descriptor-ui` mapping requires their complete union: **228 exact
+UI class/method identities**, with no duplicate or replacement case. Both current
+UI receipt invocations select that union. The seven App journeys, every runner
+function, all job selections, destinations, single attempts, deadlines and owned
+cleanup requirements remain unchanged.
+
+The current package inventory is **725 declarations**: 146 Core, 69 Data,
+190 Transfer, 92 Catalog and 228 UI. No current combined native result is inferred
+from either preceding source. The existing attendance control was run with the
+seven descriptor identities deliberately absent from the proposed union: it
+reported the expected `221 != 228` failure. The original 923-byte log has SHA-256
+`b7b82e6af96ef39e92610423187a172fe2db7e3eff04125f46e02a21e30d975a`.
+After restoring those seven exact identities, all **17** existing receipt controls
+passed in **0.795 seconds**, with zero failures, errors or skips. The original
+3,625-byte green log has SHA-256
+`f74080a894bfcffecccedabadce3604376b5075662f5e2276e429af03dd6afcf`.
+These are actual portable inventory and result-rejection controls; they do not
+execute Swift, a simulator, a Files provider or the planning journey.
 
 ## Remaining acceptance
 

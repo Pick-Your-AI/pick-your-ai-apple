@@ -204,23 +204,7 @@ public final class ImportedBuildLibraryModel: ObservableObject {
         }
     }
     nonisolated private static func readFile(_ url: URL) throws -> Data {
-        let granted = url.startAccessingSecurityScopedResource()
-        defer { if granted { url.stopAccessingSecurityScopedResource() } }
-        try Task.checkCancellation()
-        guard try url.resourceValues(forKeys: [.isRegularFileKey]).isRegularFile == true else {
-            throw TransferError.malformed
-        }
-        let handle = try FileHandle(forReadingFrom: url)
-        defer { try? handle.close() }
-        var bytes = Data()
-        while bytes.count <= BuildTransfer.maximumBytes {
-            try Task.checkCancellation()
-            let chunk = try handle.read(upToCount: min(65_536, BuildTransfer.maximumBytes + 1 - bytes.count)) ?? Data()
-            if chunk.isEmpty { break }
-            bytes.append(chunk)
-        }
-        guard bytes.count <= BuildTransfer.maximumBytes else { throw TransferError.oversized }
-        return bytes
+        try ImportedBuildFileReader.read(url)
     }
     public func preparePreview(_ data: Data) async throws {
         guard !busy else { return }
