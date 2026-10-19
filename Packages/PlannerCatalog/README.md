@@ -1,6 +1,6 @@
 # Atomic public catalog preview cache
 
-Partial implementation for [Apple #87](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/87), [#88](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/88) and [#31](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/31). This standalone Swift 6 package stores an entire catalog/pricebook pair in one bounded local envelope. It neither downloads from an invented service nor publishes catalogs.
+Partial implementation for [Apple #87](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/87), [#88](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/88) and [#31](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/31). This standalone Swift 6 package stores complete catalog/pricebook pairs and their active selection in one bounded local envelope. It neither downloads from an invented service nor publishes catalogs.
 
 ## Frozen input and cache boundary
 
@@ -17,7 +17,7 @@ The package only admits `syntheticPreview`. Every returned snapshot is explicitl
 - Activation uses one Foundation atomic file replacement. Cancellation is checked before and after each await and before synchronous commit. Cancellation after that commit boundary does not roll back a completed release. Retry starts the pair again and is safe after interrupted or duplicate delivery; byte-range resume is not claimed.
 - A bounded ledger retains up to 2,048 observed artifact-version pins across restart and refresh. Reusing the same kind/schema/id/revision with different timestamp or digest is rejected, including previously active historical versions. Exhausting this bound fails closed until a separately reviewed migration/retention strategy exists; history is never silently evicted. The same envelope limit applies before commit and on load. Loading reads from one open file handle in chunks of at most 64 KiB and consumes at most the envelope limit plus one byte before rejecting oversize data. A separate path-size check cannot enforce that bound if a file grows or the path is a small symlink to a larger target.
 - Failed validation/download/cancellation leaves the previous file untouched. Restart revalidates the complete envelope; corrupt on-disk active data is unavailable and retained for diagnosis, never returned partially or silently repaired. A corrupt active envelope also blocks refresh, preserving its version ledger for explicit diagnosis/recovery rather than silently forgetting immutable versions. This is not a guarantee against device power loss, disk hardware failure, or malicious modification of both manifest and data. Digests establish consistency, not publisher authenticity.
-- Cached time and age are exposed. Current checks are always `unknown`; cached content alone does not prove current compatibility or pricing. Historical selection lookup and rules caching are not implemented here.
+- Cached time and age are exposed. Current checks are always `unknown`; cached content alone does not prove current compatibility or pricing. [Exact historical pair lookup](HISTORY.md) retains original bytes within explicit count and encoded-byte limits, without changing active selection. Rules caching and draft/UI integration remain separate work.
 - The directory contains only public preview artifacts. Draft persistence belongs to the separate persistence package; account-private content must not use this cache. iOS writes select protection until first unlock. Locked-device behavior needs a device test.
 
 Platform references inspected: [Foundation atomic writing](https://developer.apple.com/documentation/foundation/nsdata/writingoptions/atomic), [CryptoKit SHA256](https://developer.apple.com/documentation/cryptokit/sha256). The documentation endpoint served its JavaScript shell in this environment; the macOS/iOS SDK compile and runtime tests remain the concrete API verification. This cache provides cancellation semantics for a future foreground/background coordinator, not BGTaskScheduler registration or an assertion of OS scheduling.
@@ -151,3 +151,29 @@ execution remains required on the exact candidate. This advances the local sorti
 [Apple #59](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/59). It does not
 provide the catalog screen, saved filters, unknown-spec sorting policy, network
 page failure/retry, accessibility journey or whole-issue receiving acceptance.
+
+### Exact version pins and immutable display text
+
+The [frozen catalog item's `version`](../PlannerTransfer/Sources/PlannerTransfer/Resources/catalog-item.schema.json)
+is a nonempty string; it is not restricted to ASCII or normalized Unicode.
+`CatalogSearchEntry` compares its supplied fields
+by their original UTF-8 sequences, and duplicate `(id, version)` keys use those
+same exact sequences. Composed and decomposed version strings can therefore
+remain separate candidates. All entry bounds are checked before allocating the
+bounded duplicate-key byte arrays.
+
+Changing a version or supplied title under the same installed artifact identity
+throws `immutableIdentityConflict` and retains the prior snapshot and cursors.
+Ordinary text ordering remains unchanged; canonical-equality ties use the original
+bytes in both sort modes, so input reordering cannot move a version between pages.
+Case/diacritic folding remains part of search and display-title ordering. The index
+does not normalize version pins or assign a semantic version order.
+
+Four focused regressions cover distinct Unicode versions in both paged sort modes,
+identical reinstall with reversed input, both directions of immutable version and
+title changes, retained pages after rejection, new-revision recovery, and exact
+duplicate rejection with folded search preserved. Run the complete local search
+cohort with `swift test --package-path Packages/PlannerCatalog --filter CatalogSearch`.
+The configured native catalog and SDK gates must qualify the actual receiving
+source; local model tests do not establish catalog UI, live service, accessibility,
+physical-device or whole-issue #59 acceptance.

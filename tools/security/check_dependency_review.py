@@ -3,8 +3,9 @@
 
 The pinned GitHub action performs advisory lookup and SPDX license-expression
 evaluation. This guard rejects missing/malformed output and reported problems.
-An observed Action license gap and one exact Transfer installer classification
-can be resolved only through their reviewed immutable source bytes. Other unknown,
+An observed Action license gap and separate exact conformance and Transfer
+installer classifications have reviewed immutable source proofs. Each installer
+keeps its own literal path, complete byte count and digest. Other unknown,
 conflicting or disallowed results still fail. Only aggregate counts are printed.
 """
 
@@ -20,6 +21,7 @@ import stat
 import sys
 import time
 from dataclasses import asdict, dataclass, replace
+from http.client import HTTPException
 from urllib.error import URLError
 from urllib.request import build_opener, HTTPRedirectHandler, Request
 
@@ -52,6 +54,22 @@ TRANSFER_WHEEL_URL = (
 )
 TRANSFER_WHEEL_BYTES = 45_571
 TRANSFER_WHEEL_SHA256 = "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
+
+TYPING_MANIFEST = "tools/conformance/requirements-lock.txt"
+TYPING_LOCK_PATH = Path(__file__).resolve().parents[2] / TYPING_MANIFEST
+TYPING_LOCK_BYTES = 1359
+TYPING_LOCK_SHA256 = "39f16918d39968c6e26183c2d09399b49cc071bf751a7c3beff4577dd3717c23"
+TYPING_OBSERVED_LICENSE = (
+    "Python-2.0 AND GPL-1.0-or-later AND Python-2.0 AND BSD-3-Clause "
+    "AND Python-2.0 AND BSD-3-Clause AND 0BSD"
+)
+TYPING_WHEEL_URL = (
+    "https://files.pythonhosted.org/packages/49/d3/"
+    "b8441a820a491ddfc024b0b0cf0393375b75ea13866d9c66727e54c2fc80/"
+    "typing_extensions-4.16.0-py3-none-any.whl"
+)
+TYPING_WHEEL_BYTES = 45_571
+TYPING_WHEEL_SHA256 = "481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8"
 
 
 class InvalidReview(ValueError):
@@ -233,6 +251,69 @@ def verify_transfer_license_artifact() -> None:
         raise InvalidReview("Transfer artifact differs from the reviewed PSF-2.0 wheel")
 
 
+def has_exact_typing_license_conflict(changes, invalid_licenses) -> bool:
+    """Only the complete forbidden row observed in dependency job117692891082."""
+    expected = {
+        "change_type": "added", "manifest": TYPING_MANIFEST,
+        "ecosystem": "pip", "name": "typing-extensions", "version": "4.16.0",
+        "package_url": "pkg:pypi/typing-extensions@4.16.0",
+        "license": TYPING_OBSERVED_LICENSE, "source_repository_url": None,
+        "scope": "runtime", "vulnerabilities": [],
+    }
+    return (
+        invalid_licenses == {"forbidden": [expected], "unlicensed": [], "unresolved": []}
+        and changes.count(expected) == 1
+        and all(row == expected for row in changes if row.get("package_url") == expected["package_url"])
+    )
+
+
+def verify_typing_license_artifact() -> None:
+    """Hash reviewed bytes only; never extract, install or execute the wheel."""
+    if (
+        os.environ.get("GITHUB_EVENT_NAME") != "pull_request"
+        or os.environ.get("GITHUB_REPOSITORY") != "Pick-Your-AI/pick-your-ai-apple"
+    ):
+        raise InvalidReview("Pinned artifact lookup requires this repository's pull-request review")
+    # This proof applies to one exact reviewed installer, including its only
+    # admitted typing-extensions hash. It cannot license a different declaration.
+    flags = os.O_RDONLY | os.O_CLOEXEC | os.O_NOFOLLOW | os.O_NONBLOCK
+    with os.fdopen(os.open(TYPING_LOCK_PATH, flags), "rb") as manifest:
+        metadata = os.fstat(manifest.fileno())
+        if (
+            not stat.S_ISREG(metadata.st_mode) or metadata.st_nlink != 1
+            or metadata.st_size != TYPING_LOCK_BYTES
+        ):
+            raise InvalidReview("Pinned artifact installer is not the reviewed regular file")
+        raw = manifest.read(TYPING_LOCK_BYTES + 1)
+    if len(raw) != TYPING_LOCK_BYTES or hashlib.sha256(raw).hexdigest() != TYPING_LOCK_SHA256:
+        raise InvalidReview("Pinned artifact installer bytes differ from the reviewed lock")
+    # The entire immutable archive binds the separately reviewed embedded
+    # PSF-2.0 declaration and license text. No repository token is sent to PyPI.
+    request = Request(TYPING_WHEEL_URL, method="GET", headers={
+        "User-Agent": "apple-pinned-dependency-license",
+        "Accept": "application/octet-stream",
+    })
+    deadline = time.monotonic() + MAXIMUM_LICENSE_SECONDS
+    opener = build_opener(PinnedLicenseNoRedirects())
+    with opener.open(request, timeout=MAXIMUM_LICENSE_SECONDS) as response:
+        if response.status != 200:
+            raise InvalidReview("Pinned artifact lookup did not succeed")
+        chunks, received = [], 0
+        while received <= TYPING_WHEEL_BYTES:
+            if time.monotonic() >= deadline:
+                raise InvalidReview("Pinned artifact lookup exceeded its time limit")
+            chunk = response.read1(min(16_384, TYPING_WHEEL_BYTES + 1 - received))
+            if not chunk:
+                break
+            chunks.append(chunk)
+            received += len(chunk)
+        if time.monotonic() >= deadline:
+            raise InvalidReview("Pinned artifact lookup exceeded its time limit")
+    raw = b"".join(chunks)
+    if len(raw) != TYPING_WHEEL_BYTES or hashlib.sha256(raw).hexdigest() != TYPING_WHEEL_SHA256:
+        raise InvalidReview("Pinned artifact bytes differ from the reviewed PSF-2.0 wheel")
+
+
 @dataclass(frozen=True)
 class ReviewResult:
     added_dependencies: int
@@ -310,6 +391,15 @@ def main() -> int:
             # not an upstream package exemption (which ignores Action versions).
             verify_pinned_license()
             result = replace(result, unlicensed_dependencies=0, pinned_license_resolutions=1)
+        typing_resolution = False
+        if (
+            outcome == "failure" and not result.vulnerable_dependencies
+            and "PSF-2.0" in allowed
+            and has_exact_typing_license_conflict(changes, invalid_licenses)
+        ):
+            verify_typing_license_artifact()
+            result = replace(result, disallowed_licenses=0, pinned_license_resolutions=1)
+            typing_resolution = True
         transfer_resolution = False
         if (
             outcome == "failure" and not result.vulnerable_dependencies
@@ -319,12 +409,12 @@ def main() -> int:
             verify_transfer_license_artifact()
             result = replace(result, disallowed_licenses=0, pinned_license_resolutions=1)
             transfer_resolution = True
-        if outcome == "failure" and result.accepted and not transfer_resolution:
+        if outcome == "failure" and result.accepted and not (typing_resolution or transfer_resolution):
             raise InvalidReview("Upstream review failure has no exact verified recovery")
     except (InvalidReview, UnicodeError) as error:
         print(f"Dependency review could not be verified: {error}", file=sys.stderr)
         return 1
-    except (OSError, URLError):
+    except (OSError, URLError, HTTPException):
         print("Pinned dependency license could not be verified; no recovery is accepted.", file=sys.stderr)
         return 1
     print(json.dumps({"accepted": result.accepted, **asdict(result)}, sort_keys=True))

@@ -20,6 +20,13 @@ public struct RetainedEvidenceIdentity: Equatable, Sendable {
     public let componentID: String
     public let componentVersion: String
     public let catalogSnapshotID: String
+
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.componentID.utf8.elementsEqual(rhs.componentID.utf8) &&
+        lhs.componentVersion.utf8.elementsEqual(rhs.componentVersion.utf8) &&
+        lhs.catalogSnapshotID.utf8.elementsEqual(rhs.catalogSnapshotID.utf8)
+    }
+
     public init(componentID: String, componentVersion: String, catalogSnapshotID: String) throws {
         guard [componentID, componentVersion, catalogSnapshotID].allSatisfy(nonblankEvidenceText) else {
             throw EvidencePresentationError.missingIdentity

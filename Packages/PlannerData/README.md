@@ -93,6 +93,16 @@ fixtures test the driver; they do not execute Swift or establish native storage
 durability. The mandatory hosted step retains `storage-replay-guards.log` with
 the existing storage evidence, and the actual native crash probe still runs.
 
+Each native probe phase has a 60-second deadline. If a phase stalls, the driver
+kills and waits for that probe, reports the phase and captured diagnostics, and
+stops before later recovery checks or a success message. This also bounds local
+replay, independently of the hosted job's timeout. Use `--timeout-seconds` only
+when an explicit different per-phase deadline is needed; zero, negative and
+non-finite values are rejected before starting a probe. Portable guards exercise
+timeouts at all seven phase positions, child cleanup and a fresh successful retry
+in both normal and optimized Python. These guards use temporary synthetic probe
+processes; the real Swift replay and configured native runs remain separate checks.
+
 Tests cover incomplete drafts, exact-byte locks, stale writes, restoration, scoped
 CRUD, corrupt records in a 503-entry library, migrations, actual `SQLITE_FULL`
 using a page-count limit, failure rollback, and identity retirement. The crash

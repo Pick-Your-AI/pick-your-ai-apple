@@ -8,6 +8,7 @@ import argparse
 from copy import deepcopy
 import json
 from pathlib import Path
+from contract_checks import require
 
 ROOT = Path(__file__).resolve().parents[1]
 FIXTURES = ROOT / 'Tests/PlannerTransferTests/Fixtures'
@@ -61,7 +62,8 @@ def vectors():
     add('nested-unsupported-version', ['items', '0', 'schema_version'], '2.0.0')
     add('unsupported-large-revision', ['revision'], 9007199254740993, canonical=True)
     add('unsupported-terminal-newline-id', ['id'], 'catalog.valid\n', canonical=True)
-    assert len({case['name'] for case in cases}) == len(cases)
+    require(len({case['name'] for case in cases}) == len(cases),
+            'Duplicate catalog snapshot vector names')
     return cases
 
 
@@ -77,5 +79,6 @@ if __name__ == '__main__':
     if args.write:
         OUTPUT.write_text(expected)
     else:
-        assert OUTPUT.read_text() == expected, 'Catalog snapshot vectors are stale; run catalog_snapshot_vectors.py --write'
+        require(OUTPUT.read_text() == expected,
+                'Catalog snapshot vectors are stale; run catalog_snapshot_vectors.py --write')
     print(f'Catalog snapshot vectors: {len(vectors())}; deterministic generation verified.')

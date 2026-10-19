@@ -85,7 +85,13 @@ public final class DraftLibraryModel: ObservableObject {
     public func open(id: UUID) async {
         guard !busy, !dirty else { return }
         busy = true
-        do { adopt(try await store.read(id: id)) }
+        do {
+            let record = try await store.read(id: id)
+            // A queued binding update can arrive while the storage actor reads.
+            // Keep that edit and its original identity instead of adopting a
+            // different draft (or an older revision of the same draft).
+            if !dirty { adopt(record) }
+        }
         catch { report(error) }
         await finishOperation()
     }
