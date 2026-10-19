@@ -61,7 +61,10 @@ final class CapacityMemoryDraft {
     var limits: [CapacityTestLimit] = []
     var mode = CapacityCoverageMode.conservativeAllResident
 
-    init() throws { input = try CapacityTestDraft(); try input.serving() }
+    init(componentKind: String = "model", engine: String? = "sel_engine") throws {
+        input = try CapacityTestDraft()
+        try input.serving(kind: componentKind, engine: engine)
+    }
     func addDevice(_ device: CapacityTestDevice, kind: String = "accelerator") throws {
         devices.append(device)
         try input.selection(device.selection, kind: kind)

@@ -83,6 +83,28 @@ private final class CapacityWorkloadFixture {
 }
 
 final class CapacityWorkloadTests: XCTestCase {
+    func testWorkloadCoverageRequiresTheExactSelectedOperation() throws {
+        let (context, value) = try CapacityWorkloadFixture().freeze()
+        XCTAssertEqual(value.classes.coverage.kind, .workloadStages)
+        XCTAssertEqual(value.classes.coverage.owner, context.basis.buildID)
+        XCTAssertEqual(value.classes.coverage.scenario, context.basis.operation)
+        let otherScopes: [String?] = [nil, "different-operation"]
+        for scenario in otherScopes {
+            let coverage = try CapacityCoverage(kind: .workloadStages, owner: context.basis.buildID,
+                scenario: scenario, claim: value.classes.coverage.claim)
+            let classes = try CapacityRecords(ids: value.classes.ids, records: value.classes.records, coverage: coverage)
+            XCTAssertThrowsError(try CapacityWorkload(basis: context.basis, graph: context.graph(),
+                servingRequirements: XCTUnwrap(context.requirements().first), artifactFacts: context.artifacts(),
+                binding: value.binding, operation: value.operation, applicable: value.applicable,
+                classes: classes, admission: value.admission,
+                expandedFallbackCoversAllResident: value.expandedFallbackCoversAllResident)) {
+                    XCTAssertEqual($0 as? CapacityError, .invalidDomain)
+            }
+        }
+        XCTAssertEqual(try value.evaluate(current: context.basis,
+            qualifications: context.qualifications()).residentSequences?.decimal, "4")
+    }
+
     func testOneRequestWithFourResidentSequencesExpandsToFour() throws {
         let value = try CapacityWorkloadFixture().result()
         XCTAssertEqual(value.result.outcome, .pass)

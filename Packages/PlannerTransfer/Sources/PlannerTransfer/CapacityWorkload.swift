@@ -127,7 +127,8 @@ public struct CapacityWorkload: Sendable, CustomStringConvertible, CustomDebugSt
         guard basis.selection(id: servingRequirements.selectionID) != nil else { throw CapacityError.danglingReference }
         try requireCapacityField(operation, .text); try requireCapacityField(applicable, .boolean)
         try requireCapacityField(expandedFallbackCoversAllResident, .boolean)
-        try requireCapacityMemoryCoverage(classes.coverage, kind: .workloadStages, basis: basis)
+        try requireCapacityMemoryCoverage(classes.coverage, kind: .workloadStages,
+                                          basis: basis, scenario: basis.operation)
         for runtime in [binding.runtime, admission.binding.runtime].compactMap({ $0 }) {
             if runtime.kind == .modelEngine && basis.selection(id: runtime.id) == nil {
                 throw CapacityError.contradictoryInput

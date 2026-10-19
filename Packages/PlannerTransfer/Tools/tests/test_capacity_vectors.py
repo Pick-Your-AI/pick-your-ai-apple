@@ -21,6 +21,42 @@ def module_state():
 
 
 class CapacityReferenceCopyChecks(unittest.TestCase):
+    def test_changed_or_outside_consumer_schema_rejects_before_import_and_recovers(self):
+        before, bytecode = module_state(), sys.dont_write_bytecode
+        original_import = VECTORS.importlib.import_module
+        original = (VECTORS.RESOURCE_ROOT / "catalog-snapshot.schema.json").read_bytes()
+        with tempfile.TemporaryDirectory(prefix="capacity-resource-admission-") as directory:
+            root = Path(directory) / "resources"; root.mkdir()
+            target = root / "catalog-snapshot.schema.json"
+            target.write_bytes(original + b"\n")
+            with patch.object(VECTORS, "RESOURCE_ROOT", root):
+                with patch.object(VECTORS.importlib, "import_module", wraps=original_import) as imports:
+                    with self.assertRaisesRegex(ValueError, "^capacity consumer resource identity mismatch$"):
+                        with VECTORS.reference():
+                            self.fail("Changed bundled schema reached import")
+                    self.assertEqual(imports.call_count, 0)
+                self.assertEqual(target.read_bytes(), original + b"\n")
+                target.unlink(); os.mkfifo(target, 0o600)
+                identity = target.stat()
+                with patch.object(VECTORS.importlib, "import_module", wraps=original_import) as imports:
+                    with self.assertRaisesRegex(ValueError, "^capacity reference input must be a regular file$"):
+                        with VECTORS.reference():
+                            self.fail("FIFO consumer schema reached import")
+                    self.assertEqual(imports.call_count, 0)
+                self.assertEqual(target.stat().st_ino, identity.st_ino)
+                outside = Path(directory) / "outside.schema.json"; outside.write_bytes(original)
+                target.unlink(); target.symlink_to(outside)
+                with patch.object(VECTORS.importlib, "import_module", wraps=original_import) as imports:
+                    with self.assertRaisesRegex(ValueError, "^capacity consumer resource leaves its pinned root$"):
+                        with VECTORS.reference():
+                            self.fail("Outside consumer schema reached import")
+                    self.assertEqual(imports.call_count, 0)
+                self.assertEqual(outside.read_bytes(), original)
+                target.unlink(); target.write_bytes(original)
+                self.assert_valid_retry()
+        self.assertEqual(module_state(), before)
+        self.assertEqual(sys.dont_write_bytecode, bytecode)
+
     def assert_valid_retry(self):
         before, bytecode = module_state(), sys.dont_write_bytecode
         with VECTORS.reference() as (reader, copies):

@@ -187,11 +187,18 @@ public struct CapacityDeployment: Sendable, CustomStringConvertible, CustomDebug
             }
             let effective = lineage.servingArtifact
             let domain = try CapacityDomain.component(selection.id)
+            // Resolving an adapter's effective artifact is itself a prerequisite
+            // of inherited responsibility. Retain its actual qualification uses.
+            var seenLineageEvidence = Set<String>()
+            let lineageEvidence = lineage.checks.flatMap { $0.evidence }.filter {
+                seenLineageEvidence.insert($0.qualification.key.sha256).inserted
+            }
             guard let effective, let row = rows[Data(effective.id.utf8)], lineage.outcome == .pass else {
                 componentChecks.append(CapacityCheck(rule: .deployment, domain: domain, outcome: .unknown,
                     reason: basis.sha256 != current.sha256 ? .changedBasis : .missingOrIneligible))
                 components.append(CapacityComponentMode(selectionID: selection.id, effectiveSelectionID: effective?.id,
-                    mode: .unknown, localApplicability: .unknown, serving: serving, checks: componentChecks, applicabilityEvidence: []))
+                    mode: .unknown, localApplicability: .unknown, serving: serving, checks: componentChecks,
+                    applicabilityEvidence: lineageEvidence))
                 checks += componentChecks; continue
             }
             let effectiveDomain = try CapacityDomain.component(effective.id)
@@ -215,18 +222,22 @@ public struct CapacityDeployment: Sendable, CustomStringConvertible, CustomDebug
             else if mode == .selfHosted || exposure == true { applies = .applicable }
             else if exposure == false { applies = .inapplicable }
             else { applies = .unknown }
+            let responsibilityEvidence = lineageEvidence + [operatorUse].compactMap { $0 }
+                + (runtimeOperator == "provider" ? [capacityUse].compactMap { $0 } : [])
+            let applicabilityEvidence = responsibilityEvidence
+                + (runtimeOperator == "provider" ? [exposureUse].compactMap { $0 } : [])
             componentChecks.append(CapacityCheck(rule: .deployment, domain: domain,
                 outcome: mode == .unknown ? .unknown : .pass,
                 reason: mode == .unknown ? .unknownResponsibility : .qualified,
                 observations: [row.runtimeOperator, row.capacityMode, row.exposedHardware],
-                evidence: [operatorUse].compactMap { $0 } + (runtimeOperator == "provider" ? [capacityUse].compactMap { $0 } : [])))
+                evidence: responsibilityEvidence))
             switch applies {
             case .unknown:
                 componentChecks.append(CapacityCheck(rule: .localHardware, domain: domain, outcome: .unknown,
-                    reason: .unknownResponsibility, observations: [row.exposedHardware], evidence: [exposureUse].compactMap { $0 }))
+                    reason: .unknownResponsibility, observations: [row.exposedHardware], evidence: applicabilityEvidence))
             case .inapplicable:
                 componentChecks.append(CapacityCheck(rule: .localHardware, domain: domain, outcome: .skipped,
-                    reason: .inapplicable, observations: [row.exposedHardware], evidence: [exposureUse].compactMap { $0 }))
+                    reason: .inapplicable, observations: [row.exposedHardware], evidence: applicabilityEvidence))
                 componentChecks.append(CapacityCheck(rule: .remoteCapacity, domain: domain, outcome: .unknown, reason: .unknownCapacity))
             case .applicable:
                 for subject in subjects {
@@ -235,8 +246,6 @@ public struct CapacityDeployment: Sendable, CustomStringConvertible, CustomDebug
                     }
                 }
             }
-            let applicabilityEvidence = [operatorUse].compactMap { $0 }
-                + (runtimeOperator == "provider" ? [capacityUse, exposureUse].compactMap { $0 } : [])
             components.append(CapacityComponentMode(selectionID: selection.id, effectiveSelectionID: effective.id,
                 mode: mode, localApplicability: applies, serving: serving, checks: componentChecks, applicabilityEvidence: applicabilityEvidence))
             checks += componentChecks

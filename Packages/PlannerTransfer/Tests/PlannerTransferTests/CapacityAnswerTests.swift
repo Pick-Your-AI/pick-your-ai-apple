@@ -45,7 +45,10 @@ final class CapacityAnswerTests: XCTestCase {
         XCTAssertEqual(result.profile, "apple-capacity-cd1-0.2-reader-preparation")
         XCTAssertEqual(result.referenceRevision, "449a29be1752a3c545709da466c7d53fc18fef73")
         XCTAssertEqual(result.cases.count, 249)
-        XCTAssertEqual(Set(result.cases.map(\.name)).count, 249)
+        XCTAssertEqual(Set(result.cases.map { Data($0.name.utf8) }).count, 249)
+        for name in ["ancestor-caf\u{00e9}", "ancestor-cafe\u{0301}"] {
+            XCTAssertEqual(result.cases.filter { Data($0.name.utf8) == Data(name.utf8) }.count, 1)
+        }
         XCTAssertEqual(Set(result.fields).count, 16)
         XCTAssertEqual(result.cases.filter(\.readerValid).count, 125)
         XCTAssertEqual(result.cases.filter(\.consumerValid).count, 123)

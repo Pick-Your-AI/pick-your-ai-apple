@@ -191,6 +191,46 @@ final class CapacityMemoryTests: XCTestCase {
         XCTAssertFalse(try f.result().checks.contains { $0.rule == .memoryPool && $0.outcome == .pass })
     }
 
+    func testOpaqueAdapterSkipRetainsEveryUsedCheckedOnlyLineageQualification() throws {
+        for path in ["/artifacts/sel_adapter/kind", "/artifacts/sel_adapter/version",
+                     "/artifacts/sel_adapter/required", "/links/adapter.base/role",
+                     "/links/adapter.base/operation", "/graph/complete"] {
+            let draft = try CapacityMemoryDraft()
+            try draft.input.serving("sel_adapter", kind: "fine_tuned_model", engine: nil, host: nil, devices: [])
+            try draft.input.link("adapter.base", from: "sel_adapter", to: "sel_model", role: .base)
+            draft.input.artifact("sel_adapter", kind: "adapter")
+            let required = try XCTUnwrap(draft.input.required.firstIndex { $0.id == "sel_adapter" })
+            draft.input.required[required] = ("sel_adapter", "sel_model")
+            for role in ["engine", "host", "devices"] { draft.input.put("/requires/sel_adapter/" + role, true) }
+            draft.scenarios[0].components = ["sel_model", "sel_adapter"]
+            let fixture = try draft.freeze {
+                $0.put("/deployment/sel_model/operator", "provider")
+                $0.put("/deployment/sel_model/capacity", "shared")
+                $0.put("/deployment/sel_model/exposed", false)
+                $0.put("/components/sel_model/applies", false)
+                $0.put("/components/sel_adapter/applies", false)
+            }
+            let original = try XCTUnwrap(fixture.context.claims.values.first { $0.key.requestedPath == path })
+            let answer = try fixture.context.answer(path, original.key.field)
+            try fixture.context.qualify(answer, original.key.fact, original.key.domain, checked: true)
+            let result = try fixture.result()
+            XCTAssertEqual(result.outcome, .skipped, path)
+            XCTAssertTrue(result.checkedOnly, path)
+            let skip = try XCTUnwrap(result.checks.first { $0.rule == .memoryPool && $0.outcome == .skipped })
+            XCTAssertTrue(skip.evidence.contains { $0.checkedOnly && $0.qualification.key == original.key }, path)
+            let deployment = try fixture.deployment.evaluate(current: fixture.context.basis,
+                qualifications: fixture.context.qualifications())
+            let adapter = try XCTUnwrap(deployment.components.first { $0.selectionID == "sel_adapter" })
+            XCTAssertEqual(adapter.effectiveSelectionID, "sel_model")
+            XCTAssertEqual(adapter.localApplicability, .inapplicable)
+            XCTAssertTrue(adapter.applicabilityEvidence.contains { $0.checkedOnly && $0.qualification.key == original.key }, path)
+            let unknown = try fixture.result { $0.key == original.key }
+            XCTAssertEqual(unknown.outcome, .unknown, path)
+            XCTAssertFalse(unknown.checkedOnly, path)
+            XCTAssertFalse(unknown.checks.contains { $0.rule == .memoryPool && $0.outcome == .skipped }, path)
+        }
+    }
+
     func testUnknownProviderCapacityOrExposureCannotSuppressLocalWork() throws {
         for field in ["capacity", "exposed"] {
             let f = try CapacityMemoryDraft().freeze {

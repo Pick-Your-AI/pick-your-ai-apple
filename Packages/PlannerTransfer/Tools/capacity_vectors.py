@@ -23,6 +23,7 @@ import types
 
 ROOT = Path(__file__).resolve().parent
 REFERENCE = ROOT / "capacity_reference"
+RESOURCE_ROOT = ROOT.parent / "Sources/PlannerTransfer/Resources"
 OUTPUT = ROOT.parent / "Tests/PlannerTransferTests/Fixtures/capacity-answer-conformance.json"
 REVISION = "449a29be1752a3c545709da466c7d53fc18fef73"
 TREE = "6a188a54d269028e5283288d9f6afa1f63ba2163"
@@ -30,6 +31,15 @@ PINNED_PATHS = {
     "LICENSE", "tests/t0_answer_attribution_prototype.py", "tests/t0_answer_state_prototype.py",
     "tests/t0_known_value_schema.py", "tests/selection_quantifier_prototype.py",
     "tests/fixtures/t0-answer-attribution.schema.json", "tests/fixtures/t0-answer-states.schema.json",
+}
+RESOURCE_PINS = {
+    "catalog-snapshot.schema.json": {
+        "source_path": "contracts/v1/schemas/catalog-snapshot.schema.json",
+        "mode": "100644",
+        "git_blob": "88af389f4f2b72e38f5c25e4cabd73df2d6c6225",
+        "bytes": 760,
+        "sha256": "a5af428386768b698d280a18bf99c0e52364ee397a2075685213b3d0762693a4",
+    },
 }
 
 
@@ -61,8 +71,18 @@ def reference():
     source = REFERENCE.resolve(strict=True)
     manifest = json.loads(read_regular_bytes(source / "source-manifest.json"))
     if (manifest["revision"] != REVISION or manifest["tree"] != TREE
-            or set(manifest["files"]) != PINNED_PATHS):
+            or set(manifest["files"]) != PINNED_PATHS
+            or manifest.get("consumer_resources") != RESOURCE_PINS):
         raise ValueError("unexpected capacity reference manifest")
+    resource_root = RESOURCE_ROOT.resolve(strict=True)
+    for name, pin in RESOURCE_PINS.items():
+        path = resource_root / name
+        if not path.resolve(strict=True).is_relative_to(resource_root):
+            raise ValueError("capacity consumer resource leaves its pinned root")
+        raw = read_regular_bytes(path)
+        blob = hashlib.sha1(b"blob " + str(len(raw)).encode() + b"\0" + raw).hexdigest()
+        if len(raw) != pin["bytes"] or digest(raw) != pin["sha256"] or blob != pin["git_blob"]:
+            raise ValueError("capacity consumer resource identity mismatch")
     copies = {}
     for name, pin in manifest["files"].items():
         path = source / name
@@ -386,7 +406,7 @@ def main():
     elif read_regular_bytes(OUTPUT) != encoded:
         raise ValueError("stale capacity answer vectors")
     cases = value["cases"]
-    print(f"Verified 7 pinned CD1-0.2 reference files and {len(cases)} synthetic answer cases: "
+    print(f"Verified 7 pinned CD1-0.2 reference files, 1 canonical consumer schema and {len(cases)} synthetic answer cases: "
           f"{sum(row['reader_valid'] for row in cases)} reader-valid, "
           f"{sum(row['consumer_valid'] and row['native_supported'] for row in cases)} native-profile-valid; "
           "no memory/workload policy or Swift execution inferred.")

@@ -1,6 +1,15 @@
 {
   "revision": "449a29be1752a3c545709da466c7d53fc18fef73",
   "tree": "6a188a54d269028e5283288d9f6afa1f63ba2163",
+  "consumer_resources": {
+    "catalog-snapshot.schema.json": {
+      "source_path": "contracts/v1/schemas/catalog-snapshot.schema.json",
+      "mode": "100644",
+      "git_blob": "88af389f4f2b72e38f5c25e4cabd73df2d6c6225",
+      "bytes": 760,
+      "sha256": "a5af428386768b698d280a18bf99c0e52364ee397a2075685213b3d0762693a4"
+    }
+  },
   "files": {
     "LICENSE": {
       "mode": "100644",
