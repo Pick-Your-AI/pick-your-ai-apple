@@ -810,6 +810,94 @@ class SimulatorSmokeTests(unittest.TestCase):
         self.assertNotIn("secret=excluded", self.stdout.getvalue())
         self.assertIn("Waiting on System App", self.stdout.getvalue())
 
+    def assert_launch_observation_is_non_authoritative(self, phase, failure):
+        for failing_udid in (CREATED_PHONE, CREATED_PAD):
+            with self.subTest(phase=phase, failure=failure, owned_udid=failing_udid):
+                self.stdout, self.stderr = io.StringIO(), io.StringIO()
+                observed, sink_failures = [], []
+                primary = subprocess.TimeoutExpired("launch", 60,
+                                                    output=b"original launch pending\n")
+                original_collector = SMOKE.collect_runtime_snapshot
+
+                def effect(args, **kwargs):
+                    if phase == "launch-failed" and args[2] == "launch" and args[3] == failing_udid:
+                        raise primary
+                    return self.completed(args, **kwargs)
+
+                def snapshot(udid, current_phase):
+                    if udid == failing_udid and current_phase == phase:
+                        observed.append((udid, current_phase))
+                        if failure == "collector":
+                            raise RuntimeError("private collector detail excluded")
+                    original_collector(udid, current_phase)
+
+                def observation_output(*args, **kwargs):
+                    if failure == "sink" and args and '"smoke_snapshot"' in str(args[0]):
+                        record = json.loads(args[0])
+                        if record["owned_udid"] == failing_udid and record["smoke_snapshot"] == phase:
+                            sink_failures.append((record["owned_udid"], record["smoke_snapshot"]))
+                            raise OSError("private observation sink detail excluded")
+                    print(*args, **kwargs)
+
+                def probe(kind, command):
+                    return {"probe": kind, "deadline_seconds": 3, "exit": 0,
+                            "rows": [], "truncated": False}
+
+                with self.commands(effect, snapshot_effect=snapshot) as mocked, \
+                        patch.object(SMOKE, "snapshot_probe", side_effect=probe), \
+                        patch.object(SMOKE.os, "getloadavg", return_value=(1.0, 2.0, 3.0)), \
+                        patch.object(SMOKE, "print", side_effect=observation_output, create=True):
+                    if phase == "launch-failed":
+                        with self.assertRaises(subprocess.TimeoutExpired) as caught:
+                            SMOKE.main()
+                        self.assertIs(caught.exception, primary)
+                    else:
+                        SMOKE.main()
+
+                self.assertEqual(observed, [(failing_udid, phase)])
+                if failure == "sink":
+                    self.assertTrue(sink_failures)
+                    self.assertEqual(set(sink_failures), {(failing_udid, phase)})
+                calls = mocked.call_args_list
+                commands = [call.args[0] for call in calls]
+                destinations = [CREATED_PHONE] if phase == "launch-failed" and failing_udid == CREATED_PHONE else [CREATED_PHONE, CREATED_PAD]
+                self.assertEqual([args[3] for args in commands if args[2] == "launch"], destinations)
+                for udid in destinations:
+                    owned = [args[2] for args in commands if len(args) > 3 and args[3] == udid]
+                    expected = ["boot", "bootstatus", "install", "launch"]
+                    expected += ["get_app_container", "spawn"] if phase == "launch-failed" and udid == failing_udid else ["terminate"]
+                    self.assertEqual(owned, expected + ["shutdown", "delete"])
+                diagnostic_commands = [args for args in commands if args[2] in ("get_app_container", "spawn")]
+                if phase == "launch-failed":
+                    self.assertEqual(diagnostic_commands, [
+                        ("xcrun", "simctl", "get_app_container", failing_udid,
+                         "invalid.pickyourai.localpreview", "app"),
+                        ("xcrun", "simctl", "spawn", failing_udid, "log", "show",
+                         "--style", "compact", "--last", "2m", "--info", "--predicate",
+                         'process == "Planner" OR eventMessage CONTAINS "invalid.pickyourai.localpreview"'),
+                    ])
+                    self.assertIn("original launch pending", self.stdout.getvalue())
+                else:
+                    self.assertEqual(diagnostic_commands, [])
+                for call in calls:
+                    action = call.args[0][2]
+                    expected_timeout = {"bootstatus": 300, "install": 180,
+                                        "get_app_container": 15, "spawn": 15}.get(action, 60)
+                    self.assertEqual(call.kwargs["timeout"], expected_timeout)
+                self.assertNotIn("private", self.stdout.getvalue() + self.stderr.getvalue())
+
+    def test_before_launch_collector_failure_preserves_launch_and_owned_cleanup(self):
+        self.assert_launch_observation_is_non_authoritative("before-launch", "collector")
+
+    def test_before_launch_observation_sink_failure_preserves_launch_and_owned_cleanup(self):
+        self.assert_launch_observation_is_non_authoritative("before-launch", "sink")
+
+    def test_launch_failed_collector_failure_preserves_original_error_diagnostics_and_cleanup(self):
+        self.assert_launch_observation_is_non_authoritative("launch-failed", "collector")
+
+    def test_launch_failed_observation_sink_failure_preserves_original_error_diagnostics_and_cleanup(self):
+        self.assert_launch_observation_is_non_authoritative("launch-failed", "sink")
+
 
 if __name__ == "__main__":
     unittest.main()

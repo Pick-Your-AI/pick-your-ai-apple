@@ -210,13 +210,13 @@ def smoke_destination(device, runtime, family, existing_ids):
         except (OSError, subprocess.SubprocessError):
             observe_runtime(udid, "install-failed")
             raise
-        collect_runtime_snapshot(udid, "before-launch")
+        observe_runtime(udid, "before-launch")
         try:
             # This simulator was just created and the app just installed. There
             # is no earlier runner-owned app process to terminate before launch.
             run("xcrun", "simctl", "launch", udid, APP_BUNDLE_ID)
         except (OSError, subprocess.SubprocessError):
-            collect_runtime_snapshot(udid, "launch-failed")
+            observe_runtime(udid, "launch-failed")
             collect_launch_diagnostics(udid)
             raise
         run("xcrun", "simctl", "terminate", udid, APP_BUNDLE_ID)

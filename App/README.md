@@ -144,7 +144,7 @@ The workflow now runs two separately required jobs from the same event checkout:
 | Job | Required work and original artifact |
 | --- | --- |
 | `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all five real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
-| `native-simulator` | Ten Xcode-pin, 32 smoke-runner and 21 SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
+| `native-simulator` | Ten Xcode-pin, 36 smoke-runner and 21 SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
 
 Each native job uses its own fresh standard `macos-15-intel` host and retains the
 same 20-minute job limit. The rendering command, source and qualifier are moved
@@ -436,3 +436,24 @@ requirements and the signed-artifact, privacy and channel evidence still needed.
 The native simulator launch job now reuses these pins and verifier for its Debug
 product; the separate Release-product lane does not supply its required launch
 or cleanup results.
+
+## Launch observation failure boundary
+
+The `before-launch` and `launch-failed` snapshots use the same guarded
+`observe_runtime` path as boot and installation. A collector exception or an
+unavailable observation output must not prevent the single launch attempt,
+replace its original failure, or skip its two bounded launch diagnostics. The
+existing owned shutdown/delete cleanup still applies. Commands, destinations,
+deadlines, runtime selection and successful-launch requirements are unchanged.
+
+A controlled Python probe on accepted source `0e289d81428068a0a3196cde064fda536c71691b`
+preserved two normal controls and demonstrated four violations: collector and
+output failures before launch prevented the attempt, and those failures after a
+launch timeout replaced its exact exception and skipped diagnostics. These are
+synthetic exception-ordering observations, not a cause assigned to any historical
+macOS simulator failure. Four new portable regression methods cover both device
+families, exact original failure identity, both diagnostic commands, owned
+cleanup, redaction and unchanged deadlines. All 32 earlier smoke test methods
+remain unchanged. Run the complete focused suite with
+`python3 -m unittest discover -s App/scripts/tests -p 'test_simulator_smoke.py' -v`.
+Actual changed-runner native qualification remains separate.
