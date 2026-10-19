@@ -11,12 +11,15 @@ independent product/release receiving review, while the first exact qualified
 real-data tuple remains absent. This updates the earlier proposal's #20 status
 without turning desk research or synthetic implementation into release evidence.
 
-The [#23 consumer delta](issue-23-services.md) now consumes the accepted canonical
-service decision delivered through Android #347 at signed `4c753bd6`. Its exact
-topology, frozen routes and operating-gate handoff are available inputs; actual
-origins, operating acceptance and Apple receiving/service validation remain
-separate. This updates the earlier proposal's hosting-decision status without
-relabeling historical preparation or other foundation decisions.
+The [#23 consumer delta](issue-23-services.md) received complete Apple
+product/release engineering decision acceptance on 2026-10-19 through the
+[actual delegated receiving decision](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/23#issuecomment-6265740527).
+It adopts the canonical service decision delivered through Android #347 at signed
+`4c753bd6`, its frozen routes, engineering responsibilities and cross-client
+handoff. Actual origins, deployed versions, operating/custody commitments and
+O1–O6 implementation/activation evidence remain separate. The existing #288/#289
+source delivery and reviews retain their historical scope; no service, device or
+release execution is supplied by accepting this architecture decision.
 
 Revision: proposal-1, prepared 2026-10-18 UTC against Apple main `bbf013616b67693f887b32849c55aa39a6e5b1e1`. These are concrete engineering recommendations for receiving review, not accepted product decisions, implementation evidence or release approval. They do not alter live issue criteria or assign people.
 
