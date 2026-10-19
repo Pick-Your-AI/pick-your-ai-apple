@@ -100,18 +100,24 @@ final class DependencyParticipantTests: XCTestCase {
     func testValidatedBuildContextRetainsDisabledAndRemovedSelectionIdentities() throws {
         let data = try fixture("build")
         let original = try BuildTransfer.snapshot(fromDraftJSON: data)
-        var root = try XCTUnwrap(JSONSerialization.jsonObject(with: data) as? [String: Any])
-        var rows = try XCTUnwrap(root["selections"] as? [[String: Any]])
+        // Retain exact fixture decimals; Foundation's NSNumber bridge can change
+        // fractional digits before the bounded JSON parser sees the new draft.
+        var root = try XCTUnwrap(original.value.object)
+        var rows = try XCTUnwrap(root["selections"]?.array)
         XCTAssertGreaterThan(rows.count, 2)
-        let oldID = try XCTUnwrap(rows[0]["id"] as? String)
-        let removedID = try XCTUnwrap(rows[1]["id"] as? String)
-        let oldKind = try XCTUnwrap(CatalogKind(rawValue: XCTUnwrap(rows[0]["kind"] as? String)))
-        let removedKind = try XCTUnwrap(CatalogKind(rawValue: XCTUnwrap(rows[1]["kind"] as? String)))
-        rows[0]["enabled"] = false
+        var first = try XCTUnwrap(rows[0].object)
+        let removed = try XCTUnwrap(rows[1].object)
+        let oldID = try XCTUnwrap(first["id"]?.string)
+        let removedID = try XCTUnwrap(removed["id"]?.string)
+        let oldKind = try XCTUnwrap(CatalogKind(rawValue: XCTUnwrap(first["kind"]?.string)))
+        let removedKind = try XCTUnwrap(CatalogKind(rawValue: XCTUnwrap(removed["kind"]?.string)))
+        first["enabled"] = .bool(false)
+        rows[0] = .object(first)
         rows.remove(at: 1)
-        root["selections"] = rows
-        root["revision"] = 2
-        let changed = try BuildTransfer.snapshot(fromDraftJSON: JSONSerialization.data(withJSONObject: root, options: .sortedKeys))
+        root["selections"] = .array(rows)
+        root["revision"] = .number(2)
+        let changed = try BuildTransfer.snapshot(fromDraftJSON: JSONEncoder().encode(JSONValue.object(root)))
+        XCTAssertEqual(changed.value, .object(root))
         let before = original.dependencyContext(mode: nil, production: nil)
         let after = changed.dependencyContext(mode: nil, production: nil)
         XCTAssertNil(before.mode)
