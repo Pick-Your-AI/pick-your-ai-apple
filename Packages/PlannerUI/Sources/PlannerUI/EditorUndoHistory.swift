@@ -4,6 +4,11 @@ import Foundation
 struct EditorContents: Equatable, Sendable {
     let title: String
     let notes: String
+    /// Editing preserves the supplied text bytes, including canonical spellings.
+    static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.title.utf8.elementsEqual(rhs.title.utf8)
+            && lhs.notes.utf8.elementsEqual(rhs.notes.utf8)
+    }
     var byteCount: Int { title.utf8.count + notes.utf8.count }
 }
 

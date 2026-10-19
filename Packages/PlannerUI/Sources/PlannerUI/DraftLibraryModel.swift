@@ -66,7 +66,7 @@ public final class DraftLibraryModel: ObservableObject {
     private var notesInputGeneration = UUID()
     // Internal handle lets controlled-clock consumers await the exact scheduled operation.
     private(set) var pendingAutosave: Task<Void, Never>?
-    public var dirty: Bool { title != savedTitle || notes != savedNotes }
+    public var dirty: Bool { contents != EditorContents(title: savedTitle, notes: savedNotes) }
     public var canEdit: Bool { selected != nil && !deleting && !awaitingDiscardDecision }
     public var canUndo: Bool { !busy && !awaitingDiscardDecision && selected != nil && editHistory.canUndo(contents) }
     public var canRedo: Bool { !busy && !awaitingDiscardDecision && selected != nil && editHistory.canRedo(contents) }
@@ -86,8 +86,8 @@ public final class DraftLibraryModel: ObservableObject {
         applyInput(value)
     }
     private func applyInput(_ value: EditorContents) {
-        if titleValue != value.title { titleInputGeneration = UUID() }
-        if notesValue != value.notes { notesInputGeneration = UUID() }
+        if !titleValue.utf8.elementsEqual(value.title.utf8) { titleInputGeneration = UUID() }
+        if !notesValue.utf8.elementsEqual(value.notes.utf8) { notesInputGeneration = UUID() }
         titleValue = value.title; notesValue = value.notes; inputGeneration = UUID()
         scheduleAutosave()
     }
