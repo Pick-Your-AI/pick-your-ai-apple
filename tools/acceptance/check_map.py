@@ -32,6 +32,8 @@ def main():
         n = record['number']
         exact = re.findall(r'^- \[([ xX])\] (.*(?:\n(?!- \[).+)*)', record['acceptance_criteria_markdown'], re.M)
         check(exact, f'#{n}: empty acceptance criteria')
+        check(all(type(r['source_checked']) is bool for r in record['criteria']),
+              f'#{n}: source checkbox states must be booleans')
         check([(r['source_checked'], r['text']) for r in record['criteria']] == [(c.lower() == 'x', t) for c, t in exact], f'#{n}: parsed criteria differ')
         check(record['next_executable_action'] and record['updated_at'] and record['project'], f'#{n}: missing intake/action')
         check(record['criterion_completion_claimed'] is False, f'#{n}: unsupported completion claim')
