@@ -12,6 +12,21 @@ public struct AnalysisIdentity: Equatable, Sendable {
         self.revision = revision
         self.versionLocks = versionLocks
     }
+
+    /// Opaque identities match their original UTF-8 bytes, not Swift's canonical
+    /// text equivalence. Lock-map insertion order has no meaning.
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        guard lhs.buildID.utf8.elementsEqual(rhs.buildID.utf8),
+              lhs.revision.utf8.elementsEqual(rhs.revision.utf8),
+              lhs.versionLocks.count == rhs.versionLocks.count else { return false }
+        let left = Dictionary(uniqueKeysWithValues: lhs.versionLocks.map {
+            (Data($0.key.utf8), Data($0.value.utf8))
+        })
+        let right = Dictionary(uniqueKeysWithValues: rhs.versionLocks.map {
+            (Data($0.key.utf8), Data($0.value.utf8))
+        })
+        return left == right
+    }
 }
 
 /// A fresh token for every attempt, including retries of identical build inputs.
