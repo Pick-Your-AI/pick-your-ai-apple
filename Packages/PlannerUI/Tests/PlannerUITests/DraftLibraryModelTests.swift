@@ -8,7 +8,7 @@ final class DraftLibraryModelTests: XCTestCase {
         let folder = FileManager.default.temporaryDirectory.appendingPathComponent(UUID().uuidString)
         try FileManager.default.createDirectory(at: folder, withIntermediateDirectories: true)
         let store = try DraftStore(url: folder.appendingPathComponent("drafts.sqlite"))
-        return (store, DraftLibraryModel(store: store), folder)
+        return (store, DraftLibraryModel(store: store, autosaveWait: nil), folder)
     }
     func testCreateSaveReopenDuplicateAndDelete() async throws {
         let (store, model, folder) = try fixture()
@@ -21,7 +21,7 @@ final class DraftLibraryModelTests: XCTestCase {
         XCTAssertFalse(model.dirty)
         XCTAssertEqual(model.status, "Saved locally")
         model.close()
-        let second = DraftLibraryModel(store: store)
+        let second = DraftLibraryModel(store: store, autosaveWait: nil)
         await second.refresh()
         await second.open(try XCTUnwrap(second.records.first))
         XCTAssertEqual(second.notes, "Offline notes")
@@ -158,7 +158,7 @@ extension DraftLibraryModelTests {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         model.notes = "Submitted"
         await controlled.configure(pause: true)
@@ -178,7 +178,7 @@ extension DraftLibraryModelTests {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         model.title = "Committed"
         await controlled.configure(failRefresh: true)
@@ -213,7 +213,7 @@ extension DraftLibraryModelTests {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         let record = try XCTUnwrap(model.selected)
         await controlled.configure(pauseDelete: true)
@@ -272,7 +272,7 @@ extension DraftLibraryModelTests {
         let history = try await store.history(id: earlier.id)
         XCTAssertEqual(history.records.map(\.revision), [4, 3, 2, 1])
         XCTAssertEqual(try JSONDecoder().decode(EditorPayload.self, from: history.records[1].payload).notes, "Later")
-        let reopened = DraftLibraryModel(store: store)
+        let reopened = DraftLibraryModel(store: store, autosaveWait: nil)
         await reopened.open(id: earlier.id)
         XCTAssertEqual(reopened.notes, "Earlier")
         XCTAssertEqual(reopened.selected?.restoredFrom, 2)
@@ -300,7 +300,7 @@ extension DraftLibraryModelTests {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         let earlier = try XCTUnwrap(model.selected)
         model.notes = "Later"; await model.save()
@@ -357,7 +357,7 @@ extension DraftLibraryModelTests {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         let id = try XCTUnwrap(model.selected?.id)
         model.notes = "Pending when history opens"
@@ -377,7 +377,7 @@ extension DraftLibraryModelTests {
         let (store, _, folder) = try fixture()
         defer { try? FileManager.default.removeItem(at: folder) }
         let controlled = ControlledStorage(store: store)
-        let model = DraftLibraryModel(store: controlled)
+        let model = DraftLibraryModel(store: controlled, autosaveWait: nil)
         await model.create()
         let earlier = try XCTUnwrap(model.selected)
         model.notes = "Later"; await model.save()

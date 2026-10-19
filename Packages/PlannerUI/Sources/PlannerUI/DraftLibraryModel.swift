@@ -30,13 +30,15 @@ public final class DraftLibraryModel: ObservableObject {
     @Published public private(set) var selected: DraftRecord?
     @Published private var titleValue = ""
     @Published private var notesValue = ""
+    @Published private var editHistory = EditorUndoHistory()
+    @Published public private(set) var awaitingDiscardDecision = false
     public var title: String {
         get { titleValue }
-        set { if !deleting { titleValue = newValue } }
+        set { edit(EditorContents(title: newValue, notes: notesValue)) }
     }
     public var notes: String {
         get { notesValue }
-        set { if !deleting { notesValue = newValue } }
+        set { edit(EditorContents(title: titleValue, notes: newValue)) }
     }
     public static let pageSize = 20
     @Published public private(set) var pageOffset = 0
@@ -51,11 +53,67 @@ public final class DraftLibraryModel: ObservableObject {
     private var savedTitle = ""
     private var savedNotes = ""
     private let store: any DraftLibraryStorage
+    private let autosaveWait: (@Sendable () async throws -> Void)?
+    private var autosaveGeneration: UUID?
+    private var inputGeneration = UUID()
+    private var titleInputGeneration = UUID()
+    private var notesInputGeneration = UUID()
+    // Internal handle lets controlled-clock consumers await the exact scheduled operation.
+    private(set) var pendingAutosave: Task<Void, Never>?
     public var dirty: Bool { title != savedTitle || notes != savedNotes }
-    public init(store: any DraftLibraryStorage) { self.store = store }
+    public var canEdit: Bool { selected != nil && !deleting && !awaitingDiscardDecision }
+    public var canUndo: Bool { !busy && !awaitingDiscardDecision && selected != nil && editHistory.canUndo(contents) }
+    public var canRedo: Bool { !busy && !awaitingDiscardDecision && selected != nil && editHistory.canRedo(contents) }
+    private var contents: EditorContents { EditorContents(title: titleValue, notes: notesValue) }
+    public convenience init(store: any DraftLibraryStorage) {
+        self.init(store: store, autosaveWait: { try await Task.sleep(for: .milliseconds(750)) })
+    }
+    /// An injected wait isolates clock behavior in deterministic model tests.
+    init(store: any DraftLibraryStorage, autosaveWait: (@Sendable () async throws -> Void)?) {
+        self.store = store; self.autosaveWait = autosaveWait
+    }
+    deinit { pendingAutosave?.cancel() }
+
+    private func edit(_ value: EditorContents) {
+        guard canEdit, value != contents else { return }
+        editHistory.record(contents)
+        applyInput(value)
+    }
+    private func applyInput(_ value: EditorContents) {
+        if titleValue != value.title { titleInputGeneration = UUID() }
+        if notesValue != value.notes { notesInputGeneration = UUID() }
+        titleValue = value.title; notesValue = value.notes; inputGeneration = UUID()
+        scheduleAutosave()
+    }
+    public func undo() {
+        guard canUndo, let previous = editHistory.undo(contents) else { return }
+        applyInput(previous)
+    }
+    public func redo() {
+        guard canRedo, let next = editHistory.redo(contents) else { return }
+        applyInput(next)
+    }
+    private func cancelAutosave() {
+        pendingAutosave?.cancel(); pendingAutosave = nil; autosaveGeneration = nil
+    }
+    private func scheduleAutosave() {
+        cancelAutosave()
+        guard !awaitingDiscardDecision, dirty, let id = selected?.id, let autosaveWait else { return }
+        let generation = UUID()
+        autosaveGeneration = generation
+        pendingAutosave = Task { @MainActor [weak self] in
+            do {
+                try await autosaveWait()
+                try Task.checkCancellation()
+                guard let self, self.autosaveGeneration == generation, self.selected?.id == id else { return }
+                self.pendingAutosave = nil; self.autosaveGeneration = nil
+                await self.save()
+            } catch { /* Cancellation never acknowledges or discards editor text. */ }
+        }
+    }
 
     public func refresh() async {
-        guard !busy else { return }
+        guard !busy, !awaitingDiscardDecision else { return }
         busy = true
         do { try await load() } catch { report(error) }
         await finishOperation()
@@ -77,8 +135,14 @@ public final class DraftLibraryModel: ObservableObject {
     public func open(_ record: DraftRecord) async { await open(id: record.id) }
     public func open(id: UUID) async {
         guard !busy, !dirty else { return }
+        let generation = inputGeneration
         busy = true
-        do { adopt(try await store.read(id: id)) }
+        do {
+            let record = try await store.read(id: id)
+            // A late binding event while the read is suspended belongs to the
+            // current editor; opening another draft cannot replace that input.
+            if generation == inputGeneration { adopt(record) }
+        }
         catch { report(error) }
         await finishOperation()
     }
@@ -86,7 +150,8 @@ public final class DraftLibraryModel: ObservableObject {
         do {
             let payload = try editorPayload(record)
             clearHistory()
-            selected = record; title = record.title; notes = payload.notes
+            cancelAutosave(); editHistory = EditorUndoHistory(); inputGeneration = UUID()
+            selected = record; titleValue = record.title; notesValue = payload.notes
             savedTitle = title; savedNotes = notes; status = "Saved locally"; notice = nil
         } catch {
             notice = "This draft uses an unsupported editor format. It has been preserved without changes."
@@ -104,7 +169,7 @@ public final class DraftLibraryModel: ObservableObject {
     }
     /// Pages replace each other; payload-bearing history never grows without bound.
     public func loadHistory(offset: Int = 0) async {
-        guard let selected, !busy, offset >= 0 else { return }
+        guard let selected, !busy, !awaitingDiscardDecision, offset >= 0 else { return }
         busy = true
         do {
             let page = try await store.history(id: selected.id, limit: Self.pageSize, offset: offset)
@@ -118,7 +183,8 @@ public final class DraftLibraryModel: ObservableObject {
     public func restore(_ revision: DraftRecord) async {
         guard let selected, !busy, !dirty, revision.id == selected.id,
               revision.revision < selected.revision else { return }
-        let submittedTitle = title; let submittedNotes = notes
+        let submittedTitleGeneration = titleInputGeneration
+        let submittedNotesGeneration = notesInputGeneration
         busy = true; notice = nil
         do {
             _ = try editorPayload(revision) // Unsupported history is preserved, never promoted.
@@ -126,11 +192,15 @@ public final class DraftLibraryModel: ObservableObject {
                                                    expectedRevision: selected.revision)
             let payload = try editorPayload(restored)
             self.selected = restored
-            // A binding update can arrive during the actor hop. Preserve that newer
-            // input while acknowledging only the actual durable restored contents.
-            if title == submittedTitle { title = restored.title }
-            if notes == submittedNotes { notes = payload.notes }
+            // Preserve any field edited during the actor hop, even if it returned
+            // to its earlier value. Only unchanged fields receive restored text.
+            let restoredContents = EditorContents(
+                title: titleInputGeneration == submittedTitleGeneration ? restored.title : title,
+                notes: notesInputGeneration == submittedNotesGeneration ? payload.notes : notes)
+            if restoredContents != contents { editHistory.record(contents) }
+            titleValue = restoredContents.title; notesValue = restoredContents.notes
             savedTitle = restored.title; savedNotes = payload.notes
+            scheduleAutosave()
             status = "Restored revision \(revision.revision) as local revision \(restored.revision)"
             clearHistory()
             do { try await load() }
@@ -138,7 +208,30 @@ public final class DraftLibraryModel: ObservableObject {
         } catch { status = "Not restored"; report(error) }
         await finishOperation()
     }
-    public func close() { guard !busy else { return }; clearHistory(); selected = nil; title = ""; notes = ""; savedTitle = ""; savedNotes = "" }
+    /// Freeze unsaved input before offering a discard decision. No write is in
+    /// flight when this succeeds, and timer/lifecycle saves remain suspended.
+    public func requestClose() {
+        guard !busy, selected != nil else { return }
+        guard dirty else { close(); return }
+        awaitingDiscardDecision = true
+        cancelAutosave(); saveRequested = false
+    }
+    public func cancelDiscardDecision() {
+        guard awaitingDiscardDecision else { return }
+        awaitingDiscardDecision = false
+        scheduleAutosave()
+    }
+    public func discardChangesAndClose() {
+        // SwiftUI may dismiss the dialog binding before invoking its action.
+        // close() cancels any timer rearmed by that synchronous dismissal.
+        close()
+    }
+    public func close() {
+        guard !busy else { return }
+        awaitingDiscardDecision = false
+        clearHistory(); cancelAutosave(); editHistory = EditorUndoHistory(); inputGeneration = UUID()
+        saveRequested = false; selected = nil; titleValue = ""; notesValue = ""; savedTitle = ""; savedNotes = ""
+    }
     public func create() async {
         guard !dirty else { return }
         await operation {
@@ -147,6 +240,8 @@ public final class DraftLibraryModel: ObservableObject {
         }
     }
     public func save() async {
+        guard !awaitingDiscardDecision else { return }
+        cancelAutosave()
         guard let selected, dirty else { return }
         if busy { saveRequested = true; return }
         let title = self.title; let notes = self.notes
@@ -167,7 +262,8 @@ public final class DraftLibraryModel: ObservableObject {
             self.deleting = false
             if self.selected?.id == record.id {
                 self.clearHistory()
-                self.selected = nil; self.title = ""; self.notes = ""
+                self.cancelAutosave(); self.editHistory = EditorUndoHistory(); self.inputGeneration = UUID()
+                self.selected = nil; self.titleValue = ""; self.notesValue = ""
                 self.savedTitle = ""; self.savedNotes = ""
             }
             return nil
@@ -185,6 +281,10 @@ public final class DraftLibraryModel: ObservableObject {
                     clearHistory()
                     selected = result
                     savedTitle = submittedTitle; savedNotes = submittedNotes
+                    // Input can return to the old baseline while this write is
+                    // suspended. Recheck it against the acknowledged revision;
+                    // preserve an existing debounce or an already queued save.
+                    if pendingAutosave == nil && !saveRequested { scheduleAutosave() }
                 } else if !dirty {
                     adopt(result)
                 }
