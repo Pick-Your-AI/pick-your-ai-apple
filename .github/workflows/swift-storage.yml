@@ -58,10 +58,18 @@ jobs:
         run: |
           set -euo pipefail
           swift test --package-path Packages/PlannerData --scratch-path .build-storage -Xswiftc -warnings-as-errors 2>&1 | tee storage-tests.log
+      - name: Test pending-write replay guards
+        run: |
+          set -euo pipefail
+          python3 tools/storage/pending_write_replay.py --self-test 2>&1 | tee storage-pending-replay-guards.log
       - name: Replay actual process termination during write and migration
         run: |
           set -euo pipefail
           python3 tools/storage/crash_replay.py .build-storage/debug/DraftCrashProbe | tee storage-crash.log
+      - name: Replay actual pending-write commit interruptions
+        run: |
+          set -euo pipefail
+          python3 tools/storage/pending_write_replay.py .build-storage/debug/PendingWriteCrashProbe | tee storage-pending-crash.log
       - name: Compile library for iOS Simulator without signing
         working-directory: Packages/PlannerData
         run: |
@@ -98,6 +106,11 @@ jobs:
             grep -E 'Test Case .*DraftStoreTests.*testInterruptedMigrationRollsBackSchemaThenRecovers.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Test Case .*DraftStoreTests.*testRestoreRejectsFutureHistoryWithoutChangingReadableDrafts.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Executed 31 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Test Case .*PendingBuildWriteStoreTests.*testReopenRecoversCommittedAttemptAsUncertainWithoutResend.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Test Case .*PendingBuildWriteStoreTests.*testFailedActivationCommitPreservesGenerationAndAttempt.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Test Case .*PendingBuildWriteStoreTests.*testActualSQLiteFullRetainsQueueThenUnconstrainedReopenRecovers.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Executed 35 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Executed 66 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
           done < "$GITHUB_WORKSPACE/storage-simulator-selection.tsv"
       - name: Retain storage evidence
         if: always()
