@@ -105,5 +105,16 @@ for case in placement_cases:
     require(case['canonicalValid'] == case['clientValid'], case['name'])
 summaries.append(f'Verified {len(placement_cases)} canonical placement cases: {dict(Counter(case["disposition"] for case in placement_cases))}; unresolved semantics remain explicit.')
 
+# Graph mutations exercise the same public decoding inputs on Python and Swift.
+from dependency_graph_vectors import encoded_vectors as encoded_graph_vectors
+graph_cases_path = FIXTURES / 'dependency-graph-conformance.json'
+require(graph_cases_path.read_text() == encoded_graph_vectors(), 'Stale dependency graph vectors')
+graph_cases = json.loads(graph_cases_path.read_text())
+graph = json.loads((FIXTURES / 'dependency-graph.json').read_text())
+validator = Draft202012Validator(schemas['dependency-graph.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in graph_cases:
+    require(validator.is_valid(apply_vector(graph, case)) == case['canonicalValid'], case['name'])
+summaries.append(f'Verified {len(graph_cases)} canonical dependency graph cases; no executable graph policy is inferred.')
+
 # A receipt describes the complete check, never a partially verified input set.
 print('\n'.join(summaries))

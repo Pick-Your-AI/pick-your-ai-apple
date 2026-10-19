@@ -23,8 +23,8 @@ The reconstruction baseline is signed Apple
 [`13e67df89309289b42fd9302c5908041739d9d11`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/13e67df89309289b42fd9302c5908041739d9d11).
 The unchanged [source manifest](source-manifest.json) pins Research
 `7acbefbf4e4e700231e88be272bc89e3a73dde15`, contract **1.0.0**. The applicable inputs
-are these original bytes; the two quality and two resource pins received by later
-slices remain unchanged too.
+are these original bytes; the two quality, two cost and two resource pins received
+by later slices remain unchanged too.
 
 | Input | SHA-256 |
 | --- | --- |
@@ -102,14 +102,18 @@ bytes. Duplicate `role` and escaped `r\u006fle` aliases must fail before schema
 acceptance. These are parser/local snapshot recovery results, not a storage crash
 or device-relaunch claim.
 
-The [reference verifier](Tools/verify_contract.py) first checks all ten original
+The [reference verifier](Tools/verify_contract.py) first checks all listed original
 source hashes and deterministic regeneration, then executes the exact same
 mutated payloads through `jsonschema` **4.26.0**
 `Draft202012Validator` with the existing local registry and `FormatChecker`.
-It also retains the 129 build/selection, 1,635 catalog, 202 quality and 223 resource
-cases: **2,287 structural cases** including placement. The resource schema/example
-and its cases were received separately; the original reconstruction below had
-eight pins and no resource corpus. Those historical counts remain unchanged.
+At signed accepted
+[`2624dc83c07bf21bd2fa8a206c7fe5602e15111e`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/2624dc83c07bf21bd2fa8a206c7fe5602e15111e),
+the manifest lists **12 source hashes** and the checked-in corpora contain 129
+build/selection, 1,635 catalog, 202 quality, 520 cost, 223 resource and 98 placement
+cases: **2,807 structural cases**. The cost and resource schema/example pairs and
+their corpora were received separately; the original reconstruction below had
+eight pins and neither corpus. The dated execution counts below retain their
+original source attribution.
 It performs structural schema validation, not the illustrative reference
 compatibility evaluator or a serving-runtime experiment.
 

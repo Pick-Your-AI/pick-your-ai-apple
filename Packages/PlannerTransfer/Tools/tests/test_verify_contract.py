@@ -22,6 +22,7 @@ CORPORA = (
     ("cost", "cost_vectors"),
     ("resource-estimate", "resource_estimate_vectors"),
     ("placement", "placement_vectors"),
+    ("dependency-graph", "dependency_graph_vectors"),
 )
 
 
@@ -67,14 +68,15 @@ class VerifyContractChecks(unittest.TestCase):
         self.assertEqual(result.returncode, 0, result.stderr)
         self.assertEqual(result.stderr, "")
         lines = result.stdout.splitlines()
-        self.assertEqual(len(lines), 6, result.stdout)
+        self.assertEqual(len(lines), 7, result.stdout)
         for line, expected in zip(lines, (
-            "Verified 12 source hashes and 129 canonical conformance cases.",
+            "Verified 14 source hashes and 129 canonical conformance cases.",
             "Verified all 29 catalog kinds and 1635 canonical catalog cases;",
             "Verified 202 canonical quality cases;",
             "Verified 520 canonical cost cases;",
             "Verified 223 canonical resource estimate cases;",
             "Verified 98 canonical placement cases:",
+            "Verified 150 canonical dependency graph cases;",
         )):
             self.assertTrue(line.startswith(expected), line)
 
@@ -211,17 +213,19 @@ class VerifyContractChecks(unittest.TestCase):
                 self.require_failure(result, cases[0]["name"])
 
     def test_valid_recovery_after_a_late_failure(self):
-        path = self.fixture("placement")
-        original = path.read_bytes()
-        for optimized in (False, True):
-            with self.subTest(optimized=optimized):
-                path.write_bytes(original + b"\n")
-                self.require_failure(self.verify(optimized), "Stale placement vectors")
-                path.write_bytes(original)
-                self.require_success(self.verify(optimized))
+        for corpus in ("placement", "dependency-graph"):
+            path = self.fixture(corpus)
+            original = path.read_bytes()
+            for optimized in (False, True):
+                with self.subTest(corpus=corpus, optimized=optimized):
+                    path.write_bytes(original + b"\n")
+                    self.require_failure(self.verify(optimized), "Stale " + corpus.replace("-", " ") + " vectors")
+                    path.write_bytes(original)
+                    self.require_success(self.verify(optimized))
 
 
 from reference_helper_checks import ReferenceHelperChecks
+from graph_reference_checks import GraphReferenceChecks
 
 
 if __name__ == "__main__":

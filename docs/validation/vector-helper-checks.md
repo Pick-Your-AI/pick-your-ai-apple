@@ -4,7 +4,11 @@ This is an additive supplement to [Apple #342](https://github.com/Pick-Your-AI/p
 supporting the bounded CI and conformance work in [#30](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/30)
 and [#37](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/37).
 
-## Remaining helper failure
+The sections below record the original six-corpus #347 donor. The
+[current-main Graph continuation](transfer-graph-optimization.md) preserves that
+correction, adds the accepted seventh corpus and records its separate execution.
+
+## Original donor helper failure
 
 The #342 source at `b0db87aa958e133be061ab9902514972f4015a36` makes all mandatory
 verifier gates and four standalone freshness checks independent of Python

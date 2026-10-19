@@ -19,6 +19,7 @@ CORPUS_FILES = (
     'conformance.json', 'catalog-conformance.json', 'quality-conformance.json',
     'cost-conformance.json', 'resource-estimate-conformance.json',
     'placement-conformance.json',
+    'dependency-graph-conformance.json',
 )
 MODES = ('normal', 'flag', 'environment')
 BOOTSTRAP = r'''
@@ -153,12 +154,12 @@ class ReferenceHelperChecks(unittest.TestCase):
                 self.require_failure(result, 'Stale ')
 
     def test_environment_optimization_preserves_generator_freshness(self):
-        for name in ('catalog', 'quality', 'cost', 'placement'):
+        for name in ('catalog', 'quality', 'cost', 'placement', 'dependency-graph'):
             def stale(root):
                 path = root / 'Tests/PlannerTransferTests/Fixtures' / (name + '-conformance.json')
                 path.write_text(path.read_text() + '\n')
 
             with self.subTest(generator=name):
-                result, _ = self.run_copy('environment', stale, script=name + '_vectors.py')
+                result, _ = self.run_copy('environment', stale, script=name.replace('-', '_') + '_vectors.py')
                 self.require_failure(result, 'vectors are stale')
                 self.assertNotIn('deterministic generation verified', result.stdout)

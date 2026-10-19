@@ -1,0 +1,76 @@
+name: Apple app bug
+description: Report reproducible Apple preview behavior using safe synthetic inputs.
+title: "[Apple bug]: "
+body:
+  - type: markdown
+    attributes:
+      value: |
+        **This issue and any attachments will be public.** Read the [support and triage guide](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/main/SUPPORT.md) and check [existing Apple reports](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues) first.
+
+        Reproduce with invented inputs. Keep private drafts, personal information, credentials, private URLs, raw files and logs out of this form. No private/security reporting destination has been verified for this Apple preview; do not submit confidential or sensitive security details here.
+
+        Use the Apple evidence correction form for a public claim, source or recorded-price error. The app does not populate or upload this report. You review the complete form and submit it yourself; opening the page does not deliver or triage a report.
+  - type: input
+    id: version
+    attributes:
+      label: App version or public source revision
+      description: Record the version/build or exact public source commit used. If unavailable, say unknown; do not include a private repository URL.
+    validations:
+      required: true
+  - type: input
+    id: platform
+    attributes:
+      label: Platform and execution context
+      description: Give the iOS/iPadOS version and iPhone or iPad family. Distinguish a simulator from a physical device. Say unknown where needed; omit serial numbers, UDIDs and account identifiers.
+    validations:
+      required: true
+  - type: dropdown
+    id: behavior
+    attributes:
+      label: Affected behavior
+      options:
+        - Editing, saving or recovery
+        - Catalog, findings or comparison presentation
+        - Import, export or public-page navigation
+        - Accessibility or layout
+        - Startup or another app behavior
+    validations:
+      required: true
+  - type: textarea
+    id: reproduction
+    attributes:
+      label: Safe reproduction steps
+      description: Use a new synthetic draft and invented values. Name the controls and steps, and say whether saving was acknowledged. Preserve the original private data locally; do not attach it.
+      placeholder: |
+        1. Open a new synthetic draft.
+        2. Enter an invented title.
+        3. ...
+    validations:
+      required: true
+  - type: textarea
+    id: expected-observed
+    attributes:
+      label: Expected, observed and recovery behavior
+      description: Describe the expected result, the actual result and any safe on-screen status. Record what happened after a retry or cancellation without repeating private text.
+    validations:
+      required: true
+  - type: textarea
+    id: reviewed-metadata
+    attributes:
+      label: Optional reviewed diagnostic metadata
+      description: Leaving this empty is supported. Follow the guide's redaction-preview steps and include only manually reviewed app/source version, OS/family, execution context and a safe status. Do not paste raw logs, exception text, paths, record IDs or files.
+  - type: input
+    id: related-report
+    attributes:
+      label: Related public report
+      description: Optional existing public issue or reviewed-fix URL. Exclude private or credential-bearing URLs.
+  - type: checkboxes
+    id: final-public-review
+    attributes:
+      label: Final public-content review
+      description: Read the whole completed form and inspect every attachment locally before checking this. Repeat the review after any edit.
+      options:
+        - label: I reviewed the final text and any attachments and excluded private information, credentials and sensitive security details.
+          required: true
+        - label: I left diagnostics empty or reviewed the complete redacted metadata preview; I included no raw files, logs or private draft content.
+          required: true
