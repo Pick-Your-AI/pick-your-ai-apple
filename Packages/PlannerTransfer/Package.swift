@@ -5,7 +5,8 @@ let package = Package(name: "PlannerTransfer", platforms: [.macOS(.v14), .iOS(.v
     dependencies: [.package(path: "../PlannerData"), .package(path: "../PlannerCore"),
                    .package(path: "../PlannerCatalog")],
     targets: [.target(name: "PlannerTransfer", dependencies: [
-                  .product(name: "PlannerCore", package: "PlannerCore")
+                  .product(name: "PlannerCore", package: "PlannerCore"),
+                  .product(name: "PlannerCatalog", package: "PlannerCatalog")
               ], resources: [.process("Resources")]),
               .testTarget(name: "PlannerTransferTests", dependencies: [
                   "PlannerTransfer", .product(name: "PlannerData", package: "PlannerData"),
