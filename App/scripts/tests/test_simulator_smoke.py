@@ -361,19 +361,20 @@ class SimulatorSmokeTests(unittest.TestCase):
         self.assertLess(time.monotonic() - started, 10)
         records = [json.loads(line) for line in self.stdout.getvalue().splitlines()
                    if line.startswith("{") and '"smoke_snapshot"' in line]
-        self.assertEqual(len(records), 8)
-        self.assertEqual([r["smoke_snapshot"] for r in records], ["before-install"] * 4 + ["install-failed"] * 4)
+        self.assertEqual(len(records), 12)
+        self.assertEqual([r["smoke_snapshot"] for r in records],
+                         ["before-boot"] * 4 + ["before-install"] * 4 + ["install-failed"] * 4)
         self.assertTrue(all(r["owned_udid"] == CREATED_PHONE for r in records))
         processes = [r for r in records if r.get("probe") == "processes"]
-        self.assertEqual([r["error"] for r in processes], ["timeout", "timeout"])
-        self.assertEqual([r["rows"] for r in processes], [["101 1 S 0.0 128 installd"]] * 2)
+        self.assertEqual([r["error"] for r in processes], ["timeout"] * 3)
+        self.assertEqual([r["rows"] for r in processes], [["101 1 S 0.0 128 installd"]] * 3)
         self.assertNotIn("/private/", self.stdout.getvalue())
         self.assertNotIn("secret=excluded", self.stdout.getvalue())
         self.assertNotIn("private stderr", self.stdout.getvalue())
         calls = [c.args[0] for c in mocked.call_args_list]
-        self.assertEqual(sum(c[0] == "/bin/ps" for c in calls), 2)
+        self.assertEqual(sum(c[0] == "/bin/ps" for c in calls), 3)
         actions = [c[2] for c in calls if c[0] == "xcrun"]
-        self.assertEqual(actions, ["list", "create", "boot", "bootstatus", "spawn",
+        self.assertEqual(actions, ["list", "create", "spawn", "boot", "bootstatus", "spawn",
                                    "install", "spawn", "shutdown", "delete"])
         self.assertEqual(calls[-1], ("xcrun", "simctl", "delete", CREATED_PHONE))
         self.assertIn("primary installation timeout", self.stderr.getvalue())
@@ -556,18 +557,26 @@ class SimulatorSmokeTests(unittest.TestCase):
             ("shutdown", CREATED_PAD), ("delete", CREATED_PAD)])
         self.assertIn("primary launch remains failed", self.stdout.getvalue())
 
-    def test_runtime_snapshot_not_attempted_before_owned_successful_boot(self):
-        for action in ("create", "boot", "bootstatus"):
-            with self.subTest(action=action):
+    def test_runtime_snapshot_not_attempted_before_verified_owned_creation(self):
+        for boundary in ("inventory", "create", "partial", "malformed", "preexisting"):
+            with self.subTest(boundary=boundary):
                 observed = []
                 def effect(args, **kwargs):
-                    if args[2] == action:
+                    if args[2] == "list" and boundary == "inventory":
                         raise subprocess.TimeoutExpired(args, kwargs["timeout"])
+                    if args[2] == "create":
+                        if boundary in ("create", "partial"):
+                            raise subprocess.TimeoutExpired(args, kwargs["timeout"],
+                                output=CREATED_PHONE.encode() if boundary == "partial" else None)
+                        output = "not-a-uuid" if boundary == "malformed" else EXISTING_PHONE.upper()
+                        return subprocess.CompletedProcess(args, 0, output, "")
                     return self.completed(args, **kwargs)
-                with self.commands(effect, snapshot_effect=lambda *args: observed.append(args)), \
-                        self.assertRaises(subprocess.TimeoutExpired):
+                with self.commands(effect, snapshot_effect=lambda *args: observed.append(args)) as mocked, \
+                        self.assertRaises((subprocess.TimeoutExpired, ValueError)):
                     SMOKE.main()
                 self.assertEqual(observed, [])
+                self.assertEqual([call.args[0][2] for call in mocked.call_args_list],
+                                 ["list"] if boundary == "inventory" else ["list", "create"])
 
     def test_install_snapshots_follow_owned_boot_and_preserve_both_successful_launches(self):
         events = []
@@ -578,7 +587,7 @@ class SimulatorSmokeTests(unittest.TestCase):
             events.append((phase, udid))
         with self.commands(effect, snapshot_effect=snapshot):
             SMOKE.main()
-        phases = ("bootstatus", "before-install", "install", "before-launch",
+        phases = ("before-boot", "boot", "bootstatus", "before-install", "install", "before-launch",
                   "launch", "terminate", "shutdown", "delete")
         self.assertEqual([event for event in events if event[0] in phases],
                          [(phase, udid) for udid in (CREATED_PHONE, CREATED_PAD) for phase in phases])
@@ -628,16 +637,16 @@ class SimulatorSmokeTests(unittest.TestCase):
                                      ["list", "create", "boot", "bootstatus", "install", "shutdown", "delete"])
                     self.assertTrue(all(c.args[0][3] == CREATED_PHONE and c.kwargs["timeout"] == 60
                                         for c in calls[-2:]))
-                    self.assertEqual(len(probes), 6)
+                    self.assertEqual(len(probes), 9)
                     self.assertTrue(all(timeout == 3 for _, timeout in probes))
                     records = [json.loads(line) for line in self.stdout.getvalue().splitlines() if line.startswith("{")]
                     records = [record for record in records if "smoke_snapshot" in record]
                     self.assertEqual([r["smoke_snapshot"] for r in records],
-                                     ["before-install"] * 4 + ["install-failed"] * 4)
+                                     ["before-boot"] * 4 + ["before-install"] * 4 + ["install-failed"] * 4)
                     self.assertTrue(all(r["owned_udid"] == CREATED_PHONE for r in records))
                     observations = [r for r in records if "probe" in r]
                     self.assertEqual([r["error"] for r in observations],
-                                     ["timeout", "FileNotFoundError", "RuntimeError"] * 2)
+                                     ["timeout", "FileNotFoundError", "RuntimeError"] * 3)
                     self.assertEqual(observations[0]["rows"], ["Pages free: 9."])
                     self.assertEqual(observations[3]["rows"], ["Pages free: 9."])
                     self.assertNotIn("private", self.stdout.getvalue() + self.stderr.getvalue())
@@ -655,7 +664,8 @@ class SimulatorSmokeTests(unittest.TestCase):
                 self.assertRaises(subprocess.TimeoutExpired) as caught:
             SMOKE.main()
         self.assertIs(caught.exception, primary)
-        self.assertEqual(observed, [("before-install", CREATED_PHONE), ("before-launch", CREATED_PHONE),
+        self.assertEqual(observed, [("before-boot", CREATED_PHONE), ("before-install", CREATED_PHONE),
+                                    ("before-launch", CREATED_PHONE), ("before-boot", CREATED_PAD),
                                     ("before-install", CREATED_PAD), ("install-failed", CREATED_PAD)])
         commands = [c.args[0] for c in mocked.call_args_list]
         self.assertEqual([args[3] for args in commands if args[2] == "install"], [CREATED_PHONE, CREATED_PAD])
@@ -663,6 +673,142 @@ class SimulatorSmokeTests(unittest.TestCase):
         self.assertEqual([args[3] for args in commands if args[2] == "terminate"], [CREATED_PHONE])
         self.assertEqual([args[3] for args in commands if args[2] == "delete"], [CREATED_PHONE, CREATED_PAD])
         self.assertNotIn("get_app_container", [args[2] for args in commands])
+
+
+    def test_boot_failures_observe_only_owned_destination_and_preserve_primary_result(self):
+        for action in ("boot", "bootstatus"):
+            for failed_udid in (CREATED_PHONE, CREATED_PAD):
+                for failure in ("timeout", "nonzero", "unavailable"):
+                    for cleanup_fails in (False, True):
+                        with self.subTest(action=action, udid=failed_udid, failure=failure,
+                                          cleanup_fails=cleanup_fails):
+                            self.stdout, self.stderr = io.StringIO(), io.StringIO()
+                            events = []
+                            deadline = 300 if action == "bootstatus" else 60
+                            primary = (subprocess.TimeoutExpired(action, deadline, output=b"boot pending\n")
+                                       if failure == "timeout" else FileNotFoundError("boot unavailable"))
+                            expected = subprocess.CalledProcessError if failure == "nonzero" else type(primary)
+
+                            def effect(args, **kwargs):
+                                events.append((args[2], args[3] if len(args) > 3 else None))
+                                if args[2] == action and args[3] == failed_udid:
+                                    self.assertEqual(kwargs["timeout"], deadline)
+                                    if failure == "nonzero":
+                                        return subprocess.CompletedProcess(args, 17, "boot pending\n", "boot refused\n")
+                                    raise primary
+                                if cleanup_fails and args[2] in ("shutdown", "delete") and args[3] == failed_udid:
+                                    raise subprocess.TimeoutExpired(args, 60)
+                                return self.completed(args, **kwargs)
+
+                            with self.commands(effect, snapshot_effect=lambda udid, phase: events.append((phase, udid))) as mocked, \
+                                    self.assertRaises(expected) as caught:
+                                SMOKE.main()
+                            if failure == "nonzero":
+                                self.assertEqual(caught.exception.returncode, 17)
+                            else:
+                                self.assertIs(caught.exception, primary)
+                            failed_events = [name for name, udid in events if udid == failed_udid]
+                            self.assertEqual(failed_events,
+                                             ["before-boot", "boot"] + (["bootstatus"] if action == "bootstatus" else [])
+                                             + ["boot-failed", "shutdown", "delete"])
+                            commands = [call.args[0] for call in mocked.call_args_list]
+                            reached = [CREATED_PHONE] if failed_udid == CREATED_PHONE else [CREATED_PHONE, CREATED_PAD]
+                            self.assertEqual([args[3] for args in commands if args[2] == "boot"], reached)
+                            self.assertEqual([args[3] for args in commands if args[2] == "delete"], reached)
+                            successes = [] if failed_udid == CREATED_PHONE else [CREATED_PHONE]
+                            for successful_action in ("install", "launch", "terminate"):
+                                self.assertEqual([args[3] for args in commands if args[2] == successful_action], successes)
+                            self.assertNotIn("get_app_container", [args[2] for args in commands])
+                            self.assertTrue(all(call.kwargs["timeout"] == 60 for call in mocked.call_args_list[-2:]))
+                            if failure != "unavailable":
+                                self.assertIn("boot pending", self.stdout.getvalue())
+
+    def test_boot_observer_and_output_errors_do_not_replace_success_or_primary_failure(self):
+        for failed_action in (None, "boot", "bootstatus"):
+            for sink_fails in (False, True):
+                with self.subTest(failed_action=failed_action, sink_fails=sink_fails):
+                    self.stdout, self.stderr = io.StringIO(), io.StringIO()
+                    observed = []
+                    primary = subprocess.TimeoutExpired(failed_action, 300 if failed_action == "bootstatus" else 60)
+
+                    def effect(args, **kwargs):
+                        if args[2] == failed_action:
+                            raise primary
+                        if failed_action and args[2] in ("shutdown", "delete"):
+                            raise subprocess.TimeoutExpired(args, 60)
+                        return self.completed(args, **kwargs)
+
+                    def snapshot(udid, phase):
+                        if phase in ("before-boot", "boot-failed"):
+                            observed.append((udid, phase))
+                            raise RuntimeError("private boot observer detail excluded")
+
+                    def observation_output(*args, **kwargs):
+                        if sink_fails and args and '"smoke_snapshot"' in str(args[0]):
+                            raise OSError("private observation-output failure")
+                        print(*args, **kwargs)
+
+                    with self.commands(effect, snapshot_effect=snapshot) as mocked, \
+                            patch.object(SMOKE, "print", side_effect=observation_output, create=True):
+                        if failed_action:
+                            with self.assertRaises(subprocess.TimeoutExpired) as caught:
+                                SMOKE.main()
+                            self.assertIs(caught.exception, primary)
+                        else:
+                            SMOKE.main()
+                    self.assertEqual(observed, [(CREATED_PHONE, "before-boot"), (CREATED_PHONE, "boot-failed")]
+                                     if failed_action else [(CREATED_PHONE, "before-boot"), (CREATED_PAD, "before-boot")])
+                    calls = [call.args[0] for call in mocked.call_args_list]
+                    self.assertEqual([args[2] for args in calls[-2:]], ["shutdown", "delete"])
+                    self.assertEqual(sum(args[2] == "launch" for args in calls), 0 if failed_action else 2)
+                    self.assertNotIn("private", self.stdout.getvalue() + self.stderr.getvalue())
+                    records = [json.loads(line) for line in self.stdout.getvalue().splitlines()
+                               if line.startswith("{") and '"smoke_snapshot"' in line]
+                    self.assertEqual([record["error"] for record in records],
+                                     [] if sink_fails else ["RuntimeError", "RuntimeError"])
+
+    def test_boot_failure_observes_bounded_filtered_resources_without_retrying_readiness(self):
+        primary = subprocess.TimeoutExpired("bootstatus", 300, output=b"Waiting on System App\n")
+        def effect(args, **kwargs):
+            if args[0] == "/usr/bin/vm_stat":
+                self.assertEqual(kwargs["timeout"], 3)
+                return subprocess.CompletedProcess(args, 0, "Pages free: 7.\nprivate=excluded\n", "private stderr")
+            if args[0] == "/bin/ps":
+                self.assertEqual(kwargs["timeout"], 3)
+                return subprocess.CompletedProcess(args, 0,
+                    "101 1 S 0.0 128 /private/synthetic/launchd_sim\n"
+                    "102 1 S 0.0 128 /private/other --secret=excluded\n", "private stderr")
+            if args[2] == "spawn":
+                self.assertEqual(args, ("xcrun", "simctl", "spawn", CREATED_PHONE, "launchctl", "list"))
+                self.assertEqual(kwargs["timeout"], 3)
+                raise subprocess.TimeoutExpired(args, 3, output=b"- -9 com.apple.SpringBoard\nprivate=excluded")
+            if args[2] == "bootstatus":
+                self.assertEqual(kwargs["timeout"], 300)
+                raise primary
+            return self.completed(args, **kwargs)
+
+        with patch.object(SMOKE.subprocess, "run", side_effect=effect) as mocked, \
+                patch.object(SMOKE.os, "getloadavg", return_value=(1.0, 2.0, 3.0)), \
+                contextlib.redirect_stdout(self.stdout), contextlib.redirect_stderr(self.stderr), \
+                self.assertRaises(subprocess.TimeoutExpired) as caught:
+            SMOKE.main()
+        self.assertIs(caught.exception, primary)
+        records = [json.loads(line) for line in self.stdout.getvalue().splitlines()
+                   if line.startswith("{") and '"smoke_snapshot"' in line]
+        self.assertEqual([record["smoke_snapshot"] for record in records], ["before-boot"] * 4 + ["boot-failed"] * 4)
+        self.assertTrue(all(record["owned_udid"] == CREATED_PHONE for record in records))
+        for offset in (0, 4):
+            self.assertEqual(records[offset]["host_load_averages"], [1.0, 2.0, 3.0])
+            self.assertEqual(records[offset + 1]["rows"], ["Pages free: 7."])
+            self.assertEqual(records[offset + 2]["rows"], ["101 1 S 0.0 128 launchd_sim"])
+            self.assertEqual(records[offset + 3]["error"], "timeout")
+            self.assertEqual(records[offset + 3]["rows"], ["- -9 com.apple.SpringBoard"])
+        commands = [call.args[0] for call in mocked.call_args_list if call.args[0][0] == "xcrun"]
+        self.assertEqual([args[2] for args in commands],
+                         ["list", "create", "spawn", "boot", "bootstatus", "spawn", "shutdown", "delete"])
+        self.assertNotIn("private", self.stdout.getvalue() + self.stderr.getvalue())
+        self.assertNotIn("secret=excluded", self.stdout.getvalue())
+        self.assertIn("Waiting on System App", self.stdout.getvalue())
 
 
 if __name__ == "__main__":

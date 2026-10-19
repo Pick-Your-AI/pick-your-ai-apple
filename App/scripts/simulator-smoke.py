@@ -169,8 +169,8 @@ def collect_launch_diagnostics(udid):
             print(f"Launch diagnostic did not complete for {udid}: {error}", file=sys.stderr, flush=True)
 
 
-def observe_installation(udid, phase):
-    """Reuse bounded filtered probes without changing installation or cleanup."""
+def observe_runtime(udid, phase):
+    """Reuse bounded filtered probes without changing boot, install or cleanup."""
     try:
         collect_runtime_snapshot(udid, phase)
     except Exception as error:
@@ -179,7 +179,7 @@ def observe_installation(udid, phase):
                               "error": type(error).__name__}, sort_keys=True), flush=True)
         except Exception:
             # Even an unavailable observation sink must not replace the actual
-            # install outcome or prevent finally from attempting owned cleanup.
+            # boot/install outcome or prevent finally from attempting owned cleanup.
             pass
 
 
@@ -196,14 +196,19 @@ def smoke_destination(device, runtime, family, existing_ids):
         udid = output
         print(f"Owned simulator created by this run: {udid} ({name})", flush=True)
         print(f"Smoke launch: {device['name']}, iOS {runtime['version']}", flush=True)
-        run("xcrun", "simctl", "boot", udid)
-        run("xcrun", "simctl", "bootstatus", udid, "-b", timeout=BOOT_TIMEOUT_SECONDS)
-        observe_installation(udid, "before-install")
+        observe_runtime(udid, "before-boot")
+        try:
+            run("xcrun", "simctl", "boot", udid)
+            run("xcrun", "simctl", "bootstatus", udid, "-b", timeout=BOOT_TIMEOUT_SECONDS)
+        except (OSError, subprocess.SubprocessError):
+            observe_runtime(udid, "boot-failed")
+            raise
+        observe_runtime(udid, "before-install")
         try:
             run("xcrun", "simctl", "install", udid,
                 ".build/native/Build/Products/Debug-iphonesimulator/Planner.app", timeout=INSTALL_TIMEOUT_SECONDS)
         except (OSError, subprocess.SubprocessError):
-            observe_installation(udid, "install-failed")
+            observe_runtime(udid, "install-failed")
             raise
         collect_runtime_snapshot(udid, "before-launch")
         try:

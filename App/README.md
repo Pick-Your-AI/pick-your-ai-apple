@@ -144,7 +144,7 @@ The workflow now runs two separately required jobs from the same event checkout:
 | Job | Required work and original artifact |
 | --- | --- |
 | `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all four real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
-| `native-simulator` | Eight Xcode-pin, 29 smoke-runner and 17 SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
+| `native-simulator` | Eight Xcode-pin, 32 smoke-runner and 17 SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
 
 Each native job uses its own fresh standard `macos-15-intel` host and retains the
 same 20-minute job limit. The rendering command, source and qualifier are moved
@@ -276,6 +276,80 @@ and complete both full cold-device launch and cleanup sequences. Portable guards
 and product metadata cannot supply those native results. The first-phone boot
 failure, earlier installation and launch failures, cancellation histories and
 broader physical-device, minimum-OS and release criteria remain separately open.
+
+### Boot-phase observations after installation instrumentation (2026-10-19)
+
+The next original [simulator job118003120297 / run39235369439](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39235369439/job/118003120297)
+failed before installation. Its valid-signed checkout was
+`3b4624f94742da16d4f0c7044ab9fd7c95bdf43c`, tree
+`638edd7f86b562de783b1907b46c89fe59283c0d`, receiving source
+`fe600b20b9d3d035f8e1be1b13e766c7458b8023` on accepted `76f84345`.
+The [independent original qualification6265594183](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/317#issuecomment-6265594183)
+records eight pin guards, twenty-nine portable smoke methods, twenty-five current
+model methods and the unsigned Simulator build passing. The twenty-five model
+methods include the separately accepted delayed-open regressions; earlier
+23-method observations keep their original source identities.
+
+The original selected Xcode 16.4 / 16F6, Swift 6.1.2 on x86_64 macOS 15.7.9 /
+24G830 and available iOS 26.2 / 23C54 for an iPhone 17 Pro. Creation returned a
+verified new UUID and `boot` exited zero, but `bootstatus -b` timed out at its
+unchanged 300-second deadline. Its retained status progresses through BackBoard
+and migration to Waiting on System App; it does not identify a single stalled
+service or a cause. The subsequent shutdown timed out at 60 seconds and deletion
+succeeded. No installation, app launch, tablet or phase snapshot was reached.
+The source and all original failures remain retained, including the separate
+install failure and earlier launch/cancellation observations.
+
+The highest available iOS runtime remains the intentional smoke profile; a
+missing family still fails without falling back to an older runtime. The exact
+original inventory contains the runtime's availability, build and supported
+architectures, its device-type mapping and the selected device's runtime range.
+The unchanged command log binds the fresh UUID to that runtime/device, and the
+existing toolchain artifacts retain the actual selected Xcode, SDK and host.
+Apple's [Xcode compatibility matrix](https://developer.apple.com/xcode/system-requirements)
+distinguishes the SDK included with Xcode from its supported Simulator OS range;
+the SDK version alone is not treated as an upper runtime limit. No runtime,
+device, toolchain or architecture substitution is introduced by these observations.
+
+After successful creation and fresh-UUID validation, this extension reuses the
+existing filtered load, memory, process and owned-service observations immediately
+before boot, and after an operating-system/subprocess failure of either `boot` or
+`bootstatus`. Its `before-boot` and `boot-failed` records preserve the actual boot
+error, status and partial output. The generic best-effort observation wrapper
+also retains the existing installation behavior. Collector or output failures
+report only an exception type when possible; they cannot replace boot/install
+success or failure or prevent both owned cleanup attempts.
+
+Each probe retains its three-second deadline, fixed fields, forty-row and
+4,096-character limits. A service query against the newly created, still-unbooted
+device can fail or time out; that is an unavailable observation, not proof of
+missing services or an extra boot attempt. Each reached phase adds at most nine
+nominal probe seconds plus process/output overhead. Observations are sequential,
+can perturb timing and are not a process history, readiness repair or explanation
+of the original timeout. There is no added app-container query, readiness poll,
+retry, destination fallback or simulator creation.
+
+The portable suite now contains thirty-two methods. Twenty-four of the preceding
+twenty-nine method bodies remain byte-exact. Five existing methods explicitly
+extend their ordering/count assertions for the added phase or narrow the no-probe
+boundary to unverified creation. Three new methods cover both boot commands,
+phone/tablet failures, timeout/nonzero/unavailable outcomes, failed cleanup,
+collector/sink failures and the filtered resource/service observations. They
+retain the primary exception or status, one boot/readiness attempt, successful
+phone completion before a tablet failure, and both successful launches on the
+positive path. The existing real-child deadline controls remain part of this
+portable suite. These controls do not execute Xcode or a native simulator.
+
+The workflow, both required native jobs, result gate, both device families,
+exact toolchain checks, command deadlines and 20-minute job limits are unchanged.
+This source needs its own actual current-composition hosted qualification; adding
+observations alone does not qualify the failed readiness or either device family.
+
+This observation source was independently reviewed on the preceding runner.
+Its composition retains the selected toolchain continuation above, including
+all seventeen SDK guards and unsigned product inspection. The earlier trial's
+twenty-nine smoke-method and fifty-four total portable-method observations
+keep their original source; they are not thirty-two-method or new native results.
 
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
