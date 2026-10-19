@@ -65,6 +65,18 @@ private struct ScenarioHost: View {
                 case .claim(let presentation):
                     ScrollView {
                         ClaimEvidenceView(presentation: presentation)
+                            .transformEnvironment(\.locale) { value in
+                                if let environment = scenarios[index].presentationEnvironment { value = environment.locale }
+                            }
+                            .transformEnvironment(\.calendar) { value in
+                                if let environment = scenarios[index].presentationEnvironment { value = environment.calendar }
+                            }
+                            .transformEnvironment(\.timeZone) { value in
+                                if let environment = scenarios[index].presentationEnvironment { value = environment.timeZone }
+                            }
+                            .transformEnvironment(\.layoutDirection) { value in
+                                if let environment = scenarios[index].presentationEnvironment { value = environment.layoutDirection }
+                            }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding()
                     }
@@ -72,7 +84,7 @@ private struct ScenarioHost: View {
                     .accessibilityIdentifier("evidence-harness-content")
                 }
             }
-            .id(scenarios[index].id)
+            .id(scenarios[index].renderIdentity)
         }
     }
 }
@@ -84,6 +96,23 @@ private struct Scenario {
     }
     let id: String
     let content: Content
+    let presentationEnvironment: PresentationEnvironment?
+    let renderIdentity: String
+
+    struct PresentationEnvironment {
+        let locale: Locale
+        let calendar: Calendar
+        let timeZone: TimeZone
+        let layoutDirection: LayoutDirection
+    }
+
+    init(id: String, content: Content, presentationEnvironment: PresentationEnvironment? = nil,
+         renderIdentity: String? = nil) {
+        self.id = id
+        self.content = content
+        self.presentationEnvironment = presentationEnvironment
+        self.renderIdentity = renderIdentity ?? id
+    }
 
     private struct VectorBundle: Decodable {
         let lock: [String: String]
@@ -152,6 +181,32 @@ private struct Scenario {
                 Scenario(id: "newer-snapshot", content: .claim(base.receiving(.newerSnapshotAvailable))),
                 Scenario(id: "correction", content: .claim(base.receiving(.correction(retainedIdentity)).receiving(.newerReleaseAvailable))),
             ]
+        case "dates":
+            let retainedIdentity = try identity()
+            let source = try inspection()
+            let inputs: [(String, String, String, Calendar.Identifier, String, Bool, Bool)] = [
+                ("date-us-honolulu", "2024-01-02", "en_US", .gregorian, "Pacific/Honolulu", false, false),
+                ("date-gb-kiritimati", "2024-01-02", "en_GB", .buddhist, "Pacific/Kiritimati", false, false),
+                ("date-de-berlin", "2024-01-02", "de_DE", .gregorian, "Europe/Berlin", false, false),
+                ("date-ar-calendar", "2024-01-02", "ar_EG@numbers=arab;calendar=islamic-civil", .islamicCivil, "Africa/Cairo", true, false),
+                ("date-th-calendar", "2024-01-02", "th_TH@calendar=buddhist", .buddhist, "Asia/Bangkok", false, false),
+                ("date-gregorian-switch", "1582-10-10", "en_US", .gregorian, "UTC", false, false),
+                ("date-first-year", "0001-01-01", "en_US", .japanese, "Asia/Tokyo", false, false),
+                ("date-leap-day", "2000-02-29", "en_GB", .gregorian, "Pacific/Honolulu", false, false),
+                ("date-last-year", "9999-12-31", "en_US", .gregorian, "Pacific/Kiritimati", false, false),
+                ("date-locale-recovery", "2024-01-02", "en_US", .gregorian, "UTC", false, true),
+            ]
+            return try inputs.map { id, raw, locale, calendar, zone, rtl, correction in
+                guard let timeZone = TimeZone(identifier: zone) else { throw InputError.invalidFixture }
+                let base = EvidencePresentation(identity: retainedIdentity, originalVerificationStatus: .verified,
+                    source: .inspected(source), freshness: .currentState(captureDate: try EvidenceCaptureDate(raw)))
+                let presentation = correction ? base.receiving(.correction(retainedIdentity)) : base
+                return Scenario(id: id, content: .claim(presentation),
+                    presentationEnvironment: PresentationEnvironment(locale: Locale(identifier: locale),
+                        calendar: Calendar(identifier: calendar), timeZone: timeZone,
+                        layoutDirection: rtl ? .rightToLeft : .leftToRight),
+                    renderIdentity: "retained-date-view")
+            }
         default: throw InputError.unsupportedScenario
         }
     }
