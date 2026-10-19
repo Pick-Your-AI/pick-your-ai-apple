@@ -13,31 +13,31 @@ public struct ClaimEvidenceView: View {
     public var body: some View {
         VStack(alignment: .leading, spacing: 8) {
             Text(verbatim: "\(copy("Evidence quality:")) \(copy(grade))").font(.headline)
-            Text(verbatim: "\(copy("Original recorded status:")) \(presentation.originalVerificationStatus.rawValue)")
-            Text(verbatim: "\(copy("Component:")) \(presentation.identity.componentID)")
-            Text(verbatim: "\(copy("Version:")) \(presentation.identity.componentVersion)")
-            Text(verbatim: "\(copy("Retained snapshot:")) \(presentation.identity.catalogSnapshotID)")
+            field("Original recorded status:", value: presentation.originalVerificationStatus.rawValue)
+            field("Component:", value: presentation.identity.componentID)
+            field("Version:", value: presentation.identity.componentVersion)
+            field("Retained snapshot:", value: presentation.identity.catalogSnapshotID)
             switch presentation.source {
             case .notInspected: Text(verbatim: copy("Source claim has not been inspected."))
             case .unavailable: Text(verbatim: copy("Source claim is unavailable."))
             case .inspected(let receipt):
-                Text(verbatim: "\(copy("Inspected source:")) \(receipt.sourceReference)")
-                Text(verbatim: "\(copy("Inspection receipt:")) \(receipt.inspectionReference)")
-                Text(verbatim: "\(copy("Retrieval method:")) \(receipt.retrievalMethod)")
+                field("Inspected source:", value: receipt.sourceReference)
+                field("Inspection receipt:", value: receipt.inspectionReference)
+                field("Retrieval method:", value: receipt.retrievalMethod)
             }
             if let support = presentation.independentSupport {
-                Text(verbatim: "\(copy("Independent support receipt:")) \(support.evidenceReference)")
-                Text(verbatim: "\(copy("Receiving acceptance:")) \(support.acceptanceReference)")
+                field("Independent support receipt:", value: support.evidenceReference)
+                field("Receiving acceptance:", value: support.acceptanceReference)
             }
             switch presentation.freshness {
             case .versionPinned: Text(verbatim: copy("Facts remain pinned to this version."))
             case .currentState(let date):
                 let dateDisplay = date.presentation(locale: locale)
                 if let localized = dateDisplay.localizedDate {
-                    Text(verbatim: "\(copy("Capture date (Gregorian):")) \(localized)")
+                    field("Capture date (Gregorian):", value: localized)
                         .accessibilityIdentifier("claim-capture-date")
                 }
-                Text(verbatim: "\(copy("Current-state facts as of")) \(date.rawValue)")
+                field("Current-state facts as of", value: date.rawValue)
             }
             switch presentation.reviewRequirement {
             case .none: EmptyView()
@@ -49,6 +49,17 @@ public struct ClaimEvidenceView: View {
         .fixedSize(horizontal: false, vertical: true)
         .accessibilityElement(children: .contain)
         .accessibilityIdentifier("claim-evidence")
+    }
+
+    // A value's punctuation must not take its visual direction from an RTL
+    // label. FSI/PDI isolate this presentation run without forcing Latin
+    // direction onto values whose own first strong character is Arabic.
+    // Accessibility receives the same real label/value without layout controls;
+    // neither the retained value nor its logical text acquires those controls.
+    private func field(_ key: String, value: String) -> some View {
+        let label = copy(key)
+        return Text(verbatim: "\(label) \u{2068}\(value)\u{2069}")
+            .accessibilityLabel(Text(verbatim: "\(label) \(value)"))
     }
 
     // Only closed explanatory copy enters the localization table. Selecting the
