@@ -1,4 +1,5 @@
 import importlib.util
+import io
 import json
 from pathlib import Path
 import subprocess
@@ -11,6 +12,22 @@ SCRIPT = Path(__file__).resolve().parents[1] / "toolchain.py"
 spec = importlib.util.spec_from_file_location("native_toolchain", SCRIPT)
 toolchain = importlib.util.module_from_spec(spec)
 spec.loader.exec_module(toolchain)
+
+
+class ReadBudgetProbe(io.BytesIO):
+    """Reject a read request that would consume beyond the input budget."""
+
+    def __init__(self, data, limit):
+        super().__init__(data)
+        self.limit = limit
+        self.bytes_read = 0
+
+    def read(self, size=-1):
+        if size < 0 or size > self.limit + 1 - self.bytes_read:
+            raise AssertionError("input requested an unbounded or over-budget read")
+        data = super().read(size)
+        self.bytes_read += len(data)
+        return data
 
 
 class ToolchainPinTests(unittest.TestCase):
@@ -104,6 +121,27 @@ class ToolchainPinTests(unittest.TestCase):
                     toolchain.load_pin(self.pin_file)
         with self.assertRaisesRegex(toolchain.SetupError, "Restore"):
             toolchain.load_pin(self.root / "absent.json")
+
+    def test_pin_read_limit_is_enforced_before_consuming_input(self):
+        stream = ReadBudgetProbe(b" " * 4097, 4096)
+        with patch.object(Path, "open", return_value=stream):
+            with self.assertRaisesRegex(toolchain.SetupError, "pin file exceeds 4096 bytes"):
+                toolchain.load_pin(self.pin_file)
+        self.assertTrue(stream.closed)
+        self.assertGreater(stream.bytes_read, 0)
+        self.assertLessEqual(stream.bytes_read, 4097)
+
+    def test_pin_exact_limit_accepts_and_one_extra_byte_rejects_then_recovers(self):
+        original = self.pin_file.read_bytes()
+        exact = original.ljust(4096, b" ")
+        self.assertEqual(len(exact), 4096)
+        self.pin_file.write_bytes(exact)
+        self.assertEqual(toolchain.load_pin(self.pin_file), self.pin)
+        self.pin_file.write_bytes(exact + b" ")
+        with self.assertRaisesRegex(toolchain.SetupError, "pin file exceeds 4096 bytes"):
+            toolchain.load_pin(self.pin_file)
+        self.pin_file.write_bytes(original)
+        self.assertEqual(toolchain.load_pin(self.pin_file), self.pin)
 
     def test_verified_cli_environment_and_command_preserve_exact_pin_and_exit_status(self):
         environment_file = self.root / "github-env"
