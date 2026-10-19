@@ -24,6 +24,7 @@ def main():
     data = json.loads((root / 'docs/acceptance/issues.json').read_text())
     records = data['issues']
     numbers = [r['number'] for r in records]
+    check(all(type(n) is int and n > 0 for n in numbers), 'Captured issue numbers must be positive integers')
     check(len(numbers) == len(set(numbers)), 'Duplicate issues')
     check(set(numbers) == set(range(1, 130)), 'Expected baseline issues 1–129; reconcile changed scope explicitly')
     count = 0
@@ -41,6 +42,7 @@ def main():
             if 'pull_request' in original:
                 continue
             n = original['number']
+            check(type(n) is int and n > 0, 'Source issue numbers must be positive integers')
             check(n not in source, f'#{n}: duplicate source issue; refresh paginated export')
             source[n] = original
         check(set(source) == set(numbers), 'Source issue set changed; refresh map')

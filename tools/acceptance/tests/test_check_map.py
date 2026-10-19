@@ -199,6 +199,52 @@ class CheckMapCLITests(unittest.TestCase):
                 self.map_path.write_text(json.dumps(data, ensure_ascii=False) + '\n')
                 self.assert_rejected(self.run_check(), message)
 
+    def test_source_issue_identity_requires_a_positive_integer(self):
+        for value in (True, 1.0, False, 0, -1, '1', None, [], {}):
+            with self.subTest(value=value, type=type(value).__name__):
+                rows = copy.deepcopy(self.rows)
+                rows[0]['number'] = value
+                self.assert_rejected(
+                    self.run_check(rows),
+                    'Source issue numbers must be positive integers',
+                )
+
+    def test_captured_issue_identity_requires_a_positive_integer(self):
+        for value in (True, 1.0, False, 0, -1, '1', None, [], {}):
+            for compare_source in (False, True):
+                with self.subTest(value=value, type=type(value).__name__, source=compare_source):
+                    data = copy.deepcopy(self.captured)
+                    data['issues'][0]['number'] = value
+                    self.map_path.write_text(json.dumps(data, ensure_ascii=False) + '\n')
+                    self.assert_rejected(
+                        self.run_check(self.rows if compare_source else None),
+                        'Captured issue numbers must be positive integers',
+                    )
+
+    def test_pull_request_identity_values_remain_outside_issue_admission(self):
+        filtered = [
+            {'number': value, 'pull_request': {}}
+            for value in (True, 1.0, False, 0, -1, '1', None, [], {})
+        ]
+        self.assert_pass(self.run_check(filtered + self.rows + [{'pull_request': {}}]))
+
+    def test_invalid_identity_rejection_then_repaired_inputs_succeed(self):
+        rows = copy.deepcopy(self.rows)
+        rows[0]['number'] = True
+        self.assert_rejected(
+            self.run_check(rows), 'Source issue numbers must be positive integers',
+        )
+        self.assert_pass(self.run_check(self.rows))
+        data = copy.deepcopy(self.captured)
+        data['issues'][0]['number'] = 1.0
+        self.map_path.write_text(json.dumps(data, ensure_ascii=False) + '\n')
+        self.assert_rejected(
+            self.run_check(self.rows), 'Captured issue numbers must be positive integers',
+        )
+        self.map_path.write_bytes(self.map_bytes)
+        self.assert_pass(self.run_check(), source=False)
+        self.assert_pass(self.run_check(self.rows))
+
 
 if __name__ == '__main__':
     unittest.main()
