@@ -26,6 +26,7 @@ jobs:
       - name: Inspect complete exact Git comparison
         id: scope
         env:
+          APPLE_CI_JOB: macos-transfer
           APPLE_CI_EVENT: ${{ github.event_name }}
           APPLE_CI_HEAD: ${{ github.sha }}
           APPLE_CI_BASE: ${{ github.event.pull_request.base.sha }}
@@ -52,9 +53,12 @@ jobs:
       - name: Verify canonical hashes and reference validator parity
         run: |
           set -euo pipefail
-          python3 -m venv /tmp/transfer-python
-          /tmp/transfer-python/bin/pip install 'jsonschema[format]==4.26.0'
-          /tmp/transfer-python/bin/python Packages/PlannerTransfer/Tools/verify_contract.py
+          transfer_python=$(mktemp -d "$RUNNER_TEMP/apple-transfer.XXXXXX")
+          python3 -m venv "$transfer_python"
+          "$transfer_python/bin/python" --version
+          "$transfer_python/bin/python" -m pip --isolated install --require-hashes --only-binary=:all: -r Packages/PlannerTransfer/Tools/requirements.txt
+          "$transfer_python/bin/python" -m pip check
+          "$transfer_python/bin/python" Packages/PlannerTransfer/Tools/verify_contract.py
       - name: Run Swift boundary and adversarial tests
         run: swift test --package-path Packages/PlannerTransfer
       - name: Compile unsigned iOS Simulator boundary

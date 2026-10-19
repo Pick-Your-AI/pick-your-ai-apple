@@ -61,9 +61,10 @@ the workflow contains no per-package or advisory exemption.
 GitHub's action documents that an undetected license is reported without failing.
 The supplementary [output guard](../../tools/security/check_dependency_review.py)
 closes that specific gap: every `unresolved` entry fails, and an `unlicensed` entry
-requires verified license evidence. The exact Action metadata gap and the
-[exact Transfer wheel classification](#exact-transfer-wheel-license-recovery)
-below have separate source-verification paths. Every other `unlicensed` or
+requires verified license evidence. The exact Action metadata gap,
+[exact Transfer wheel classification](#exact-transfer-wheel-license-recovery) and
+[exact conformance installer classification](typing-extensions-license-proof.md)
+have separate source-verification paths. Every other `unlicensed` or
 `forbidden` entry fails. All three arrays must be
 present in their enclosing object; an absent category, wrong type or an unexpected
 category fails. The raw dependency list can retain a null license even when the
@@ -110,8 +111,8 @@ The mandatory final guard also requires the original action outcome and a
 successful exact-commit snapshot step. `continue-on-error` on the action allows
 that guard to evaluate an observed failure; it does not accept the failure.
 Absent, skipped, cancelled or unsupported outcomes fail. A failed action with
-apparently clean or empty output also fails. The only supported failed-action
-recovery is the exact Transfer proof below; the existing Action metadata-gap
+apparently clean or empty output also fails. Failed-action recovery requires one
+of the separate exact Transfer or conformance proofs; the existing Action metadata-gap
 recovery still requires the action to have succeeded. The final step runs with
 `always()` so a skipped review cannot disappear from the acceptance decision.
 
@@ -248,6 +249,33 @@ successful exact-head dependency check before that failure is resolved. The
 separate #280 proof must be composed and reviewed without broadening either
 manifest's bound. No full dependency inventory, advisory baseline, native result
 or complete #103 acceptance follows from this single artifact proof.
+
+## Separate conformance and Transfer installer proofs
+
+The [conformance proof](typing-extensions-license-proof.md) and the Transfer proof
+above retain separate literal manifest paths, installer byte counts and SHA-256s.
+Their previously reviewed row matchers and bounded artifact readers remain
+unchanged. A successful lookup for one installer cannot supply the other's
+required installer evidence, even though both bind the same immutable wheel.
+
+Each matcher still requires one exact forbidden row, empty other categories and
+one consistent raw package identity. A comparison containing both manifest rows
+remains rejected, including a partial classification of only one of those rows.
+No combined-row or partial recovery is introduced. The existing Action MIT proof,
+generic policy, full snapshot comparison and unexplained-failure rejection remain
+required. The final workflow guard always runs and receives the original Action
+and snapshot outcomes.
+
+The composed portable suite retains the original 31 methods, all 13 conformance
+methods and all 12 Transfer methods. The two Transfer tests for an unreviewed
+manifest now use an unrecognized third path; the separately supported conformance
+path is covered by four additional boundary methods. Those cases require each
+captured input to use its own lock, reject missing/swapped/changed matching locks
+despite the other valid lock, reject mixed or partially classified two-manifest
+comparisons, and reject a third manifest with both valid locks present. Controlled
+transport bytes remain inert fixtures, not a new immutable-wheel or hosted receipt.
+The original seven-row and eleven-row source observations above retain their own
+identities. Fresh receiving checks must record their complete actual comparison.
 
 ## Observed local rejection and recovery
 

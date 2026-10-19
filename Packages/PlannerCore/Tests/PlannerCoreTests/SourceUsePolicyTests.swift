@@ -10,9 +10,10 @@ final class SourceUsePolicyTests: XCTestCase {
                              claimSHA256: digest, operation: operation, scopeID: scope, materialKind: kind)
     }
     private func row(revision: String = String(repeating: "b", count: 40), date: String = "2026-10-16",
-                     rowID: String = "source.fixture-row") throws -> SourceRightsRow {
-        try SourceRightsRow(recordReference: "https://example.test/rights", recordRevision: revision, rowID: rowID,
-                            termsReference: "https://example.test/terms", termsCheckedDate: date)
+                     rowID: String = "source.fixture-row", recordReference: String = "https://example.test/rights",
+                     termsReference: String = "https://example.test/terms") throws -> SourceRightsRow {
+        try SourceRightsRow(recordReference: recordReference, recordRevision: revision, rowID: rowID,
+                            termsReference: termsReference, termsCheckedDate: date)
     }
     private func decision(_ request: SourceUseRequest, row: SourceRightsRow? = nil,
                           disposition: SourceRightsDisposition = .permitted,
@@ -46,6 +47,65 @@ final class SourceUsePolicyTests: XCTestCase {
         for candidate in changed {
             XCTAssertEqual(try SourceUsePolicy.assess(candidate, rights: [decision(original)], promotions: [promotion(original)]), .denied(.noMatchingRightsDecision))
             XCTAssertEqual(try SourceUsePolicy.assess(candidate, rights: [decision(candidate)], promotions: [promotion(original)]), .denied(.noMatchingPromotion))
+        }
+    }
+    func testCanonicallyEquivalentRequestIdentitiesRequireTheirOwnReceipts() throws {
+        let composed = "identity.caf\u{00e9}"
+        let decomposed = "identity.cafe\u{0301}"
+        XCTAssertEqual(composed, decomposed, "The language's text equality intentionally treats these strings as equivalent")
+        XCTAssertFalse(composed.utf8.elementsEqual(decomposed.utf8))
+        let dimensions: [(String, (String) throws -> SourceUseRequest)] = [
+            ("source", { try self.request(source: $0) }),
+            ("claim", { try self.request(claim: $0) }),
+            ("version", { try self.request(version: $0) }),
+            ("snapshot", { try self.request(snapshot: $0) }),
+            ("scope", { try self.request(scope: $0) }),
+        ]
+        for (name, make) in dimensions {
+            for (approvedText, otherText) in [(composed, decomposed), (decomposed, composed)] {
+                let approved = try make(approvedText), other = try make(otherText)
+                let exactCopy = try make(String(decoding: Array(otherText.utf8), as: UTF8.self))
+                XCTAssertNotEqual(approved, other, name)
+                XCTAssertEqual(other, exactCopy, name)
+                XCTAssertEqual(Set([approved, other, exactCopy]).count, 2, name)
+                XCTAssertEqual(try SourceUsePolicy.assess(other, rights: [decision(approved)], promotions: [promotion(approved)]),
+                               .denied(.noMatchingRightsDecision), name)
+                XCTAssertEqual(try SourceUsePolicy.assess(other, rights: [decision(other)], promotions: [promotion(approved)]),
+                               .denied(.noMatchingPromotion), name)
+                let recovered = try SourceUsePolicy.assess(other, rights: [decision(exactCopy)], promotions: [promotion(exactCopy)])
+                guard case .authorized(let audit) = recovered else { return XCTFail("Exact \(name) receipts must recover") }
+                XCTAssertEqual(audit.request, other, name)
+                XCTAssertEqual(audit.conditionsReceiptReference, "conditions.fixture")
+                XCTAssertEqual(audit.promotionReceiptReference, "promotion.fixture")
+            }
+        }
+    }
+    func testCanonicallyEquivalentRightsRowsRequireTheirOwnPromotion() throws {
+        let composed = "https://example.test/caf\u{00e9}"
+        let decomposed = "https://example.test/cafe\u{0301}"
+        XCTAssertEqual(composed, decomposed)
+        XCTAssertFalse(composed.utf8.elementsEqual(decomposed.utf8))
+        let subject = try request()
+        let dimensions: [(String, (String) throws -> SourceRightsRow)] = [
+            ("record reference", { try self.row(recordReference: $0) }),
+            ("row identity", { try self.row(rowID: $0) }),
+            ("terms reference", { try self.row(termsReference: $0) }),
+        ]
+        for (name, make) in dimensions {
+            for (approvedText, otherText) in [(composed, decomposed), (decomposed, composed)] {
+                let approved = try make(approvedText), other = try make(otherText)
+                let exactCopy = try make(String(decoding: Array(otherText.utf8), as: UTF8.self))
+                XCTAssertNotEqual(approved, other, name)
+                XCTAssertEqual(other, exactCopy, name)
+                XCTAssertEqual(Set([approved, other, exactCopy]).count, 2, name)
+                XCTAssertEqual(try SourceUsePolicy.assess(subject, rights: [decision(subject, row: other)],
+                                                        promotions: [promotion(subject, row: approved)]),
+                               .denied(.noMatchingPromotion), name)
+                let recovered = try SourceUsePolicy.assess(subject, rights: [decision(subject, row: other)],
+                                                          promotions: [promotion(subject, row: exactCopy)])
+                guard case .authorized(let audit) = recovered else { return XCTFail("Exact \(name) promotion must recover") }
+                XCTAssertEqual(audit.rightsRow, other, name)
+            }
         }
     }
     func testDisplayNeverGrantsOfflineExportOrAutomatedRetrieval() throws {

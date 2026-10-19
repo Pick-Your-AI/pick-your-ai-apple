@@ -3,6 +3,32 @@ import Foundation
 /// Lossless strings, bounded exact decimal numbers, and no Foundation Boolean/number bridging.
 public indirect enum JSONValue: Equatable, Sendable, Encodable {
     case object([String: JSONValue]), array([JSONValue]), string(String), number(Decimal), bool(Bool), null
+    /// JSON strings and member names match code point for code point. Swift's
+    /// canonical String equality would collapse distinct version pins and scopes.
+    /// Object ordering and equivalent decimal spellings remain immaterial.
+    public static func == (lhs: JSONValue, rhs: JSONValue) -> Bool {
+        switch (lhs, rhs) {
+        case let (.string(left), .string(right)):
+            return left.utf8.elementsEqual(right.utf8)
+        case let (.object(left), .object(right)):
+            guard left.count == right.count else { return false }
+            return left.allSatisfy { entry in
+                guard let index = right.index(forKey: entry.key) else { return false }
+                let other = right[index]
+                return entry.key.utf8.elementsEqual(other.key.utf8) && entry.value == other.value
+            }
+        case let (.array(left), .array(right)):
+            return left == right
+        case let (.number(left), .number(right)):
+            return left == right
+        case let (.bool(left), .bool(right)):
+            return left == right
+        case (.null, .null):
+            return true
+        default:
+            return false
+        }
+    }
     public func encode(to encoder: Encoder) throws {
         var c = encoder.singleValueContainer()
         switch self {
