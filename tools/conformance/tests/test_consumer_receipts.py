@@ -17,7 +17,7 @@ def synthetic(kind, spelling='objc'):
     expected = receipts.expected_wire(corpus) if kind == 'wire' else receipts.expected_migrations(corpus)
     module = 'PlannerConformanceTests' if kind == 'wire' else 'PlannerDataTests'
     methods = set(receipts.WIRE_TESTS.values()) if kind == 'wire' else (
-        receipts.EXISTING_STORAGE_TESTS | set(receipts.MIGRATION_TESTS.values()))
+        receipts.EXISTING_STORAGE_TESTS | receipts.PENDING_WRITE_TESTS | set(receipts.MIGRATION_TESTS.values()))
     marker = 'APPLE_WIRE_CASE ' if kind == 'wire' else 'APPLE_MIGRATION_CASE '
     lines = ["Test Suite 'All tests' started at SYNTHETIC"]
     for name in sorted(methods):
@@ -48,7 +48,7 @@ def changed_observation(log, change, predicate=lambda value: True):
 
 class ConsumerReceiptTests(unittest.TestCase):
     def test_complete_named_wire_and_storage_sessions_require_all_pinned_observations(self):
-        for kind, methods, observations in [('wire', 4, 223), ('migration', 35, 20)]:
+        for kind, methods, observations in [('wire', 4, 223), ('migration', 70, 20)]:
             for spelling in ['objc', 'dotted']:
                 with self.subTest(kind=kind, spelling=spelling):
                     result = receipts.qualify(kind, 0, synthetic(kind, spelling))
@@ -64,14 +64,14 @@ class ConsumerReceiptTests(unittest.TestCase):
         self.assertEqual(log.count(started), 1)
         self.assertEqual(log.count(passed), 1)
         missing = log.replace(started, '').replace(passed, '')
-        old = missing.replace('Executed 35 tests', 'Executed 34 tests')
+        old = missing.replace('Executed 70 tests', 'Executed 69 tests')
         wrong_class = log.replace(identity, identity.replace('DraftStoreTests', 'UnrelatedTests'))
         skipped = log.replace(passed, passed.replace(' passed ', ' skipped '))
         for candidate in [old, missing, wrong_class, skipped]:
             with self.assertRaises(ValueError):
                 receipts.qualify('migration', 0, candidate)
         complete = receipts.qualify('migration', 0, log)
-        self.assertEqual(len(complete['methods']), 35)
+        self.assertEqual(len(complete['methods']), 70)
         self.assertEqual(len(complete['observations']), 20)
 
     def test_storage_receipt_requires_every_accepted_wal_and_hot_journal_method(self):
@@ -95,7 +95,7 @@ class ConsumerReceiptTests(unittest.TestCase):
             self.assertEqual(log.count(started), 1)
             self.assertEqual(log.count(passed), 1)
             missing = log.replace(started, '').replace(passed, '')
-            candidates = [missing, missing.replace('Executed 35 tests', 'Executed 34 tests'),
+            candidates = [missing, missing.replace('Executed 70 tests', 'Executed 69 tests'),
                           log.replace(identity, identity.replace('DraftStoreTests', 'UnrelatedTests')),
                           log.replace(passed, passed.replace(' passed ', ' skipped '))]
             for index, candidate in enumerate(candidates):
@@ -103,10 +103,53 @@ class ConsumerReceiptTests(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         receipts.qualify('migration', 0, candidate)
             previous = previous.replace(started, '').replace(passed, '')
-        previous = previous.replace('Executed 35 tests', 'Executed 30 tests')
+        previous = previous.replace('Executed 70 tests', 'Executed 65 tests')
         with self.assertRaises(ValueError):
             receipts.qualify('migration', 0, previous)
-        self.assertEqual(len(receipts.qualify('migration', 0, log)['methods']), 35)
+        self.assertEqual(len(receipts.qualify('migration', 0, log)['methods']), 70)
+
+    def test_storage_receipt_rejects_the_previous_35_method_cohort(self):
+        source = (receipts.ROOT / 'Packages/PlannerData/Tests/PlannerDataTests/PendingBuildWriteStoreTests.swift').read_text()
+        pending = re.findall(r'^    func (test\w+)\(', source, re.MULTILINE)
+        self.assertEqual(len(pending), 35)
+        log = synthetic('migration')
+        count = len(re.findall(r"^Test Case '[^']+' started\.", log, re.MULTILINE))
+        for method in pending:
+            identity = f'-[PlannerDataTests.PendingBuildWriteStoreTests {method}]'
+            log = log.replace(f"Test Case '{identity}' started.\n", '')
+            log = log.replace(f"Test Case '{identity}' passed (0.001 seconds).\n", '')
+        previous = log.replace(f'Executed {count} tests', 'Executed 35 tests')
+        self.assertEqual(len(re.findall(r"^Test Case '[^']+' started\.", previous, re.MULTILINE)), 35)
+        self.assertEqual(previous.count('APPLE_MIGRATION_CASE '), 20)
+        with self.assertRaisesRegex(ValueError, 'Every exact required XCTest method'):
+            receipts.qualify('migration', 0, previous)
+
+    def test_storage_receipt_requires_every_accepted_pending_write_method(self):
+        source = (receipts.ROOT / 'Packages/PlannerData/Tests/PlannerDataTests/PendingBuildWriteStoreTests.swift').read_text()
+        declared = {'PendingBuildWriteStoreTests.' + name
+                    for name in re.findall(r'^    func (test\w+)\(', source, re.MULTILINE)}
+        self.assertEqual(len(declared), 35)
+        self.assertEqual(receipts.PENDING_WRITE_TESTS, declared)
+        log = synthetic('migration')
+        complete = receipts.qualify('migration', 0, log)
+        self.assertEqual(len(complete['methods']), 70)
+        self.assertEqual(len(complete['observations']), 20)
+        for name in sorted(declared):
+            cls, method = name.split('.')
+            identity = f'-[PlannerDataTests.{cls} {method}]'
+            started = f"Test Case '{identity}' started.\n"
+            passed = f"Test Case '{identity}' passed (0.001 seconds).\n"
+            self.assertEqual(log.count(started), 1)
+            self.assertEqual(log.count(passed), 1)
+            missing = log.replace(started, '').replace(passed, '')
+            candidates = [missing, missing.replace('Executed 70 tests', 'Executed 69 tests'),
+                          log.replace(identity, identity.replace(cls, 'UnrelatedTests')),
+                          log.replace(passed, passed.replace(' passed ', ' skipped ')),
+                          log.replace(passed, passed.replace(' passed ', ' failed '))]
+            for index, candidate in enumerate(candidates):
+                with self.subTest(method=method, candidate=index):
+                    with self.assertRaises(ValueError):
+                        receipts.qualify('migration', 0, candidate)
 
     def test_bare_and_wrong_modules_reject_without_false_native_identity(self):
         for kind in ['wire', 'migration']:

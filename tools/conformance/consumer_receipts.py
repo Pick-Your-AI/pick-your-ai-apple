@@ -56,6 +56,47 @@ EXISTING_STORAGE_TESTS = {
 }
 
 
+PENDING_WRITE_TESTS = {
+    'PendingBuildWriteStoreTests.' + name for name in (
+        'testIntentSurvivesReopenWithExactBodyAndPrecondition',
+        'testCallerAndReturnedDataCannotMutateIntent',
+        'testExactUTF8ValueEqualityAndSQLiteIdentity',
+        'testExactUTF8PartitionsDoNotShareReadsOrCallbacks',
+        'testIdenticalEnqueueAtCapacityReturnsExistingRecord',
+        'testChangedDuplicateIntentIsRejectedWithoutAnyFileChange',
+        'testReusedKeyOrOperationAcrossPartitionRejectsWithoutDisclosure',
+        'testInvalidIntentAndLimitBounds',
+        'testBodyAndAggregateLimitsRetainConfirmedRecords',
+        'testOpeningParallelHandleDoesNotInvalidateLiveAttempt',
+        'testParallelActivationAtomicallyInvalidatesOldSessionAndCallback',
+        'testSwitchAwayAndBackCannotReviveOldToken',
+        'testReopenRecoversCommittedAttemptAsUncertainWithoutResend',
+        'testForeignStoreCannotUseSessionOrAttempt',
+        'testSameBuildWaitsForConfirmationWhileOtherBuildCanProceed',
+        'testConflictInvalidAndUncertainRetainImmutableIntentAndBlockFollowers',
+        'testDuplicateCompletionAndDuplicateAttemptDoNotWrite',
+        'testFailedEnqueueCommitRollsBackEverything',
+        'testFailedAttemptCommitLeavesPendingIntentUnchanged',
+        'testFailedActivationCommitPreservesGenerationAndAttempt',
+        'testFailedOutcomeCommitPreservesAttempt',
+        'testFailedDeactivationCommitRetainsLiveSession',
+        'testActualSQLiteFullRetainsQueueThenUnconstrainedReopenRecovers',
+        'testUnsupportedQueueWALRetainsDatabaseAndWALBytes',
+        'testFutureVersionOnlyInOrphanedWALIsRejected',
+        'testForeignApplicationInOrphanedWALKeepsOriginalBytes',
+        'testSupportedWALQueueRemainsReadableAndWritable',
+        'testSupportedHotRollbackJournalRecoversBeforeQueueRead',
+        'testRollbackRestoresCommittedFutureVersionBeforeRejection',
+        'testDraftAndForeignDatabaseAreNeverAdopted',
+        'testCorruptDatabaseIsRetainedWithoutSensitiveDiagnostics',
+        'testCorruptPredecessorCannotBeSkippedForDispatch',
+        'testMalformedSessionOrAttemptMetadataBlocksAllWrites',
+        'testCapacityAcrossPartitionsIsGlobalAndNeverEvicts',
+        'testConcurrentEnqueueAndActivationHaveOneConsistentCommitOrder',
+    )
+}
+
+
 def digest(data):
     return hashlib.sha256(data).hexdigest()
 
@@ -143,7 +184,8 @@ def qualify(kind, returncode, output, *, allow_bare_linux=False):
     corpus, pin = fixture(kind)
     wire = kind == 'wire'
     module = 'PlannerConformanceTests' if wire else 'PlannerDataTests'
-    required = set(WIRE_TESTS.values()) if wire else EXISTING_STORAGE_TESTS | set(MIGRATION_TESTS.values())
+    required = set(WIRE_TESTS.values()) if wire else (
+        EXISTING_STORAGE_TESTS | PENDING_WRITE_TESTS | set(MIGRATION_TESTS.values()))
     result = suite_results(output, 'All tests', 'passed', module=module, require_module=not allow_bare_linux)
     if returncode != 0 or result is None:
         raise ValueError('A successful complete XCTest session with explicit module identity is required')

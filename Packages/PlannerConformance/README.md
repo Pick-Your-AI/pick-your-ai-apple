@@ -461,23 +461,23 @@ current receiving macOS/iPhone/iPad results.
 Any later accepted storage change must receive the same exact-method review;
 another open source branch is not an additional prerequisite by itself.
 
-### Current accepted WAL and journal carry
+### Earlier accepted WAL and journal carry
 
-This preparation receives signed main
+That preparation received signed main
 [`cd098e8e`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/cd098e8e19f5e4a1d90112379bc8ca089d81ec93),
 including the accepted [#306 storage correction](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/306)
 in [`c2305005`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/c23050050c9ce46f35aee73e2f80b7b638cba159).
 Its complete production guard and five additional WAL/hot-journal methods remain
-unchanged. The strict receipt requires all **31 accepted storage methods plus
+unchanged. That strict receipt required all **31 accepted storage methods plus
 four migration methods**, with the same 20 migration observations. The bounded
 guard tests compare the required set with all source-declared `DraftStoreTests`
 methods and reject a missing, skipped or wrongly classified WAL/journal method,
 a padded total and the older complete 30-method receipt. They are synthetic
 receipt checks, not Swift execution.
 
-The actual 30-method execution at `04d44920` above remains historical. No current
-35-method Swift or native execution is claimed by this source composition;
-the configured macOS, iPhone and iPad sessions must each qualify the current set.
+The actual 30-method execution at `04d44920` above remains historical. That
+source composition did not claim a new 35-method Swift or native execution;
+the current larger required set is recorded below.
 The accepted main's separate typed-report adapter and synthetic-admission tests
 are preserved, without relabeling earlier wire or native receipts as executing
 those later source changes.
@@ -496,6 +496,59 @@ failure and focused recovery retain separate execution identities:
 Both independent source reviews preserve all accepted production files, the
 four migration methods and every original wire byte. The receipt-only update
 that records these outcomes adds no Swift, native, browser or JVM execution.
+
+### Accepted pending-write composition
+
+Signed main
+[`294a152d96a8ee6e31e975f4303fc58e17842f40`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/294a152d96a8ee6e31e975f4303fc58e17842f40)
+received [#382's bounded local pending-write queue](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/382).
+The receiving composition preserves that implementation, its separate crash
+probe, all 35 queue tests and the original draft implementation. It retains this
+package's four migration methods and their bundled resources.
+
+The strict migration receipt now requires the complete current session:
+
+| Exact source class | Required methods |
+| --- | ---: |
+| `DraftStoreTests` | 31 |
+| `PendingBuildWriteStoreTests` | 35 |
+| `MigrationFixtureTests` | 4 |
+| Total | 70 |
+
+All 20 migration observations remain mandatory inside their exact owning methods.
+Module identity, sequential framing, strict JSON field/type comparisons,
+duplicate/skip/failure rejection and input fixture pins are unchanged. The wire
+receipt still requires its four methods and 223 observations; no wire payload,
+migration description or source input pin changes in this composition.
+
+The Storage workflow preserves both independent crash replays and all existing
+native commands. Its simulator aggregate is 70 rather than the accepted queue
+source's 66, while the named queue guards and 31/35 class footers remain.
+The package manifest keeps both crash executables and the migration resources.
+These are source requirements; they do not establish that a native run executed.
+
+The bounded local Python 3.12.14 receipt checks ran on 2026-10-19:
+
+| Actual local check | Result and exact source | Original log |
+| --- | --- | --- |
+| Old-cohort regression before the required-set correction | One synthetic method fails specifically `ValueError not raised`: the unchanged earlier checker accepts all 20 observations with only the previous 35-method cohort. Frozen tree `5ede62c5f84f37eca3ef499e8b0ea9112ac55653`. | 1,051 bytes; SHA-256 `ba8139b885af3c094c17a5c87e33de9dd785788dba79b5e9c9415200ae7c41fa`. |
+| Corrected ordinary receipt guards | All 14 methods pass, including all 12 prior guards and the two new pending-write attendance regressions. Frozen tree `da101b15e5e31aefcd0f5ccb4a54fe65680109ac`; 0.635 seconds of unittest time. | 2,723 bytes; SHA-256 `6391d4028421c41456b3981f177a98d0a88da786d571a020e659191bfc69c9e1`. |
+| Same corrected guards under optimized Python | All 14 methods pass at the same exact source; 0.647 seconds of unittest time. | 2,723 bytes; SHA-256 `5b2d5649fd8b36e9fbfbeb5e723b9741c1e2434ca435a0ebd6107ab55ae1deeb`. |
+
+Both new regression bodies are identical in the before/after source snapshots.
+The complete old 35-method receipt is rejected even with all 20 migration
+observations. For every new queue method, omission with either an unchanged or
+corrected total, an unrelated class, skipping and failure are rejected. The full
+70-method synthetic session succeeds. Every captured source file is unchanged
+during each local run. The later documentation-only amendment does not change
+those executed checker, test, Swift, fixture or workflow bytes.
+
+These are synthetic log-validation checks, not 70-method Swift execution,
+SQLite interruption outcomes or native migration observations. The original
+Transfer framing failure and simulator launch failure retain their actual
+earlier source attribution. Current configured native and SDK qualification,
+the two disclosed receiving decisions and signed-main #37 acceptance remain
+pending.
 
 | Exact live #37 criterion | Concrete artifact/result | Receiving disposition and remaining gap |
 | --- | --- | --- |
