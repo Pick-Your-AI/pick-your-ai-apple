@@ -86,28 +86,39 @@ def decode_bytes(value):
         raise QualificationError("invalid observed bytes") from error
 
 
+def same_json_value(left, right):
+    """Preserve Boolean identity while retaining numeric equality, including 1.0 == 1."""
+    if isinstance(left, bool) or isinstance(right, bool):
+        return left is right
+    if isinstance(left, dict) and isinstance(right, dict):
+        return left.keys() == right.keys() and all(same_json_value(left[key], right[key]) for key in left)
+    if isinstance(left, list) and isinstance(right, list):
+        return len(left) == len(right) and all(same_json_value(a, b) for a, b in zip(left, right, strict=True))
+    return left == right
+
+
 def qualify_history(mode, results, inputs):
     require(mode in ("portable", "native"), "known mode")
     require(len(results) == 3, "three original process phases")
     expected_build = inputs["build-a.json"]
     first = results[0]
     for phase, value in zip(PHASES[:3], results, strict=True):
-        require(value["format"] == 1 and value["phase"] == phase and value["mode"] == mode,
+        require(same_json_value(value["format"], 1) and value["phase"] == phase and value["mode"] == mode,
                 "actual phase/mode identity")
         require(value["classification"] == "synthetic-only" and value["status"] == "passed",
                 "actual successful fixture phase")
         for key in ("draft", "neighbour", "history", "neighbour_history", "baseline"):
-            require(value[key] == first[key], f"preserved original {key}")
+            require(same_json_value(value[key], first[key]), f"preserved original {key}")
         require(decode_bytes(value["draft"]["payload_base64"]) == expected_build
-                and value["draft"]["revision"] == 1 and value["draft"]["analysis_is_current"] is False,
+                and same_json_value(value["draft"]["revision"], 1) and value["draft"]["analysis_is_current"] is False,
                 "actual saved bytes and currentness")
-        require(len(value["history"]) == 1 and value["history"][0] == value["draft"],
+        require(len(value["history"]) == 1 and same_json_value(value["history"][0], value["draft"]),
                 "one exact historical revision")
         require(decode_bytes(value["neighbour"]["payload_base64"]) == b'{"synthetic":"unrelated"}'
-                and value["neighbour"]["revision"] == 1
+                and same_json_value(value["neighbour"]["revision"], 1)
                 and value["neighbour"]["analysis_is_current"] is False,
                 "unaffected other draft")
-        require(value["neighbour_history"] == [value["neighbour"]], "other history")
+        require(same_json_value(value["neighbour_history"], [value["neighbour"]]), "other history")
         baseline = value["baseline"]
         build = json.loads(expected_build)
         selected = next(item for item in build["selections"]
@@ -153,10 +164,10 @@ def qualify_history(mode, results, inputs):
                     parsed = json.loads(raw)
                     require(decode_bytes(record[f"{kind}_base64"]) == raw, "exact actual cache bytes")
                     require(pins[kind]["sha256"] == digest(raw), "cache digest")
-                    require(pins[kind]["identity"] ==
-                            {key: parsed[key] for key in ("schema_version", "id", "revision", "captured_at")},
+                    require(same_json_value(pins[kind]["identity"],
+                            {key: parsed[key] for key in ("schema_version", "id", "revision", "captured_at")}),
                             "full cached identity")
-            require(cache["retained"] == first["catalog_cache"]["retained"], "historical cache unchanged")
+            require(same_json_value(cache["retained"], first["catalog_cache"]["retained"]), "historical cache unchanged")
     return {"scope": f"{mode}-history-and-domain-replay", "original_processes": 3,
             "physical_device": False, "canonical_feed": False, "rendered_ui": False}
 
@@ -164,7 +175,7 @@ def qualify_history(mode, results, inputs):
 def qualify_target(value, mode):
     require(value["status"] == "passed" and value["phase"] == "exact-target"
             and value["mode"] == mode and value["classification"] == "synthetic-only"
-            and value["format"] == 1, "exact-target original identity")
+            and same_json_value(value["format"], 1), "exact-target original identity")
     require(value["target_version_utf8"] == [195, 169] and value["other_version_utf8"] == [101, 204, 129],
             "two byte-distinct versions")
     require(value["observed"]["review_requirement"] == "none", "wrong version cannot target retained evidence")

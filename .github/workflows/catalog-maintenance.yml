@@ -84,6 +84,13 @@ jobs:
             test_qualification.NativeQualificationTests.test_native_requires_actual_recovery_denial_and_unknown_controls \
             test_qualification.NativeQualificationTests.test_native_rejects_duplicate_missing_or_wrong_identity_pins \
             test_qualification.NativeQualificationTests.test_native_rejects_mixed_releases_rewritten_history_and_tampered_bytes \
+            test_qualification.JSONIdentityQualificationTests.test_single_native_pin_boolean_revision_cannot_alias_exact_fixture \
+            test_qualification.JSONIdentityQualificationTests.test_consistent_boolean_saved_and_history_revisions_fail_in_both_modes \
+            test_qualification.JSONIdentityQualificationTests.test_each_original_history_phase_requires_a_numeric_format \
+            test_qualification.JSONIdentityQualificationTests.test_exact_target_format_keeps_numbers_distinct_from_booleans \
+            test_qualification.JSONIdentityQualificationTests.test_integral_numeric_history_and_pin_observations_remain_valid \
+            test_qualification.JSONIdentityQualificationTests.test_nested_history_cannot_alias_boolean_currentness_with_numeric_zero \
+            test_qualification.JSONIdentityQualificationTests.test_nonintegral_or_text_numeric_identities_remain_rejected \
             2>&1 | tee "$MAINTENANCE_EVIDENCE/qualification-tests.log"
       - name: Build the real cross-package executable with two jobs
         run: |
