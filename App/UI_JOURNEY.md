@@ -29,6 +29,15 @@ its normal SwiftUI controls and its actual SQLite-backed application container:
    Reopen the control and assert its complete saved title/notes. An empty failed reload
    or a filtered corrupt record cannot substitute for successful deletion evidence.
    Retain screenshots of reopened, discarded, deleted and surviving-control states.
+9. Close the saved control and use the normal adaptive Imported builds navigation.
+   Require no existing import preview, file-operation failure or Cancel dialog, then
+   choose a JSON file to present the actual Files picker. Retain its hierarchy and
+   screenshot, require one Cancel action, and dismiss it through that normal control.
+   Require the Choose JSON file action to be usable again without an import preview
+   or a file-operation failure.
+10. Return to Notes and reload the exact saved control with its complete title/notes,
+    while the deleted target stays absent. Close, terminate and relaunch the app,
+    then repeat those positive-control and deletion checks. Retain the final state.
 
 The test writes only synthetic text to the clipboard on this run's newly created
 owned simulator and clears that clipboard after the paste. It uses normal text input
@@ -41,6 +50,28 @@ or assertion that an arbitrary user's whole library is empty. This does not test
 duplicate, forced termination during an unacknowledged save, or restoration of an open
 scene. Row lookup still assumes the created record is on the current library page; it
 does not establish pagination across an arbitrarily populated library.
+
+### Files cancellation scope and receiving evidence
+
+The cancellation increment extends the existing Notes method; it adds no test
+method or runner destination. The runner still requires both complete Notes and
+Catalog journeys on each pinned iPhone and iPad, with zero failures or skips and
+successful owned-simulator cleanup. All earlier autosave, undo/redo, invalid-input
+discard, deletion and independently saved control assertions remain in place.
+
+The actual [import view](../Packages/PlannerUI/Sources/PlannerUI/ImportedBuildLibraryView.swift)
+presents the system picker through `fileImporter`. The journey selects no file,
+creates no imported fork and contacts no service. Its saved Notes control proves
+that the separate library navigation and picker cancellation preserve that exact
+durable record across process relaunch. The Files hierarchy is retained for any
+platform-specific dialog or accessibility diagnosis.
+
+This new increment has not yet executed on either pinned simulator. The earlier
+Notes receipts below cover their original source only. The entire expanded method
+and the existing Catalog method require fresh native receiving execution; portable
+runner tests and source review cannot supply it. Successful file selection,
+provider errors, export cancellation, background/foreground, interrupted writes,
+physical-device and release acceptance remain separate coverage.
 
 ## Catalog browsing journey
 

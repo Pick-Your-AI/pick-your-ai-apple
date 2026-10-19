@@ -123,7 +123,55 @@ final class LocalDraftJourneyTests: XCTestCase {
         assertEditor(app, title: controlTitle, notes: controlNotes)
         retainScreenshot(app, name: "Independent control survived deletion and process relaunch")
         tap(app.buttons["Close"])
+
+        // Open the real Files picker from the separate imported-build library.
+        // Cancellation must not prepare an import or report a failed operation.
+        tapNavigation("Imported builds", in: app)
+        let chooseImport = app.buttons["chooseBuildImport"]
+        let confirmImport = app.buttons["confirmBuildImport"]
+        let fileFailure = app.staticTexts["The file operation did not finish. Existing local builds were preserved."]
+        let cancel = app.buttons.matching(NSPredicate(format: "label == %@", "Cancel"))
+        XCTAssertTrue(chooseImport.waitForExistence(timeout: 10))
+        XCTAssertFalse(confirmImport.exists)
+        XCTAssertFalse(fileFailure.exists)
+        XCTAssertEqual(cancel.count, 0, "There must be no earlier cancellation dialog")
+        tap(chooseImport)
+        XCTAssertTrue(cancel.firstMatch.waitForExistence(timeout: 10))
+        XCTAssertEqual(cancel.count, 1, "The actual file picker must expose one Cancel action")
+        retainHierarchy(app, name: "Actual Files picker before cancellation")
+        retainScreenshot(app, name: "Actual Files picker before cancellation")
+        tap(cancel.firstMatch)
+        wait(cancel.firstMatch, matching: "exists == false")
+        wait(chooseImport, matching: "hittable == true AND enabled == true")
+        XCTAssertFalse(confirmImport.exists, "Cancelling file selection must not prepare an import")
+        XCTAssertFalse(fileFailure.exists, "File-picker cancellation is not an import failure")
+        retainScreenshot(app, name: "Imported library preserved after Files cancellation")
+
+        // Positive saved-record evidence prevents an empty or failed load from
+        // standing in for preservation across the separate library and picker.
+        tapNavigation("Notes", in: app)
+        assertLoadedLibrary(app, controlIdentifier: controlIdentifier)
+        XCTAssertFalse(app.buttons[recordIdentifier].exists)
+        tap(app.buttons[controlIdentifier])
+        assertEditor(app, title: controlTitle, notes: controlNotes)
+        tap(app.buttons["Close"])
+        app.terminate()
+        app.launch()
+        tapNavigation("Notes", in: app)
+        assertLoadedLibrary(app, controlIdentifier: controlIdentifier)
+        XCTAssertFalse(app.buttons[recordIdentifier].exists,
+                       "Files cancellation must not revive the deleted draft after relaunch")
+        tap(app.buttons[controlIdentifier])
+        assertEditor(app, title: controlTitle, notes: controlNotes)
+        retainScreenshot(app, name: "Saved control survived Files cancellation and process relaunch")
+        tap(app.buttons["Close"])
         // The control is removed only with this run's owned simulator cleanup.
+    }
+
+    @MainActor
+    private func tapNavigation(_ title: String, in app: XCUIApplication) {
+        // Adaptive iPad navigation is exposed as Buttons outside a TabBar.
+        tap(app.buttons.matching(NSPredicate(format: "label == %@", title)).firstMatch)
     }
 
     @MainActor
@@ -302,6 +350,14 @@ final class LocalDraftJourneyTests: XCTestCase {
     @MainActor
     private func retainScreenshot(_ app: XCUIApplication, name: String) {
         let attachment = XCTAttachment(screenshot: app.screenshot())
+        attachment.name = name
+        attachment.lifetime = .keepAlways
+        add(attachment)
+    }
+
+    @MainActor
+    private func retainHierarchy(_ app: XCUIApplication, name: String) {
+        let attachment = XCTAttachment(string: app.debugDescription)
         attachment.name = name
         attachment.lifetime = .keepAlways
         add(attachment)
