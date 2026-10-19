@@ -4,6 +4,7 @@ import SwiftUI
 /// Presents the existing, separately qualified claim-evidence projection.
 /// Report outcomes never create or replace source inspection/support receipts.
 public struct ClaimEvidenceView: View {
+    @Environment(\.locale) private var locale
     private let presentation: EvidencePresentation
 
     public init(presentation: EvidencePresentation) { self.presentation = presentation }
@@ -29,7 +30,13 @@ public struct ClaimEvidenceView: View {
             }
             switch presentation.freshness {
             case .versionPinned: Text("Facts remain pinned to this version.")
-            case .currentState(let date): Text(verbatim: "Current-state facts as of \(date.rawValue)")
+            case .currentState(let date):
+                let dateDisplay = date.presentation(locale: locale)
+                if let localized = dateDisplay.localizedDate {
+                    Text(verbatim: "Capture date (Gregorian): \(localized)")
+                        .accessibilityIdentifier("claim-capture-date")
+                }
+                Text(verbatim: "Current-state facts as of \(date.rawValue)")
             }
             switch presentation.reviewRequirement {
             case .none: EmptyView()
