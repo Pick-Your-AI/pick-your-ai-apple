@@ -36,7 +36,13 @@ def main():
         check(record['criterion_completion_claimed'] is False, f'#{n}: unsupported completion claim')
         count += len(exact)
     if args.source:
-        source = {r['number']: r for r in json.loads(args.source.read_text()) if 'pull_request' not in r}
+        source = {}
+        for original in json.loads(args.source.read_text()):
+            if 'pull_request' in original:
+                continue
+            n = original['number']
+            check(n not in source, f'#{n}: duplicate source issue; refresh paginated export')
+            source[n] = original
         check(set(source) == set(numbers), 'Source issue set changed; refresh map')
         for record in records:
             n = record['number']
