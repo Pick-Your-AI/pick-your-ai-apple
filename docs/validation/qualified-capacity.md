@@ -230,8 +230,8 @@ shortest-decimal admission rule. Count and byte arithmetic does not use Double
 or Int coercion. Exponent, Unicode, depth/size and digit exclusions are explicit
 consumer limits, not revisions to canonical wire maxima or general JSON parity.
 
-The current source declares **111 capacity XCTest methods**: five answer-reader,
-14 basis/qualification, 24 binding/deployment, 28 memory, 18 worked examples and
+The current source declares **112 capacity XCTest methods**: five answer-reader,
+15 basis/qualification, 24 binding/deployment, 28 memory, 18 worked examples and
 22 workload methods. The separate 249-case answer corpus has 125 canonical-reader
 positives, 123 selected-field positives and 120 native-profile positives.
 `1.0` and `1e0` account for the two reader/selected-field differences; the three
@@ -339,7 +339,7 @@ observed platform diagnosis. The failed archive remains 23,883 bytes, SHA-256
 `a2991bd24a660329c8d2fe3b1a5e4070bef5266e73b722abe33d84568ca74d02`,
 with its ten original members, full package logs and exact checkout/toolchain.
 
-The test-only fixture helper now reads the unchanged examples through the
+The test-only Build/catalog fixture helper reads the unchanged examples through the
 existing frozen JSON parser, keeps exact Decimal/Boolean values during mutation,
 and writes through the existing JSONValue encoder with a complete parse/equality
 check. Binary Float/Double and bridged NSNumber inputs are rejected by this
@@ -360,3 +360,46 @@ The earlier portable temporary log and receipt were lost in the 2026-10-19
 not reconstructed originals or substitute native evidence; the
 [independent source receipt](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/73#issuecomment-6270300670)
 preserves that limitation.
+
+## Separate CD1 answer fixture carrier
+
+A later unmodified portable SwiftPM run used signed prepared checkout
+`ed77877f72817e196ae6eefe7f3541ba5c4ff74c`, tree
+`93c5fe8830375b222a6fb410a4dfd2902a5a08ef`, with ordered parents
+`b35414a8b665bd4f8ea910860edea77537b89028` and published fixture correction
+`d886d0b54e9a9f14c0287cad0c397af498b999d6`. The signature-verified official
+Swift 6.2.4 Ubuntu toolchain compiled the package and complete test module in
+60.47 s. Its 16:15:35–16:16:40 UTC execution on 2026-10-19 ran all 111 declared
+capacity methods: four passed and 107 failed, with 247 assertions
+(119 unexpected). The original log is 107,684 bytes, SHA-256
+`a4e78f43acdd897cb50eb123b8a44664c8c7d34f57afe1ba124a87f627745ac3`.
+
+Of those failed methods, 106 reached the declared `unsupportedHashPlatform`
+boundary because that Linux package has no CryptoKit. The production hash
+boundary was not substituted or changed. The distinct
+`testExactDemandCanExceedBothBinary64AndUInt64Ranges` failure reported the
+synthetic writer's `unsupportedValue`: its original `UInt64.max` CD1 request
+count and admission limit had incorrectly been routed through the newly added
+frozen Build/catalog writer. This is an observed fixture defect, separate from
+the original SDK's inferred decimal-spelling cause and the Linux hash limit.
+
+The first pure decimal/Boolean/null regression passed. The model regression
+reached its hash boundary after its initial frozen Build/temperature checks,
+before its legacy-writer diagnostic, malformed-input checks and recovery.
+That run therefore supplies no observed Darwin writer diagnosis or complete
+native recovery. Its command exited 1; the original failed results remain.
+
+The follow-up restores the original `JSONSerialization` route only for the
+unchanged CD1-0.2 answer envelope, through a separate test-only
+`encodedAnswerBytes()` method. Build and catalog still use the strict
+Decimal-preserving writer. Neither writer adds a new production admission
+rule, numeric normalization, hash adapter or changed error category. All 111
+existing methods, including the large-demand end-to-end case, remain intact.
+
+The added pure regression runs before hashing. It requires exact integer
+tokens `18446744073709551615` at both original workload paths through the
+existing preserving wire parser, along with the provided state, original
+source, assumption and Boolean kind. It also requires the frozen fixture
+writer to keep refusing that UInt64 input. This focused fixture boundary and
+the unchanged end-to-end method still require their actual corrected
+executions; the prior 111-method run is not a passing native receipt.

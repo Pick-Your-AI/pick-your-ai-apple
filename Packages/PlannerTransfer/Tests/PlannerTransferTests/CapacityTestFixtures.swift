@@ -2,7 +2,7 @@ import Foundation
 import XCTest
 @testable import PlannerTransfer
 
-/// Mutable synthetic fixtures keep the frozen parser's Decimal and Boolean values.
+/// Mutable synthetic Build/catalog fixtures keep the frozen parser's Decimal and Boolean values.
 /// Foundation's untyped binary-number round trip is not a fixture admission boundary.
 enum CapacityFixtureJSON {
     enum Failure: Error { case unsupportedValue }
@@ -165,6 +165,15 @@ final class CapacityTestDraft {
         put(path + "/ids", ids); put(path + "/complete", complete)
     }
 
+    // CD1 answer counts retain their original integer-token carrier. They do not
+    // use the frozen Build/catalog numeric subset or its mutable fixture writer.
+    func encodedAnswerBytes() throws -> Data {
+        let originalAnswers: [String: Any] = [
+            "x_t0_answer_states": ["proposal_version": "cd1-0.2", "answers": entries]
+        ]
+        return try JSONSerialization.data(withJSONObject: originalAnswers, options: [.sortedKeys])
+    }
+
     func freeze() throws -> CapacityTestContext {
         for selection in try XCTUnwrap(build["selections"] as? [[String: Any]]) {
             let id = try XCTUnwrap(selection["id"] as? String), path = "/conditions/" + id
@@ -175,12 +184,9 @@ final class CapacityTestDraft {
         }
         if entries["/graph/complete"] == nil { put("/graph/complete", true) }
         if entries["/serving/complete"] == nil { put("/serving/complete", true) }
-        let originalAnswers: [String: Any] = [
-            "x_t0_answer_states": ["proposal_version": "cd1-0.2", "answers": entries]
-        ]
         func json(_ value: Any) throws -> Data { try CapacityFixtureJSON.encode(value) }
         var inputs = [
-            try CapacityInput(name: "answers", kind: .answers, originalBytes: json(originalAnswers)),
+            try CapacityInput(name: "answers", kind: .answers, originalBytes: encodedAnswerBytes()),
             try CapacityInput(name: "catalog", kind: .catalog, originalBytes: json(catalog))
         ]
         for (name, kind, value) in [

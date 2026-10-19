@@ -37,6 +37,44 @@ final class CapacityBasisQualificationTests: XCTestCase {
         }
     }
 
+    func testSyntheticCD1AnswerWriterPreservesUInt64CountsBeforeHashing() throws {
+        let draft = try CapacityTestDraft()
+        let countPaths = ["/workload/classes/class.one/requests", "/workload/admission/limit"]
+        let flagPath = "/workload/classes/class.one/same-scope"
+        for path in countPaths { draft.put(path, UInt64.max) }
+        draft.put(flagPath, true)
+
+        let top = try ContextWire.parse(draft.encodedAnswerBytes())
+            .object(required: ["x_t0_answer_states"])
+        let envelope = try top.field("x_t0_answer_states")
+            .object(required: ["proposal_version", "answers"])
+        XCTAssertEqual(try envelope.field("proposal_version").string(), "cd1-0.2")
+        let answers = try envelope.field("answers").object(required: countPaths + [flagPath])
+        for path in countPaths + [flagPath] {
+            let record = try answers.field(path)
+                .object(required: ["state", "value", "assumption", "source"])
+            XCTAssertEqual(try record.field("state").string(), "provided", path)
+            XCTAssertEqual(try record.field("source").string(), "preset:apple-capacity-test", path)
+            guard case .boolean(true) = try record.field("assumption") else {
+                return XCTFail("Synthetic CD1 assumption changed kind at \(path)")
+            }
+            if path == flagPath {
+                guard case .boolean(true) = try record.field("value") else {
+                    return XCTFail("Synthetic CD1 Boolean changed kind")
+                }
+            } else {
+                guard case .number(let digits, let integer) = try record.field("value") else {
+                    return XCTFail("Synthetic CD1 count lost its number token at \(path)")
+                }
+                XCTAssertTrue(integer, path)
+                XCTAssertEqual(digits, "18446744073709551615", path)
+            }
+        }
+        XCTAssertThrowsError(try CapacityFixtureJSON.encode(["value": UInt64.max])) {
+            XCTAssertTrue($0 is CapacityFixtureJSON.Failure)
+        }
+    }
+
     func testSyntheticModelFixturePreservesDecimalAdmissionAndStrictDriftRejection() throws {
         let draft = try CapacityTestDraft()
         try draft.serving()
