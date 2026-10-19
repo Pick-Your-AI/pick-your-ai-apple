@@ -24,7 +24,11 @@ public struct EvaluationAnalysisView: View {
             .accessibilityIdentifier("visible-analysis-current")
         case .pending:
             VStack(alignment: .leading, spacing: 8) {
-                ProgressView("Analysis pending for this build revision")
+                HStack(spacing: 8) {
+                    ProgressView().accessibilityHidden(true)
+                    Text("Analysis pending for this build revision")
+                        .accessibilityIdentifier("visible-analysis-pending-caption")
+                }
                 Text("Compatibility and readiness remain unknown until a matching report arrives.")
                     .foregroundStyle(.secondary)
             }

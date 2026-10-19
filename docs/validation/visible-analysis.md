@@ -178,3 +178,33 @@ The shared host retains date-view identity across locale changes and separate
 analysis scenario identities. New actual prepared-source Apple SDK/rendering
 execution and the #198 owner caller composition remain receiving requirements.
 The separate #377 localization continuation is not incorporated here.
+
+## Pending-state accessibility correction
+
+The actual [macOS rendering job 118156623560](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39280108621/job/118156623560)
+for source `89e98340ee2d2570b33511e60c63d127249665b8` failed the sixth rendering
+method at `analysis-pending-retry`. The first two analysis scenarios had completed;
+later cancellation, failure, disconnect and clear scenarios were not reached.
+The original failure remains a failed native result. Its log does not list the
+collected static-text values, so it cannot establish the exact accessibility
+representation that caused the missing-caption scan.
+
+The pending view now presents its unchanged caption as an explicit SwiftUI Text
+beside the progress indicator. Only the decorative indicator is hidden from
+accessibility; the caption and unknown-status explanation remain accessible.
+The same native analysis method now also requires the caption's specific
+static-text element and its actual label/value before the existing complete
+content scan. No expected status, scenario, forbidden-report assertion, method
+identity, time limit or strict receipt requirement is removed. A failed content
+scan now includes its missing strings and captured actual text for diagnosis.
+
+The receiving composition preserves the original #387 model/projection/fixture
+bytes and accepted main `bd289eb074c055bdf9ed1d74d1ab6fe729c778b9`. Its native
+scope correction includes the new production PlannerUI-to-Transfer dependency
+in both EvidenceHarness jobs; the [scope record](native-scope.md#visible-analysis-transfer-dependency)
+retains the causal scheduling failure and conservative audit boundary.
+
+This environment has no Apple SDK or Xcode. These source corrections do not
+establish a recovered native result. All six configured rendering methods,
+all seven analysis scenarios, current-source package/SDK checks and the selected
+editor receiving integration remain required before accepting this contribution.
