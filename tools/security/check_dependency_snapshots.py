@@ -11,6 +11,7 @@ from pathlib import Path
 import re
 import sys
 import time
+from http.client import HTTPException
 from urllib.error import HTTPError, URLError
 from urllib.parse import parse_qs, urlsplit
 from urllib.request import build_opener, HTTPRedirectHandler, Request
@@ -205,7 +206,7 @@ def main() -> int:
     except InvalidReview as error:
         print(f"Dependency snapshot verification failed: {error}", file=sys.stderr)
         return 1
-    except (OSError, HTTPError, URLError, UnicodeError, KeyError, ValueError):
+    except (OSError, HTTPError, URLError, HTTPException, UnicodeError, KeyError, ValueError):
         # Do not echo HTTP bodies, token values, raw dependency metadata or paths.
         print("Dependency snapshot verification failed; no complete matching review is established.", file=sys.stderr)
         return 1

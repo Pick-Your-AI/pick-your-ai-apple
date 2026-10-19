@@ -10,9 +10,9 @@ their own inventories and gates.
 
 ## Selected format providers
 
-The current receiving tree retains all ten accepted frozen schema/fixture source
-hashes and all four conformance vector files: BuildSnapshot, CatalogItem,
-QualityEvaluationRun and ResourceEstimate. The bundled schemas declare only
+The current receiving tree retains all twelve accepted frozen schema/fixture source
+hashes and all six conformance corpora: BuildSnapshot, CatalogItem,
+QualityEvaluationRun, CostEstimate, ResourceEstimate and placement relationships. The bundled schemas declare only
 `date-time` and `uri` formats. The validator stays
 at `jsonschema==4.26.0`; its inspected wheel's `jsonschema/_format.py` registers
 `rfc3339-validator` for timestamps and explicitly supports `rfc3986-validator`
@@ -95,10 +95,10 @@ python3 -m venv "$transfer_validation_dir"
 "$transfer_validation_dir/bin/python" Packages/PlannerTransfer/Tools/verify_contract.py
 ```
 
-The current reference checker must report ten source hashes, 129 shared build
-cases, all 29 catalog kinds and 1,635 catalog cases, 202 quality cases and
-223 resource estimate cases. It requires both format registrations before running
-all four corpora. Network access is needed for installation; validation
+The current reference checker must report twelve source hashes, 129 shared build
+cases, all 29 catalog kinds and 1,635 catalog cases, 202 quality cases,
+520 cost cases, 223 resource estimate cases and 98 placement cases. It requires
+both format registrations before running all six corpora. Network access is needed for installation; validation
 itself resolves only the pinned local resources. The workflow records its existing
 `python3` interpreter; selecting or freezing a different Python/host image is
 outside this dependency lock. Xcode 16.4/16F6, all Swift tests and unsigned simulator

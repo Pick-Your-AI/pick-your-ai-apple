@@ -5,6 +5,7 @@ import json
 from pathlib import Path
 import re
 import shutil
+import stat
 import subprocess
 import tempfile
 
@@ -125,7 +126,9 @@ def detected(returncode, output, mutation):
 
 def invoke(package, swift, arguments, log, timeout):
     command = [swift, 'test', '--package-path', str(package), *arguments]
-    with log.open('w') as stream:
+    # Preflight removes only inspected regular outputs. Exclusive creation also
+    # refuses an unexpected file or alias installed before this invocation.
+    with log.open('x') as stream:
         try:
             result = subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT,
                                     timeout=timeout, check=False)
@@ -134,16 +137,82 @@ def invoke(package, swift, arguments, log, timeout):
     return result.returncode, log.read_text(errors='replace')
 
 
+def prepare_output(package, output):
+    """Validate every destination before removing any previous execution output."""
+    package_stat = package.stat()
+    active_links = set()
+    link_expansions = 0
+
+    def directory_route(path):
+        nonlocal link_expansions
+        # Inspect every component introduced by readlink before following it;
+        # resolving an endpoint would erase protected prefixes and '..' routes.
+        directory = Path(path.anchor)
+        anchor_stat = directory.stat()
+        if (directory.is_relative_to(package)
+                or (anchor_stat.st_dev, anchor_stat.st_ino)
+                == (package_stat.st_dev, package_stat.st_ino)):
+            raise ValueError('Evidence output must be outside the source package')
+        for part in path.parts[1:]:
+            if part == '..':
+                if not directory.is_dir():
+                    raise ValueError('Evidence output must have directory ancestors')
+                directory = directory.parent
+                continue
+            candidate = directory / part
+            if candidate.is_relative_to(package):
+                raise ValueError('Evidence output must be outside the source package')
+            try:
+                entry = candidate.lstat()
+            except FileNotFoundError:
+                directory = candidate
+                continue
+            if stat.S_ISLNK(entry.st_mode):
+                parent = directory.stat()
+                identity = (entry.st_dev, entry.st_ino, parent.st_dev, parent.st_ino)
+                if identity in active_links:
+                    raise ValueError('Evidence output contains a directory-link loop')
+                if link_expansions >= 64:
+                    raise ValueError('Evidence output exceeds 64 directory-link expansions')
+                target = candidate.readlink()
+                link_expansions += 1
+                active_links.add(identity)
+                try:
+                    directory = directory_route(target if target.is_absolute()
+                                                else directory / target)
+                finally:
+                    active_links.remove(identity)
+            elif not stat.S_ISDIR(entry.st_mode):
+                raise ValueError('Evidence output must have directory ancestors')
+            else:
+                if (entry.st_dev, entry.st_ino) == (package_stat.st_dev, package_stat.st_ino):
+                    raise ValueError('Evidence output must be outside the source package')
+                directory = candidate
+
+        return directory
+
+    output = directory_route(output.absolute())
+    output.mkdir(parents=True, exist_ok=True)
+    destinations = [output / 'swift-mutations.json', output / 'baseline.log',
+                    *(output / (mutation['name'] + '.log') for mutation in MUTATIONS)]
+    for path in destinations:
+        try:
+            existing = path.lstat()
+        except FileNotFoundError:
+            continue
+        if not stat.S_ISREG(existing.st_mode) or existing.st_nlink != 1:
+            raise ValueError('Evidence files must be unshared regular files (no links or directories)')
+    for path in destinations:
+        path.unlink(missing_ok=True)
+    return output
+
+
 def run(package, output, swift, timeout):
     package = package.resolve()
     if not (package / 'Package.swift').is_file():
         raise ValueError('Expected a Swift package directory')
-    output = output.resolve()
-    if output == package or output.is_relative_to(package):
-        raise ValueError('Evidence output must be outside the source package')
-    output.mkdir(parents=True, exist_ok=True)
+    output = prepare_output(package, output)
     receipt = output / 'swift-mutations.json'
-    receipt.unlink(missing_ok=True)  # Never leave a stale success receipt on failure.
     results = []
     with tempfile.TemporaryDirectory(prefix='planner-swift-mutations-') as tmp:
         baseline = Path(tmp) / 'baseline'
@@ -165,7 +234,9 @@ def run(package, output, swift, timeout):
             if not detected(code, log, mutation):
                 raise ValueError(f"Expected assertion failure not observed: {mutation['name']}")
             results.append(dict(mutation=mutation['name'], test=mutation['test'], detected=True))
-    receipt.write_text(json.dumps(dict(baseline='passed', mutations=results), indent=2) + '\n')
+    # Never follow or replace a receipt another execution installed meanwhile.
+    with receipt.open('x') as stream:
+        stream.write(json.dumps(dict(baseline='passed', mutations=results), indent=2) + '\n')
     return results
 
 

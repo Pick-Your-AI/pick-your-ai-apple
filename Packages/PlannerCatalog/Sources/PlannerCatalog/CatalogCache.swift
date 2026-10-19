@@ -79,12 +79,63 @@ public struct CachedCatalog: Sendable {
 
 public enum CurrentChecks: Sendable { case unknown }
 
-private struct CacheEnvelope: Codable {
+private struct CacheRecord: Codable {
     let manifest: CacheManifest
     let artifacts: [String: Data]
     let cachedAt: Date
     let synthetic: Bool
+}
+
+/// Storage version 2 intentionally omits version 1's required top-level manifest
+/// and artifacts. An older reader must reject it instead of discarding history on
+/// its next refresh. The public CacheManifest and frozen artifact bytes stay at v1.
+private struct CacheEnvelope: Codable {
+    let activeManifest: CacheManifest
+    let records: [CacheRecord]
     let knownPins: [ArtifactPin]
+
+    init(activeManifest: CacheManifest, records: [CacheRecord], knownPins: [ArtifactPin]) {
+        self.activeManifest = activeManifest
+        self.records = records
+        self.knownPins = knownPins
+    }
+
+    private enum CodingKeys: String, CodingKey {
+        case storageVersion, activeManifest, records, knownPins
+        case manifest, artifacts, cachedAt, synthetic
+    }
+
+    init(from decoder: any Decoder) throws {
+        let values = try decoder.container(keyedBy: CodingKeys.self)
+        knownPins = try values.decode([ArtifactPin].self, forKey: .knownPins)
+        if values.contains(.storageVersion) {
+            guard try values.decode(Int.self, forKey: .storageVersion) == 2,
+                  ![CodingKeys.manifest, .artifacts, .cachedAt, .synthetic].contains(where: values.contains) else {
+                throw CatalogCacheError.corruptCache
+            }
+            activeManifest = try values.decode(CacheManifest.self, forKey: .activeManifest)
+            records = try values.decode([CacheRecord].self, forKey: .records)
+        } else {
+            guard !values.contains(.activeManifest), !values.contains(.records) else {
+                throw CatalogCacheError.corruptCache
+            }
+            // Legacy files retained identities, but only the active pair's bytes.
+            // Loading never rewrites them or fabricates unavailable historical data.
+            activeManifest = try values.decode(CacheManifest.self, forKey: .manifest)
+            records = [CacheRecord(manifest: activeManifest,
+                                   artifacts: try values.decode([String: Data].self, forKey: .artifacts),
+                                   cachedAt: try values.decode(Date.self, forKey: .cachedAt),
+                                   synthetic: try values.decode(Bool.self, forKey: .synthetic))]
+        }
+    }
+
+    func encode(to encoder: any Encoder) throws {
+        var values = encoder.container(keyedBy: CodingKeys.self)
+        try values.encode(2, forKey: .storageVersion)
+        try values.encode(activeManifest, forKey: .activeManifest)
+        try values.encode(records, forKey: .records)
+        try values.encode(knownPins, forKey: .knownPins)
+    }
 }
 
 private struct VersionKey: Hashable {
@@ -106,17 +157,29 @@ public actor CatalogCache {
     public typealias Downloader = @Sendable (CatalogArtifact) async throws -> Data
     private let directory: URL
     private let maximumArtifactBytes: Int
+    private let maximumCachedPairs: Int
+    private let maximumEnvelopeBytes: Int
     private let validateContract: Validator
     private var refreshing = false
 
     public init(directory: URL, maximumArtifactBytes: Int = 8 * 1_024 * 1_024,
+                maximumCachedPairs: Int = 32, maximumCacheBytes: Int? = nil,
                 validateContract: @escaping Validator) throws {
         guard directory.isFileURL, maximumArtifactBytes > 0,
-              maximumArtifactBytes <= 64 * 1_024 * 1_024 else {
+              maximumArtifactBytes <= 64 * 1_024 * 1_024,
+              (1...128).contains(maximumCachedPairs) else {
+            throw CatalogCacheError.invalidManifest
+        }
+        // The default has room for two maximum-size complete pairs plus metadata.
+        // The encoded cap also bounds the single-descriptor reader before decoding.
+        let envelopeLimit = maximumCacheBytes ?? (maximumArtifactBytes * 6 + 2_097_152)
+        guard envelopeLimit > 0, envelopeLimit <= 512 * 1_024 * 1_024 else {
             throw CatalogCacheError.invalidManifest
         }
         self.directory = directory
         self.maximumArtifactBytes = maximumArtifactBytes
+        self.maximumCachedPairs = maximumCachedPairs
+        self.maximumEnvelopeBytes = envelopeLimit
         self.validateContract = validateContract
     }
 
@@ -139,13 +202,19 @@ public actor CatalogCache {
         guard !refreshing else { throw CatalogCacheError.incompleteRelease }
         refreshing = true
         defer { refreshing = false }
-        var known = try load(mode: mode)?.knownPins ?? []
+        let previous = try loadEnvelope()
+        var records = previous?.records ?? []
+        var known = previous?.knownPins ?? []
         for pin in manifest.pins {
             if let previous = known.first(where: { VersionKey($0) == VersionKey(pin) }) {
                 guard previous == pin else { throw CatalogCacheError.immutableVersionConflict }
             } else { known.append(pin) }
         }
         guard known.count <= 2_048 else { throw CatalogCacheError.historyLimitReached }
+        let existing = records.firstIndex { samePair($0.manifest, manifest) }
+        guard existing != nil || records.count < maximumCachedPairs else {
+            throw CatalogCacheError.historyLimitReached
+        }
         var artifacts: [CatalogArtifact: Data] = [:]
         for pin in manifest.pins {
             try Task.checkCancellation()
@@ -155,9 +224,12 @@ public actor CatalogCache {
             artifacts[pin.kind] = bytes
         }
         try Task.checkCancellation()
-        let envelope = CacheEnvelope(manifest: manifest,
-                                     artifacts: Dictionary(uniqueKeysWithValues: artifacts.map { ($0.key.rawValue, $0.value) }),
-                                     cachedAt: now, synthetic: true, knownPins: known)
+        let record = CacheRecord(manifest: manifest,
+                                 artifacts: Dictionary(uniqueKeysWithValues: artifacts.map { ($0.key.rawValue, $0.value) }),
+                                 cachedAt: now, synthetic: true)
+        if let existing { records[existing] = record }
+        else { records.append(record) }
+        let envelope = CacheEnvelope(activeManifest: manifest, records: records, knownPins: known)
         let encoder = JSONEncoder()
         encoder.outputFormatting = [.withoutEscapingSlashes]
         let bytes = try encoder.encode(envelope)
@@ -165,7 +237,7 @@ public actor CatalogCache {
         try FileManager.default.createDirectory(at: directory, withIntermediateDirectories: true)
         try Task.checkCancellation()
         // Foundation writes an auxiliary file and renames it at the commit boundary.
-        // A single file prevents independently activated catalog/pricebook revisions.
+        // A single file commits the active pair and retained history together.
         #if os(iOS)
         try bytes.write(to: activeURL, options: [.atomic, .completeFileProtectionUntilFirstUserAuthentication])
         #else
@@ -173,38 +245,81 @@ public actor CatalogCache {
         #endif
     }
 
-    /// Revalidates all bytes and identities on every load. A corrupt active envelope
-    /// is unavailable (never a partial release); no deletion or automatic promotion occurs.
+    /// Revalidates the entire envelope, including retained history, on every load.
+    /// Corruption is unavailable and preserved; no deletion or promotion occurs.
     public func load(mode: CatalogDataMode) throws -> CachedCatalog? {
         try requirePreview(mode)
+        guard let envelope = try loadEnvelope() else { return nil }
+        guard let active = envelope.records.first(where: { samePair($0.manifest, envelope.activeManifest) }) else {
+            throw CatalogCacheError.corruptCache
+        }
+        return try snapshot(active, knownPins: envelope.knownPins)
+    }
+
+    /// Reads an exact previously retained pair without changing active selection or
+    /// cached dates. A clean miss includes legacy versions whose bytes were never
+    /// saved, and combinations of individually known pins that were never a pair.
+    /// Conflicting metadata for an observed version is an error, never a clean miss.
+    public func load(_ manifest: CacheManifest, mode: CatalogDataMode) throws -> CachedCatalog? {
+        try requirePreview(mode)
+        try validateManifest(manifest)
+        guard let envelope = try loadEnvelope() else { return nil }
+        for pin in manifest.pins {
+            if let known = envelope.knownPins.first(where: { VersionKey($0) == VersionKey(pin) }), known != pin {
+                throw CatalogCacheError.immutableVersionConflict
+            }
+        }
+        guard let record = envelope.records.first(where: { samePair($0.manifest, manifest) }) else { return nil }
+        return try snapshot(record, knownPins: envelope.knownPins)
+    }
+
+    private func loadEnvelope() throws -> CacheEnvelope? {
         guard let bytes = try loadEnvelopeBytes() else { return nil }
         let envelope: CacheEnvelope
         do { envelope = try JSONDecoder().decode(CacheEnvelope.self, from: bytes) }
         catch { throw CatalogCacheError.corruptCache }
-        guard envelope.synthetic else { throw CatalogCacheError.productionReceiptUnavailable }
-        try validateManifest(envelope.manifest)
+        try validateManifest(envelope.activeManifest)
         guard envelope.knownPins.count <= 2_048,
               Set(envelope.knownPins.map(VersionKey.init)).count == envelope.knownPins.count else {
             throw CatalogCacheError.corruptCache
         }
         for pin in envelope.knownPins { try validatePin(pin) }
-        guard envelope.manifest.pins.allSatisfy({ envelope.knownPins.contains($0) }) else {
+        guard !envelope.records.isEmpty else { throw CatalogCacheError.corruptCache }
+        guard envelope.records.count <= maximumCachedPairs else { throw CatalogCacheError.historyLimitReached }
+        for (index, record) in envelope.records.enumerated() {
+            guard record.synthetic else { throw CatalogCacheError.productionReceiptUnavailable }
+            try validateManifest(record.manifest)
+            guard record.manifest.pins.allSatisfy({ envelope.knownPins.contains($0) }),
+                  !envelope.records[..<index].contains(where: { samePair($0.manifest, record.manifest) }) else {
+                throw CatalogCacheError.corruptCache
+            }
+            guard Set(record.artifacts.keys) == Set(CatalogArtifact.allCases.map(\.rawValue)) else {
+                throw CatalogCacheError.incompleteRelease
+            }
+            for pin in record.manifest.pins {
+                guard let bytes = record.artifacts[pin.kind.rawValue] else { throw CatalogCacheError.incompleteRelease }
+                try validate(bytes, pin: pin)
+            }
+        }
+        guard envelope.records.contains(where: { samePair($0.manifest, envelope.activeManifest) }) else {
             throw CatalogCacheError.corruptCache
         }
-        guard Set(envelope.artifacts.keys) == Set(CatalogArtifact.allCases.map(\.rawValue)) else {
-            throw CatalogCacheError.incompleteRelease
-        }
-        var artifacts: [CatalogArtifact: Data] = [:]
-        for pin in envelope.manifest.pins {
-            guard let bytes = envelope.artifacts[pin.kind.rawValue] else { throw CatalogCacheError.incompleteRelease }
-            try validate(bytes, pin: pin)
-            artifacts[pin.kind] = bytes
-        }
-        return CachedCatalog(manifest: envelope.manifest, artifacts: artifacts,
-                             cachedAt: envelope.cachedAt, isSynthetic: true, knownPins: envelope.knownPins)
+        return envelope
     }
 
-    private var maximumEnvelopeBytes: Int { maximumArtifactBytes * 3 + 2_097_152 }
+    private func samePair(_ lhs: CacheManifest, _ rhs: CacheManifest) -> Bool {
+        lhs.pins.count == rhs.pins.count && lhs.pins.allSatisfy { rhs.pins.contains($0) }
+    }
+
+    private func snapshot(_ record: CacheRecord, knownPins: [ArtifactPin]) throws -> CachedCatalog {
+        var artifacts: [CatalogArtifact: Data] = [:]
+        for kind in CatalogArtifact.allCases {
+            guard let bytes = record.artifacts[kind.rawValue] else { throw CatalogCacheError.incompleteRelease }
+            artifacts[kind] = bytes
+        }
+        return CachedCatalog(manifest: record.manifest, artifacts: artifacts,
+                             cachedAt: record.cachedAt, isSynthetic: true, knownPins: knownPins)
+    }
 
     private var activeURL: URL { directory.appendingPathComponent("active-preview-v1.json") }
 

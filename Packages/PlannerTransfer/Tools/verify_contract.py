@@ -55,6 +55,18 @@ for case in quality_cases:
     assert validator.is_valid(payload) == case['canonicalValid'], case['name']
 print(f'Verified {len(quality_cases)} canonical quality cases; recorded labels and client subsets remain explicit.')
 
+# Cost records retain decimal strings and reported results without pricing them.
+from cost_vectors import apply_vector as apply_cost_vector, encoded_vectors as encoded_cost_vectors
+cost_cases_path = FIXTURES / 'cost-conformance.json'
+assert cost_cases_path.read_text() == encoded_cost_vectors(), 'Stale cost vectors'
+cost_cases = json.loads(cost_cases_path.read_text())
+cost = json.loads((FIXTURES / 'cost-estimate.json').read_text())
+validator = Draft202012Validator(schemas['cost-estimate.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in cost_cases:
+    payload = apply_cost_vector(cost, case)
+    assert validator.is_valid(payload) == case['canonicalValid'], case['name']
+print(f'Verified {len(cost_cases)} canonical cost cases; decimal strings and reported coverage remain explicit.')
+
 from resource_estimate_vectors import encoded_vectors as encoded_resource_vectors
 resource_cases_path = FIXTURES / 'resource-estimate-conformance.json'
 assert resource_cases_path.read_text() == encoded_resource_vectors(), 'Stale resource estimate vectors'
@@ -63,3 +75,21 @@ validator = Draft202012Validator(schemas['resource-estimate.schema.json'], regis
 for case in resource_cases:
     assert validator.is_valid(json.loads(case['json'])) == case['canonicalValid'], case['name']
 print(f'Verified {len(resource_cases)} canonical resource estimate cases; no capacity, quality or tuple acceptance is inferred.')
+
+# Placement vectors document existing transport and explicit v1 representation gaps.
+# A schema-valid unresolved tuple is not a compatibility pass or a memory allocation.
+from collections import Counter
+from placement_vectors import apply_vector as apply_placement_vector, encoded_vectors as encoded_placement_vectors
+placement_cases_path = FIXTURES / 'placement-conformance.json'
+assert placement_cases_path.read_text() == encoded_placement_vectors(), 'Stale placement vectors'
+placement_cases = json.loads(placement_cases_path.read_text())
+build = json.loads((FIXTURES / 'build.json').read_text())
+for case in placement_cases:
+    is_build = case['fixture'] == 'build'
+    original = build if is_build else items[case['fixture']]
+    schema = schemas['build.schema.json' if is_build else 'catalog-item.schema.json']
+    validator = Draft202012Validator(schema, registry=registry, format_checker=FormatChecker())
+    payload = apply_placement_vector(original, case)
+    assert validator.is_valid(payload) == case['canonicalValid'], case['name']
+    assert case['canonicalValid'] == case['clientValid'], case['name']
+print(f'Verified {len(placement_cases)} canonical placement cases: {dict(Counter(case["disposition"] for case in placement_cases))}; unresolved semantics remain explicit.')

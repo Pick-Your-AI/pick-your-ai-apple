@@ -22,13 +22,48 @@ Known frozen synthetic catalog identifiers and the exact `2026.10-demo` componen
 
 Synthetic requests return a distinct `syntheticOnly` result, never production authorization. This assumes intake truthfully labels material: calling real source content synthetic cannot grant rights. The production path must handle only `authorized`; the library does not activate data or fetch it. Conditions include notices, attribution, estimate labels and product-scope restrictions; their actual satisfaction remains a receiving-review responsibility.
 
-`SourceUsePolicyTests` covers eleven tests: exact receipt/audit trace; public URL without rights and research without promotion; all identity/scope dimensions; display/cache/export/retrieval separation; unknown/denied/revoked rights; unmet conditions and pending/rejected/revoked promotions; changed dated rows and recovery; conflict/revocation order; synthetic isolation and known-fixture relabel rejection; malformed identities, digests and Gregorian dates. Every scenario is synthetic.
+`SourceUsePolicyTests` covers thirteen tests: exact receipt/audit trace; public URL without rights and research without promotion; all identity/scope dimensions; byte-distinct Unicode request/row identities and exact-receipt recovery; display/cache/export/retrieval separation; unknown/denied/revoked rights; unmet conditions and pending/rejected/revoked promotions; changed dated rows and recovery; conflict/revocation order; synthetic isolation and known-fixture relabel rejection; malformed identities, digests and Gregorian dates. Every scenario is synthetic.
 
 Reproduce with the selected Swift toolchain:
 
 ```sh
 swift test --package-path Packages/PlannerCore
 ```
+
+### Exact Unicode receipt identities
+
+Swift's [String equality](https://developer.apple.com/documentation/swift/string)
+treats canonically equivalent Unicode spellings as equal. Opaque source and
+rights-row identities require the original UTF-8 bytes instead. For example,
+`source.caf\u{00e9}` and `source.cafe\u{0301}` display alike but must not share a
+receipt merely because Swift's text comparison considers them equivalent.
+The request and row value types compare every textual field by its exact UTF-8
+sequence and hash those same length-delimited bytes. No input is normalized or
+rewritten. Each spelling can still receive its own exact, independently supplied
+approval. Dates, digest syntax, operation separation and all denial precedence
+remain unchanged.
+
+The two new regressions cover all five free-form request identities and all
+three free-form row fields, in both encoding directions. A mismatched rights
+decision or promotion denies; supplying the exact matching receipt recovers and
+retains the audit references. Set membership retains both identities and
+deduplicates an independently reconstructed exact copy.
+
+On accepted source `cd098e8e19f5e4a1d90112379bc8ca089d81ec93`, the new tests
+reproduced **58 assertion failures in the two new methods** while all eleven
+existing policy methods passed. With the equality/hash correction, the full
+PlannerCore package passed **94 tests, zero failures and zero skips**, including
+all thirteen policy methods, under Linux Swift 6.0.3. These were actual serial
+`swift test --jobs 1` runs with writable task-local compiler/package caches. The
+initial default-cache invocation was blocked by its read-only user cache; an
+initial parallel compiler invocation crashed before test execution. Neither
+failed setup is a test receipt. The successful serial baseline and corrected
+results are retained separately.
+
+This is portable policy execution on synthetic receipts. The selected Xcode
+toolchain, native simulator checks and current-main receiving review remain
+required before delivery. It does not supply actual rights, verify a receipt's
+authenticity or complete the integrated source-use criteria below.
 
 ## Criterion disposition
 
