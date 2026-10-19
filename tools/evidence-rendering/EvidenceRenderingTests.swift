@@ -175,6 +175,36 @@ final class EvidenceRenderingTests: XCTestCase {
         }
     }
 
+    func testVisibleBuildAnalysisNeverRendersRetainedReportsForOtherRevisionsOrRetiredRequests() throws {
+        let modes = ["current", "foreign-visible", "pending-retry", "cancelled", "failed", "disconnected", "cleared"]
+        let app = launch("analysis-state")
+        defer { app.terminate() }
+        for (index, mode) in modes.enumerated() {
+            XCTAssertTrue(app.staticTexts["analysis-scenario-ready"].waitForExistence(timeout: 10))
+            let expected: [String]
+            if mode == "current" {
+                expected = ["Analysis for the visible build revision", "Build: build.fixture.1, revision 1",
+                            "Reported compatibility: valid", "Reported readiness: ready",
+                            "Missing or unknown observations do not establish compatibility."]
+            } else if mode == "pending-retry" {
+                expected = ["Analysis pending for this build revision",
+                            "Compatibility and readiness remain unknown until a matching report arrives."]
+            } else {
+                expected = ["Current analysis unavailable", "Compatibility and readiness are unknown."]
+            }
+            let text = try assertRendered(app, id: "analysis-\(mode)", index: index, total: modes.count,
+                contains: expected + ["Synthetic analysis scenario ready: \(mode)"])
+            if mode != "current" {
+                for forbidden in ["Reported compatibility:", "Reported readiness:", "Build: build.fixture.1",
+                                  "Analysis for the visible build revision"] {
+                    XCTAssertFalse(text.contains(forbidden), "\(mode): retained report leaked into a noncurrent presentation")
+                }
+                XCTAssertFalse(app.scrollViews["evaluation-report"].exists, mode)
+            }
+            if index + 1 < modes.count { next(app) }
+        }
+    }
+
     private func next(_ app: XCUIApplication) {
         let button = app.buttons["evidence-harness-next"]
         XCTAssertTrue(button.isEnabled)

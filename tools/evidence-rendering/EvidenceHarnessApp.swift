@@ -82,6 +82,11 @@ private struct ScenarioHost: View {
                     }
                     .accessibilityElement(children: .contain)
                     .accessibilityIdentifier("evidence-harness-content")
+                case .analysis(let report, let mode):
+                    AnalysisScenarioView(report: report, mode: mode)
+                        .frame(width: geometry.size.width, height: geometry.size.height)
+                        .accessibilityElement(children: .contain)
+                        .accessibilityIdentifier("evidence-harness-content")
                 }
             }
             .id(scenarios[index].renderIdentity)
@@ -93,6 +98,7 @@ private struct Scenario {
     enum Content {
         case report(EvaluationReport, width: CGFloat?, largeText: Bool)
         case claim(EvidencePresentation)
+        case analysis(EvaluationReport, mode: String)
     }
     let id: String
     let content: Content
@@ -131,7 +137,7 @@ private struct Scenario {
         }
         let group = arguments[offset + 1]
         switch group {
-        case "shared", "report-size":
+        case "shared", "report-size", "analysis-state":
             guard let url = Bundle.main.url(forResource: "evidence-vectors", withExtension: "json") else {
                 throw InputError.invalidFixture
             }
@@ -150,6 +156,11 @@ private struct Scenario {
                 throw InputError.invalidFixture
             }
             let report = try EvaluationReport.decode(Data(vector.payloadJSON.utf8))
+            if group == "analysis-state" {
+                return ["current", "foreign-visible", "pending-retry", "cancelled", "failed", "disconnected", "cleared"].map {
+                    Scenario(id: "analysis-\($0)", content: .analysis(report, mode: $0))
+                }
+            }
             return [375, 820].map { width in
                 Scenario(id: "reported-pass-width-\(width)", content: .report(report, width: CGFloat(width), largeText: true))
             }
@@ -221,5 +232,50 @@ private struct Scenario {
     }
     private static func support() throws -> AcceptedIndependentSupport {
         try AcceptedIndependentSupport(evidenceReference: "synthetic:independent", acceptanceReference: "synthetic:acceptance")
+    }
+}
+
+/// Test-only event source driving the actual production model and view. It uses
+/// the frozen synthetic tuple independently of the supplied report's identity.
+@MainActor
+private struct AnalysisScenarioView: View {
+    let report: EvaluationReport
+    let mode: String
+    @State private var model = EvaluationAnalysisModel()
+    @State private var prepared = false
+
+    private func identity(revision: Int = 1) -> AnalysisIdentity {
+        .frozenV1Evaluation(buildID: "build.fixture.1", buildRevision: revision,
+            catalogSnapshotID: "catalog.fixture.1", rulesetID: "rules.fixture.1", rulesetVersion: "1.0.0",
+            dependencyGraphID: "dependencies.core.1", dependencyGraphRevision: 1)
+    }
+
+    var body: some View {
+        VStack(alignment: .leading, spacing: 8) {
+            if prepared {
+                Text("Synthetic analysis scenario ready: \(mode)").accessibilityIdentifier("analysis-scenario-ready")
+                EvaluationAnalysisView(model: model,
+                    visibleIdentity: mode == "cleared" ? nil : identity(revision: mode == "foreign-visible" ? 2 : 1))
+            } else {
+                ProgressView("Preparing synthetic analysis scenario")
+            }
+        }
+        .task {
+            model.select(identity())
+            guard let request = await model.begin() else { return }
+            switch mode {
+            case "cancelled": guard await model.cancel(request) else { return }
+            case "failed": guard await model.fail(request) else { return }
+            default:
+                guard await model.receive(report, for: request) else { return }
+                switch mode {
+                case "pending-retry": guard await model.begin() != nil else { return }
+                case "disconnected": model.disconnect()
+                case "cleared": model.clear()
+                default: break
+                }
+            }
+            prepared = true
+        }
     }
 }

@@ -1,0 +1,21 @@
+Building for debugging...
+[0/5] Write swift-version-2AFB1643BC46F12B.txt
+[1/5] Write sources
+[3/6] Emitting module PlannerUI
+[4/7] Compiling PlannerUI EvaluationAnalysisModel.swift
+[5/7] Write Objects.LinkFileList
+[6/7] Linking Apple75PortableSourceCheckPackageTests.xctest
+Build complete! (1.13s)
+Test Suite 'Selected tests' started at 2026-10-19 17:36:33.741
+Test Suite 'EvaluationAnalysisModelTests' started at 2026-10-19 17:36:33.742
+Test Case 'EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection' started at 2026-10-19 17:36:33.742
+/workspace/scratch/68d493c20124/apple75-portable-check-20261019/Tests/PlannerUITests/EvaluationAnalysisModelTests.swift:195: error: EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection : XCTAssertNil failed: "AnalysisRequest(identity: PlannerCore.AnalysisIdentity(buildID: "build.fixture.1", revision: "1", versionLocks: ["dependency_graph_id": "dependencies.core.1", "dependency_graph_revision": "1", "catalog_snapshot_id": "catalog.fixture.1", "ruleset_id": "rules.fixture.1", "ruleset_version": "1.0.0"]), generation: 11E2F7A7-796A-4176-B7D3-DEBBF73F6A21)" - 
+Test Case 'EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection' failed (0.025 seconds)
+Test Suite 'EvaluationAnalysisModelTests' failed at 2026-10-19 17:36:33.767
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.025 (0.025) seconds
+Test Suite 'Selected tests' failed at 2026-10-19 17:36:33.767
+	 Executed 1 test, with 1 failure (0 unexpected) in 0.025 (0.025) seconds
+◇ Test run started.
+↳ Testing Library Version: 6.1.2 (d6b70f9ef9eb207)
+↳ Target Platform: x86_64-unknown-linux-gnu
+✔ Test run with 0 tests passed after 0.001 seconds.

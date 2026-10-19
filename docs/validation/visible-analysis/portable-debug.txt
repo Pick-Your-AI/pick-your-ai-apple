@@ -1,0 +1,61 @@
+[0/1] Planning build
+Building for debugging...
+[0/5] Write swift-version-2AFB1643BC46F12B.txt
+[1/5] Write sources
+[3/6] Emitting module PlannerUITests
+[4/7] Compiling PlannerUITests EvaluationAnalysisModelTests.swift
+[5/8] /workspace/scratch/68d493c20124/apple75-portable-check-20261019/.build/x86_64-unknown-linux-gnu/debug/Apple75PortableSourceCheckPackageDiscoveredTests.derived/all-discovered-tests.swift
+[6/9] Write sources
+[8/10] Emitting module Apple75PortableSourceCheckPackageDiscoveredTests
+[9/12] Compiling Apple75PortableSourceCheckPackageDiscoveredTests PlannerUITests.swift
+[10/12] Compiling Apple75PortableSourceCheckPackageDiscoveredTests all-discovered-tests.swift
+[11/13] Wrapping AST for Apple75PortableSourceCheckPackageDiscoveredTests for debugging
+[12/17] Wrapping AST for PlannerUITests for debugging
+[13/17] /workspace/scratch/68d493c20124/apple75-portable-check-20261019/.build/x86_64-unknown-linux-gnu/debug/Apple75PortableSourceCheckPackageTests.derived/runner.swift
+[14/18] Write sources
+[16/19] Emitting module Apple75PortableSourceCheckPackageTests
+[17/20] Compiling Apple75PortableSourceCheckPackageTests runner.swift
+[18/20] Write Objects.LinkFileList
+[19/20] Linking Apple75PortableSourceCheckPackageTests.xctest
+Build complete! (3.76s)
+Test Suite 'All tests' started at 2026-10-19 17:30:18.543
+Test Suite 'debug.xctest' started at 2026-10-19 17:30:18.545
+Test Suite 'EvaluationAnalysisModelTests' started at 2026-10-19 17:30:18.545
+Test Case 'EvaluationAnalysisModelTests.testCancelledBeginStillDrainsItsCoreCommandAndCannotReturnATransportToken' started at 2026-10-19 17:30:18.545
+Test Case 'EvaluationAnalysisModelTests.testCancelledBeginStillDrainsItsCoreCommandAndCannotReturnATransportToken' passed (0.014 seconds)
+Test Case 'EvaluationAnalysisModelTests.testCoreCancellationWinsBeforeCompletionThenRetryRecovers' started at 2026-10-19 17:30:18.559
+Test Case 'EvaluationAnalysisModelTests.testCoreCancellationWinsBeforeCompletionThenRetryRecovers' passed (0.008 seconds)
+Test Case 'EvaluationAnalysisModelTests.testCoreCompletionWinsBeforeQueuedCancellationAndRetainsCurrentReport' started at 2026-10-19 17:30:18.568
+Test Case 'EvaluationAnalysisModelTests.testCoreCompletionWinsBeforeQueuedCancellationAndRetainsCurrentReport' passed (0.007 seconds)
+Test Case 'EvaluationAnalysisModelTests.testEveryForeignResponsePinKeepsMatchingRequestPendingThenRecovers' started at 2026-10-19 17:30:18.575
+Test Case 'EvaluationAnalysisModelTests.testEveryForeignResponsePinKeepsMatchingRequestPendingThenRecovers' passed (0.081 seconds)
+Test Case 'EvaluationAnalysisModelTests.testFailureIsRetryableAndObsoleteFailureCannotClearTheLatestMatchingResult' started at 2026-10-19 17:30:18.656
+Test Case 'EvaluationAnalysisModelTests.testFailureIsRetryableAndObsoleteFailureCannotClearTheLatestMatchingResult' passed (0.012 seconds)
+Test Case 'EvaluationAnalysisModelTests.testLargeSupportedWireRevisionAndChangedSelectedPinsAreProjectedExactly' started at 2026-10-19 17:30:18.669
+Test Case 'EvaluationAnalysisModelTests.testLargeSupportedWireRevisionAndChangedSelectedPinsAreProjectedExactly' passed (0.036 seconds)
+Test Case 'EvaluationAnalysisModelTests.testNoSelectionCannotBeginOrDisplayAReportAndObservationTracksCurrentness' started at 2026-10-19 17:30:18.704
+Test Case 'EvaluationAnalysisModelTests.testNoSelectionCannotBeginOrDisplayAReportAndObservationTracksCurrentness' passed (0.008 seconds)
+Test Case 'EvaluationAnalysisModelTests.testQueuedCompletionCannotReturnAfterDisconnectAndClearAsCurrent' started at 2026-10-19 17:30:18.712
+Test Case 'EvaluationAnalysisModelTests.testQueuedCompletionCannotReturnAfterDisconnectAndClearAsCurrent' passed (0.01 seconds)
+Test Case 'EvaluationAnalysisModelTests.testRetryRejectsForeignTokensAndDuplicateCompletionsWithoutRewritingClaims' started at 2026-10-19 17:30:18.722
+Test Case 'EvaluationAnalysisModelTests.testRetryRejectsForeignTokensAndDuplicateCompletionsWithoutRewritingClaims' passed (0.019 seconds)
+Test Case 'EvaluationAnalysisModelTests.testSelectionClearsVisibleResultBeforeBlockedCoreTransitionAndSamePinsNeedExplicitOwnerClear' started at 2026-10-19 17:30:18.740
+Test Case 'EvaluationAnalysisModelTests.testSelectionClearsVisibleResultBeforeBlockedCoreTransitionAndSamePinsNeedExplicitOwnerClear' passed (0.011 seconds)
+Test Case 'EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection' started at 2026-10-19 17:30:18.752
+Test Case 'EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection' passed (0.011 seconds)
+Test Case 'EvaluationAnalysisModelTests.testThreeRevisionsReconnectCompleteOutOfOrderWithoutLateCancellationErasingCurrent' started at 2026-10-19 17:30:18.763
+Test Case 'EvaluationAnalysisModelTests.testThreeRevisionsReconnectCompleteOutOfOrderWithoutLateCancellationErasingCurrent' passed (0.133 seconds)
+Test Case 'EvaluationAnalysisModelTests.testValidatedBuildProjectionUsesWireRevisionAndAllFivePinsWithoutMutatingBytes' started at 2026-10-19 17:30:18.896
+Test Case 'EvaluationAnalysisModelTests.testValidatedBuildProjectionUsesWireRevisionAndAllFivePinsWithoutMutatingBytes' passed (0.085 seconds)
+Test Case 'EvaluationAnalysisModelTests.testVisibleIdentityRequiresExactTextAndCompletePinsEvenWhenModelIsCurrent' started at 2026-10-19 17:30:18.982
+Test Case 'EvaluationAnalysisModelTests.testVisibleIdentityRequiresExactTextAndCompletePinsEvenWhenModelIsCurrent' passed (0.012 seconds)
+Test Suite 'EvaluationAnalysisModelTests' passed at 2026-10-19 17:30:18.994
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.448 (0.448) seconds
+Test Suite 'debug.xctest' passed at 2026-10-19 17:30:18.994
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.448 (0.448) seconds
+Test Suite 'All tests' passed at 2026-10-19 17:30:18.994
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.448 (0.448) seconds
+◇ Test run started.
+↳ Testing Library Version: 6.1.2 (d6b70f9ef9eb207)
+↳ Target Platform: x86_64-unknown-linux-gnu
+✔ Test run with 0 tests passed after 0.001 seconds.

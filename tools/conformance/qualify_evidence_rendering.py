@@ -1,5 +1,5 @@
 #!/usr/bin/env python3
-"""Require all five real native evidence-rendering XCTest methods to pass."""
+"""Require all six real native evidence/analysis-rendering XCTest methods to pass."""
 import argparse
 from pathlib import Path
 import re
@@ -13,6 +13,7 @@ REQUIRED = {
     "EvidenceRenderingTests.testClaimGradesRequireTheirExistingInspectionAndIndependentSupportInputs",
     "EvidenceRenderingTests.testCorrectionAndFreshnessNoticesPreserveRetainedIdentityAndRequireARecheck",
     "EvidenceRenderingTests.testCaptureDateLocaleChangesPreserveGregorianDayAndRetainedEvidence",
+    "EvidenceRenderingTests.testVisibleBuildAnalysisNeverRendersRetainedReportsForOtherRevisionsOrRetiredRequests",
 }
 
 
@@ -25,7 +26,7 @@ def require_rendering_receipt(output):
         raise ValueError("Missing complete, uniquely qualified native rendering XCTest execution")
     cases, failures, unexpected, _ = result
     if cases != {name: "passed" for name in REQUIRED} or failures != 0 or unexpected != 0:
-        raise ValueError("The five exact native rendering tests did not all pass without failures or skips")
+        raise ValueError("The six exact native rendering tests did not all pass without failures or skips")
 
 
 def main():

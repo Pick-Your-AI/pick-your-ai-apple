@@ -8,7 +8,8 @@ Planner editor, open a `DraftStore`, contact a service or implement another
 evidence projection. The application and UI-test target use local packages only.
 
 `EvidenceRenderingTests` runs in the separate `PlannerEvidenceUITests` process.
-Its five methods preserve the original four checks and add date presentation:
+Its six methods preserve the original four checks and add date presentation
+and visible-analysis binding:
 
 - All 28 valid shared payloads render their existing outcome, severity, presence
   and conflict text; other outcome/severity labels remain absent.
@@ -22,11 +23,13 @@ Its five methods preserve the original four checks and add date presentation:
 - Ten capture-date scenarios change locale, calendar and time-zone environments
   on the same retained view identity. Localized Gregorian labels, exact ISO dates,
   retained source identities and the final correction/recheck state remain visible.
+- Seven visible-analysis scenarios admit only the matching report and keep other
+  revisions, pending retries, cancellation, failure, disconnect and clear explicit.
 
 Both native targets copy the same existing
 [37-case resource](../../Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evidence-vectors.json).
 The app decodes only IDs, payloads and validity; it does not read `visibleText`.
-Tests send only one of five scenario-group IDs in launch arguments. Expected
+Tests send only one of six scenario-group IDs in launch arguments. Expected
 strings stay in the test process and are never installed in app accessibility
 labels. The original Core tests still execute all 37 decoder cases, including
 the nine rejections and recovery of the prior report.
@@ -50,7 +53,7 @@ only when the window query is empty, before the original error and case-marker
 checks. An existing window with missing or wrong content receives no retry or
 replacement window. A second window query just before selecting the command
 dismisses the menu without creating another window if a window has appeared.
-This fixture setup retains the normal `WindowGroup`, five
+This fixture setup retains the normal `WindowGroup`, six
 separate process launches, exact scenario/position checks and bounded waits.
 
 ## Captured-date presentation under #58
@@ -235,9 +238,10 @@ The 37 unique Xcode project objects, their references and input paths, and the
 active shared UI-test scheme were checked locally. Actual Xcode project loading,
 Apple SDK compilation and application/test execution remain hosted gates.
 
-The existing native UI job runs all original editor-model methods, then these
-five macOS UI tests before its separate production-app build/launch checks. The
-existing Core job runs these five UI tests on its selected iPhone and iPad,
+The existing native UI job runs all original editor-model methods, then the
+four original macOS UI tests, the accepted capture-date method and the
+visible-analysis method below before its separate production-app build/launch
+checks. The existing Core job runs the same six UI tests on its selected iPhone and iPad,
 alongside all original Core and mutation gates. Both retain exact logs and
 `.xcresult` bundles. No extra workflow job, remote task or parallel runner is
 introduced.
@@ -256,7 +260,7 @@ destination, as the checked-in Core workflow does. Require the real command to
 succeed, retain its output, then run
 `python3 tools/conformance/qualify_evidence_rendering.py /path/to/actual-test.log`.
 The qualifier requires exactly one complete `All tests` or `Selected tests`
-session, the explicit `PlannerEvidenceUITests` module and all five unique named
+session, the explicit `PlannerEvidenceUITests` module and all six unique named
 passes with zero failures/skips. The older `PlannerUITests` module, a bare class
 name, duplicate sessions and compile-only logs cannot qualify this host.
 
@@ -265,3 +269,21 @@ full VoiceOver interaction, complete localization, pixel layout/contrast, signed
 and integration of these views into a complete user journey. The
 [evidence mapping](../../Packages/PlannerUI/EVIDENCE_RENDERING.md) remains the
 criterion-specific record for Apple #36.
+
+## Current visible-analysis and accepted-date composition
+
+The [Apple #75 contribution](../../docs/validation/visible-analysis.md) adds the
+actual observable model and guarded report view to this existing host. Its seven
+synthetic scenarios cover a matching report, foreign visible revision, pending
+retry, cancellation, failure, disconnect and clear. Only the matching case may
+render the report. The four initial methods, accepted capture-date method and all
+their original source histories above remain intact; the current qualifier
+requires all six methods with zero failures or skips. Each five-method predecessor
+and the earlier four-method receipt are rejected by the combined gate.
+
+The date scenarios retain the same view identity while changing locale; each
+analysis scenario retains its own scenario identity. The host still receives
+only a synthetic scenario-group ID, while expected text remains in the test
+process. Original date and analysis checks keep their own execution attribution.
+The six-method combination requires new actual Apple execution; portable model
+tests in the #75 record do not establish that result.

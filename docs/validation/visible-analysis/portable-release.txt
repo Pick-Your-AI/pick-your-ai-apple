@@ -1,0 +1,68 @@
+Building for production...
+[0/21] Write swift-version-2AFB1643BC46F12B.txt
+[1/21] Write sources
+[3/21] Copying selection.schema.json
+[4/21] Copying resource-estimate.schema.json
+[5/21] Copying quality-evaluation-run.schema.json
+[6/21] Copying dependency-graph.schema.json
+[7/21] Copying cost-estimate.schema.json
+[8/21] Copying common.schema.json
+[9/21] Copying catalog-item.schema.json
+[10/21] Copying build.schema.json
+[11/21] Write sources
+[14/22] Compiling PlannerTransfer BuildComparison.swift
+[15/23] Compiling PlannerCore AnalysisStore.swift
+[15/23] Copying evaluation-analysis-report.json
+[17/24] Compiling PlannerUI BuildAnalysisIdentity.swift
+[17/24] Copying evaluation-analysis-build.json
+[19/25] Compiling PlannerUITests EvaluationAnalysisModelTests.swift
+[19/25] /workspace/scratch/68d493c20124/apple75-portable-check-20261019/.build/x86_64-unknown-linux-gnu/release/Apple75PortableSourceCheckPackageDiscoveredTests.derived/all-discovered-tests.swift
+[20/25] Write sources
+[22/26] Compiling Apple75PortableSourceCheckPackageDiscoveredTests PlannerUITests.swift
+[22/26] /workspace/scratch/68d493c20124/apple75-portable-check-20261019/.build/x86_64-unknown-linux-gnu/release/Apple75PortableSourceCheckPackageTests.derived/runner.swift
+[23/26] Write sources
+[25/27] Compiling Apple75PortableSourceCheckPackageTests runner.swift
+[25/27] Write Objects.LinkFileList
+[26/27] Linking Apple75PortableSourceCheckPackageTests.xctest
+Build complete! (21.47s)
+Test Suite 'All tests' started at 2026-10-19 17:33:28.564
+Test Suite 'release.xctest' started at 2026-10-19 17:33:28.566
+Test Suite 'EvaluationAnalysisModelTests' started at 2026-10-19 17:33:28.566
+Test Case 'EvaluationAnalysisModelTests.testCancelledBeginStillDrainsItsCoreCommandAndCannotReturnATransportToken' started at 2026-10-19 17:33:28.566
+Test Case 'EvaluationAnalysisModelTests.testCancelledBeginStillDrainsItsCoreCommandAndCannotReturnATransportToken' passed (0.012 seconds)
+Test Case 'EvaluationAnalysisModelTests.testCoreCancellationWinsBeforeCompletionThenRetryRecovers' started at 2026-10-19 17:33:28.577
+Test Case 'EvaluationAnalysisModelTests.testCoreCancellationWinsBeforeCompletionThenRetryRecovers' passed (0.006 seconds)
+Test Case 'EvaluationAnalysisModelTests.testCoreCompletionWinsBeforeQueuedCancellationAndRetainsCurrentReport' started at 2026-10-19 17:33:28.583
+Test Case 'EvaluationAnalysisModelTests.testCoreCompletionWinsBeforeQueuedCancellationAndRetainsCurrentReport' passed (0.007 seconds)
+Test Case 'EvaluationAnalysisModelTests.testEveryForeignResponsePinKeepsMatchingRequestPendingThenRecovers' started at 2026-10-19 17:33:28.590
+Test Case 'EvaluationAnalysisModelTests.testEveryForeignResponsePinKeepsMatchingRequestPendingThenRecovers' passed (0.039 seconds)
+Test Case 'EvaluationAnalysisModelTests.testFailureIsRetryableAndObsoleteFailureCannotClearTheLatestMatchingResult' started at 2026-10-19 17:33:28.629
+Test Case 'EvaluationAnalysisModelTests.testFailureIsRetryableAndObsoleteFailureCannotClearTheLatestMatchingResult' passed (0.006 seconds)
+Test Case 'EvaluationAnalysisModelTests.testLargeSupportedWireRevisionAndChangedSelectedPinsAreProjectedExactly' started at 2026-10-19 17:33:28.635
+Test Case 'EvaluationAnalysisModelTests.testLargeSupportedWireRevisionAndChangedSelectedPinsAreProjectedExactly' passed (0.01 seconds)
+Test Case 'EvaluationAnalysisModelTests.testNoSelectionCannotBeginOrDisplayAReportAndObservationTracksCurrentness' started at 2026-10-19 17:33:28.645
+Test Case 'EvaluationAnalysisModelTests.testNoSelectionCannotBeginOrDisplayAReportAndObservationTracksCurrentness' passed (0.106 seconds)
+Test Case 'EvaluationAnalysisModelTests.testQueuedCompletionCannotReturnAfterDisconnectAndClearAsCurrent' started at 2026-10-19 17:33:28.752
+Test Case 'EvaluationAnalysisModelTests.testQueuedCompletionCannotReturnAfterDisconnectAndClearAsCurrent' passed (0.011 seconds)
+Test Case 'EvaluationAnalysisModelTests.testRetryRejectsForeignTokensAndDuplicateCompletionsWithoutRewritingClaims' started at 2026-10-19 17:33:28.762
+Test Case 'EvaluationAnalysisModelTests.testRetryRejectsForeignTokensAndDuplicateCompletionsWithoutRewritingClaims' passed (0.009 seconds)
+Test Case 'EvaluationAnalysisModelTests.testSelectionClearsVisibleResultBeforeBlockedCoreTransitionAndSamePinsNeedExplicitOwnerClear' started at 2026-10-19 17:33:28.771
+Test Case 'EvaluationAnalysisModelTests.testSelectionClearsVisibleResultBeforeBlockedCoreTransitionAndSamePinsNeedExplicitOwnerClear' passed (0.007 seconds)
+Test Case 'EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection' started at 2026-10-19 17:33:28.779
+Test Case 'EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection' passed (0.008 seconds)
+Test Case 'EvaluationAnalysisModelTests.testThreeRevisionsReconnectCompleteOutOfOrderWithoutLateCancellationErasingCurrent' started at 2026-10-19 17:33:28.786
+Test Case 'EvaluationAnalysisModelTests.testThreeRevisionsReconnectCompleteOutOfOrderWithoutLateCancellationErasingCurrent' passed (0.015 seconds)
+Test Case 'EvaluationAnalysisModelTests.testValidatedBuildProjectionUsesWireRevisionAndAllFivePinsWithoutMutatingBytes' started at 2026-10-19 17:33:28.801
+Test Case 'EvaluationAnalysisModelTests.testValidatedBuildProjectionUsesWireRevisionAndAllFivePinsWithoutMutatingBytes' passed (0.021 seconds)
+Test Case 'EvaluationAnalysisModelTests.testVisibleIdentityRequiresExactTextAndCompletePinsEvenWhenModelIsCurrent' started at 2026-10-19 17:33:28.822
+Test Case 'EvaluationAnalysisModelTests.testVisibleIdentityRequiresExactTextAndCompletePinsEvenWhenModelIsCurrent' passed (0.005 seconds)
+Test Suite 'EvaluationAnalysisModelTests' passed at 2026-10-19 17:33:28.827
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.261 (0.261) seconds
+Test Suite 'release.xctest' passed at 2026-10-19 17:33:28.827
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.261 (0.261) seconds
+Test Suite 'All tests' passed at 2026-10-19 17:33:28.827
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.261 (0.261) seconds
+◇ Test run started.
+↳ Testing Library Version: 6.1.2 (d6b70f9ef9eb207)
+↳ Target Platform: x86_64-unknown-linux-gnu
+✔ Test run with 0 tests passed after 0.001 seconds.
