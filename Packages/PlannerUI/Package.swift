@@ -1,7 +1,7 @@
 // swift-tools-version: 6.0
 import PackageDescription
 let package = Package(
-    name: "PlannerUI", platforms: [.iOS(.v17), .macOS(.v14)],
+    name: "PlannerUI", defaultLocalization: "en", platforms: [.iOS(.v17), .macOS(.v14)],
     products: [.library(name: "PlannerUI", targets: ["PlannerUI"])],
     dependencies: [.package(path: "../PlannerData"), .package(path: "../PlannerCatalog"), .package(path: "../PlannerTransfer"), .package(path: "../PlannerCore")],
     targets: [.target(name: "PlannerUI", dependencies: ["PlannerData", "PlannerCatalog", "PlannerTransfer", "PlannerCore"],

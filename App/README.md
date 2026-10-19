@@ -33,7 +33,7 @@ Notes journey passes on both pinned simulators, with successful owned cleanup;
 see the [completed editor receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution).
 Its separate scope-cleanup failure remains recorded. The earlier 110 UI / 57
 Transfer composition is historical input. The current preparation requires all
-228 UI and 190 Transfer methods plus all seven complete journeys on each destination;
+228 UI and 209 Transfer methods plus all seven complete journeys on each destination;
 none of those expanded results is inferred from the earlier editor run.
 
 ## Current receiving source and required validation
@@ -41,7 +41,9 @@ none of those expanded results is inferred from the earlier editor run.
 The [integration record](../docs/validation/imported-build-integration.md) names the
 actual 2026-10-19 selection, immutable donors, current-module joins and remaining
 receiving gates. The fixed preparation selected on `888cb7e7` carried accepted
-main through `0e289d81`; the current composition carries accepted `7431b7d6`.
+main through `0e289d81`; the preceding composition carried accepted `7431b7d6`.
+The current composition additionally receives accepted main `4632c72a` and
+the exact planning donor `3f7f48ec`, with their boundaries below.
 It does not recover an absent old #198 tree or deliver its signed
 staging branch to main. The separately prepared T6 report/route follow-up starts
 on published #391 source `9e7cc629`, with the exact donor `394ff3ba` and
@@ -105,7 +107,7 @@ fourth T6 journey exercises actual tab withdrawal, reopen and retained-input ret
 
 | Mandatory current job | Exact selected work |
 | --- | --- |
-| `native-evidence-rendering` | All five accepted real macOS Evidence methods and strict receipt, including the Gregorian capture-date extension, Xcode 16.4, unchanged 20-minute job. |
+| `native-evidence-rendering` | All six accepted real macOS Evidence methods and strict receipt, including Gregorian capture dates and localized claim copy, Xcode 16.4, unchanged 20-minute job. |
 | `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 228 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
 | `native-cost-rendering` | Three real macOS Cost methods and their strict receipt, Xcode 16.4, separate 20-minute job. |
 | `native-ui-journey (iphone)` and `(ipad)` | All seven app journeys on each fresh pinned 18.5 destination, 24 runner controls, separate 20-minute jobs and unchanged 900-second inner test limit. |
@@ -115,14 +117,14 @@ Core retains every existing package, mutation, guard and Evidence-rendering step
 and adds the three Cost methods on each pinned simulator. Storage requires all 69
 methods: 34 retained draft cases and 35 accepted pending-write cases, with both
 actual crash/recovery probes. The strict Data receiver checks every identity in
-the macOS, iPhone, iPad and submission SDK logs. Transfer requires 190 exact methods,
+the macOS, iPhone, iPad and submission SDK logs. Transfer requires 209 exact methods,
 the original nine reference phases and the separate Manifest controls. Submission
-SDK requires all five packages (146 Core, 69 Data, 190 Transfer, 92 Catalog, 228 UI),
+SDK requires all five packages (146 Core, 69 Data, 209 Transfer, 92 Catalog, 228 UI; 744 total),
 all current App guards and both unsigned Release products with their separate SDK
 and privacy receipts. Static inventories are not execution observations.
 
-The current carry preserves the accepted evidence-date presentation and its fifth
-rendering method, the native package-path preflight before mutation-output cleanup,
+The current carry preserves the accepted evidence-date presentation and adds the
+sixth localized claim-copy method, with its exact English/German/Arabic resources, the native package-path preflight before mutation-output cleanup,
 the maintenance runbook and the exact #317 smoke source. The combined Transfer
 receiver keeps the same nine reference phases now accepted through #285 at
 `b35414a8`; this source carry does not reexecute their earlier receipts.
@@ -152,6 +154,22 @@ remain exact; `--suite all` additionally requires the new method's start and pas
 An older six-method result cannot qualify the expanded current suite. This is a
 declared journey awaiting its own native execution, not a simulated interruption,
 manual accessibility audit, evaluated filter result or completed #64 criterion.
+
+The accepted [historical resource comparison](../Packages/PlannerTransfer/HISTORICAL_RESOURCE_COMPARISON.md)
+retains complete estimate rows and their own build/selection bindings. Its nineteen
+methods join the unchanged 190-method receiver as `integrated-historical-resource-transfer`
+in both Transfer and submission SDK workflows. All earlier receiver maps and parser
+functions remain intact. The accepted [claim-copy rendering](../Packages/PlannerUI/EVIDENCE_RENDERING.md)
+keeps six exact rendering methods, three 24-key localization tables, and verbatim
+evidence values with directional isolation. The UI manifest preserves all four
+package/target dependencies and both Resources and privacy-manifest processing.
+
+The original `682f04a8` / prepared `1e5b90b6` and planning donor `3f7f48ec` /
+prepared `228840ae` results describe their own source and base. Earlier original
+comparison and renderer results likewise retain their exact execution identities.
+Their receipt counts do not qualify this 744-method, seven-journey composition;
+the configured current-source native jobs and ordinary review/merge gates remain
+required. No native command, destination, attempt, deadline or cleanup rule changes.
 
 ## Retained smoke and toolchain history
 
@@ -288,7 +306,7 @@ The workflow now runs two separately required jobs from the same event checkout:
 
 | Job | Required work and original artifact |
 | --- | --- |
-| `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all five real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
+| `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all six real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
 | `native-simulator` | Xcode-pin, smoke-runner and SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
 
 Each native job uses its own fresh standard `macos-15-intel` host and retains the

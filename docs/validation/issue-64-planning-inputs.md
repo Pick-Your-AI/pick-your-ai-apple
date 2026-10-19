@@ -1,5 +1,20 @@
 # #64: Local planning input preparation
 
+## Current canonical receiving boundary
+
+The canonical #391 composition now receives this exact reviewed donor
+`3f7f48ecf9cb5a5da37829b0e8bf17b4d0ccc62e` together with accepted main
+`4632c72ad26b3d4500090316d107292994982457`. Its unchanged 228 UI methods and
+seven App journeys join the accepted nineteen historical-resource methods and
+six-method localized Evidence host. The [current requirements](../../App/README.md#current-receiving-source-and-required-validation)
+require 744 package declarations, including all 209 Transfer identities.
+
+The source-time 725/190 counts and portable observations below remain attributed
+to this donor's preceding `682f04a8` join. They do not qualify the new combined
+source. Every original planning Swift/test body and raw vector remains unchanged;
+the configured combined native results, input-driven filters, interrupted-save
+journey and accessibility receiving evidence remain separate requirements.
+
 This bounded implementation candidate addresses the missing input editor in
 [Apple #64](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/64). It is a donor
 on the existing [#391 app integration](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391)

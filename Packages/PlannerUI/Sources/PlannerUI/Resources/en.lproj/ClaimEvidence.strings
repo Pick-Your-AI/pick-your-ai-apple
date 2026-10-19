@@ -1,0 +1,25 @@
+/* Explanatory copy only. Evidence identifiers, statuses, dates and receipts are verbatim values. */
+"Evidence quality:" = "Evidence quality:";
+"Original recorded status:" = "Original recorded status:";
+"Component:" = "Component:";
+"Version:" = "Version:";
+"Retained snapshot:" = "Retained snapshot:";
+"Source claim has not been inspected." = "Source claim has not been inspected.";
+"Source claim is unavailable." = "Source claim is unavailable.";
+"Inspected source:" = "Inspected source:";
+"Inspection receipt:" = "Inspection receipt:";
+"Retrieval method:" = "Retrieval method:";
+"Independent support receipt:" = "Independent support receipt:";
+"Receiving acceptance:" = "Receiving acceptance:";
+"Facts remain pinned to this version." = "Facts remain pinned to this version.";
+"Capture date (Gregorian):" = "Capture date (Gregorian):";
+"Current-state facts as of" = "Current-state facts as of";
+"A newer version is available. The retained selection has not changed." = "A newer version is available. The retained selection has not changed.";
+"A newer snapshot is available. Review the evidence for this selection." = "A newer snapshot is available. Review the evidence for this selection.";
+"Selected evidence changed. A recheck is required." = "Selected evidence changed. A recheck is required.";
+"Independently verified" = "Independently verified";
+"Source checked" = "Source checked";
+"User supplied" = "User supplied";
+"Estimated" = "Estimated";
+"Unverified" = "Unverified";
+"Unavailable" = "Unavailable";

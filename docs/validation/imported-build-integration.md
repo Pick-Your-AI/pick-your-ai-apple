@@ -1,5 +1,28 @@
 # New imported-build, catalog and T6 receiving preparation
 
+## Accepted historical-resource, localization and planning carry
+
+The current isolated #391 receiving composition joins the reviewed planning donor
+`3f7f48ecf9cb5a5da37829b0e8bf17b4d0ccc62e`, tree
+`f5bdeaa6acc1cea263e8926955de76904d34ab29`, and accepted main
+`4632c72ad26b3d4500090316d107292994982457`, tree
+`051bf2519d17b5da45e8f10987fd63ec7377c766`. The donor retains public #391
+`682f04a88bd3a5b709beed695e0b8fbac2c78272` and its exact prior corrections.
+The [current App requirements](../../App/README.md#current-receiving-source-and-required-validation)
+and [planning boundary](issue-64-planning-inputs.md) describe the combined source.
+
+Required package declarations are 146 Core, 69 Data, 209 Transfer, 92 Catalog and
+228 UI: 744 total, plus all seven App journeys per selected destination and all
+six Evidence-rendering methods. The nineteen accepted historical-resource methods
+extend the strict Transfer map without changing any earlier map or parser. The
+complete planning and accepted main Swift/test bodies, resource values, canonical
+four-package UI dependencies and privacy processing are retained. No prior native
+pass is promoted to this combined source; its configured results remain required.
+
+The following source-time records and counts retain their named earlier inputs.
+They preserve the actual original failures and handoffs; source inclusion does not
+close their broader device, Files-provider, planning, service or release criteria.
+
 ## Accepted Ruleset cache adapter carry
 
 Accepted main moved to valid-signed

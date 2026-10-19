@@ -93,7 +93,7 @@ jobs:
         run: |
           set -euo pipefail
           python3 tools/ci/require_swift_test_results.py integrated-pending-data .build/submission-evidence/PlannerData-tests.txt
-          python3 tools/ci/require_swift_test_results.py integrated-ruleset-cache-transfer .build/submission-evidence/PlannerTransfer-tests.txt
+          python3 tools/ci/require_swift_test_results.py integrated-historical-resource-transfer .build/submission-evidence/PlannerTransfer-tests.txt
           python3 tools/ci/require_swift_test_results.py planning-inputs-descriptor-ui .build/submission-evidence/PlannerUI-tests.txt
       - name: Build unsigned Release simulator product
         run: |

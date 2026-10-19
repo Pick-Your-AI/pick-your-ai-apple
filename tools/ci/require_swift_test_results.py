@@ -952,6 +952,34 @@ PROFILES["planning-inputs-descriptor-ui"] = (228, {
 })
 
 
+# Accepted historical-resource comparison adds nineteen exact Transfer identities.
+# Keep every earlier receiver unchanged for its original source.
+PROFILES['integrated-historical-resource-transfer'] = (209, {
+    **PROFILES['integrated-ruleset-cache-transfer'][1],
+    'PlannerTransferTests.HistoricalResourceComparisonTests': (
+        'testScenarioRetainsCompleteOriginalRowsAndTheirOwnOrderedSelections',
+        'testIdenticalHistoricalRecordStillKeepsEveryRowWithoutQualification',
+        'testForeignBuildOrRevisionRejectsThenRecoversOnlyWithMatchingSnapshot',
+        'testEveryDuplicateBuildSelectionRejectsEvenWhenNotReferencedByRows',
+        'testLateUnknownReferenceRejectsWholeScenarioAndPreservesRecovery',
+        'testChangedComponentTupleAndSettingsStayBoundToTheirOwnRevision',
+        'testRepeatedMetricsMultipleEstimatorsAndIdenticalRowsAreNeverDiscardedOrPaired',
+        'testUnmatchedMetricsRemainEmptySidesRatherThanZeroOrRecomputedEvidence',
+        'testMetricOrderingIsStableWhileOriginalRowOrderRemainsVisible',
+        'testDecimalSpellingContradictoryUnitsAndReportedConfidenceAreNotReinterpreted',
+        'testOptionalSourceAndPrivateAssumptionPresenceStayLocalAndExact',
+        'testAnyChangedEstimateContentCannotReuseItsHistoricalIdentity',
+        'testCanonicallyEquivalentUnicodeRecordChangesRejectInBothDirections',
+        'testConflictingSavedRevisionRejectsEvenWithDifferentEstimateIdentity',
+        'testBuildOrderingAndExplicitReferenceOrderingRetainTheirDistinctMeanings',
+        'testDuplicateLinksStillRejectAcrossDifferentBuilds',
+        'testStructuralPrivacyProjectionRemainsSeparateFromOriginalLocalRecords',
+        'testStructuralDifferenceBudgetStillRejectsWithoutPartialComparisonAndRecovers',
+        'testChangedIdentityLocksAndTimestampAreDisclosedWithoutRebindingEvidence',
+    ),
+})
+
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

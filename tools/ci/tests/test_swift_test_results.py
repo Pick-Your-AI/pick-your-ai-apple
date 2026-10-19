@@ -150,7 +150,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
     def test_integrated_profiles_match_every_current_source_method(self):
         root = Path(__file__).resolve().parents[3]
         for package, profile, count in (("PlannerData", "integrated-pending-data", 69),
-                                        ("PlannerTransfer", "integrated-ruleset-cache-transfer", 190),
+                                        ("PlannerTransfer", "integrated-historical-resource-transfer", 209),
                                         ("PlannerUI", "planning-inputs-descriptor-ui", 228)):
             expected, groups = gate.PROFILES[profile]
             actual = set()
@@ -169,7 +169,8 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
 
     def test_integrated_profiles_reject_every_same_count_identity_substitution(self):
         for profile in ("integrated-pending-data", "integrated-retained-transfer",
-                        "integrated-ruleset-cache-transfer", "integrated-retained-ui",
+                        "integrated-ruleset-cache-transfer", "integrated-historical-resource-transfer",
+                        "integrated-retained-ui",
                         "planning-inputs-ui", "planning-inputs-descriptor-ui"):
             text = self.profile_log(profile)
             self.assertEqual(self.run_profile(profile, text), 0)
@@ -185,6 +186,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
         for old, current in (("fixture-placement-graph-resource-quality-catalog-editor-transfer", "integrated-retained-transfer"),
                              ("comparison-catalog-source-privacy-cost-ui", "integrated-retained-ui"),
                              ("integrated-retained-transfer", "integrated-ruleset-cache-transfer"),
+                             ("integrated-ruleset-cache-transfer", "integrated-historical-resource-transfer"),
                              ("integrated-retained-ui-before-descriptor", "planning-inputs-ui"),
                              ("integrated-retained-ui", "planning-inputs-descriptor-ui"),
                              ("planning-inputs-ui", "planning-inputs-descriptor-ui")):
