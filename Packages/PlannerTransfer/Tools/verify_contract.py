@@ -87,6 +87,16 @@ for case in resource_cases:
     require(validator.is_valid(json.loads(case['json'])) == case['canonicalValid'], case['name'])
 summaries.append(f'Verified {len(resource_cases)} canonical resource estimate cases; no capacity, quality or tuple acceptance is inferred.')
 
+from catalog_snapshot_vectors import encoded_vectors as encoded_snapshot_vectors
+snapshot_cases_path = FIXTURES / 'catalog-snapshot-conformance.json'
+require(snapshot_cases_path.read_text() == encoded_snapshot_vectors(), 'Stale catalog snapshot vectors')
+snapshot_cases = json.loads(snapshot_cases_path.read_text())
+validator = Draft202012Validator(schemas['catalog-snapshot.schema.json'], registry=registry, format_checker=FormatChecker())
+for case in snapshot_cases:
+    payload = apply_vector(catalog, case)
+    require(validator.is_valid(payload) == case['canonicalValid'], case['name'])
+summaries.append(f'Verified {len(snapshot_cases)} canonical catalog snapshot cases; whole-document limits remain explicit.')
+
 # Placement vectors document existing transport and explicit v1 representation gaps.
 # A schema-valid unresolved tuple is not a compatibility pass or a memory allocation.
 from collections import Counter

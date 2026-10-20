@@ -189,6 +189,12 @@ final class EvidenceRenderingTests: XCTestCase {
             } else if mode == "pending-retry" {
                 expected = ["Analysis pending for this build revision",
                             "Compatibility and readiness remain unknown until a matching report arrives."]
+                let caption = app.staticTexts["visible-analysis-pending-caption"]
+                XCTAssertTrue(caption.waitForExistence(timeout: 10),
+                    "The pending state must expose its status as native static text.")
+                let captionText = try renderedStaticText(caption, file: #filePath, line: #line)
+                    .joined(separator: "\n")
+                XCTAssertTrue(captionText.contains(expected[0]))
             } else {
                 expected = ["Current analysis unavailable", "Compatibility and readiness are unknown."]
             }
@@ -270,7 +276,10 @@ final class EvidenceRenderingTests: XCTestCase {
             #endif
         }
         let text = labels.sorted().joined(separator: "\n")
-        XCTAssertTrue(settled, "The bounded native content scan did not settle: \(id)", file: file, line: line)
+        let missing = expected.filter { !text.contains($0) }
+        XCTAssertTrue(settled,
+            "The bounded native content scan did not settle: \(id); missing: \(missing); actual native text: \(text)",
+            file: file, line: line)
         XCTAssertFalse(text.isEmpty, "No actual native accessibility text was rendered: \(id)", file: file, line: line)
         for value in expected {
             XCTAssertTrue(text.contains(value), "\(id): missing \(value); actual native text: \(text)", file: file, line: line)

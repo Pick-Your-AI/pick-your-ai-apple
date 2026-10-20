@@ -162,13 +162,14 @@ class AuditedPackageScopeTests(unittest.TestCase):
     write = NativeScopeTests.write
     commit = NativeScopeTests.commit
     packages = ("PlannerCore", "PlannerData", "PlannerTransfer", "PlannerCatalog", "PlannerUI")
-    # The independent expected dependency matrix includes test targets.
+    # Independent expected matrix from package tests and the two jobs' actual
+    # EvidenceHarness commands, including PlannerUI's Core/Data/Transfer dependencies.
     affected = {
-        "PlannerCore": {"macos-core", "macos-transfer"},
-        "PlannerData": {"macos-storage", "macos-transfer", "native-ui"},
-        "PlannerTransfer": {"macos-transfer"},
+        "PlannerCore": {"macos-core", "macos-transfer", "native-ui"},
+        "PlannerData": {"macos-core", "macos-storage", "macos-transfer", "native-ui"},
+        "PlannerTransfer": {"macos-core", "macos-transfer", "native-ui"},
         "PlannerCatalog": {"macos-catalog-cache", "macos-transfer"},
-        "PlannerUI": {"native-ui"},
+        "PlannerUI": {"macos-core", "native-ui"},
     }
 
     def setUp(self):
@@ -263,7 +264,59 @@ class AuditedPackageScopeTests(unittest.TestCase):
                     self.commit()
                     self.assertTrue(self.decide("macos-transfer").native_required)
                     self.assertFalse(self.decide("macos-storage").native_required)
-                    self.assertFalse(self.decide("native-ui").native_required)
+                    self.assertEqual(self.decide("native-ui").native_required,
+                                     package == "PlannerCore")
+
+    def test_legacy_rendering_closures_with_refreshed_pins_are_rejected(self):
+        # Current workflows render the UI through EvidenceHarness. Refreshing
+        # only hashes must not resurrect the older package-only job closures.
+        original = json.dumps(self.audit)
+        for job, package in (("macos-core", "PlannerUI"),
+                             ("macos-core", "PlannerData"),
+                             ("native-ui", "PlannerCore")):
+            with self.subTest(job=job, package=package):
+                self.command("reset", "--hard", self.initial)
+                self.audit = json.loads(original)
+                self.audit["jobs"]["macos-core"].pop("Packages/PlannerUI", None)
+                self.audit["jobs"]["macos-core"].pop("Packages/PlannerData", None)
+                self.audit["jobs"]["native-ui"].pop("Packages/PlannerCore", None)
+                self.save_audit()
+                refreshed = self.commit()
+                self.change_package(package)
+                self.assertTrue(self.decide(job, refreshed).native_required)
+
+    def test_rendering_dependencies_include_added_and_deleted_resources(self):
+        for job, package in (("macos-core", "PlannerUI"),
+                             ("macos-core", "PlannerData"),
+                             ("native-ui", "PlannerCore"),
+                             ("macos-core", "PlannerTransfer"),
+                             ("native-ui", "PlannerTransfer")):
+            for action in ("add", "delete"):
+                with self.subTest(job=job, package=package, action=action):
+                    self.command("reset", "--hard", self.initial)
+                    if action == "add":
+                        self.write(f"Packages/{package}/Tests/Fixtures/rendering.json",
+                                   '{"synthetic": "rendering input"}\n')
+                    else:
+                        (self.repo / f"Packages/{package}/Tests/Fixtures/value.json").unlink()
+                    self.commit()
+                    self.assertTrue(self.decide(job).native_required)
+                    self.assertFalse(self.decide("macos-catalog-cache").native_required)
+
+    def test_legacy_rendering_closures_without_transfer_are_rejected(self):
+        # PlannerUI now links the Transfer product. An otherwise refreshed
+        # audit must not let its source skip either EvidenceHarness job.
+        original = json.dumps(self.audit)
+        for job in ("macos-core", "native-ui"):
+            with self.subTest(job=job):
+                self.command("reset", "--hard", self.initial)
+                self.audit = json.loads(original)
+                for renderer in ("macos-core", "native-ui"):
+                    self.audit["jobs"][renderer].pop("Packages/PlannerTransfer")
+                self.save_audit()
+                refreshed = self.commit()
+                self.change_package("PlannerTransfer")
+                self.assertTrue(self.decide(job, refreshed).native_required)
 
     def test_added_test_resource_is_part_of_entire_package_tree(self):
         self.write("Packages/PlannerCore/Tests/NewTests/extra.md", "Synthetic executable test input\n")

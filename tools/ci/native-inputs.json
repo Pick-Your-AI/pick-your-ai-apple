@@ -49,6 +49,21 @@
         "040000",
         "tree",
         "fc954521e1f3378f45c134ff50531c9ad78a954c"
+      ],
+      "Packages/PlannerData": [
+        "040000",
+        "tree",
+        "666417124a7b21b2a2779c9f281950b90cdfa033"
+      ],
+      "Packages/PlannerTransfer": [
+        "040000",
+        "tree",
+        "494b756c1dc90cfafc79e8cd4943cfddf6741476"
+      ],
+      "Packages/PlannerUI": [
+        "040000",
+        "tree",
+        "799df7059dc278cc3df7522013917e4d6bb72962"
       ]
     },
     "macos-storage": {
@@ -81,10 +96,20 @@
       ]
     },
     "native-ui": {
+      "Packages/PlannerCore": [
+        "040000",
+        "tree",
+        "fc954521e1f3378f45c134ff50531c9ad78a954c"
+      ],
       "Packages/PlannerData": [
         "040000",
         "tree",
         "666417124a7b21b2a2779c9f281950b90cdfa033"
+      ],
+      "Packages/PlannerTransfer": [
+        "040000",
+        "tree",
+        "494b756c1dc90cfafc79e8cd4943cfddf6741476"
       ],
       "Packages/PlannerUI": [
         "040000",
