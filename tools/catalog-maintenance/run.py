@@ -97,6 +97,20 @@ def same_json_value(left, right):
     return left == right
 
 
+def parse_producer_observation(raw):
+    def unique_members(pairs):
+        value = {}
+        for key, item in pairs:
+            require(key not in value, "duplicate producer JSON member")
+            value[key] = item
+        return value
+
+    def reject_constant(_constant):
+        raise QualificationError("nonstandard producer JSON constant")
+
+    return json.loads(raw, object_pairs_hook=unique_members, parse_constant=reject_constant)
+
+
 def qualify_history(mode, results, inputs):
     require(mode in ("portable", "native"), "known mode")
     require(len(results) == 3, "three original process phases")
@@ -231,7 +245,7 @@ def main():
                                         "stdout_sha256": digest(result.stdout), "stderr_sha256": digest(result.stderr)})
             require(source_hashes() == before, "source unchanged across original execution")
             require(result.returncode == 0, f"actual {phase} failed; retained original is not a pass")
-            value = json.loads(result.stdout)
+            value = parse_producer_observation(result.stdout)
             if phase == "exact-target":
                 qualify_target(value, args.mode)
             else:

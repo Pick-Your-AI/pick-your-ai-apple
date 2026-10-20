@@ -51,14 +51,26 @@ main-push events, macOS 15, Xcode 16.4/build 16F6 with Swift 6, and Python 3.12.
 It checks out immutable research commit `9db556b7fca485c8eb4396f9ee2ceeacdc119d79`
 for the canonical schemas, registry and seven pinned validation dependencies.
 It builds this executable with two jobs and explicitly runs all six original
-portable receipt tests, three native receipt tests and seven JSON-identity
-receipt tests before the four real native processes. Native specimens test
+portable receipt tests, three native receipt tests, seven JSON-identity
+receipt tests and nine producer-JSON tests before the four real native processes. Native specimens test
 receipt rejection, not native execution.
 The native controls include missing/duplicate cache pins, mixed releases,
 rewritten retained bytes, missing failure/cancellation/production-denial controls,
 and false currentness or synthetic status. Duplicate same-kind pins must not be
 collapsed into a seemingly complete pair. JSON receipt comparisons distinguish
 Booleans from numbers while preserving integral numeric equivalence.
+
+Producer stdout rejects duplicate decoded object members at every depth and the
+nonstandard constants `NaN`, `Infinity` and `-Infinity` before qualifying a phase.
+Escaped spellings of the same name and repeated equal values are duplicates;
+the same name in separate objects and distinct Unicode names remain valid.
+The original output budget, source and process checks still precede parsing.
+Within that budget, raw stdout/stderr and command hashes remain retained on
+rejection, later phases do not run, and full qualification stays false. The new
+failure reasons contain no member names or values. The nine entry-point tests
+mock fixture preflight and all producer responses; neither specimen mode is a
+Swift or native run. Existing valid-number/Boolean comparisons are unchanged;
+valid JSON exponent overflow is outside this correction's scope.
 
 The workflow always uploads the actual checkout/toolchain records, source and
 canonical-input archives, copied executable, build/dependency/test logs and any
