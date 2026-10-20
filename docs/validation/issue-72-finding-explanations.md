@@ -211,9 +211,9 @@ prepublication checkpoint; the delivering PR records their later disposition.
 
 | Literal #72 criterion | This change and remaining result |
 | --- | --- |
-| Every actionable finding explains the cause and a safe next step. | Existing producer message and supplied remediation remain inspectable; absent action is explicit. This does not establish that every real producer finding has an accepted cause or safe correction. |
-| Navigate from a failed/unknown finding to the exact participant setting using VoiceOver, keeping rule/evidence versions and a safe corrective action inspectable. | Exact ruleset, rule and participant identities are visible; existing evidence source versions remain intact. Actual setting resolution/navigation, VoiceOver and safe-action acceptance remain required in the owners' integrated route. |
-| Link the finding explanation and accessible correction journey with criterion results, exact versions, limitations and receiving disposition. | This record supplies the bounded source/fixture/local-validation link. The integrated accessible journey, actual native records and independent receiving disposition still have to be linked. |
+| Every actionable finding explains cause and a safe next step. | Existing producer message and supplied remediation remain inspectable; absent action is explicit. This does not establish that every real producer finding has an accepted cause or safe correction. |
+| Navigate from a failed or unknown finding to the exact participant setting using VoiceOver; keep rule/evidence version and safe corrective action inspectable. | Exact ruleset, rule and participant identities are visible; existing evidence source versions remain intact. Actual setting resolution/navigation, VoiceOver and safe-action acceptance remain required in the owners' integrated route. |
+| The finding explanation and accessible correction journey is linked with criterion results, exact versions, limitations and receiving-review disposition. | This record supplies the bounded source/fixture/local-validation link. The integrated accessible journey, actual native records and independent receiving disposition still have to be linked. |
 
 The issue remains open. A merged consumer slice does not close #72, accept its
 prerequisites, replace the existing editor/currentness owners or establish the
