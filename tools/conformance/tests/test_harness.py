@@ -118,7 +118,7 @@ class HarnessTests(unittest.TestCase):
 
     def test_output_cannot_replace_canonical_or_tool_inputs(self):
         with tempfile.TemporaryDirectory() as tmp:
-            directory = Path(tmp)
+            directory = Path(tmp).resolve()
             source, tool = directory / 'contracts', directory / 'tools'
             source.mkdir()
             tool.mkdir()
@@ -195,7 +195,7 @@ class HarnessTests(unittest.TestCase):
 
     def test_output_accepts_a_separate_directory_with_a_similar_name(self):
         with tempfile.TemporaryDirectory() as tmp:
-            directory = Path(tmp)
+            directory = Path(tmp).resolve()
             source, destination = directory / 'contracts', directory / 'contracts-receipts'
             source.mkdir()
             destination.mkdir()

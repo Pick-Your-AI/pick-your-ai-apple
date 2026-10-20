@@ -1,0 +1,89 @@
+{
+  "schema_version": "1.0.0",
+  "id": "catalog.fixture.maintenance.2",
+  "revision": 2,
+  "captured_at": "2026-10-17T09:00:00Z",
+  "items": [
+    {
+      "schema_version": "1.0.0",
+      "id": "cat.workload.fixture",
+      "kind": "workload",
+      "tier": "T0",
+      "name": "FICTIONAL Workload",
+      "version": "2026.10-demo",
+      "status": "active",
+      "billing_class": "included",
+      "spec": {
+        "workload_type": "agentic",
+        "modalities": [
+          "text"
+        ],
+        "concurrency": 2,
+        "requests_per_day": 200,
+        "avg_input_tokens": 700,
+        "avg_output_tokens": 400,
+        "data_classification": "internal"
+      },
+      "provenance": [
+        {
+          "checked_at": "2026-10-16T09:00:00Z",
+          "verification_status": "user_supplied",
+          "notes": "FICTIONAL TEST FIXTURE. Not vendor specification or commercial pricing."
+        }
+      ],
+      "updated_at": "2026-10-16T09:00:00Z"
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "cat.compute_profile.fixture",
+      "kind": "compute_profile",
+      "tier": "T2",
+      "name": "FICTIONAL corrected compute record",
+      "version": "2026.10-maintenance",
+      "status": "active",
+      "billing_class": "metered",
+      "spec": {
+        "hosting_ref": "cat.hosting_platform.fixture",
+        "accelerator_ref": "cat.accelerator.fixture",
+        "accelerator_count": 1,
+        "cpu_cores": 8,
+        "ram_gb": 64,
+        "disk_gb": 300,
+        "region": "us-east-fixture"
+      },
+      "provenance": [
+        {
+          "checked_at": "2026-10-16T09:00:00Z",
+          "verification_status": "user_supplied",
+          "notes": "FICTIONAL TEST FIXTURE. Not vendor specification or commercial pricing."
+        }
+      ],
+      "updated_at": "2026-10-17T09:00:00Z"
+    },
+    {
+      "schema_version": "1.0.0",
+      "id": "cat.storage.fixture",
+      "kind": "storage",
+      "tier": "T2",
+      "name": "FICTIONAL Storage",
+      "version": "2026.10-demo",
+      "status": "active",
+      "billing_class": "metered",
+      "spec": {
+        "storage_type": "object",
+        "hosting_ref": "cat.hosting_platform.fixture",
+        "region": "us-east-fixture",
+        "encryption_at_rest": true,
+        "max_capacity_gb": 2000
+      },
+      "provenance": [
+        {
+          "checked_at": "2026-10-16T09:00:00Z",
+          "verification_status": "user_supplied",
+          "notes": "FICTIONAL TEST FIXTURE. Not vendor specification or commercial pricing."
+        }
+      ],
+      "updated_at": "2026-10-16T09:00:00Z"
+    }
+  ]
+}

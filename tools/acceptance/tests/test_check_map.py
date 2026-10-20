@@ -245,6 +245,45 @@ class CheckMapCLITests(unittest.TestCase):
         self.assert_pass(self.run_check(), source=False)
         self.assert_pass(self.run_check(self.rows))
 
+    def test_numeric_checkbox_aliases_reject_and_literal_states_recover(self):
+        for marker, checked, aliases in ((' ', False, (0, 0.0)), ('x', True, (1, 1.0)), ('X', True, (1, 1.0))):
+            for alias in aliases:
+                for compare_source in (False, True):
+                    with self.subTest(marker=marker, alias=alias, type=type(alias).__name__, source=compare_source):
+                        data = copy.deepcopy(self.captured)
+                        record = data['issues'][0]
+                        record['acceptance_criteria_markdown'] = record['acceptance_criteria_markdown'].replace('- [ ]', f'- [{marker}]', 1)
+                        criterion = record['criteria'][0]
+                        criterion['source_checked'] = checked
+                        rows = [source_row(record)] + self.rows[1:]
+                        source = rows if compare_source else None
+                        self.map_path.write_text(json.dumps(data, ensure_ascii=False) + '\n')
+                        self.assert_pass(self.run_check(source), source=compare_source)
+
+                        criterion['source_checked'] = alias
+                        self.map_path.write_text(json.dumps(data, ensure_ascii=False) + '\n')
+                        self.assert_rejected(
+                            self.run_check(source), '#1: source checkbox states must be booleans',
+                        )
+
+                        criterion['source_checked'] = checked
+                        self.map_path.write_text(json.dumps(data, ensure_ascii=False) + '\n')
+                        self.assert_pass(self.run_check(source), source=compare_source)
+
+    def test_literal_checkbox_states_still_have_to_match_source_markdown(self):
+        for marker, checked in ((' ', False), ('x', True), ('X', True)):
+            for compare_source in (False, True):
+                with self.subTest(marker=marker, source=compare_source):
+                    data = copy.deepcopy(self.captured)
+                    record = data['issues'][0]
+                    record['acceptance_criteria_markdown'] = record['acceptance_criteria_markdown'].replace('- [ ]', f'- [{marker}]', 1)
+                    record['criteria'][0]['source_checked'] = not checked
+                    rows = [source_row(record)] + self.rows[1:]
+                    self.map_path.write_text(json.dumps(data, ensure_ascii=False) + '\n')
+                    self.assert_rejected(
+                        self.run_check(rows if compare_source else None), '#1: parsed criteria differ',
+                    )
+
 
 if __name__ == '__main__':
     unittest.main()
