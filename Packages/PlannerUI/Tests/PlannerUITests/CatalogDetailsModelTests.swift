@@ -187,4 +187,115 @@ final class CatalogDetailsModelTests: XCTestCase {
         XCTAssertNotEqual(CatalogDetailsIdentity(row), CatalogDetailsIdentity(CatalogBrowserRow(item: row.item, snapshot: changedPin)))
         XCTAssertNotEqual(CatalogDetailsIdentity(row), CatalogDetailsIdentity(CatalogBrowserRow(item: changedRow, snapshot: row.snapshot)))
     }
+
+    func testSheetIdentityUsesExactBytesForEveryStoredSelectionPart() {
+        let composed = "caf\u{00e9}"
+        let decomposed = "cafe\u{0301}"
+        XCTAssertEqual(composed, decomposed)
+        XCTAssertFalse(composed.utf8.elementsEqual(decomposed.utf8))
+        // These are identity-value controls, not schema-valid catalog records.
+        // Validated version/name responses are exercised by the model cases below.
+        func row(_ fields: [String], revision: Int = 1) -> CatalogBrowserRow {
+            CatalogBrowserRow(item: CatalogSearchEntry(id: fields[0], version: fields[1], kind: fields[2], title: fields[3]),
+                snapshot: ArtifactIdentity(schemaVersion: fields[4], id: fields[5], revision: revision, capturedAt: fields[6]))
+        }
+        let fields = Array(repeating: composed, count: 7)
+        let original = CatalogDetailsIdentity(row(fields))
+        let reconstructed = CatalogDetailsIdentity(row(fields.map { String(decoding: Array($0.utf8), as: UTF8.self) }))
+        XCTAssertEqual(original, reconstructed)
+        var identities: Set<CatalogDetailsIdentity> = [original, reconstructed]
+        var labels = [original: "original"]
+        XCTAssertEqual(labels[reconstructed], "original")
+        for index in fields.indices {
+            var changed = fields
+            changed[index] = decomposed
+            let candidate = CatalogDetailsIdentity(row(changed))
+            XCTAssertNotEqual(original, candidate, "Exact selection part \(index) must remain distinct")
+            XCTAssertTrue(identities.insert(candidate).inserted)
+            labels[candidate] = "part-\(index)"
+            XCTAssertEqual(labels[candidate], "part-\(index)")
+            XCTAssertEqual(labels[original], "original")
+        }
+        let nextRevision = CatalogDetailsIdentity(row(fields, revision: 2))
+        XCTAssertNotEqual(original, nextRevision)
+        XCTAssertTrue(identities.insert(nextRevision).inserted)
+        XCTAssertEqual(identities.count, 9)
+        XCTAssertEqual(labels.count, 8)
+        var left = fields; left[0] = "ab"; left[1] = "c"
+        var right = fields; right[0] = "a"; right[1] = "bc"
+        XCTAssertNotEqual(CatalogDetailsIdentity(row(left)), CatalogDetailsIdentity(row(right)))
+    }
+
+    func testEquivalentUnicodeVersionResponseIsRejectedBeforeExactPinRetry() async throws {
+        let (_, _, fixtureResult) = try await fixture()
+        let selected = try revised(fixtureResult) { $0["version"] = .string("release.caf\u{00e9}") }
+        let mismatched = try revised(fixtureResult) { $0["version"] = .string("release.cafe\u{0301}") }
+        XCTAssertEqual(selected.details.item.version, mismatched.details.item.version)
+        XCTAssertFalse(selected.details.item.version.utf8.elementsEqual(mismatched.details.item.version.utf8))
+        let item = selected.details.item
+        let row = CatalogBrowserRow(item: CatalogSearchEntry(id: item.id, version: item.version, kind: item.kind.rawValue, title: item.name),
+                                    snapshot: selected.snapshot)
+        let source = ControlledCatalogDetailsSource(selected)
+        await source.respond(.success(mismatched))
+        let model = CatalogDetailsModel(row: row, source: source)
+        model.loadIfNeeded(); await model.waitForCurrentRequest()
+        XCTAssertNil(model.result); XCTAssertTrue(model.unavailable); XCTAssertFalse(model.isLoading)
+        XCTAssertEqual(model.row, row)
+        let firstRequests = await source.requests
+        XCTAssertEqual(firstRequests, [row])
+        model.retry(); await model.waitForCurrentRequest()
+        XCTAssertEqual(model.result, selected)
+        XCTAssertTrue(try XCTUnwrap(model.result).details.item.version.utf8.elementsEqual(row.item.version.utf8))
+        XCTAssertFalse(model.unavailable); XCTAssertFalse(model.isLoading)
+        model.loadIfNeeded(); await model.waitForCurrentRequest()
+        let finalRequests = await source.requests
+        XCTAssertEqual(finalRequests, [row, row])
+        XCTAssertEqual(model.row, row)
+    }
+
+    func testEquivalentUnicodeNameResponseIsRejectedAndClosedRetryStaysRetired() async throws {
+        let (_, _, fixtureResult) = try await fixture()
+        let selected = try revised(fixtureResult) { $0["name"] = .string("FICTIONAL Caf\u{00e9}") }
+        let mismatched = try revised(fixtureResult) { $0["name"] = .string("FICTIONAL Cafe\u{0301}") }
+        XCTAssertEqual(selected.details.item.name, mismatched.details.item.name)
+        XCTAssertFalse(selected.details.item.name.utf8.elementsEqual(mismatched.details.item.name.utf8))
+        let item = selected.details.item
+        let row = CatalogBrowserRow(item: CatalogSearchEntry(id: item.id, version: item.version, kind: item.kind.rawValue, title: item.name),
+                                    snapshot: selected.snapshot)
+        let source = ControlledCatalogDetailsSource(selected)
+        await source.respond(.success(mismatched))
+        let retired = CatalogDetailsModel(row: row, source: source)
+        retired.loadIfNeeded(); await retired.waitForCurrentRequest()
+        XCTAssertNil(retired.result); XCTAssertTrue(retired.unavailable); XCTAssertFalse(retired.isLoading)
+        retired.close(); retired.retry(); retired.loadIfNeeded(); await retired.waitForCurrentRequest()
+        let retiredRequests = await source.requests
+        XCTAssertEqual(retiredRequests, [row])
+        XCTAssertNil(retired.result); XCTAssertFalse(retired.isLoading)
+        let current = CatalogDetailsModel(row: row, source: source)
+        current.loadIfNeeded(); await current.waitForCurrentRequest()
+        XCTAssertEqual(current.result, selected)
+        XCTAssertTrue(try XCTUnwrap(current.result).details.item.name.utf8.elementsEqual(row.item.title.utf8))
+        XCTAssertFalse(current.unavailable); XCTAssertFalse(current.isLoading)
+        let finalRequests = await source.requests
+        XCTAssertEqual(finalRequests, [row, row])
+        XCTAssertEqual(current.row, row)
+    }
+
+    func testResolvedItemIDAndKindMustMatchBeforeAnyDetailsArePublished() async throws {
+        let (_, row, resolved) = try await fixture()
+        let mismatched = [
+            CatalogSearchEntry(id: "cat.other", version: row.item.version, kind: row.item.kind, title: row.item.title),
+            CatalogSearchEntry(id: row.item.id, version: row.item.version, kind: "accelerator", title: row.item.title)
+        ]
+        for item in mismatched {
+            let selected = CatalogBrowserRow(item: item, snapshot: row.snapshot)
+            let source = ControlledCatalogDetailsSource(resolved)
+            let model = CatalogDetailsModel(row: selected, source: source)
+            model.loadIfNeeded(); await model.waitForCurrentRequest()
+            XCTAssertNil(model.result); XCTAssertTrue(model.unavailable); XCTAssertFalse(model.isLoading)
+            XCTAssertEqual(model.row, selected)
+            let requests = await source.requests
+            XCTAssertEqual(requests, [selected])
+        }
+    }
 }

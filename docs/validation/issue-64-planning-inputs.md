@@ -7,9 +7,11 @@ The reviewed #391 planning composition receives this exact reviewed donor
 `4632c72ad26b3d4500090316d107292994982457`. Its unchanged 228 UI methods and
 seven App journeys join the accepted nineteen historical-resource methods and
 six-method localized Evidence host. The [current requirements](../../App/README.md#current-receiving-source-and-required-validation)
-require 752 package declarations, including all 209 Transfer identities and three
-later [catalog row identity regressions](catalog-browser-row-identity.md). Those
-three additions retain all 228 earlier UI identities and every planning method.
+require 756 package declarations, including all 209 Transfer identities and seven
+later [catalog selection identity regressions](catalog-browser-row-identity.md).
+Those three browser and four details additions retain all 228 earlier UI identities
+and every planning method. The frozen row-only 231-method profile keeps its own
+original qualification and cannot qualify the expanded 235-method receiver.
 Accepted main `c512e99d9042669171cf418ddace3e3769fc854f` adds five Core
 receipt-identity methods to the published `086492dd` source. Its first signed
 preparation is `c81a2806e41608856d799d47a51c82ebcd7e42c4`; the current

@@ -965,6 +965,20 @@ PROFILES["catalog-row-identity-ui"] = (231, {
 })
 
 
+# The complete selection boundary additionally requires exact sheet identity and
+# hostile details-response controls. Keep the frozen row-only receiver intact.
+PROFILES["catalog-selection-identity-ui"] = (235, {
+    **PROFILES["catalog-row-identity-ui"][1],
+    "PlannerUITests.CatalogDetailsModelTests": (
+        *PROFILES["catalog-row-identity-ui"][1]["PlannerUITests.CatalogDetailsModelTests"],
+        "testSheetIdentityUsesExactBytesForEveryStoredSelectionPart",
+        "testEquivalentUnicodeVersionResponseIsRejectedBeforeExactPinRetry",
+        "testEquivalentUnicodeNameResponseIsRejectedAndClosedRetryStaysRetired",
+        "testResolvedItemIDAndKindMustMatchBeforeAnyDetailsArePublished",
+    ),
+})
+
+
 # Accepted historical-resource comparison adds nineteen exact Transfer identities.
 # Keep every earlier receiver unchanged for its original source.
 PROFILES['integrated-historical-resource-transfer'] = (209, {

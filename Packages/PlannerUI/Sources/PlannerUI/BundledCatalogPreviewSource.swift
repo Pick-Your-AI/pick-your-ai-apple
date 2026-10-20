@@ -47,10 +47,12 @@ public actor BundledCatalogPreviewSource: CatalogBrowsingSource, CatalogDetailSo
 
     func details(for row: CatalogBrowserRow) async throws -> CatalogPinnedDetails {
         let snapshot = try qualifiedSnapshot()
-        let matches = snapshot.items.filter { $0.id == row.item.id && $0.version == row.item.version }
+        let matches = snapshot.items.filter {
+            $0.id.utf8.elementsEqual(row.item.id.utf8) && $0.version.utf8.elementsEqual(row.item.version.utf8)
+        }
         guard row.snapshot == Self.identity(snapshot),
               matches.count == 1, let item = matches.first,
-              item.kind.rawValue == row.item.kind, item.name == row.item.title else {
+              CatalogSearchEntry(id: item.id, version: item.version, kind: item.kind.rawValue, title: item.name) == row.item else {
             throw CatalogSearchError.snapshotUnavailable
         }
         return try CatalogPinnedDetails(details: CatalogItemDetails(item: item),

@@ -18,10 +18,13 @@ protocol CatalogDetailSource: Sendable {
 /// A detail sheet must be recreated when any displayed item or catalog pin
 /// changes, including a release with the same item ID and version.
 struct CatalogDetailsIdentity: Hashable {
-    let parts: [String]
+    // Keep every field boundary and original spelling when SwiftUI keys its
+    // StateObject-owning sheet. Canonical String equivalence is not an exact pin.
+    let parts: [[UInt8]]
     init(_ row: CatalogBrowserRow) {
         parts = [row.item.id, row.item.version, row.item.kind, row.item.title,
                  row.snapshot.schemaVersion, row.snapshot.id, String(row.snapshot.revision), row.snapshot.capturedAt]
+            .map { Array($0.utf8) }
     }
 }
 
@@ -108,9 +111,10 @@ final class CatalogDetailsModel: ObservableObject {
                 let result = try await source.details(for: row)
                 guard let self, self.active, self.requestID == request, !Task.isCancelled else { return }
                 let item = result.details.item
+                let resolvedEntry = CatalogSearchEntry(id: item.id, version: item.version,
+                    kind: item.kind.rawValue, title: item.name)
                 guard result.snapshot == row.snapshot,
-                      item.id == row.item.id, item.version == row.item.version,
-                      item.kind.rawValue == row.item.kind, item.name == row.item.title,
+                      resolvedEntry == row.item,
                       result.sha256.range(of: #"\A[a-f0-9]{64}\z"#, options: .regularExpression) != nil else {
                     self.isLoading = false; self.unavailable = true; return
                 }
