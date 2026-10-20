@@ -110,8 +110,23 @@ fourth T6 journey exercises actual tab withdrawal, reopen and retained-input ret
 | `native-evidence-rendering` | All six accepted real macOS Evidence methods and strict receipt, including Gregorian capture dates and localized claim copy, Xcode 16.4, unchanged 20-minute job. |
 | `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 235 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
 | `native-cost-rendering` | Three real macOS Cost methods and their strict receipt, Xcode 16.4, separate 20-minute job. |
-| `native-ui-journey (iphone)` and `(ipad)` | All seven app journeys on each fresh pinned 18.5 destination, 24 runner controls, separate 20-minute jobs and unchanged 900-second inner test limit. |
+| `native-ui-journey (iphone)` and `(ipad)` | All seven app journeys on each fresh pinned 18.5 destination, 24 runner controls, separate 55-minute jobs and a bounded 2,700-second inner test limit. |
 | `native-ui` | Result-only aggregate requires successful scope and every selected job's success; only an audited false scope permits all native jobs to skip. |
+
+The original [iPad journey job 118384069059](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39347486216/job/118384069059)
+on prepared `5e111f687139dee1533f3d92f47e7a142df0df7a` timed out after 900 seconds.
+Its cold build and setup consumed approximately 379 seconds; only the first of
+seven selected methods began and none completed. Retained artifact `12236051485`
+(SHA-256 `46ca786235cb1f658e5355eae8fca14a59fdff07ee512221f00921f3883e07ec`)
+records the command timeout, incomplete result summary, failed acceptance and
+successful owned-simulator shutdown/deletion. This does not prove a product
+assertion failure. The 45-minute command allowance and 55-minute job limit leave
+bounded room for the full selection, cleanup and original-artifact retention;
+their sufficiency still requires completed native execution. All seven exact
+method identities, failure/skip rejection, ownership and cleanup checks remain.
+The separate [iPhone inventory timeout](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39347486216/job/118384069103)
+occurred at the existing 60-second simulator-discovery limit before a journey
+started; that limit and the failed original remain unchanged.
 
 Core retains every existing package, mutation, guard and Evidence-rendering step
 and adds the three Cost methods on each pinned simulator. Storage requires all 69
@@ -133,7 +148,8 @@ of those earlier inputs; they do not execute the added date method.
 
 The complete Core/native UI scope footprints include this UI package's Catalog
 and Transfer dependencies. The historical audit gains only the four corresponding
-existing package-tree values; no current skip authority or job deadline changes.
+existing package-tree values and supplies no current skip authority. The separate
+journey execution budget is qualified above.
 
 The exact method receiver rejects missing, duplicated, skipped or substituted
 methods and an older padded receipt. Its 17 portable controls and the exhaustive

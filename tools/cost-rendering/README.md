@@ -29,7 +29,9 @@ regression's USD 110 / USD 20 / USD 100 scenario. The host does not calculate ra
 reconcile canonical line totals or establish real rate applicability.
 
 The test reads actual native static-text labels and, on macOS, their string
-values. It checks each fixture identity and position before reading only the
+values. On macOS it also reads nonempty labels from native `Other` descendants, which
+include SwiftUI's combined amount, budget and missing-cost elements. It checks
+each fixture identity and position before reading only the
 production view's vertical viewport. The single vertical scroll owner avoids
 using an occluded outer horizontal viewport for gestures. The scan retains
 observed text across at most sixteen scrolls and requires two unchanged reads
@@ -103,6 +105,44 @@ The `.xcresult` path must not already exist; preserve earlier evidence when
 repeating a run. For iOS, use the existing workflow's exact destination selection
 and separate iPhone/iPad logs and result bundles.
 
+## Original failure and observation correction
+
+The original macOS [job 118384069043](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39347486216/job/118384069043)
+executed public source `6a7b164a1806659ae0f166f1589d367b289299ba` through
+prepared checkout `5e111f687139dee1533f3d92f47e7a142df0df7a`. All three native
+methods failed the bounded scan at their first state: `compact-exact`, `absent`
+and `rate-complete`. Later states in those methods were not reached.
+
+Retained artifact `12235535652`, `native-cost-rendering`, is 55,731,406 bytes with
+SHA-256 `b1c304a9971a1080acfbc31a598c71d4b370536a190e3418d6881181931bd7d3`.
+Its original accessibility snapshots place the following elements inside the
+verified `cost-harness-content` viewport:
+
+| State | Native accessibility observation omitted by the original static-text query |
+| --- | --- |
+| `compact-exact` | `Other` amount label contains the exact `USD 123456789012345678901234567890.123456789013`; `Other` budget label contains `Above estimated budget` and the exact `USD 123456789012345678901234567890.123456789012` limit. |
+| `absent` | `Other` budget label is `Budget status unknown, 30-day limit: USD 100, No matching cost estimate is available.` The separate `Amount unknown` remains static text. |
+| `rate-complete` | `Other` amount label is `Reported total, USD 110`; `Other` budget label is `Above estimated budget, 30-day limit: USD 100, The eligible 30-day estimate is above the limit.` |
+
+The [retained source and native hierarchy qualification](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6282480123)
+records the immutable artifact, native-log member, decoded block offsets and
+full-hierarchy hashes. Reading these actual `Other` labels corrects the
+observation boundary. Production view/source, expected text, exact-money
+matching, negative disclosures, fixture identity/position checks, scroll limit
+and stability requirement remain unchanged. Empty container labels are ignored;
+missing required content still fails the existing assertions.
+
+The same prepared `5e111f68` source subsequently passed all three cost methods
+on both selected iOS 18.5 simulators in [Core job 118384673222](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39347486203/job/118384673222).
+The [original console qualification](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6282583197)
+records the exact source, toolchain, destination identities and complete method
+starts/passes. The existing static-text collector therefore remains unchanged
+on iOS; the supplementary `Other` labels are read only on macOS.
+
+The correction requires its own completed native executions on the exact
+receiving source. The original three failures remain failures; inspecting their
+snapshots or parsing corrected Swift does not supply a replacement native pass.
+
 ## Receiving and acceptance boundary
 
 The source extends the reviewed cost integration preparation
@@ -110,7 +150,8 @@ The source extends the reviewed cost integration preparation
 whose receiving offer is recorded on
 [#198](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/198#issuecomment-6256489817).
 Its original cost component, snapshot context, call site and 133-method profile
-remain intact. This continuation has no native execution receipt yet.
+remain intact. The failed original and its observation correction are qualified
+above; passing native execution for the correction remains required.
 
 | Literal #78 criterion | Prepared evidence and remaining gate |
 | --- | --- |

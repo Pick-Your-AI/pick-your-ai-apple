@@ -30,7 +30,8 @@ PLANNING_TESTS = (
     "PlannerAppUITests/LocalDraftJourneyTests/testPlanningInputsPreserveUnansweredInvalidTextAndRestoredRevisions",
 )
 SUITES = {"local": TESTS, "t6": T6_TESTS, "all": TESTS + T6_TESTS + PLANNING_TESTS}
-TEST_TIMEOUT_SECONDS = 15 * 60
+# Allow the seven selected journeys to run after a fresh build; keep a finite bound.
+TEST_TIMEOUT_SECONDS = 45 * 60
 
 
 def select_devices(inventory):

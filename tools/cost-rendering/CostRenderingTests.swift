@@ -173,9 +173,20 @@ final class CostRenderingTests: XCTestCase {
         var unchanged = 0
         var settled = false
         for _ in 0..<16 {
-            let currentLabels = Set(try content.descendants(matching: .staticText).allElementsBoundByIndex.flatMap {
+            let staticLabels = Set(try content.descendants(matching: .staticText).allElementsBoundByIndex.flatMap {
                 try renderedStaticText($0, file: file, line: line)
             })
+            #if os(macOS)
+            // Combined SwiftUI accessibility elements expose their rendered
+            // amount, budget and missing-cost text as Other labels on macOS.
+            // Keep the query inside the verified production viewport; empty
+            // container labels cannot supply any expected content.
+            let combinedLabels = content.descendants(matching: .other).allElementsBoundByIndex
+                .map(\.label).filter { !$0.isEmpty }
+            let currentLabels = staticLabels.union(combinedLabels)
+            #else
+            let currentLabels = staticLabels
+            #endif
             labels.formUnion(currentLabels)
             unchanged = currentLabels == previous ? unchanged + 1 : 0
             previous = currentLabels

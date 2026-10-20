@@ -218,7 +218,8 @@ jobs:
     needs: scope
     if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
     runs-on: macos-15-intel
-    timeout-minutes: 20
+    # Leave cleanup and original-artifact retention time after the bounded runner.
+    timeout-minutes: 55
     strategy:
       fail-fast: false
       matrix:
