@@ -134,8 +134,21 @@ fourth T6 journey exercises actual tab withdrawal, reopen and retained-input ret
 | `native-evidence-rendering` | All six accepted real macOS Evidence methods and strict receipt, including Gregorian capture dates and localized claim copy, Xcode 16.4, unchanged 20-minute job. |
 | `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 235 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
 | `native-cost-rendering` | Three real macOS Cost methods and their strict receipt, Xcode 16.4, separate 20-minute job. |
-| `native-ui-journey (iphone)` and `(ipad)` | All seven app journeys on each fresh pinned 18.5 destination, 24 runner controls, separate 55-minute jobs and a bounded 2,700-second inner test limit. |
+| `native-ui-journey (iphone)` and `(ipad)` | All seven app journeys on each fresh pinned 18.5 destination, 29 runner controls, separate 55-minute jobs and a bounded 2,700-second inner test limit. |
 | `native-ui` | Result-only aggregate requires successful scope and every selected job's success; only an audited false scope permits all native jobs to skip. |
+
+The inventory runner retains evidence from the same single 60-second
+`xcrun simctl list --json` call before device selection. File-backed stderr,
+partial stdout and a structured attempt record preserve the original command
+failure even when secondary evidence or diagnostic I/O fails. A successful
+command still cannot proceed if required evidence retention fails. The five added
+portable controls make 29 runner controls; all 24 earlier methods remain exact.
+The [reviewed diagnostic source](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6284168303)
+and [close-error finding](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6284203858)
+retain their original observations. This change does not establish the cause of
+the CoreSimulator delay or turn either failed native original into a pass.
+All seven real journeys and existing ownership, selection and cleanup gates
+remain required; the inventory command, timeout and attempt count are unchanged.
 
 The original [iPad journey job 118384069059](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39347486216/job/118384069059)
 on prepared `5e111f687139dee1533f3d92f47e7a142df0df7a` timed out after 900 seconds.

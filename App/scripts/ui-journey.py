@@ -12,6 +12,7 @@ import re
 import shlex
 import subprocess
 import sys
+import time
 import uuid
 
 RUNTIME = "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
@@ -32,6 +33,64 @@ PLANNING_TESTS = (
 SUITES = {"local": TESTS, "t6": T6_TESTS, "all": TESTS + T6_TESTS + PLANNING_TESTS}
 # Allow the seven selected journeys to run after a fresh build; keep a finite bound.
 TEST_TIMEOUT_SECONDS = 45 * 60
+
+
+def report_inventory_evidence_error(message):
+    try:
+        print(message, file=sys.stderr)
+    except (OSError, ValueError):
+        # Closed streams also raise ValueError. Neither reporting failure may
+        # replace the original command failure.
+        pass
+
+
+def collect_inventory(evidence, requested_destination):
+    """Retain the single bounded inventory attempt before selecting any device."""
+    command = ["xcrun", "simctl", "list", "--json"]
+    attempt = {
+        "phase": "simulator-inventory-before-device-selection",
+        "command": command, "timeoutSeconds": 60,
+        "requestedRuntime": RUNTIME, "requestedDestination": requested_destination,
+        "simulatorCreatedByThisInvocation": False, "journeyStarted": False,
+        "stderrFile": "simulator-inventory.stderr.bin",
+    }
+    started = time.monotonic()
+    stderr = (evidence / attempt["stderrFile"]).open("wb")
+    returned = False
+    try:
+        inventory_text = subprocess.check_output(command, text=True, timeout=60, stderr=stderr)
+        returned = True
+    except (OSError, subprocess.SubprocessError) as error:
+        attempt.update(outcome="failed", durationSeconds=time.monotonic() - started,
+                       errorClass=type(error).__name__, error=str(error),
+                       exitCode=getattr(error, "returncode", None))
+        try:
+            # TimeoutExpired.output can be bytes even with text=True. Never
+            # decode away malformed or partial output from a failed command.
+            output = getattr(error, "output", None)
+            representation = "absent" if output is None else "bytes" if isinstance(output, bytes) else "text"
+            raw = b"" if output is None else output if isinstance(output, bytes) else output.encode("utf-8")
+            (evidence / "simulator-inventory.stdout.bin").write_bytes(raw)
+            attempt["stdout"] = {"file": "simulator-inventory.stdout.bin",
+                                 "representation": representation, "byteCount": len(raw)}
+            (evidence / "simulator-inventory-attempt.json").write_text(json.dumps(attempt, indent=2) + "\n")
+        except OSError as evidence_error:
+            report_inventory_evidence_error(f"Could not retain simulator inventory failure evidence: {evidence_error}")
+        # Evidence failure must not replace the original command failure.
+        raise
+    finally:
+        try:
+            stderr.close()
+        except OSError as close_error:
+            if returned:
+                raise
+            report_inventory_evidence_error(f"Could not close simulator inventory stderr evidence: {close_error}")
+    attempt.update(outcome="returned", durationSeconds=time.monotonic() - started,
+                   errorClass=None, exitCode=0,
+                   stdout={"file": "simulator-inventory.json", "representation": "text"})
+    (evidence / "simulator-inventory.json").write_text(inventory_text)
+    (evidence / "simulator-inventory-attempt.json").write_text(json.dumps(attempt, indent=2) + "\n")
+    return inventory_text
 
 
 def select_devices(inventory):
@@ -176,8 +235,7 @@ def main():
     evidence = args.evidence_directory.resolve()
     # Do not remove old bundles to make a repeated run appear new.
     evidence.mkdir(parents=True, exist_ok=False)
-    inventory_text = subprocess.check_output(["xcrun", "simctl", "list", "--json"], text=True, timeout=60)
-    (evidence / "simulator-inventory.json").write_text(inventory_text)
+    inventory_text = collect_inventory(evidence, args.destination)
     inventory = json.loads(inventory_text)
     selected = select_devices(inventory)
     if args.destination != "both":
