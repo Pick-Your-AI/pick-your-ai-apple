@@ -1033,6 +1033,77 @@ PROFILES['integrated-alternative-transfer'] = (226, {
 })
 
 
+# Current main integration adds exact dispatcher, conflict and summary identities.
+# Historical profiles and their original outputs retain their earlier source scope.
+PROFILES['integrated-dispatch-data'] = (84, {
+    **PROFILES['integrated-pending-data'][1],
+    'PlannerDataTests.PendingBuildWriteDispatcherTests': (
+        'testAdapterReceivesOnlyCommittedExactAttempt',
+        'testAttemptCommitFailureNeverInvokesAdapter',
+        'testConfirmedAttemptAllowsExplicitSameBuildSuccessor',
+        'testLostAcknowledgementStaysUncertainAcrossReopenWithoutResend',
+        'testCancellationBeforeAttemptLeavesPendingWithoutAdapterCall',
+        'testCancellationDuringAttemptCommitNeverInvokesAdapter',
+        'testCooperativeCancellationAfterHandoffRecordsUncertainty',
+        'testKnownConfirmationIsRecordedAfterTaskCancellation',
+        'testDeactivationDuringAdapterWaitRejectsOldOutcome',
+        'testSwitchAwayAndBackCannotReviveSuspendedAdapter',
+        'testConcurrentPerformOfSameOperationInvokesAdapterOnlyOnce',
+        'testHeldBuildBlocksItsSuccessorButNotAnotherBuild',
+        'testValidatedConflictKeepsIntentAndBlocksFollower',
+        'testValidatedInvalidKeepsIntentAndBlocksFollower',
+        'testOutcomeCommitFailurePropagatesWithoutResend',
+    ),
+})
+
+PROFILES['integrated-summary-transfer'] = (265, {
+    **PROFILES['integrated-alternative-transfer'][1],
+    'PlannerTransferTests.BuildConflictPreparationTests': (
+        'testSameRevisionDivergentEditsRetainBothCompleteSnapshots',
+        'testDifferencesKeepMissingNullArrayOrderAndEscapedPathsDistinct',
+        'testUnicodeKeysAndValuesUseExactUTF8InsteadOfCanonicalEquivalence',
+        'testIdenticalValuesHaveNoDifferencesAndRemainAvailable',
+        'testDifferentBuildAndExactOwnerIdentitiesRejectWithoutMutation',
+        'testExplicitKeepChoicesReturnUnmodifiedSnapshotsAndBothOriginals',
+        'testRevisionOrderingDoesNotSelectAWinnerOrRewriteTheChosenValue',
+        'testPreparationIsOneUseButBothInputsSurviveARequiredFreshRetry',
+        'testCancellationInvalidatesReviewAndRetainsTheCompletePair',
+        'testSupersededReviewCannotConsumeTheCurrentReview',
+        'testTokenCannotCrossSessionsWithIdenticalInputsAndContext',
+        'testChangedLocalValueRetiresReviewEvenIfTheOldValueReturns',
+        'testChangedIncomingValueRetiresReviewEvenIfTheOldValueReturns',
+        'testChangedContextAndAwayBackTransitionCannotReuseReview',
+        'testConcurrentPreparationProducesExactlyOneProposal',
+    ),
+    'PlannerTransferTests.BuildSummaryProjectionTests': (
+        'testChoicesPreserveOrderIdentityRolesDisabledSettingsAndLinks',
+        'testEmptySelectionsAreRejectedBeforeSummaryProjection',
+        'testDuplicateSelectionIdentityRejectsWithoutChangingFrozenAdmission',
+        'testEveryReportIdentityFieldMustMatchCapturedInputs',
+        'testUnknownFindingParticipantIsRejectedButOriginalReportSurvives',
+        'testCurrentReportRetainsAllStatementsWithoutRecomputingItsSummary',
+        'testRepeatedRuleFindingsStayDistinctOrderedRows',
+        'testAbsentEmptyWhitespaceAndVerbatimRemediationRemainDistinct',
+        'testEmptyReportedPassDoesNotInventAnOverallSuccessOrCorrection',
+        'testNonreadyReportWithoutFindingsRequiresInspectionNotAnInventedFix',
+        'testCurrentRecordedCostPreservesExactLongMoneyAndOriginalWarnings',
+        'testPartialRecordedZeroRemainsExplicitlyPartial',
+        'testUnknownCoverageWithholdsZeroAndNonzeroHeadlineAmounts',
+        'testCompleteWithUnpricedParticipantsWithholdsContradictoryTotal',
+        'testEveryNestedMixedCurrencyWithholdsAmountWithoutEditingRecord',
+        'testCostCannotBindToDifferentFullSnapshotWithSameWireIdentity',
+        'testAbsentPricebookCannotSupplyARequestOrHeadlineCost',
+        'testFreshPendingStatesExposeNoOldReportOrCost',
+        'testUnavailableReasonsRemainExplicitAndForeignIdentityStaysStale',
+        'testNewContextRetiresBothCurrentAndPendingSameRevisionInputs',
+        'testSameInputRetryUsesActualStoreGenerationAndWithholdsPreviousResult',
+        'testLatePreviousContextResponseCannotReplaceNewVisibleResult',
+        'testWrongCostResponseIdentityCannotBeCopiedFromTheRequest',
+        'testCurrentEvaluationAndCostRemainIndependentlyAvailable',
+    ),
+})
+
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

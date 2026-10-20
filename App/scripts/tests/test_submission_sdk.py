@@ -1057,5 +1057,88 @@ class SubmissionSDKTests(unittest.TestCase):
         self.assertEqual(json.loads(receipt.read_text()), json.loads(recovered.stdout))
 
 
+    def test_duplicate_json_sdk_members_fail_at_every_object_depth(self):
+        original = json.dumps(self.sdks)
+        cases = [
+            ("top-sdk-object", '{"sdkVersions": {"iphoneos": "18.5"},' + original[1:]),
+            ("deployment-floor", '{"minimumOSVersion": "12.0",' + original[1:]),
+            ("nested-device", original.replace('"iphoneos": "26.2"',
+                                              '"iphoneos": "18.5", "iphoneos": "26.2"')),
+            ("nested-simulator", original.replace('"iphonesimulator": "26.2"',
+                                                 '"iphonesimulator": "18.5", "iphonesimulator": "26.2"')),
+            ("nested-identical", original.replace('"iphoneos": "26.2"',
+                                                 '"iphoneos": "26.2", "iphoneos": "26.2"')),
+            ("nested-escaped", original.replace('"iphoneos": "26.2"',
+                                               '"iphoneos": "18.5", "\\u0069phoneos": "26.2"')),
+        ]
+        for name, data in cases:
+            with self.subTest(case=name):
+                self.sdk_file.write_text(data, encoding="utf-8")
+                with self.assertRaisesRegex(submission.toolchain.SetupError, "duplicate object key"):
+                    submission.load_sdk_pin(self.sdk_file)
+                self.assertEqual(self.sdk_file.read_text(encoding="utf-8"), data)
+        self.sdk_file.write_text(original, encoding="utf-8")
+        self.assertEqual(submission.load_sdk_pin(self.sdk_file), self.sdks)
+
+    def test_non_json_sdk_constants_cannot_be_hidden_by_later_members(self):
+        original = json.dumps(self.sdks)
+        for token in ("NaN", "Infinity", "-Infinity"):
+            for location, data in [
+                ("deployment", '{"minimumOSVersion": ' + token + ',' + original[1:]),
+                ("nested-sdk", original.replace('"iphoneos": "26.2"',
+                                               '"iphoneos": ' + token + ', "iphoneos": "26.2"')),
+            ]:
+                with self.subTest(token=token, location=location):
+                    self.sdk_file.write_text(data, encoding="utf-8")
+                    with self.assertRaisesRegex(submission.toolchain.SetupError, "non-JSON number"):
+                        submission.load_sdk_pin(self.sdk_file)
+                    self.assertEqual(self.sdk_file.read_text(encoding="utf-8"), data)
+        self.sdk_file.write_text(original, encoding="utf-8")
+        self.assertEqual(submission.load_sdk_pin(self.sdk_file), self.sdks)
+
+    def test_unique_escaped_sdk_keys_and_member_order_preserve_pin_values(self):
+        data = json.dumps(self.sdks, sort_keys=True, indent=2).replace('"iphoneos"', '"\\u0069phoneos"')
+        self.sdk_file.write_text(data, encoding="utf-8")
+        self.assertEqual(submission.load_sdk_pin(self.sdk_file), self.sdks)
+
+    def test_actual_cli_ambiguous_pins_invalidate_receipts_and_valid_retry_recovers(self):
+        xcode = self.xcode_file.read_text(encoding="utf-8")
+        sdks = self.sdk_file.read_text(encoding="utf-8")
+        cases = [
+            ("xcode-duplicate", self.xcode_file, '{"xcodeVersion": "99.9",' + xcode[1:]),
+            ("sdk-duplicate", self.sdk_file, sdks.replace('"iphoneos": "26.2"',
+                                                        '"iphoneos": "18.5", "iphoneos": "26.2"')),
+            ("xcode-nonfinite", self.xcode_file, '{"xcodeVersion": NaN,' + xcode[1:]),
+            ("sdk-nonfinite", self.sdk_file, '{"minimumOSVersion": Infinity,' + sdks[1:]),
+        ]
+        for sdk in submission.SDK_PLATFORMS:
+            app = self.write_product(self.product_info(sdk))
+            receipt = self.root / "evidence" / f"json-{sdk}.json"
+            arguments = ("inspect", "--sdk", sdk, "--app", app, "--output", receipt)
+            for name, pin, data in cases:
+                with self.subTest(sdk=sdk, case=name):
+                    accepted = self.run_cli(*arguments)
+                    self.assertEqual(accepted.returncode, 0, accepted.stderr)
+                    expected = json.loads(accepted.stdout)
+                    self.assertEqual(json.loads(receipt.read_text(encoding="utf-8")), expected)
+                    before = pin.read_bytes()
+                    pin.write_text(data, encoding="utf-8")
+                    try:
+                        rejected = self.run_cli(*arguments)
+                        self.assertEqual(rejected.returncode, 2, rejected.stdout + rejected.stderr)
+                        self.assertIn("Cannot read", rejected.stderr)
+                        self.assertIn("Restore", rejected.stderr)
+                        self.assertEqual(rejected.stdout, "")
+                        self.assertFalse(receipt.exists())
+                        self.assertEqual(pin.read_text(encoding="utf-8"), data)
+                    finally:
+                        pin.write_bytes(before)
+                    recovered = self.run_cli(*arguments)
+                    self.assertEqual(recovered.returncode, 0, recovered.stderr)
+                    self.assertEqual(json.loads(recovered.stdout), expected)
+                    self.assertEqual(json.loads(receipt.read_text(encoding="utf-8")), expected)
+                    self.assertEqual(list(receipt.parent.glob(".submission-sdk-*.tmp")), [])
+
+
 if __name__ == "__main__":
     unittest.main()

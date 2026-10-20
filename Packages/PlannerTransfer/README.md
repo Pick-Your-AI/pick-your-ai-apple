@@ -2,12 +2,29 @@
 
 This portable Swift 6 package implements part of Apple [#32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32), [#33](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/33), [#49](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/49), [#82](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/82) and [#102](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/102). It has no storage, network, credential or UI authority. A successful parse establishes schema validity only, never compatibility, ownership, deployment readiness or source-use rights.
 
-## Current imported-build and T6 receiving source
+## Current #391 receipt requirements
+
+Accepted main through `49bf4d59` adds the exact 15
+`BuildConflictPreparationTests` and 24 `BuildSummaryProjectionTests` methods to
+the retained 226-method source: **265 exact Transfer identities**. The
+`integrated-summary-transfer` profile requires the complete union once each with
+a passing result and the exact aggregate in the dedicated Transfer and
+submission-SDK jobs. All preceding profiles and original results retain their
+named source scopes; the older 181, 209 and 226 counts do not qualify this union.
+
+The two accepted helpers remain private-value preparation. They do not connect
+the native editor, perform remote writes, evaluate compatibility, establish a
+price, or complete #68/#90 receiving criteria. Their complete source boundaries
+are in [conflict preparation](BUILD_CONFLICT_PREPARATION.md) and the
+[summary-projection record](../../docs/validation/issue-68-summary-projection.md).
+No current local control or native execution is claimed by this source inventory.
+
+## Historical imported-build and T6 receiving source (2026-10-19)
 
 The [new integration record](../../docs/validation/imported-build-integration.md)
 identifies this separate preparation selected on 2026-10-19. It composes the
 reviewed catalog-envelope/reference boundary with retained catalog details,
-quality guidance and the private proposed-plan pair. The package currently
+quality guidance and the private proposed-plan pair. That preparation
 contains 181 XCTest methods; this is a required source inventory until an actual
 current-source native receipt qualifies it. Earlier counts and execution records
 below retain their named original sources.
@@ -34,7 +51,7 @@ The nine-phase generic reference verifier remains the selected 3,355-case,
 17-pin boundary. The independently pinned deployment-manifest entry adds 133
 reference cases and seven verifier controls in the same locked environment; it is
 not silently counted as a tenth generic phase or an eighteenth generic pin.
-Current Swift qualification must match all 181 exact class/method identities.
+That preparation's Swift qualification required all 181 exact class/method identities.
 Neither these declarations nor the earlier 141-method Transfer observation runs
 the expanded receiving source.
 
@@ -48,6 +65,7 @@ the expanded receiving source.
 - `Ruleset.decode(_:)` validates a whole frozen-v1 rules artifact, including every recursive expression and operand alternative. It preserves all declarations and literals without evaluating compatibility or accepting a policy.
 - `CatalogSnapshot.decode(_:)` validates a complete frozen-v1 catalog envelope and every item before returning an immutable snapshot. It preserves catalog identity, exact revision, capture timestamp and item order. A malformed envelope or item rejects the entire document; this boundary cannot activate a cache or publish a partial catalog.
 - `BuildTransfer.snapshot(fromDraftJSON:)` validates a complete frozen-v1 BuildSnapshot and returns an immutable value. Missing fields and fewer than two selections fail; no defaults, locks or synthetic values are inserted. Keep editor drafts in PlannerData even when this transition fails.
+- `BuildConflictPair` and `BuildConflictSession` prepare a private comparison and explicit keep proposal while retaining both complete supplied snapshots. The [local conflict preparation record](BUILD_CONFLICT_PREPARATION.md) keeps durable writes, service reconciliation and whole #90 acceptance separate.
 - `BuildTransfer.preview(_:)` accepts a bare snapshot or the existing web `pickyour.ai/build-export` version-1 envelope. Envelope provenance is untrusted metadata, not a verified catalog activation. `usesSyntheticData` is nil for bare imports; do not interpret that as production evidence.
 - `ImportPreview.fork(localOwner:timestamp:)` explicitly creates a new UUID-based build identity, revision 1 and draft lifecycle. Source owner is replaced by the caller's local identity. Every lock, selection and link is retained. This API cannot overwrite an existing record; the integration must insert the returned value as a new draft only after user confirmation.
 - `BuildTransfer.export(_:publicOwnerAlias:)` produces a bare frozen-v1 snapshot accepted by the web import boundary. The schema allowlist is enforced before and after projection. It removes notes, extensions and the original owner, requires an explicit public alias, and retains revision locks. The caller must obtain rights/confirmation for visible name, objectives and settings before sharing.

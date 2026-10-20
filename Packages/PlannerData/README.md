@@ -1,5 +1,22 @@
 # Transactional local drafts
 
+## Current #391 receipt requirements
+
+The composition receiving accepted main through `49bf4d59` preserves all 34
+DraftStore and 35 PendingBuildWriteStore methods and adds the 15 accepted
+PendingBuildWriteDispatcher methods: **84 exact Data identities**. The
+`integrated-dispatch-data` profile requires each once with a passing result and
+the exact aggregate in the host, compact iPhone, iPad and submission-SDK logs.
+Both native Storage command blocks retain the accepted 15-name dispatcher guards
+alongside the earlier draft/queue checks; their current aggregate is 84.
+
+The 69- and 81-method paragraphs below retain the earlier integration and donor
+cohorts. Every historical profile remains available for its original source, but
+neither padded output nor a prior original qualifies the 84-method union. This
+is a source and configured-receipt requirement; no new local or native execution
+is claimed here. Adapter outcome validation, remote effects and the whole #89
+acceptance remain separate from this local dispatcher.
+
 `PlannerData` is an executable Swift 6/SQLite local storage library for Apple #33,
 #69, #80 and #86. It is independent of the client-core changes in PR #133 and uses
 only Foundation and the platform SQLite library. iOS/iPadOS 17 and macOS 14 are
@@ -228,7 +245,7 @@ identities; this API never silently discards an intent to create space.
 ### Queue validation
 
 The accepted #382 source declared 35 queue methods alongside 31 draft methods.
-The current #391 composition retains its additional three prepared-duplicate draft
+The earlier #391 queue composition retained its additional three prepared-duplicate draft
 cases, requiring all **69** identities: 34 draft and 35 queue methods. A strict
 receiver checks that union in each macOS/iPhone/iPad storage log and the submission
 SDK log; an older receipt padded with unrelated successes cannot qualify it.
@@ -275,3 +292,29 @@ build or stale overwrite, with independent criterion-specific review. The named
 #46 and #86 outputs, guest/object authority, receipt retention/reconciliation,
 native app integration, physical-device behavior and operating activation retain
 their own owners and evidence gates.
+
+## Caller-supplied pending-write dispatch
+
+`PendingBuildWriteDispatcher` connects one stored intent to one caller-supplied asynchronous adapter invocation. The caller supplies an already active `PendingWriteSession` and calls `perform(operationID:session:using:)`; the helper does not activate a session, drain the queue, implement a network transport, or schedule retries.
+
+The dispatcher awaits the existing durable `beginAttempt` transition before handing the adapter that exact immutable `PendingWriteAttempt`. The body bytes, operation and build identifiers, idempotency key, precondition, partition and attempt identity are passed through without request reconstruction. A failed attempt commit propagates before the adapter can run. Concurrent dispatch of the same operation and a blocked same-build successor retain the store's existing rejection rules; an unrelated build can proceed.
+
+Cancellation and persistence have separate boundaries:
+
+- Cancellation observed before `beginAttempt` leaves the store unchanged and does not invoke the adapter.
+- Cancellation observed at the post-commit check, before adapter handoff, submits `.uncertain` to the store without invoking the adapter. There is no safe-abort transition back to pending.
+- Once the adapter has been invoked, an error, including cooperative cancellation, submits `.uncertain` to the store. The dispatcher never invokes that adapter again automatically.
+- A validated outcome returned by the adapter is retained even if the caller task is already cancelled. There is no later cancellation check that replaces a known outcome with uncertainty.
+- `recordOutcome` runs outside the adapter-error catch. A failed outcome commit propagates; it cannot trigger a second outcome write or be reported as an acknowledgement. An interrupted attempt retains the store's existing recovery-to-uncertain behavior.
+
+`PendingBuildWriteDispatchResult.recorded` reports that the store accepted and persisted the supplied outcome. `notRecorded` reports the store's rejected callback result, which can include retired, foreign or already consumed attempts; it is not remote confirmation. Explicit deactivation or a switch away and back still retires the old generation. Neither this result nor a bare HTTP status or current-head GET proves that a particular request committed.
+
+The adapter is responsible for validating any returned outcome against the exact attempt and the adopted service contract. It also owns actual request dispatch, credentials and cancellation. One adapter invocation is not a guarantee of one wire request or one remote effect. Retiring a session rejects a stale callback but cannot withdraw an immutable request already handed to an adapter; coordination of the final authority check and actual send remains the integrator's responsibility.
+
+An uncertain operation is not resent automatically, including after reopening the store. This helper introduces no operation-status endpoint, remote receipt store, idempotency retention or expiry policy, authentication, or shared service authority. Those service and activation requirements remain separate.
+
+`PendingBuildWriteDispatcherTests` declares 15 focused cases: exact committed-byte handoff; attempt and outcome commit failures; explicit confirmed successors; lost acknowledgement with reopen and no resend; cancellation before, during and after attempt creation; a known response after cancellation; retired and ABA callbacks; concurrent duplicate dispatch; per-build blocking; and validated conflict and invalid outcomes. The lost-acknowledgement fixture is a labelled synthetic observer, not a backend or a production idempotency implementation. Barriers control the asynchronous interleavings without sleeps.
+
+### Historical #425 donor validation cohort
+
+The existing 31 draft-store and 35 pending-write-store test methods remain unchanged. The Storage workflow requires all 15 dispatcher method names to report a pass and checks the 15-case class and 81-case aggregate for the macOS run and each configured compact iPhone and iPad run. Its existing replay commands, toolchain, simulator selection, named draft/queue guards and evidence retention remain intact. Source declarations and configured checks do not replace the corresponding original execution logs and result bundles.

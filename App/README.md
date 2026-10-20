@@ -32,13 +32,39 @@ The exact canonical editor `8e76d0ee` has an actual 71-model pass and complete
 Notes journey passes on both pinned simulators, with successful owned cleanup;
 see the [completed editor receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution).
 Its separate scope-cleanup failure remains recorded. The earlier 110 UI / 57
-Transfer composition is historical input. The current preparation requires all
+Transfer composition is historical input. That earlier preparation required all
 235 UI and 209 Transfer methods plus all seven complete journeys on each destination;
 none of those expanded results is inferred from the earlier editor run.
 
 ## Current receiving source and required validation
 
-### Current 2026-10-20 composition
+### Current accepted-main composition through #431
+
+This source preserves the reviewed iPad interaction correction at `a924668d`
+and receives accepted main `49bf4d59`: strict JSON pin admission (#432), local
+conflict preparation (#429), caller-supplied pending-write dispatch (#425), and
+immutable reported-summary projection (#431). All existing app interactions and
+their assertions, including the separate iPad correction, remain intact.
+
+The required package declarations are **151 Core, 84 Data, 265 Transfer,
+92 Catalog and 235 UI: 827 total**. Data is the prior 69 plus 15 exact dispatcher
+methods. Transfer is the prior 226 plus 15 exact conflict and 24 exact summary
+methods. Storage and submission SDK select `integrated-dispatch-data`; Transfer
+and submission SDK select `integrated-summary-transfer`. Each profile requires
+every named identity exactly once, a passing result, and the exact aggregate.
+All 25 preceding profiles remain unchanged for their historical source scopes.
+
+The three new package test files expand the receiver's direct source inputs from
+48 to **51**. The existing 17 portable receiver controls now require the exact
+84/265/235 source groups and reject every same-count identity substitution and
+padded preceding receipt. No prior 48-input execution qualifies those expanded
+controls. All seven App journeys on each configured destination, six Evidence
+methods and three Cost methods remain required. No local control or native run
+is claimed for this composition; its ordinary configured current-source jobs
+must supply their own results. Earlier counts and outputs below remain tied to
+the named source that actually produced them.
+
+### Historical 7f composition and its original boundaries
 
 The [current receiving record](../docs/validation/receiving-main7f-row-cost.md)
 joins reviewed donor `3476c279` (retaining exact row/details source `70c45be7`)

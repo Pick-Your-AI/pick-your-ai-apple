@@ -92,8 +92,8 @@ jobs:
       - name: Require complete integrated Data, Transfer and UI execution
         run: |
           set -euo pipefail
-          python3 tools/ci/require_swift_test_results.py integrated-pending-data .build/submission-evidence/PlannerData-tests.txt
-          python3 tools/ci/require_swift_test_results.py integrated-alternative-transfer .build/submission-evidence/PlannerTransfer-tests.txt
+          python3 tools/ci/require_swift_test_results.py integrated-dispatch-data .build/submission-evidence/PlannerData-tests.txt
+          python3 tools/ci/require_swift_test_results.py integrated-summary-transfer .build/submission-evidence/PlannerTransfer-tests.txt
           python3 tools/ci/require_swift_test_results.py catalog-selection-identity-ui .build/submission-evidence/PlannerUI-tests.txt
       - name: Build unsigned Release simulator product
         run: |

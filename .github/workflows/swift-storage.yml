@@ -58,7 +58,27 @@ jobs:
         run: |
           set -euo pipefail
           swift test --package-path Packages/PlannerData --scratch-path .build-storage -Xswiftc -warnings-as-errors 2>&1 | tee storage-tests.log
-          python3 tools/ci/require_swift_test_results.py integrated-pending-data storage-tests.log
+          for method in \
+            testAdapterReceivesOnlyCommittedExactAttempt \
+            testAttemptCommitFailureNeverInvokesAdapter \
+            testConfirmedAttemptAllowsExplicitSameBuildSuccessor \
+            testLostAcknowledgementStaysUncertainAcrossReopenWithoutResend \
+            testCancellationBeforeAttemptLeavesPendingWithoutAdapterCall \
+            testCancellationDuringAttemptCommitNeverInvokesAdapter \
+            testCooperativeCancellationAfterHandoffRecordsUncertainty \
+            testKnownConfirmationIsRecordedAfterTaskCancellation \
+            testDeactivationDuringAdapterWaitRejectsOldOutcome \
+            testSwitchAwayAndBackCannotReviveSuspendedAdapter \
+            testConcurrentPerformOfSameOperationInvokesAdapterOnlyOnce \
+            testHeldBuildBlocksItsSuccessorButNotAnotherBuild \
+            testValidatedConflictKeepsIntentAndBlocksFollower \
+            testValidatedInvalidKeepsIntentAndBlocksFollower \
+            testOutcomeCommitFailurePropagatesWithoutResend; do
+            grep -E "Test Case .*PendingBuildWriteDispatcherTests.*${method}([^[:alnum:]_]).* passed" "$GITHUB_WORKSPACE/storage-tests.log"
+          done
+          grep -E 'Executed 15 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-tests.log"
+          grep -E 'Executed 84 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-tests.log"
+          python3 tools/ci/require_swift_test_results.py integrated-dispatch-data storage-tests.log
       - name: Test pending-write replay guards
         run: |
           set -euo pipefail
@@ -113,8 +133,27 @@ jobs:
             grep -E 'Test Case .*PendingBuildWriteStoreTests.*testFailedActivationCommitPreservesGenerationAndAttempt.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Test Case .*PendingBuildWriteStoreTests.*testActualSQLiteFullRetainsQueueThenUnconstrainedReopenRecovers.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Executed 35 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
-            grep -E 'Executed 69 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
-            python3 "$GITHUB_WORKSPACE/tools/ci/require_swift_test_results.py" integrated-pending-data "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            for method in \
+              testAdapterReceivesOnlyCommittedExactAttempt \
+              testAttemptCommitFailureNeverInvokesAdapter \
+              testConfirmedAttemptAllowsExplicitSameBuildSuccessor \
+              testLostAcknowledgementStaysUncertainAcrossReopenWithoutResend \
+              testCancellationBeforeAttemptLeavesPendingWithoutAdapterCall \
+              testCancellationDuringAttemptCommitNeverInvokesAdapter \
+              testCooperativeCancellationAfterHandoffRecordsUncertainty \
+              testKnownConfirmationIsRecordedAfterTaskCancellation \
+              testDeactivationDuringAdapterWaitRejectsOldOutcome \
+              testSwitchAwayAndBackCannotReviveSuspendedAdapter \
+              testConcurrentPerformOfSameOperationInvokesAdapterOnlyOnce \
+              testHeldBuildBlocksItsSuccessorButNotAnotherBuild \
+              testValidatedConflictKeepsIntentAndBlocksFollower \
+              testValidatedInvalidKeepsIntentAndBlocksFollower \
+              testOutcomeCommitFailurePropagatesWithoutResend; do
+              grep -E "Test Case .*PendingBuildWriteDispatcherTests.*${method}([^[:alnum:]_]).* passed" "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            done
+            grep -E 'Executed 15 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Executed 84 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            python3 "$GITHUB_WORKSPACE/tools/ci/require_swift_test_results.py" integrated-dispatch-data "$GITHUB_WORKSPACE/storage-$label-tests.log"
           done < "$GITHUB_WORKSPACE/storage-simulator-selection.tsv"
       - name: Retain storage evidence
         if: always()

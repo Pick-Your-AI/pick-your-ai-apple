@@ -149,8 +149,8 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
 
     def test_integrated_profiles_match_every_current_source_method(self):
         root = Path(__file__).resolve().parents[3]
-        for package, profile, count in (("PlannerData", "integrated-pending-data", 69),
-                                        ("PlannerTransfer", "integrated-alternative-transfer", 226),
+        for package, profile, count in (("PlannerData", "integrated-dispatch-data", 84),
+                                        ("PlannerTransfer", "integrated-summary-transfer", 265),
                                         ("PlannerUI", "catalog-selection-identity-ui", 235)):
             expected, groups = gate.PROFILES[profile]
             actual = set()
@@ -173,7 +173,8 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                         "integrated-alternative-transfer",
                         "integrated-retained-ui",
                         "planning-inputs-ui", "planning-inputs-descriptor-ui", "catalog-row-identity-ui",
-                        "catalog-selection-identity-ui"):
+                        "catalog-selection-identity-ui",
+                        "integrated-dispatch-data", "integrated-summary-transfer"):
             text = self.profile_log(profile)
             self.assertEqual(self.run_profile(profile, text), 0)
             for suite, names in gate.PROFILES[profile][1].items():
@@ -194,7 +195,9 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                              ("integrated-retained-ui", "planning-inputs-descriptor-ui"),
                              ("planning-inputs-ui", "planning-inputs-descriptor-ui"),
                              ("planning-inputs-descriptor-ui", "catalog-row-identity-ui"),
-                             ("catalog-row-identity-ui", "catalog-selection-identity-ui")):
+                             ("catalog-row-identity-ui", "catalog-selection-identity-ui"),
+                             ("integrated-pending-data", "integrated-dispatch-data"),
+                             ("integrated-alternative-transfer", "integrated-summary-transfer")):
             padded = self.profile_log(old, total=gate.PROFILES[current][0])
             with self.subTest(profile=current), self.assertRaises(SystemExit):
                 self.run_profile(current, padded)
