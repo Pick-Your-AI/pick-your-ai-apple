@@ -56,7 +56,8 @@ final class BuildDependencyGraphInputTests: XCTestCase, @unchecked Sendable {
     }
 
     func testDifferentGraphRevisionsAreUnavailableWithoutNarrowing() throws {
-        for revision in [Decimal(2), try XCTUnwrap(Decimal(string: "9007199254740993"))] {
+        // The trailing zero keeps this admitted large integer within 15 significant digits.
+        for revision in [Decimal(2), try XCTUnwrap(Decimal(string: "9007199254740990"))] {
             let other = try build(graphRevision: revision)
             XCTAssertEqual(other.locks.object?["dependency_graph_revision"], .number(revision))
             let before = try other.encoded()
@@ -64,6 +65,10 @@ final class BuildDependencyGraphInputTests: XCTestCase, @unchecked Sendable {
                 XCTAssertEqual($0 as? BuildDependencyGraphInputError, .graphLockMismatch)
             }
             XCTAssertEqual(try other.encoded(), before)
+        }
+        let outsideNumericDomain = try XCTUnwrap(Decimal(string: "9007199254740993"))
+        XCTAssertThrowsError(try build(graphRevision: outsideNumericDomain)) {
+            XCTAssertEqual($0 as? TransferError, .unsupportedNumber)
         }
     }
 
