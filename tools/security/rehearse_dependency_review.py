@@ -37,6 +37,12 @@ def prepared_output(path: Path | None):
     source_root = Path(__file__).resolve(strict=True).parents[2]
     if resolved_parent.is_relative_to(source_root):
         raise InvalidOutput("Receipt output must be outside the source checkout.")
+    # Different path spellings can name the same source directory on a
+    # case-insensitive filesystem. Check physical ancestry before any unlink.
+    protected = source_root.stat()
+    for directory in (resolved_parent, *resolved_parent.parents):
+        if os.path.samestat(directory.stat(), protected):
+            raise InvalidOutput("Receipt output must be outside the source checkout.")
     resolved = resolved_parent.stat()
     parent_fd = os.open(path.parent, os.O_RDONLY | os.O_DIRECTORY | os.O_CLOEXEC)
     try:

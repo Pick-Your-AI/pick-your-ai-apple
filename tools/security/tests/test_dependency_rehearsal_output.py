@@ -1,4 +1,7 @@
 """Actual-CLI output ownership and failed-attempt regressions for the drill."""
+from contextlib import redirect_stderr, redirect_stdout
+import importlib.util
+import io
 import json
 import os
 from pathlib import Path
@@ -6,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 
 
 SECURITY = Path(__file__).resolve().parents[1]
@@ -120,6 +124,87 @@ class DependencyRehearsalOutputTests(unittest.TestCase):
         result = self.run_cli(protected / self.guard.name)
         self.assertEqual(result.returncode, 1)
         self.assertEqual(self.guard.read_bytes(), self.guard_bytes)
+
+    def test_cli_case_variants_follow_observed_directory_identity(self):
+        variant = self.directory / "CoPiEd-ChEcKoUt"
+        aliases = variant.exists() and os.path.samestat(variant.stat(), self.checkout.stat())
+        if not aliases:
+            variant.mkdir()
+        for relative in (Path("synthetic-receipt.json"),
+                         Path("tools/security") / self.script.name):
+            with self.subTest(destination=str(relative), same_directory=aliases):
+                output = variant / relative
+                output.parent.mkdir(parents=True, exist_ok=True)
+                if not output.exists():
+                    output.write_bytes(b'Preserve this only for a protected source directory.\n')
+                contents = output.read_bytes()
+                before = output.lstat()
+                result = self.run_cli(output)
+                if aliases:
+                    self.assertEqual(result.returncode, 1, result.stdout + result.stderr)
+                    self.assertEqual(result.stdout, "")
+                    self.assertIn("outside the source checkout", result.stderr)
+                    self.assertEqual(output.read_bytes(), contents)
+                    after = output.lstat()
+                    self.assertEqual((after.st_dev, after.st_ino, after.st_mode, after.st_nlink),
+                                     (before.st_dev, before.st_ino, before.st_mode, before.st_nlink))
+                    self.assertEqual(self.script.read_bytes(), self.script_bytes)
+                    self.assertEqual(self.guard.read_bytes(), self.guard_bytes)
+                else:
+                    self.assert_success(result, output)
+        print("Dependency output: observed " +
+              ("same-directory case alias" if aliases else "distinct case directories"))
+
+    def test_modeled_case_alias_cannot_replace_source_wrapper(self):
+        # Model just one case-insensitive OS lookup on any host. The actual CLI
+        # case above reports the host's observed behavior separately. Resolution,
+        # main(), output publication and any guard children remain real.
+        spec = importlib.util.spec_from_file_location("dependency_rehearsal_case_alias", self.script)
+        rehearsal = importlib.util.module_from_spec(spec)
+        with patch.object(sys, "dont_write_bytecode", True):
+            spec.loader.exec_module(rehearsal)
+        alias = self.directory / "CoPiEd-ChEcKoUt"
+        alias_prefix, actual_prefix = str(alias), str(self.checkout)
+        original_stat, original_lstat, original_open = os.stat, os.lstat, os.open
+
+        def translated(value):
+            if isinstance(value, int):
+                return value
+            spelling = os.fspath(value)
+            if isinstance(spelling, str) and (
+                    spelling == alias_prefix or spelling.startswith(alias_prefix + "/")):
+                return actual_prefix + spelling[len(alias_prefix):]
+            return value
+
+        def lookup_stat(value, *args, **kwargs):
+            return original_stat(translated(value), *args, **kwargs)
+
+        def lookup_lstat(value, *args, **kwargs):
+            return original_lstat(translated(value), *args, **kwargs)
+
+        def lookup_open(value, *args, **kwargs):
+            return original_open(translated(value), *args, **kwargs)
+
+        output = alias / "tools/security" / self.script.name
+        before = self.script.lstat()
+        stdout, stderr = io.StringIO(), io.StringIO()
+        with patch.object(os, "stat", lookup_stat), patch.object(os, "lstat", lookup_lstat), \
+                patch.object(os, "open", lookup_open), \
+                patch.object(sys, "argv", [str(self.script), "--output", str(output)]), \
+                redirect_stdout(stdout), redirect_stderr(stderr):
+            resolved = output.parent.resolve(strict=True)
+            source = Path(rehearsal.__file__).resolve(strict=True).parents[2]
+            self.assertFalse(resolved.is_relative_to(source))
+            self.assertTrue(os.path.samestat(resolved.stat(), self.security.stat()))
+            status = rehearsal.main()
+        self.assertEqual(status, 1, stdout.getvalue() + stderr.getvalue())
+        self.assertEqual(stdout.getvalue(), "")
+        self.assertIn("outside the source checkout", stderr.getvalue())
+        self.assertEqual(self.script.read_bytes(), self.script_bytes)
+        self.assertEqual(self.guard.read_bytes(), self.guard_bytes)
+        after = self.script.lstat()
+        self.assertEqual((after.st_dev, after.st_ino, after.st_mode, after.st_nlink),
+                         (before.st_dev, before.st_ino, before.st_mode, before.st_nlink))
 
     def test_untraversable_parents_and_loops_preserve_unrelated_receipts(self):
         sentinel = self.outside / "receipt.json"
