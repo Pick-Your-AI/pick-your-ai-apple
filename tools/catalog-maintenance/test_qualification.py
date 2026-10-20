@@ -1,10 +1,16 @@
 """Negative receipt controls. These synthetic specimens are not Swift execution."""
 import base64
 import copy
+from contextlib import nullcontext, redirect_stdout
 import importlib.util
+import io
 import json
 from pathlib import Path
+import subprocess
+import sys
+import tempfile
 import unittest
+from unittest.mock import patch
 
 HERE = Path(__file__).resolve().parent
 SPEC = importlib.util.spec_from_file_location("maintenance_driver", HERE / "run.py")
@@ -277,6 +283,188 @@ class JSONIdentityQualificationTests(unittest.TestCase):
                                 phase["catalog_cache"]["retained"]["manifest"]["pins"][0]["identity"]["revision"] = invalid
                         with self.assertRaises(DRIVER.QualificationError):
                             DRIVER.qualify_history(mode, json.loads(json.dumps(results)), inputs)
+
+
+class ProducerJSONQualificationTests(unittest.TestCase):
+    """Actual driver entry point with synthetic responses, never Swift execution."""
+
+    def exercise(self, mode, change=None, *, returncode=0, timed_out=False, source_changed=False):
+        phases, inputs = native_specimen() if mode == "native" else specimen()
+        phases.append({"format": 1, "classification": "synthetic-only", "status": "passed",
+                       "phase": "exact-target", "mode": mode, "target_version_utf8": [195, 169],
+                       "other_version_utf8": [101, 204, 129], "observed": {"review_requirement": "none"}})
+        responses = {value["phase"]: json.dumps(value, separators=(",", ":")).encode()
+                     for value in phases}
+        if change is not None:
+            change(responses)
+        stderr = b"synthetic process diagnostic\n"
+        calls = []
+
+        def observe(command, **kwargs):
+            calls.append(command)
+            self.assertEqual(kwargs, {"capture_output": True, "timeout": 40, "check": False})
+            raw = responses[command[2]]
+            if timed_out:
+                raise subprocess.TimeoutExpired(command, 40, output=raw, stderr=stderr)
+            return subprocess.CompletedProcess(command, returncode, raw, stderr)
+
+        source_guard = nullcontext()
+        if source_changed:
+            before = DRIVER.source_hashes()
+            after = dict(before, synthetic_changed_source="different")
+            source_guard = patch.object(DRIVER, "source_hashes", side_effect=[before, after, after])
+        with tempfile.TemporaryDirectory(prefix="maintenance-parser-test-") as temporary:
+            output = Path(temporary) / "observations"
+            argv = ["run.py", "--contracts", temporary, "--executable", sys.executable,
+                    "--mode", mode, "--output", str(output)]
+            # Only the canonical fixture preflight and process responses are replaced.
+            # The actual driver retains/qualifies bytes and checks its source inventory.
+            with patch.object(DRIVER, "fixtures", return_value=inputs), \
+                    patch.object(DRIVER.subprocess, "run", side_effect=observe), \
+                    patch.object(sys, "argv", argv), source_guard, redirect_stdout(io.StringIO()):
+                result = DRIVER.main()
+            receipt = json.loads((output / "receipt.json").read_bytes())
+            retained = {path.name: path.read_bytes() for path in output.iterdir() if path.is_file()}
+        return {"exit": result, "receipt": receipt, "retained": retained,
+                "responses": responses, "calls": calls, "stderr": stderr}
+
+    def rejected_at(self, observed, phase, reason):
+        self.assertEqual(observed["exit"], 1)
+        receipt = observed["receipt"]
+        self.assertEqual(receipt["status"], "failed")
+        self.assertEqual(receipt["failure"], reason)
+        self.assertIs(receipt["full_rehearsal_qualified"], False)
+        expected = list(DRIVER.PHASES[:DRIVER.PHASES.index(phase) + 1])
+        self.assertEqual([command[2] for command in observed["calls"]], expected)
+        self.assertEqual([entry["argv"][2] for entry in receipt["commands"]], expected)
+        self.assertEqual(receipt["source_inputs"], receipt["source_after"])
+        raw = observed["responses"][phase]
+        self.assertEqual(observed["retained"][phase + ".stdout.json"], raw)
+        self.assertEqual(observed["retained"][phase + ".stderr.log"], observed["stderr"])
+        self.assertEqual(receipt["commands"][-1]["stdout_sha256"], DRIVER.digest(raw))
+        self.assertEqual(receipt["commands"][-1]["stderr_sha256"], DRIVER.digest(observed["stderr"]))
+
+    def test_duplicate_status_is_rejected_in_every_original_phase(self):
+        for mode in ("portable", "native"):
+            for phase in DRIVER.PHASES:
+                with self.subTest(mode=mode, phase=phase):
+                    def change(responses):
+                        responses[phase] = responses[phase].replace(
+                            b'"status":"passed"', b'"status":"failed","status":"passed"', 1)
+                    self.rejected_at(self.exercise(mode, change), phase, "duplicate producer JSON member")
+
+    def test_nested_history_and_cache_identity_duplicates_are_rejected(self):
+        for mode in ("portable", "native"):
+            replacements = [(b'"history":[{', b'"history":[{"analysis_is_current":true,')]
+            if mode == "native":
+                replacements.append((b'"identity":{', b'"identity":{"revision":true,'))
+            for before, after in replacements:
+                with self.subTest(mode=mode, nested=before):
+                    def change(responses):
+                        self.assertIn(before, responses["reopen"])
+                        responses["reopen"] = responses["reopen"].replace(before, after, 1)
+                    self.rejected_at(self.exercise(mode, change), "reopen", "duplicate producer JSON member")
+
+    def test_escaped_names_and_equal_duplicate_values_are_rejected(self):
+        for mode in ("portable", "native"):
+            for first in (b'"sta\\u0074us":"failed",', b'"status":"passed",'):
+                with self.subTest(mode=mode, first=first):
+                    def change(responses):
+                        responses["seed"] = responses["seed"].replace(
+                            b'"status":"passed"', first + b'"status":"passed"', 1)
+                    self.rejected_at(self.exercise(mode, change), "seed", "duplicate producer JSON member")
+
+    def test_ignored_deep_duplicates_fail_with_value_free_diagnostics(self):
+        for mode in ("portable", "native"):
+            with self.subTest(mode=mode):
+                def change(responses):
+                    responses["seed"] = responses["seed"][:-1] + (
+                        b',"extra":{"items":[{"private-fixture-marker":1,"private-fixture-marker":2}]}}')
+                observed = self.exercise(mode, change)
+                self.rejected_at(observed, "seed", "duplicate producer JSON member")
+                self.assertIsNone(observed["receipt"]["history_qualification"])
+                self.assertNotIn("private-fixture-marker", observed["receipt"]["failure"])
+
+    def test_nonstandard_constants_in_ignored_nested_fields_are_rejected(self):
+        for mode in ("portable", "native"):
+            for constant in (b"NaN", b"Infinity", b"-Infinity"):
+                with self.subTest(mode=mode, constant=constant):
+                    def change(responses):
+                        responses["exact-target"] = responses["exact-target"][:-1] + (
+                            b',"extra":{"items":[' + constant + b']}}')
+                    self.rejected_at(self.exercise(mode, change), "exact-target",
+                                     "nonstandard producer JSON constant")
+
+    def test_valid_distinct_names_strings_and_numeric_identity_still_qualify(self):
+        for mode in ("portable", "native"):
+            with self.subTest(mode=mode):
+                def change(responses):
+                    for phase, raw in responses.items():
+                        value = json.loads(raw)
+                        value["format"] = 1.0
+                        value["extra"] = {"first": {"same": 1}, "second": {"same": 2},
+                                          "\u00e9": True, "e\u0301": False,
+                                          "text": 'NaN Infinity -Infinity "status":"failed","status":"passed"'}
+                        responses[phase] = json.dumps(value, separators=(",", ":")).encode()
+                observed = self.exercise(mode, change)
+                self.assertEqual(observed["exit"], 0)
+                receipt = observed["receipt"]
+                self.assertEqual(receipt["status"], "passed")
+                self.assertEqual([entry["argv"][2] for entry in receipt["commands"]], list(DRIVER.PHASES))
+                self.assertEqual(receipt["source_inputs"], receipt["source_after"])
+                # This flag is asserted only for a mocked native specimen, not host evidence.
+                self.assertIs(receipt["full_rehearsal_qualified"], mode == "native")
+                self.assertFalse(receipt["history_qualification"]["physical_device"])
+                for phase in DRIVER.PHASES:
+                    self.assertEqual(observed["retained"][phase + ".stdout.json"], observed["responses"][phase])
+                    self.assertEqual(observed["retained"][phase + ".stderr.log"], observed["stderr"])
+
+    def test_ordinary_failed_and_malformed_observations_remain_rejected(self):
+        for mode in ("portable", "native"):
+            for scenario in ("failed", "malformed", "second-document"):
+                with self.subTest(mode=mode, scenario=scenario):
+                    def change(responses):
+                        if scenario == "failed":
+                            responses["seed"] = responses["seed"].replace(b'"status":"passed"', b'"status":"failed"', 1)
+                        else:
+                            responses["seed"] = b'{' if scenario == "malformed" else responses["seed"] + b'{}'
+                    observed = self.exercise(mode, change)
+                    self.assertEqual(observed["exit"], 1)
+                    self.assertEqual(observed["receipt"]["status"], "failed")
+                    self.assertIs(observed["receipt"]["full_rehearsal_qualified"], False)
+                    self.assertEqual(len(observed["calls"]), 3 if scenario == "failed" else 1)
+                    self.assertEqual(observed["retained"]["seed.stdout.json"], observed["responses"]["seed"])
+
+    def test_output_budget_failed_exit_and_timeout_still_precede_json_admission(self):
+        for scenario in ("budget", "exit", "timeout"):
+            with self.subTest(scenario=scenario):
+                def change(responses):
+                    responses["seed"] = (b"x" * 1_048_577 if scenario == "budget"
+                                         else b'{"status":"failed","status":"passed"}')
+                observed = self.exercise("portable", change, returncode=3 if scenario == "exit" else 0,
+                                         timed_out=scenario == "timeout")
+                self.assertEqual(observed["exit"], 1)
+                self.assertIs(observed["receipt"]["full_rehearsal_qualified"], False)
+                self.assertEqual(len(observed["calls"]), 1)
+                if scenario == "budget":
+                    self.assertEqual(observed["receipt"]["failure"], "bounded original output")
+                    self.assertEqual(observed["receipt"]["commands"], [])
+                    self.assertNotIn("seed.stdout.json", observed["retained"])
+                else:
+                    self.rejected_at(observed, "seed", "actual seed failed; retained original is not a pass")
+                    self.assertEqual(observed["receipt"]["commands"][0]["exit"], -1 if scenario == "timeout" else 3)
+                    self.assertIs(observed["receipt"]["commands"][0]["timed_out"], scenario == "timeout")
+
+    def test_source_change_still_precedes_json_admission(self):
+        def change(responses):
+            responses["seed"] = b'{"status":"failed","status":"passed"}'
+        observed = self.exercise("portable", change, source_changed=True)
+        self.assertEqual(observed["exit"], 1)
+        self.assertEqual(observed["receipt"]["failure"], "source changed")
+        self.assertIs(observed["receipt"]["full_rehearsal_qualified"], False)
+        self.assertEqual(len(observed["calls"]), 1)
+        self.assertEqual(observed["retained"]["seed.stdout.json"], observed["responses"]["seed"])
+        self.assertNotEqual(observed["receipt"]["source_inputs"], observed["receipt"]["source_after"])
 
 
 if __name__ == "__main__":
