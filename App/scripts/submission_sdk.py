@@ -28,7 +28,7 @@ def version(value):
 def load_sdk_pin(path):
     try:
         data = toolchain.read_bounded(path, 4096, "SDK pin exceeds 4096 bytes")
-        pin = json.loads(data)
+        pin = toolchain.parse_pin_json(data)
         if not isinstance(pin, dict) or set(pin) != {"sdkVersions", "minimumOSVersion"}:
             raise ValueError("expected exactly sdkVersions and minimumOSVersion")
         sdks = pin["sdkVersions"]
