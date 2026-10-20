@@ -97,6 +97,27 @@ PENDING_WRITE_TESTS = {
 }
 
 
+PENDING_WRITE_DISPATCH_TESTS = {
+    'PendingBuildWriteDispatcherTests.' + name for name in (
+        'testAdapterReceivesOnlyCommittedExactAttempt',
+        'testAttemptCommitFailureNeverInvokesAdapter',
+        'testConfirmedAttemptAllowsExplicitSameBuildSuccessor',
+        'testLostAcknowledgementStaysUncertainAcrossReopenWithoutResend',
+        'testCancellationBeforeAttemptLeavesPendingWithoutAdapterCall',
+        'testCancellationDuringAttemptCommitNeverInvokesAdapter',
+        'testCooperativeCancellationAfterHandoffRecordsUncertainty',
+        'testKnownConfirmationIsRecordedAfterTaskCancellation',
+        'testDeactivationDuringAdapterWaitRejectsOldOutcome',
+        'testSwitchAwayAndBackCannotReviveSuspendedAdapter',
+        'testConcurrentPerformOfSameOperationInvokesAdapterOnlyOnce',
+        'testHeldBuildBlocksItsSuccessorButNotAnotherBuild',
+        'testValidatedConflictKeepsIntentAndBlocksFollower',
+        'testValidatedInvalidKeepsIntentAndBlocksFollower',
+        'testOutcomeCommitFailurePropagatesWithoutResend',
+    )
+}
+
+
 def digest(data):
     return hashlib.sha256(data).hexdigest()
 
@@ -185,7 +206,8 @@ def qualify(kind, returncode, output, *, allow_bare_linux=False):
     wire = kind == 'wire'
     module = 'PlannerConformanceTests' if wire else 'PlannerDataTests'
     required = set(WIRE_TESTS.values()) if wire else (
-        EXISTING_STORAGE_TESTS | PENDING_WRITE_TESTS | set(MIGRATION_TESTS.values()))
+        EXISTING_STORAGE_TESTS | PENDING_WRITE_TESTS | PENDING_WRITE_DISPATCH_TESTS
+        | set(MIGRATION_TESTS.values()))
     result = suite_results(output, 'All tests', 'passed', module=module, require_module=not allow_bare_linux)
     if returncode != 0 or result is None:
         raise ValueError('A successful complete XCTest session with explicit module identity is required')

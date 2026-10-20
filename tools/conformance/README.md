@@ -276,7 +276,8 @@ boundaries. `web_consumer.mjs` executes a private verified copy of the original
 website/runtime closure; it does not modify or deploy the website.
 
 `consumer_receipts.py` requires all four wire methods/223 observations or all
-70 storage methods/20 observations, with exact native module identity and complete
+85 storage methods/20 observations (31 draft, 35 pending-write store, 15 dispatcher
+and four migration methods), with exact native module identity and complete
 failure-free XCTest scope. The explicitly selected Linux spelling remains
 labeled local evidence. The linked record specifies the neutral consumer
 interface, exact source/runtime pins, separate wire/local versions, actual local

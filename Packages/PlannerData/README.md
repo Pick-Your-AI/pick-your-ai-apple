@@ -141,9 +141,10 @@ remains a historical receipt. The later `04d44920` preparation preserved the
 accepted #298 future-history restoration guard and executed 26 accepted methods
 plus the four migration methods; that 30-method receipt is also historical.
 The current preparation preserves that guard and all five accepted #306 WAL and
-hot-journal methods, plus the 35 accepted #382 pending-write methods below. Its
-exact gate requires all 31 draft, 35 pending-write and four migration methods
-(70 total), with 20 exact per-fixture observations on macOS and both selected
+hot-journal methods, the 35 accepted #382 pending-write store methods below,
+and all 15 accepted pending-write dispatcher methods. The exact gate requires
+31 draft, 35 pending-write store, 15 dispatcher and four migration methods
+(85 total), with 20 exact per-fixture observations on macOS and both selected
 simulators.
 These cover every migration interruption, retained unsupported databases,
 separate compatible-backup recovery and appended restoration history. Local
@@ -287,3 +288,27 @@ build or stale overwrite, with independent criterion-specific review. The named
 #46 and #86 outputs, guest/object authority, receipt retention/reconciliation,
 native app integration, physical-device behavior and operating activation retain
 their own owners and evidence gates.
+
+## Caller-supplied pending-write dispatch
+
+`PendingBuildWriteDispatcher` connects one stored intent to one caller-supplied asynchronous adapter invocation. The caller supplies an already active `PendingWriteSession` and calls `perform(operationID:session:using:)`; the helper does not activate a session, drain the queue, implement a network transport, or schedule retries.
+
+The dispatcher awaits the existing durable `beginAttempt` transition before handing the adapter that exact immutable `PendingWriteAttempt`. The body bytes, operation and build identifiers, idempotency key, precondition, partition and attempt identity are passed through without request reconstruction. A failed attempt commit propagates before the adapter can run. Concurrent dispatch of the same operation and a blocked same-build successor retain the store's existing rejection rules; an unrelated build can proceed.
+
+Cancellation and persistence have separate boundaries:
+
+- Cancellation observed before `beginAttempt` leaves the store unchanged and does not invoke the adapter.
+- Cancellation observed at the post-commit check, before adapter handoff, submits `.uncertain` to the store without invoking the adapter. There is no safe-abort transition back to pending.
+- Once the adapter has been invoked, an error, including cooperative cancellation, submits `.uncertain` to the store. The dispatcher never invokes that adapter again automatically.
+- A validated outcome returned by the adapter is retained even if the caller task is already cancelled. There is no later cancellation check that replaces a known outcome with uncertainty.
+- `recordOutcome` runs outside the adapter-error catch. A failed outcome commit propagates; it cannot trigger a second outcome write or be reported as an acknowledgement. An interrupted attempt retains the store's existing recovery-to-uncertain behavior.
+
+`PendingBuildWriteDispatchResult.recorded` reports that the store accepted and persisted the supplied outcome. `notRecorded` reports the store's rejected callback result, which can include retired, foreign or already consumed attempts; it is not remote confirmation. Explicit deactivation or a switch away and back still retires the old generation. Neither this result nor a bare HTTP status or current-head GET proves that a particular request committed.
+
+The adapter is responsible for validating any returned outcome against the exact attempt and the adopted service contract. It also owns actual request dispatch, credentials and cancellation. One adapter invocation is not a guarantee of one wire request or one remote effect. Retiring a session rejects a stale callback but cannot withdraw an immutable request already handed to an adapter; coordination of the final authority check and actual send remains the integrator's responsibility.
+
+An uncertain operation is not resent automatically, including after reopening the store. This helper introduces no operation-status endpoint, remote receipt store, idempotency retention or expiry policy, authentication, or shared service authority. Those service and activation requirements remain separate.
+
+`PendingBuildWriteDispatcherTests` declares 15 focused cases: exact committed-byte handoff; attempt and outcome commit failures; explicit confirmed successors; lost acknowledgement with reopen and no resend; cancellation before, during and after attempt creation; a known response after cancellation; retired and ABA callbacks; concurrent duplicate dispatch; per-build blocking; and validated conflict and invalid outcomes. The lost-acknowledgement fixture is a labelled synthetic observer, not a backend or a production idempotency implementation. Barriers control the asynchronous interleavings without sleeps.
+
+The existing 31 draft-store and 35 pending-write-store test methods remain unchanged. The Storage workflow requires all 15 dispatcher method names to report a pass and checks the 15-case class and 85-case aggregate for the macOS run and each configured compact iPhone and iPad run. Its existing replay commands, toolchain, simulator selection, named draft/queue guards and evidence retention remain intact. Source declarations and configured checks do not replace the corresponding original execution logs and result bundles.

@@ -12,12 +12,15 @@ sys.path.insert(0, str(Path(__file__).resolve().parents[1]))
 import consumer_receipts as receipts
 
 
-def synthetic(kind, spelling='objc'):
+def synthetic(kind, spelling='objc', *, storage_methods=None):
     corpus, _ = receipts.fixture(kind)
     expected = receipts.expected_wire(corpus) if kind == 'wire' else receipts.expected_migrations(corpus)
     module = 'PlannerConformanceTests' if kind == 'wire' else 'PlannerDataTests'
     methods = set(receipts.WIRE_TESTS.values()) if kind == 'wire' else (
-        receipts.EXISTING_STORAGE_TESTS | receipts.PENDING_WRITE_TESTS | set(receipts.MIGRATION_TESTS.values()))
+        receipts.EXISTING_STORAGE_TESTS | receipts.PENDING_WRITE_TESTS
+        | receipts.PENDING_WRITE_DISPATCH_TESTS | set(receipts.MIGRATION_TESTS.values()))
+    if kind == 'migration' and storage_methods is not None:
+        methods = set(storage_methods)
     marker = 'APPLE_WIRE_CASE ' if kind == 'wire' else 'APPLE_MIGRATION_CASE '
     lines = ["Test Suite 'All tests' started at SYNTHETIC"]
     for name in sorted(methods):
@@ -48,7 +51,7 @@ def changed_observation(log, change, predicate=lambda value: True):
 
 class ConsumerReceiptTests(unittest.TestCase):
     def test_complete_named_wire_and_storage_sessions_require_all_pinned_observations(self):
-        for kind, methods, observations in [('wire', 4, 223), ('migration', 70, 20)]:
+        for kind, methods, observations in [('wire', 4, 223), ('migration', 85, 20)]:
             for spelling in ['objc', 'dotted']:
                 with self.subTest(kind=kind, spelling=spelling):
                     result = receipts.qualify(kind, 0, synthetic(kind, spelling))
@@ -64,14 +67,14 @@ class ConsumerReceiptTests(unittest.TestCase):
         self.assertEqual(log.count(started), 1)
         self.assertEqual(log.count(passed), 1)
         missing = log.replace(started, '').replace(passed, '')
-        old = missing.replace('Executed 70 tests', 'Executed 69 tests')
+        old = missing.replace('Executed 85 tests', 'Executed 84 tests')
         wrong_class = log.replace(identity, identity.replace('DraftStoreTests', 'UnrelatedTests'))
         skipped = log.replace(passed, passed.replace(' passed ', ' skipped '))
         for candidate in [old, missing, wrong_class, skipped]:
             with self.assertRaises(ValueError):
                 receipts.qualify('migration', 0, candidate)
         complete = receipts.qualify('migration', 0, log)
-        self.assertEqual(len(complete['methods']), 70)
+        self.assertEqual(len(complete['methods']), 85)
         self.assertEqual(len(complete['observations']), 20)
 
     def test_storage_receipt_requires_every_accepted_wal_and_hot_journal_method(self):
@@ -95,7 +98,7 @@ class ConsumerReceiptTests(unittest.TestCase):
             self.assertEqual(log.count(started), 1)
             self.assertEqual(log.count(passed), 1)
             missing = log.replace(started, '').replace(passed, '')
-            candidates = [missing, missing.replace('Executed 70 tests', 'Executed 69 tests'),
+            candidates = [missing, missing.replace('Executed 85 tests', 'Executed 84 tests'),
                           log.replace(identity, identity.replace('DraftStoreTests', 'UnrelatedTests')),
                           log.replace(passed, passed.replace(' passed ', ' skipped '))]
             for index, candidate in enumerate(candidates):
@@ -103,16 +106,18 @@ class ConsumerReceiptTests(unittest.TestCase):
                     with self.assertRaises(ValueError):
                         receipts.qualify('migration', 0, candidate)
             previous = previous.replace(started, '').replace(passed, '')
-        previous = previous.replace('Executed 70 tests', 'Executed 65 tests')
+        previous = previous.replace('Executed 85 tests', 'Executed 80 tests')
         with self.assertRaises(ValueError):
             receipts.qualify('migration', 0, previous)
-        self.assertEqual(len(receipts.qualify('migration', 0, log)['methods']), 70)
+        self.assertEqual(len(receipts.qualify('migration', 0, log)['methods']), 85)
 
     def test_storage_receipt_rejects_the_previous_35_method_cohort(self):
         source = (receipts.ROOT / 'Packages/PlannerData/Tests/PlannerDataTests/PendingBuildWriteStoreTests.swift').read_text()
         pending = re.findall(r'^    func (test\w+)\(', source, re.MULTILINE)
         self.assertEqual(len(pending), 35)
-        log = synthetic('migration')
+        preceding = (receipts.EXISTING_STORAGE_TESTS | receipts.PENDING_WRITE_TESTS
+                     | set(receipts.MIGRATION_TESTS.values()))
+        log = synthetic('migration', storage_methods=preceding)
         count = len(re.findall(r"^Test Case '[^']+' started\.", log, re.MULTILINE))
         for method in pending:
             identity = f'-[PlannerDataTests.PendingBuildWriteStoreTests {method}]'
@@ -132,7 +137,7 @@ class ConsumerReceiptTests(unittest.TestCase):
         self.assertEqual(receipts.PENDING_WRITE_TESTS, declared)
         log = synthetic('migration')
         complete = receipts.qualify('migration', 0, log)
-        self.assertEqual(len(complete['methods']), 70)
+        self.assertEqual(len(complete['methods']), 85)
         self.assertEqual(len(complete['observations']), 20)
         for name in sorted(declared):
             cls, method = name.split('.')
@@ -142,7 +147,7 @@ class ConsumerReceiptTests(unittest.TestCase):
             self.assertEqual(log.count(started), 1)
             self.assertEqual(log.count(passed), 1)
             missing = log.replace(started, '').replace(passed, '')
-            candidates = [missing, missing.replace('Executed 70 tests', 'Executed 69 tests'),
+            candidates = [missing, missing.replace('Executed 85 tests', 'Executed 84 tests'),
                           log.replace(identity, identity.replace(cls, 'UnrelatedTests')),
                           log.replace(passed, passed.replace(' passed ', ' skipped ')),
                           log.replace(passed, passed.replace(' passed ', ' failed '))]
@@ -289,6 +294,65 @@ class ConsumerReceiptTests(unittest.TestCase):
                 with self.assertRaises(OSError):
                     receipts.publish(output, {'synthetic': True})
             self.assertEqual(list(root.iterdir()), [])
+
+    def test_current_storage_profile_matches_every_receiving_source_declaration(self):
+        declared = set()
+        for cls, expected in [('DraftStoreTests', 31), ('PendingBuildWriteStoreTests', 35),
+                              ('PendingBuildWriteDispatcherTests', 15), ('MigrationFixtureTests', 4)]:
+            source = (receipts.ROOT / f'Packages/PlannerData/Tests/PlannerDataTests/{cls}.swift').read_text()
+            names = re.findall(r'^    func (test\w+)\(', source, re.MULTILINE)
+            self.assertEqual(len(names), expected)
+            self.assertEqual(len(set(names)), expected)
+            declared.update(cls + '.' + name for name in names)
+        self.assertEqual(len(declared), 85)
+        result = receipts.qualify('migration', 0, synthetic('migration', storage_methods=declared))
+        self.assertEqual(set(result['methods']), declared)
+        self.assertEqual(len(result['observations']), 20)
+
+    def test_storage_receipt_requires_every_accepted_dispatcher_method(self):
+        source = (receipts.ROOT / 'Packages/PlannerData/Tests/PlannerDataTests/PendingBuildWriteDispatcherTests.swift').read_text()
+        declared = {'PendingBuildWriteDispatcherTests.' + name
+                    for name in re.findall(r'^    func (test\w+)\(', source, re.MULTILINE)}
+        self.assertEqual(len(declared), 15)
+        self.assertEqual(receipts.PENDING_WRITE_DISPATCH_TESTS, declared)
+        log = synthetic('migration')
+        complete = receipts.qualify('migration', 0, log)
+        self.assertEqual(len(complete['methods']), 85)
+        self.assertEqual(len(complete['observations']), 20)
+        for name in sorted(declared):
+            cls, method = name.split('.')
+            identity = f'-[PlannerDataTests.{cls} {method}]'
+            started = f"Test Case '{identity}' started.\n"
+            passed = f"Test Case '{identity}' passed (0.001 seconds).\n"
+            self.assertEqual(log.count(started), 1)
+            self.assertEqual(log.count(passed), 1)
+            missing = log.replace(started, '').replace(passed, '')
+            another = next(value for value in sorted(declared) if value != name)
+            other_cls, other_method = another.split('.')
+            duplicate = f'-[PlannerDataTests.{other_cls} {other_method}]'
+            candidates = [missing, missing.replace('Executed 85 tests', 'Executed 84 tests'),
+                          log.replace(identity, identity.replace(cls, 'UnrelatedTests')),
+                          log.replace(passed, passed.replace(' passed ', ' skipped ')),
+                          log.replace(passed, passed.replace(' passed ', ' failed ')),
+                          log.replace(identity, duplicate)]
+            for index, candidate in enumerate(candidates):
+                with self.subTest(method=method, candidate=index):
+                    with self.assertRaises(ValueError):
+                        receipts.qualify('migration', 0, candidate)
+
+    def test_storage_receipt_rejects_previous_70_methods_and_unrelated_padding(self):
+        previous = (receipts.EXISTING_STORAGE_TESTS | receipts.PENDING_WRITE_TESTS
+                    | set(receipts.MIGRATION_TESTS.values()))
+        self.assertEqual(len(previous), 70)
+        unrelated = {f'UnrelatedTests.testUnrelatedDispatcher{index}' for index in range(15)}
+        for methods in [previous, previous | unrelated]:
+            with self.subTest(methods=len(methods)):
+                log = synthetic('migration', storage_methods=methods)
+                self.assertEqual(len(re.findall(r"^Test Case '[^']+' started\.", log, re.MULTILINE)),
+                                 len(methods))
+                self.assertEqual(log.count('APPLE_MIGRATION_CASE '), 20)
+                with self.assertRaisesRegex(ValueError, 'Every exact required XCTest method'):
+                    receipts.qualify('migration', 0, log)
 
 
 if __name__ == '__main__':

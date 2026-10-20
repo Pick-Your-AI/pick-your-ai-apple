@@ -1,5 +1,28 @@
 # Shared wire conformance and Apple local migrations
 
+The receiving composition with accepted main
+[`09667e27`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/09667e27f083b7635c62e2b1bb72b34a81959367)
+requires **85 exact Storage methods**: 31 draft-store, 35 pending-write-store,
+15 pending-write-dispatcher and four migration methods. All 20 typed migration
+observations remain required. The 70-method requirements and original outcomes
+in the preceding-source guidance and dated records below describe those earlier
+receiving revisions; they do not qualify this combined source.
+
+The receipt checker retains its exact method-set comparison, complete native
+module identity, successful exit status, sequential observation ownership and
+failure/skip/duplicate rejection. The Storage workflow preserves both complete
+accepted dispatcher-name loops, all draft/queue guards, the three migration
+receipts, replay commands, destinations and operation deadlines. Its current
+macOS and simulator aggregate checks require 85.
+
+Three additional synthetic receipt guards bind the complete source roster,
+exercise each dispatcher identity, and reject the previous 70-method cohort
+even when unrelated methods pad it to 85. The original 35-method counterexample
+still contains exactly 35 methods and all 20 observations. These are validation
+requirements and test definitions; current-source Python and native execution
+must supply their own actual results. Every byte of the earlier record remains
+preserved below, with its original source and execution attribution.
+
 The [current a3/986 continuation](#current-receiving-continuation--2026-10-20-a3986)
 below records completed, failed and incomplete originals and the separate source
 proposal. Earlier receiving sections retain their dated source and decisions.
