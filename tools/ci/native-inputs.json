@@ -45,6 +45,11 @@
       ]
     },
     "macos-core": {
+      "Packages/PlannerCatalog": [
+        "040000",
+        "tree",
+        "95d4ca5098801a2e8dc35bcf83e25923267b8b5c"
+      ],
       "Packages/PlannerCore": [
         "040000",
         "tree",
@@ -54,6 +59,11 @@
         "040000",
         "tree",
         "666417124a7b21b2a2779c9f281950b90cdfa033"
+      ],
+      "Packages/PlannerTransfer": [
+        "040000",
+        "tree",
+        "494b756c1dc90cfafc79e8cd4943cfddf6741476"
       ],
       "Packages/PlannerUI": [
         "040000",
@@ -91,6 +101,11 @@
       ]
     },
     "native-ui": {
+      "Packages/PlannerCatalog": [
+        "040000",
+        "tree",
+        "95d4ca5098801a2e8dc35bcf83e25923267b8b5c"
+      ],
       "Packages/PlannerCore": [
         "040000",
         "tree",
@@ -100,6 +115,11 @@
         "040000",
         "tree",
         "666417124a7b21b2a2779c9f281950b90cdfa033"
+      ],
+      "Packages/PlannerTransfer": [
+        "040000",
+        "tree",
+        "494b756c1dc90cfafc79e8cd4943cfddf6741476"
       ],
       "Packages/PlannerUI": [
         "040000",

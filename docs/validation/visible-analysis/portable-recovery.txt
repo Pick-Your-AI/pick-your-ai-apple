@@ -1,0 +1,49 @@
+Building for debugging...
+[0/5] Write swift-version-2AFB1643BC46F12B.txt
+[1/5] Write sources
+[3/6] Emitting module PlannerUI
+[4/7] Compiling PlannerUI EvaluationAnalysisModel.swift
+[5/7] Write Objects.LinkFileList
+[6/7] Linking Apple75PortableSourceCheckPackageTests.xctest
+Build complete! (1.06s)
+Test Suite 'All tests' started at 2026-10-19 17:36:37.130
+Test Suite 'debug.xctest' started at 2026-10-19 17:36:37.131
+Test Suite 'EvaluationAnalysisModelTests' started at 2026-10-19 17:36:37.131
+Test Case 'EvaluationAnalysisModelTests.testCancelledBeginStillDrainsItsCoreCommandAndCannotReturnATransportToken' started at 2026-10-19 17:36:37.131
+Test Case 'EvaluationAnalysisModelTests.testCancelledBeginStillDrainsItsCoreCommandAndCannotReturnATransportToken' passed (0.013 seconds)
+Test Case 'EvaluationAnalysisModelTests.testCoreCancellationWinsBeforeCompletionThenRetryRecovers' started at 2026-10-19 17:36:37.143
+Test Case 'EvaluationAnalysisModelTests.testCoreCancellationWinsBeforeCompletionThenRetryRecovers' passed (0.008 seconds)
+Test Case 'EvaluationAnalysisModelTests.testCoreCompletionWinsBeforeQueuedCancellationAndRetainsCurrentReport' started at 2026-10-19 17:36:37.152
+Test Case 'EvaluationAnalysisModelTests.testCoreCompletionWinsBeforeQueuedCancellationAndRetainsCurrentReport' passed (0.007 seconds)
+Test Case 'EvaluationAnalysisModelTests.testEveryForeignResponsePinKeepsMatchingRequestPendingThenRecovers' started at 2026-10-19 17:36:37.159
+Test Case 'EvaluationAnalysisModelTests.testEveryForeignResponsePinKeepsMatchingRequestPendingThenRecovers' passed (0.062 seconds)
+Test Case 'EvaluationAnalysisModelTests.testFailureIsRetryableAndObsoleteFailureCannotClearTheLatestMatchingResult' started at 2026-10-19 17:36:37.221
+Test Case 'EvaluationAnalysisModelTests.testFailureIsRetryableAndObsoleteFailureCannotClearTheLatestMatchingResult' passed (0.008 seconds)
+Test Case 'EvaluationAnalysisModelTests.testLargeSupportedWireRevisionAndChangedSelectedPinsAreProjectedExactly' started at 2026-10-19 17:36:37.229
+Test Case 'EvaluationAnalysisModelTests.testLargeSupportedWireRevisionAndChangedSelectedPinsAreProjectedExactly' passed (0.028 seconds)
+Test Case 'EvaluationAnalysisModelTests.testNoSelectionCannotBeginOrDisplayAReportAndObservationTracksCurrentness' started at 2026-10-19 17:36:37.257
+Test Case 'EvaluationAnalysisModelTests.testNoSelectionCannotBeginOrDisplayAReportAndObservationTracksCurrentness' passed (0.007 seconds)
+Test Case 'EvaluationAnalysisModelTests.testQueuedCompletionCannotReturnAfterDisconnectAndClearAsCurrent' started at 2026-10-19 17:36:37.264
+Test Case 'EvaluationAnalysisModelTests.testQueuedCompletionCannotReturnAfterDisconnectAndClearAsCurrent' passed (0.007 seconds)
+Test Case 'EvaluationAnalysisModelTests.testRetryRejectsForeignTokensAndDuplicateCompletionsWithoutRewritingClaims' started at 2026-10-19 17:36:37.271
+Test Case 'EvaluationAnalysisModelTests.testRetryRejectsForeignTokensAndDuplicateCompletionsWithoutRewritingClaims' passed (0.013 seconds)
+Test Case 'EvaluationAnalysisModelTests.testSelectionClearsVisibleResultBeforeBlockedCoreTransitionAndSamePinsNeedExplicitOwnerClear' started at 2026-10-19 17:36:37.284
+Test Case 'EvaluationAnalysisModelTests.testSelectionClearsVisibleResultBeforeBlockedCoreTransitionAndSamePinsNeedExplicitOwnerClear' passed (0.008 seconds)
+Test Case 'EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection' started at 2026-10-19 17:36:37.292
+Test Case 'EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection' passed (0.007 seconds)
+Test Case 'EvaluationAnalysisModelTests.testThreeRevisionsReconnectCompleteOutOfOrderWithoutLateCancellationErasingCurrent' started at 2026-10-19 17:36:37.299
+Test Case 'EvaluationAnalysisModelTests.testThreeRevisionsReconnectCompleteOutOfOrderWithoutLateCancellationErasingCurrent' passed (0.02 seconds)
+Test Case 'EvaluationAnalysisModelTests.testValidatedBuildProjectionUsesWireRevisionAndAllFivePinsWithoutMutatingBytes' started at 2026-10-19 17:36:37.319
+Test Case 'EvaluationAnalysisModelTests.testValidatedBuildProjectionUsesWireRevisionAndAllFivePinsWithoutMutatingBytes' passed (0.054 seconds)
+Test Case 'EvaluationAnalysisModelTests.testVisibleIdentityRequiresExactTextAndCompletePinsEvenWhenModelIsCurrent' started at 2026-10-19 17:36:37.373
+Test Case 'EvaluationAnalysisModelTests.testVisibleIdentityRequiresExactTextAndCompletePinsEvenWhenModelIsCurrent' passed (0.007 seconds)
+Test Suite 'EvaluationAnalysisModelTests' passed at 2026-10-19 17:36:37.380
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.248 (0.248) seconds
+Test Suite 'debug.xctest' passed at 2026-10-19 17:36:37.380
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.248 (0.248) seconds
+Test Suite 'All tests' passed at 2026-10-19 17:36:37.380
+	 Executed 14 tests, with 0 failures (0 unexpected) in 0.248 (0.248) seconds
+◇ Test run started.
+↳ Testing Library Version: 6.1.2 (d6b70f9ef9eb207)
+↳ Target Platform: x86_64-unknown-linux-gnu
+✔ Test run with 0 tests passed after 0.001 seconds.

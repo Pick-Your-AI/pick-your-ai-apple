@@ -1,0 +1,227 @@
+{
+  "version": 1,
+  "kind": "source-bound portable model execution; no Apple SDK, app, editor, or service execution",
+  "source_base": "78aa0de9a4a2b1c651f73c284890e4dbe8bcd137",
+  "source_files": [
+    {
+      "path": "Packages/PlannerUI/Sources/PlannerUI/EvaluationAnalysisModel.swift",
+      "bytes": 6924,
+      "sha256": "63b1150da03d080fbf74d5075c92feb55d2b0e688d600e30f003c1da8efad3f7"
+    },
+    {
+      "path": "Packages/PlannerUI/Sources/PlannerUI/BuildAnalysisIdentity.swift",
+      "bytes": 1563,
+      "sha256": "461254bc4c3e8344a5c57d4b5378cab36e8b1d6844885029c2ec5685272b16b9"
+    },
+    {
+      "path": "Packages/PlannerUI/Tests/PlannerUITests/EvaluationAnalysisModelTests.swift",
+      "bytes": 18221,
+      "sha256": "bf2422d152eda5d219d7333f2ecf04bc8b7443692485710d910433fff860a206"
+    },
+    {
+      "path": "Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evaluation-analysis-report.json",
+      "bytes": 16244,
+      "sha256": "039626962ef0f2c4f706614d775ad47eda1d148c58f736c98ad169fc153221f3"
+    },
+    {
+      "path": "Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evaluation-analysis-build.json",
+      "bytes": 14681,
+      "sha256": "26762208769a8cf1012b4f33b1c1608556d275187ce21117d0b9632cdf951864"
+    }
+  ],
+  "unchanged_package_trees": {
+    "Packages/PlannerCore": "80e5c22b62705fd0ab66861f7c2143504cf67c98",
+    "Packages/PlannerTransfer": "ee65be7e10005f0b11f9f42d02a6d7053520ea5a"
+  },
+  "synthetic_fixture_copies": {
+    "Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evaluation-analysis-report.json": "Packages/PlannerCore/Tests/PlannerCoreTests/Fixtures/evaluation-report.json",
+    "Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evaluation-analysis-build.json": "Packages/PlannerTransfer/Tests/PlannerTransferTests/Fixtures/build.json"
+  },
+  "toolchain": {
+    "swift": "6.1.2",
+    "language_mode": "6",
+    "target": "x86_64-unknown-linux-gnu",
+    "os": "Ubuntu 24.04.3 LTS",
+    "workers": 1,
+    "log_timezone": "KST (UTC+09:00)",
+    "archive_url": "https://download.swift.org/swift-6.1.2-release/ubuntu2404/swift-6.1.2-RELEASE/swift-6.1.2-RELEASE-ubuntu24.04.tar.gz",
+    "archive_sha256": "d749d5fe2d6709ee988e96b16f02bca7b53304d09925e31063fd5ec56019de9f",
+    "release_signing_fingerprint": "52BB7E3DE28A71BE22EC05FFEF80A866B47A981F",
+    "signature_log": "swift-archive-signature.txt",
+    "isolated_ubuntu_runtime_libraries": [
+      {
+        "Package": "libncurses6",
+        "Version": "6.4+20240113-1ubuntu2.2",
+        "Filename": "pool/main/n/ncurses/libncurses6_6.4+20240113-1ubuntu2.2_amd64.deb",
+        "SHA256": "59e8527dfd14473393960bfb7c69566f1ad9d576423421dcb8b8dcdbb3e7fca1",
+        "Size": "111902",
+        "Depends": "libtinfo6 (= 6.4+20240113-1ubuntu2.2), libc6 (>= 2.34)"
+      },
+      {
+        "Package": "libtinfo6",
+        "Version": "6.4+20240113-1ubuntu2.2",
+        "Filename": "pool/main/n/ncurses/libtinfo6_6.4+20240113-1ubuntu2.2_amd64.deb",
+        "SHA256": "b67a6df2bdab61d273eabebd208bb6a3fb12618a390a067e1ee305a409ff03d9",
+        "Size": "108086",
+        "Depends": "libc6 (>= 2.34)"
+      }
+    ]
+  },
+  "portable_manifest": "// swift-tools-version: 6.0\nimport PackageDescription\nlet package = Package(name: \"Apple75PortableSourceCheck\",\n    dependencies: [.package(path: \"../apple75-visible-analysis-20261019/Packages/PlannerCore\"),\n                   .package(path: \"../apple75-visible-analysis-20261019/Packages/PlannerTransfer\")],\n    targets: [.target(name: \"PlannerUI\", dependencies: [\"PlannerCore\", \"PlannerTransfer\"]),\n              .testTarget(name: \"PlannerUITests\", dependencies: [\"PlannerUI\", \"PlannerCore\", \"PlannerTransfer\"],\n                resources: [.process(\"Fixtures\")])], swiftLanguageModes: [.v6])\n",
+  "baseline_command": [
+    "swift",
+    "test",
+    "--package-path",
+    "/workspace/scratch/68d493c20124/apple75-portable-check-20261019",
+    "--cache-path",
+    "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/cache",
+    "--config-path",
+    "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/config",
+    "--security-path",
+    "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/security",
+    "--jobs",
+    "1"
+  ],
+  "runs": [
+    {
+      "configuration": "Debug",
+      "log": "portable-debug.txt",
+      "bytes": 6076,
+      "sha256": "4b697ce06335051fa8b88f8f2c0fff34531f40a72429e0f0227db66917c019cb",
+      "xctest_methods": {
+        "EvaluationAnalysisModelTests.testCancelledBeginStillDrainsItsCoreCommandAndCannotReturnATransportToken": "passed",
+        "EvaluationAnalysisModelTests.testCoreCancellationWinsBeforeCompletionThenRetryRecovers": "passed",
+        "EvaluationAnalysisModelTests.testCoreCompletionWinsBeforeQueuedCancellationAndRetainsCurrentReport": "passed",
+        "EvaluationAnalysisModelTests.testEveryForeignResponsePinKeepsMatchingRequestPendingThenRecovers": "passed",
+        "EvaluationAnalysisModelTests.testFailureIsRetryableAndObsoleteFailureCannotClearTheLatestMatchingResult": "passed",
+        "EvaluationAnalysisModelTests.testLargeSupportedWireRevisionAndChangedSelectedPinsAreProjectedExactly": "passed",
+        "EvaluationAnalysisModelTests.testNoSelectionCannotBeginOrDisplayAReportAndObservationTracksCurrentness": "passed",
+        "EvaluationAnalysisModelTests.testQueuedCompletionCannotReturnAfterDisconnectAndClearAsCurrent": "passed",
+        "EvaluationAnalysisModelTests.testRetryRejectsForeignTokensAndDuplicateCompletionsWithoutRewritingClaims": "passed",
+        "EvaluationAnalysisModelTests.testSelectionClearsVisibleResultBeforeBlockedCoreTransitionAndSamePinsNeedExplicitOwnerClear": "passed",
+        "EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection": "passed",
+        "EvaluationAnalysisModelTests.testThreeRevisionsReconnectCompleteOutOfOrderWithoutLateCancellationErasingCurrent": "passed",
+        "EvaluationAnalysisModelTests.testValidatedBuildProjectionUsesWireRevisionAndAllFivePinsWithoutMutatingBytes": "passed",
+        "EvaluationAnalysisModelTests.testVisibleIdentityRequiresExactTextAndCompletePinsEvenWhenModelIsCurrent": "passed"
+      },
+      "failures": 0,
+      "unexpected": 0,
+      "skips": 0
+    },
+    {
+      "configuration": "Release",
+      "log": "portable-release.txt",
+      "bytes": 6270,
+      "sha256": "1bf4e633c3747cd8aab7a120d49f48cf8d55bcea78573e9ff5326a4547f1289d",
+      "xctest_methods": {
+        "EvaluationAnalysisModelTests.testCancelledBeginStillDrainsItsCoreCommandAndCannotReturnATransportToken": "passed",
+        "EvaluationAnalysisModelTests.testCoreCancellationWinsBeforeCompletionThenRetryRecovers": "passed",
+        "EvaluationAnalysisModelTests.testCoreCompletionWinsBeforeQueuedCancellationAndRetainsCurrentReport": "passed",
+        "EvaluationAnalysisModelTests.testEveryForeignResponsePinKeepsMatchingRequestPendingThenRecovers": "passed",
+        "EvaluationAnalysisModelTests.testFailureIsRetryableAndObsoleteFailureCannotClearTheLatestMatchingResult": "passed",
+        "EvaluationAnalysisModelTests.testLargeSupportedWireRevisionAndChangedSelectedPinsAreProjectedExactly": "passed",
+        "EvaluationAnalysisModelTests.testNoSelectionCannotBeginOrDisplayAReportAndObservationTracksCurrentness": "passed",
+        "EvaluationAnalysisModelTests.testQueuedCompletionCannotReturnAfterDisconnectAndClearAsCurrent": "passed",
+        "EvaluationAnalysisModelTests.testRetryRejectsForeignTokensAndDuplicateCompletionsWithoutRewritingClaims": "passed",
+        "EvaluationAnalysisModelTests.testSelectionClearsVisibleResultBeforeBlockedCoreTransitionAndSamePinsNeedExplicitOwnerClear": "passed",
+        "EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection": "passed",
+        "EvaluationAnalysisModelTests.testThreeRevisionsReconnectCompleteOutOfOrderWithoutLateCancellationErasingCurrent": "passed",
+        "EvaluationAnalysisModelTests.testValidatedBuildProjectionUsesWireRevisionAndAllFivePinsWithoutMutatingBytes": "passed",
+        "EvaluationAnalysisModelTests.testVisibleIdentityRequiresExactTextAndCompletePinsEvenWhenModelIsCurrent": "passed"
+      },
+      "failures": 0,
+      "unexpected": 0,
+      "skips": 0
+    },
+    {
+      "configuration": "restored Debug",
+      "log": "portable-recovery.txt",
+      "bytes": 5104,
+      "sha256": "3f7bc47bdc7d6a4937fd58789d240d3772820540d42326661771f9e0034d889f",
+      "xctest_methods": {
+        "EvaluationAnalysisModelTests.testCancelledBeginStillDrainsItsCoreCommandAndCannotReturnATransportToken": "passed",
+        "EvaluationAnalysisModelTests.testCoreCancellationWinsBeforeCompletionThenRetryRecovers": "passed",
+        "EvaluationAnalysisModelTests.testCoreCompletionWinsBeforeQueuedCancellationAndRetainsCurrentReport": "passed",
+        "EvaluationAnalysisModelTests.testEveryForeignResponsePinKeepsMatchingRequestPendingThenRecovers": "passed",
+        "EvaluationAnalysisModelTests.testFailureIsRetryableAndObsoleteFailureCannotClearTheLatestMatchingResult": "passed",
+        "EvaluationAnalysisModelTests.testLargeSupportedWireRevisionAndChangedSelectedPinsAreProjectedExactly": "passed",
+        "EvaluationAnalysisModelTests.testNoSelectionCannotBeginOrDisplayAReportAndObservationTracksCurrentness": "passed",
+        "EvaluationAnalysisModelTests.testQueuedCompletionCannotReturnAfterDisconnectAndClearAsCurrent": "passed",
+        "EvaluationAnalysisModelTests.testRetryRejectsForeignTokensAndDuplicateCompletionsWithoutRewritingClaims": "passed",
+        "EvaluationAnalysisModelTests.testSelectionClearsVisibleResultBeforeBlockedCoreTransitionAndSamePinsNeedExplicitOwnerClear": "passed",
+        "EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection": "passed",
+        "EvaluationAnalysisModelTests.testThreeRevisionsReconnectCompleteOutOfOrderWithoutLateCancellationErasingCurrent": "passed",
+        "EvaluationAnalysisModelTests.testValidatedBuildProjectionUsesWireRevisionAndAllFivePinsWithoutMutatingBytes": "passed",
+        "EvaluationAnalysisModelTests.testVisibleIdentityRequiresExactTextAndCompletePinsEvenWhenModelIsCurrent": "passed"
+      },
+      "failures": 0,
+      "unexpected": 0,
+      "skips": 0
+    }
+  ],
+  "negative_controls": "negative-controls.json",
+  "conformance": {
+    "python": "3.12.14",
+    "dependencies": {
+      "PyYAML": "6.0.3",
+      "attrs": "26.1.0",
+      "jsonschema": "4.25.1",
+      "jsonschema-specifications": "2025.9.1",
+      "referencing": "0.37.0",
+      "rpds-py": "0.30.0",
+      "typing-extensions": "4.16.0"
+    },
+    "contract_lock": {
+      "contract_version": "1.0.0",
+      "fixture_bundle_version": "apple-contract-preparation-1",
+      "import_manifest_sha256": "ef6d5801eec10f3169e2bf84653e7026b33088e305a987991ec52faadcd7f554",
+      "source_repository": "https://github.com/Pick-Your-AI/pick-your-ai-research",
+      "source_revision": "7acbefbf4e4e700231e88be272bc89e3a73dde15"
+    },
+    "schema_checks": 137,
+    "domain_checks": 6,
+    "mutations": [
+      {
+        "detected": true,
+        "failing_checks": [
+          "build/missing/id"
+        ],
+        "id": "required-field"
+      },
+      {
+        "detected": true,
+        "failing_checks": [
+          "decimal/precision",
+          "decimal/fraction"
+        ],
+        "id": "decimal"
+      },
+      {
+        "detected": true,
+        "failing_checks": [
+          "decimal/precision",
+          "rule/dimension-mismatch"
+        ],
+        "id": "rule"
+      }
+    ],
+    "canonical_reference": "passed",
+    "harness_tests": 47,
+    "log": "conformance-tests.txt",
+    "log_sha256": "9d153bc6204123b5bcf70db4ea294f58c31815293670c581fac476dfcb0b0da3",
+    "report_vectors": 45,
+    "evidence_vectors": {
+      "total": 37,
+      "accepted": 28,
+      "rejected": 9
+    }
+  },
+  "native_gates": {
+    "apple_sdk_compile": "unexecuted locally",
+    "native_rendering_methods": 5,
+    "native_rendering_execution": "unexecuted locally",
+    "editor_caller_tests": 3,
+    "editor_caller_execution": "unexecuted; separate #198 receiving composition required"
+  },
+  "receiving_review": "pending at preparation; exact published-head review and hosted results belong to delivering PR"
+}

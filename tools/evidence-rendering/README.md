@@ -8,7 +8,8 @@ Planner editor, open a `DraftStore`, contact a service or implement another
 evidence projection. The application and UI-test target use local packages only.
 
 `EvidenceRenderingTests` runs in the separate `PlannerEvidenceUITests` process.
-Its six methods preserve the original checks and add date and explanatory-copy presentation:
+Its seven methods preserve the original four checks and add date presentation,
+explanatory-copy localization and visible-analysis binding:
 
 - All 32 valid shared payloads render their existing outcome, severity, presence
   and conflict text; other outcome/severity labels remain absent.
@@ -26,11 +27,13 @@ Its six methods preserve the original checks and add date and explanatory-copy p
   Arabic right-to-left layout, exercise English fallback and return to English
   with recheck still required. Raw values that resemble copy keys, Markdown or
   format placeholders remain verbatim at an accessibility text size.
+- Seven visible-analysis scenarios admit only the matching report and keep other
+  revisions, pending retries, cancellation, failure, disconnect and clear explicit.
 
 Both native targets copy the same existing
 [41-case resource](../../Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evidence-vectors.json).
 The app decodes only IDs, payloads and validity; it does not read `visibleText`.
-Tests send only one of six scenario-group IDs in launch arguments. Expected
+Tests send only one of seven scenario-group IDs in launch arguments. Expected
 strings stay in the test process and are never installed in app accessibility
 labels. The original Core tests still execute all 41 decoder cases, including
 the nine rejections and recovery of the prior report.
@@ -54,7 +57,7 @@ only when the window query is empty, before the original error and case-marker
 checks. An existing window with missing or wrong content receives no retry or
 replacement window. A second window query just before selecting the command
 dismisses the menu without creating another window if a window has appeared.
-This fixture setup retains the normal `WindowGroup`, six
+This fixture setup retains the normal `WindowGroup`, seven
 separate process launches, exact scenario/position checks and bounded waits.
 
 ## Captured-date presentation under #58
@@ -91,11 +94,12 @@ settings, never expected display strings; the expected strings remain in the
 separate test process. Unlike the original groups, the date sequence retains one
 view identity while changing its inputs and environment.
 
-These are current source-declared obligations. No local Swift or native execution
-is claimed for this addition. The date-only source requires all five
-methods; an earlier four-method receipt cannot qualify it. The current copy
-extension below requires a sixth method. Actual macOS, iPhone
-and iPad results belong to the later configured runs at their exact source pins.
+The date-only predecessor declared five methods and required its own native
+qualification; an earlier four-method receipt could not qualify it. No local
+Swift or native execution was claimed during that source preparation. The later
+copy extension below added a sixth method with its own source qualification.
+Original macOS, iPhone and iPad results retain their exact source pins; the
+current seven-method union below has a separate receiving requirement.
 This bounded date-label work does not close #58, replace #75's separately owned
 analysis/current-response integration, or establish complete copy localization,
 physical-device layout, VoiceOver interaction or the broader screenshot matrix.
@@ -142,11 +146,13 @@ Five selected copy scenarios add named, `keepAlways`
 [XCTest screenshot attachments](https://developer.apple.com/documentation/xctest/xctattachment/init(screenshot:))
 to the original `.xcresult`. Each image records the final visible viewport,
 including the current harness case; it is not a stitched full-card capture.
-The existing workflows already retain these bundles. No screenshot has been
-generated or visually accepted during local source preparation. Actual Swift
-compilation, the six methods on macOS/iPhone/iPad and attachment inspection remain
-the new source's configured qualification. Earlier five-method date results stay
-at their own immutable source and cannot qualify this extension.
+The existing workflows already retain these bundles. No screenshot was generated
+or visually accepted during that local source preparation. Swift compilation,
+all six methods on macOS/iPhone/iPad and attachment inspection were the configured
+qualification requirements of the copy-localization predecessor. Earlier
+five-method date results retain their own immutable source. The current combined
+seven-method requirement below preserves both additions and their original
+execution attribution.
 
 ## Actual failed predecessor and current qualification
 
@@ -288,12 +294,16 @@ The 37 unique Xcode project objects, their references and input paths, and the
 active shared UI-test scheme were checked locally. Actual Xcode project loading,
 Apple SDK compilation and application/test execution remain hosted gates.
 
-The existing native UI job runs all original editor-model methods, then these
-six macOS UI tests before its separate production-app build/launch checks. The
-existing Core job runs these six UI tests on its selected iPhone and iPad,
-alongside all original Core and mutation gates. Both retain exact logs and
-`.xcresult` bundles. No extra workflow job, remote task or parallel runner is
-introduced.
+The current [native UI workflow](../../.github/workflows/native-ui.yml) runs
+the macOS evidence-rendering tests in `native-evidence-rendering`. Its separate
+`native-simulator` job runs the editor-model methods and unsigned production-app
+build/launch checks. The `native-ui` aggregate requires a successful scope job
+and all native child jobs to succeed when `native_required` is `true`, or all
+to be skipped when it is `false`. Each child retains its own evidence artifact.
+
+The existing Core job runs the evidence-rendering tests on its selected iPhone
+and iPad, alongside all original Core and mutation gates. The Core and macOS
+rendering jobs retain their exact logs and `.xcresult` bundles.
 
 From the repository root with the selected Apple toolchain:
 
@@ -309,7 +319,7 @@ destination, as the checked-in Core workflow does. Require the real command to
 succeed, retain its output, then run
 `python3 tools/conformance/qualify_evidence_rendering.py /path/to/actual-test.log`.
 The qualifier requires exactly one complete `All tests` or `Selected tests`
-session, the explicit `PlannerEvidenceUITests` module and all six unique named
+session, the explicit `PlannerEvidenceUITests` module and all seven unique named
 passes with zero failures/skips. The older `PlannerUITests` module, a bare class
 name, duplicate sessions and compile-only logs cannot qualify this host.
 
@@ -318,3 +328,23 @@ full VoiceOver interaction, complete localization, pixel layout/contrast, signed
 and integration of these views into a complete user journey. The
 [evidence mapping](../../Packages/PlannerUI/EVIDENCE_RENDERING.md) remains the
 criterion-specific record for Apple #36.
+
+## Current localized-date, copy and visible-analysis composition
+
+The [Apple #75 contribution](../../docs/validation/visible-analysis.md) adds the
+actual observable model and guarded report view to this existing host. Its seven
+synthetic scenarios cover a matching report, foreign visible revision, pending
+retry, cancellation, failure, disconnect and clear. Only the matching case may
+render the report. The four initial methods, accepted capture-date and
+copy-localization methods, and all their original source histories above remain
+intact. The current qualifier requires all seven exact methods with zero failures
+or skips. Both six-method predecessors, earlier five-method receipts and the
+original four-method receipt are rejected by the combined gate.
+
+The date scenarios retain the same view identity while changing locale; each
+analysis scenario retains its own scenario identity. The host still receives
+only a synthetic scenario-group ID, while expected text remains in the test
+process. Original date, copy and analysis checks keep their own execution
+attribution. The seven-method combination requires new actual Apple execution;
+portable model tests or native results from either six-method predecessor do not
+establish that combined result.

@@ -1,0 +1,113 @@
+{
+  "scope": "Inert model-source mutations in the isolated portable source check; no SwiftUI or service execution.",
+  "source_base": "78aa0de9a4a2b1c651f73c284890e4dbe8bcd137",
+  "original_model_sha256": "63b1150da03d080fbf74d5075c92feb55d2b0e688d600e30f003c1da8efad3f7",
+  "controls": [
+    {
+      "id": "ignore-visible-identity",
+      "method": "testVisibleIdentityRequiresExactTextAndCompletePinsEvenWhenModelIsCurrent",
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019",
+        "--cache-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/cache",
+        "--config-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/config",
+        "--security-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/security",
+        "--jobs",
+        "1",
+        "--filter",
+        "EvaluationAnalysisModelTests.testVisibleIdentityRequiresExactTextAndCompletePinsEvenWhenModelIsCurrent"
+      ],
+      "exit": 1,
+      "failures": 2,
+      "unexpected": 0,
+      "mutated_model_sha256": "f10fef26ac2aae1a56fd7209d8d7b64d58e0c505b1a689fbe3350032cd1c872e",
+      "before": "guard let visibleIdentity, visibleIdentity == selectedIdentity else {",
+      "after": "guard let visibleIdentity = selectedIdentity else {",
+      "log": "negative-ignore-visible-identity.txt",
+      "log_sha256": "d3b21eb94768545694605db519a9f29149671c4cce9759f43e6d198701e96042"
+    },
+    {
+      "id": "publish-superseded-begin",
+      "method": "testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection",
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019",
+        "--cache-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/cache",
+        "--config-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/config",
+        "--security-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/security",
+        "--jobs",
+        "1",
+        "--filter",
+        "EvaluationAnalysisModelTests.testSupersededQueuedBeginCannotInstallItsTokenForTheLaterSelection"
+      ],
+      "exit": 1,
+      "failures": 1,
+      "unexpected": 0,
+      "mutated_model_sha256": "1168b2d9a10229567e2c780d085ee242e38d0a146f5637a3b4b377744c6c548e",
+      "before": "guard intent == generation, identity == selectedIdentity else { return nil }",
+      "after": "_ = intent // Intent guard intentionally removed in this inert negative control.",
+      "log": "negative-publish-superseded-begin.txt",
+      "log_sha256": "0b31451ae85e58d9370dac0ed1daf4fdc8c566d0d339202e52e15b62af43430c"
+    },
+    {
+      "id": "cancel-before-core-admission",
+      "method": "testCoreCompletionWinsBeforeQueuedCancellationAndRetainsCurrentReport",
+      "command": [
+        "swift",
+        "test",
+        "--package-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019",
+        "--cache-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/cache",
+        "--config-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/config",
+        "--security-path",
+        "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/security",
+        "--jobs",
+        "1",
+        "--filter",
+        "EvaluationAnalysisModelTests.testCoreCompletionWinsBeforeQueuedCancellationAndRetainsCurrentReport"
+      ],
+      "exit": 1,
+      "failures": 2,
+      "unexpected": 0,
+      "mutated_model_sha256": "5824fffa580c3aa3cb239814814ed86f46b683c55899a1b4468518f2c437d414",
+      "before": "private func finish(_ request: AnalysisRequest, reason: AnalysisUnavailableReason) async -> Bool {\n        guard isVisible(request) else { return false }\n        let intent = generation",
+      "after": "private func finish(_ request: AnalysisRequest, reason: AnalysisUnavailableReason) async -> Bool {\n        guard isVisible(request) else { return false }\n        activeRequest = nil\n        state = .unavailable(identity: request.identity, reason: reason)\n        let intent = generation",
+      "log": "negative-cancel-before-core-admission.txt",
+      "log_sha256": "44b813a1d7631624cf9fb843cd997b1d388a024cf7e0f73d233c80e8b5d6bc3d"
+    }
+  ],
+  "recovery": {
+    "command": [
+      "swift",
+      "test",
+      "--package-path",
+      "/workspace/scratch/68d493c20124/apple75-portable-check-20261019",
+      "--cache-path",
+      "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/cache",
+      "--config-path",
+      "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/config",
+      "--security-path",
+      "/workspace/scratch/68d493c20124/apple75-portable-check-20261019/security",
+      "--jobs",
+      "1"
+    ],
+    "exit": 0,
+    "methods": 14,
+    "failures": 0,
+    "unexpected": 0,
+    "log": "portable-recovery.txt",
+    "log_sha256": "3f7bc47bdc7d6a4937fd58789d240d3772820540d42326661771f9e0034d889f"
+  }
+}
