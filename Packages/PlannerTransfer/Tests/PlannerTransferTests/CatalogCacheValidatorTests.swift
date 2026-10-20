@@ -224,14 +224,33 @@ final class CatalogCacheValidatorTests: XCTestCase, @unchecked Sendable {
     func testValidationPreservesDuplicateIdentitiesAndUnverifiedProvenance() throws {
         let catalog = try modified(.catalog) { value in
             var item = try XCTUnwrap((value["items"] as? [[String: Any]])?.first)
-            item.removeValue(forKey: "provenance")
+            var provenance = try XCTUnwrap((item["provenance"] as? [[String: Any]])?.first)
+            provenance.removeValue(forKey: "source_uri")
+            provenance["verification_status"] = "unverified"
+            item["provenance"] = [provenance]
             value["items"] = [item, item]
         }
         XCTAssertNoThrow(try FrozenCatalogCacheValidator.validate(.catalog, catalog))
         let snapshot = try CatalogSnapshot.decode(catalog)
         XCTAssertEqual(snapshot.items.count, 2)
         XCTAssertEqual(snapshot.items[0], snapshot.items[1])
-        XCTAssertNil(snapshot.items[0].value.object?["provenance"])
+        let provenance = try XCTUnwrap(snapshot.items[0].value.object?["provenance"]?.array)
+        XCTAssertEqual(provenance.count, 1)
+        let entry = try XCTUnwrap(provenance.first?.object)
+        XCTAssertNil(entry["source_uri"])
+        XCTAssertEqual(entry["verification_status"]?.string, "unverified")
+        // The enclosing nonempty provenance array is required, even though a
+        // source URI within a provenance record remains optional.
+        for omitProvenance in [true, false] {
+            var invalid = try object(catalog)
+            var item = try XCTUnwrap((invalid["items"] as? [[String: Any]])?.first)
+            if omitProvenance { item.removeValue(forKey: "provenance") }
+            else { item["provenance"] = [] }
+            invalid["items"] = [item, item]
+            XCTAssertThrowsError(try FrozenCatalogCacheValidator.validate(.catalog, encoded(invalid))) {
+                XCTAssertEqual($0 as? TransferError, .schemaViolation)
+            }
+        }
         let prices = try modified(.pricebook) { value in
             var rates = try XCTUnwrap(value["rates"] as? [[String: Any]])
             var provenance = try XCTUnwrap(rates[0]["provenance"] as? [String: Any])

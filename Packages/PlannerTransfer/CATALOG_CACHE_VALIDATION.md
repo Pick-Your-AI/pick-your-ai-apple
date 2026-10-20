@@ -19,7 +19,7 @@ The catalog branch calls `CatalogSnapshot.decode` on the complete original `Data
 
 ## Authority and recovery boundaries
 
-Structural validity does not establish source-use rights, publication approval, a live price quote, compatibility or current checks. Catalog item order and schema-permitted duplicate identities remain facts for the receiving graph policy. Optional catalog provenance may remain absent; a pricebook's required provenance cannot be omitted, and absent source URIs or unverified status do not become verified. Decimal strings retain their original spelling.
+Structural validity does not establish source-use rights, publication approval, a live price quote, compatibility or current checks. Catalog item order and schema-permitted duplicate identities remain facts for the receiving graph policy. Each catalog item requires a nonempty provenance array, and a pricebook's required provenance cannot be omitted. Source URIs within provenance records may remain absent; absent source URIs or unverified status do not become verified. Decimal strings retain their original spelling.
 
 The cache remains limited to public artifacts in `.syntheticPreview`. `.production` continues to reject before downloading or loading content. A reopened preview remains synthetic with `.unknown` current checks. The adapter does not change cache pins, pair atomicity, retained-history policy, immutable revisions, cancellation, storage version, account isolation or file protection. It introduces no network operation or cross-artifact reference policy.
 
@@ -36,7 +36,7 @@ The ten methods in `CatalogCacheValidatorTests` cover six pure decoder boundarie
 | Nested catalog/pricebook fields | Invalid kinds, string-valued numeric units and missing required provenance fail. |
 | Original JSON framing | Literal and escaped duplicate keys reach the existing whole-document scanners. |
 | Existing client limits | Each decoder retains its own byte, depth and node errors. |
-| Receiving authority | Duplicate catalog identities, optional provenance absence and unverified price claims retain their existing meaning. |
+| Receiving authority | Duplicate catalog identities, optional source-URI absence and unverified catalog/price claims retain their existing meaning; missing or empty catalog provenance is rejected. |
 | Atomic cache admission | Malformed catalog and second-artifact pricebook candidates preserve active and historical pairs, exact dates and envelope bytes; a later valid revision recovers. |
 | Reopen and retained corruption | Valid original bytes reopen exactly; internally consistent but contract-invalid older content blocks reads and refresh, preserves the failing file and permits an explicit test-fixture restoration. |
 
