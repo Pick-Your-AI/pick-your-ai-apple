@@ -19,7 +19,7 @@ class EvidenceRenderingReceiptTests(unittest.TestCase):
                   f"\t Executed {len(methods)} tests, with 0 failures (0 unexpected) in 0.040 (0.040) seconds"]
         return "\n".join(lines) + "\n"
 
-    def test_exact_native_ui_module_and_all_five_methods_are_required(self):
+    def test_exact_native_ui_module_and_all_six_methods_are_required(self):
         qualifier.require_rendering_receipt(self.receipt())
         qualifier.require_rendering_receipt(self.receipt().replace("Selected tests", "All tests"))
         for text in [self.receipt(module="PlannerCoreTests"), self.receipt(module="PlannerUITests"),
@@ -38,7 +38,7 @@ class EvidenceRenderingReceiptTests(unittest.TestCase):
                      complete.replace(lines[1] + "\n", "", 1),
                      complete.replace(lines[1], lines[1] + "\n" + lines[1], 1),
                      complete.replace(lines[2], lines[2] + "\n" + lines[2], 1),
-                     complete.replace("Executed 5 tests", "Executed 4 tests"),
+                     complete.replace("Executed 6 tests", "Executed 5 tests"),
                      complete.replace("with 0 failures", "with 1 failure"),
                      complete.replace("(0 unexpected)", "(1 unexpected)"),
                      "\n".join(lines[:-1]), complete + lines[2] + "\n",
@@ -49,9 +49,18 @@ class EvidenceRenderingReceiptTests(unittest.TestCase):
 
     def test_previous_four_method_receipt_cannot_qualify_the_date_extension(self):
         previous = sorted(qualifier.REQUIRED - {
-            "EvidenceRenderingTests.testCaptureDateLocaleChangesPreserveGregorianDayAndRetainedEvidence"
+            "EvidenceRenderingTests.testCaptureDateLocaleChangesPreserveGregorianDayAndRetainedEvidence",
+            "EvidenceRenderingTests.testClaimCopyLocaleRTLAndRecoveryPreserveVerbatimEvidenceAndRecheck",
         })
         self.assertEqual(len(previous), 4)
+        with self.assertRaises(ValueError):
+            qualifier.require_rendering_receipt(self.receipt(methods=previous))
+
+    def test_previous_five_method_receipt_cannot_qualify_the_copy_extension(self):
+        previous = sorted(qualifier.REQUIRED - {
+            "EvidenceRenderingTests.testClaimCopyLocaleRTLAndRecoveryPreserveVerbatimEvidenceAndRecheck"
+        })
+        self.assertEqual(len(previous), 5)
         with self.assertRaises(ValueError):
             qualifier.require_rendering_receipt(self.receipt(methods=previous))
 

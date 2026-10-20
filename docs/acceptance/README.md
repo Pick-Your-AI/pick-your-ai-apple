@@ -14,6 +14,8 @@ Validate source preservation with `python tools/acceptance/check_map.py --source
 
 The source export must contain exactly one non-PR row for each issue. Pull-request rows are filtered out before checking issue identities. Captured-map and non-PR source issue numbers must be positive JSON integers; Boolean, floating-point and other values reject before identity comparison. Duplicate issue numbers reject the export even when both rows are identical; collect a consistent paginated export instead of choosing one observation by row order. Rejection produces no success message and leaves the source export and captured map unchanged.
 
+Captured `source_checked` values must be literal JSON booleans matching the source Markdown checkbox. Numeric aliases such as `0`, `0.0`, `1` and `1.0` reject in both validation modes. Literal `false` matches an unchecked box; literal `true` matches either `[x]` or `[X]`. The checker leaves both inputs unchanged on rejection and successful recovery.
+
 Run the synthetic CLI regression tests with `python -m unittest discover -s tools/acceptance/tests -v` and `python -O -m unittest discover -s tools/acceptance/tests -v`. They reconstruct REST-shaped inputs from the historical map; they do not recapture live GitHub issues or establish application acceptance.
 
 | Issue | Reviewed evidence and disposition | Remaining action or maintenance | External evidence needed for named acceptance stage |

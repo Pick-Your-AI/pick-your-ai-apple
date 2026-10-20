@@ -4,7 +4,8 @@ This is the evidence intake for [Apple #107](https://github.com/Pick-Your-AI/pic
 It separates the accepted target declaration, observed simulator/package execution,
 and the installed-app and physical-device cases still needed for qualification.
 It does not expand supported platforms, change a deployment target, or qualify a
-release. All three complete issue criteria remain open.
+release. Criteria 1 and 2 remain open. The documentary third criterion is complete
+under the [2026-10-19 receiving disposition](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/107#issuecomment-6260653935).
 
 The execution baseline is signed main
 [`518c1c69f8dc5ab82c8fe86da9e9eabd7d707f1e`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/518c1c69f8dc5ab82c8fe86da9e9eabd7d707f1e),
@@ -201,7 +202,7 @@ physical-device evidence and signed release acceptance retain distinct scopes.
 | --- | --- |
 | Release qualification covers all declared supported device classes. | Incomplete. The declaration and observed classes are explicit; minimum-OS, physical, installed upgrade and low-resource gaps remain. |
 | Upgrade a populated installation, terminate/background it and use low-resource states on declared OS/device classes; unavailable physical devices remain qualification gaps. | Incomplete. The existing migration, process-exit, background-save model and database-full contributions are mapped above, with no fabricated installed/device execution. |
-| The device/OS/lifecycle qualification matrix is linked with criterion results, exact versions, limitations and receiving-review disposition. | This source preparation provides the matrix and original evidence identities. Its exact publishing revision and independent quality/affected-consumer receiving review must be linked from #107; publication alone does not complete the first two criteria. |
+| The device/OS/lifecycle qualification matrix is linked with criterion results, exact versions, limitations and receiving-review disposition. | Complete for the delivered, reviewed matrix at [signed 84c05bb0](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/84c05bb0034f604580077f1ea403386b94128b7e/docs/validation/issue-107-device-lifecycle-matrix.md), published through [#344](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/344) and accepted in the [2026-10-19 receiving disposition](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/107#issuecomment-6260653935). Criteria 1 and 2 remain open; original execution identities and limitations are preserved. |
 
 The [#28 prerequisite](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/28)
 is the correct interrupted/deep-linked draft journey. The

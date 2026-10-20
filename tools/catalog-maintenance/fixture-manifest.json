@@ -1,0 +1,55 @@
+{
+  "format": 1,
+  "classification": "synthetic-only",
+  "schema_version": "1.0.0",
+  "files": {
+    "catalog-a.json": {
+      "sha256": "d757dcb8a8a76ada14129a8efb2eb6a53f20661ec8b73ae221e051c53899a9d6",
+      "bytes": 2565,
+      "schema": "catalog-snapshot.schema.json"
+    },
+    "pricebook-a.json": {
+      "sha256": "a9060689127a98a18f0c2346873ced98f35aac13e60859190c460c3984eef5f6",
+      "bytes": 1267,
+      "schema": "pricebook.schema.json"
+    },
+    "catalog-b.json": {
+      "sha256": "e538e9bb6f7acae162fad421ce1a7f8b1fc5024c3bae132e2e4bff94f182b611",
+      "bytes": 2581,
+      "schema": "catalog-snapshot.schema.json"
+    },
+    "pricebook-b.json": {
+      "sha256": "0b81a68977f225b9538545ccdb763b1a5354282479663507a6c5c8ac20f1ca70",
+      "bytes": 1302,
+      "schema": "pricebook.schema.json"
+    },
+    "build-a.json": {
+      "sha256": "c8e79e925c5dda62b24aadd0ec17725636073b778bf2f8a040f5bac9c9fba5a4",
+      "bytes": 2095,
+      "schema": "build.schema.json"
+    }
+  },
+  "schemas": {
+    "build.schema.json": "1beacb0b01fcdea0b8b47357cdf2e99d80a10b8a4218aaac9e3b6af55391b42a",
+    "catalog-item.schema.json": "81c960c6e7dfe046634062e3f9ce5a1089b1d88adbd9fd45d9a67dcfc0339a25",
+    "catalog-snapshot.schema.json": "a5af428386768b698d280a18bf99c0e52364ee397a2075685213b3d0762693a4",
+    "common.schema.json": "0342ce2f1114e7276fc7f6a08ff5b86e8727caadd83ae4f443de9a7e1431c43c",
+    "component-registry.json": "cd60070e912a60504f605f2fd9f86c64520160cce7f4184c8ea200209c6b1918",
+    "cost-estimate.schema.json": "ef7cf8c0492022c1a8a1f971e49eb86dfad5b66ce6a4b2cf72a965fc9ba81259",
+    "dependency-graph.schema.json": "fb6a8bb42a9424d4ff2b520301f816c247789a3d70d1124afea1a8dc5ed5bd75",
+    "deployment-manifest.schema.json": "86bc716c906aca1299d9129eec08abec44378c26b5a97317d6310afe84d6b374",
+    "evaluation-report.schema.json": "78935ec78848de7655bd972851aa0357c4426f6870fc028ba81739c85040359b",
+    "event.schema.json": "e169ad8d2f7417580ef63a5098f8ec54dd514af3ce609c59bdb7780b89d6039a",
+    "pricebook.schema.json": "169e1a48847bee8b6af4b266a55bcebe317b5655dd6abb7718e06331b1df6288",
+    "quality-evaluation-run.schema.json": "ed6b3f60805428e3788ce27fa224fb3d5008998f0637f24723bf65eea546a959",
+    "resource-estimate.schema.json": "39ab5d061f9021ce14e1f987717441cff04d1a40f76db5582d343d599a5d876c",
+    "ruleset.schema.json": "b251e49774d7e6a34522555adefd40f56f5e647a8a2b4a69a0be0a4618b1a8d3",
+    "selection.schema.json": "f8f189c6555fec41e616c32f081d06fab9f966b0fa4891ddca55580f577d51a8"
+  },
+  "example_sources": {
+    "catalog.json": "2e9120db823faef3e1e330a7d2e8067b3ab064328e2faed699d15cf41880fbf8",
+    "pricebook.json": "716a848822fc2b182d226c597f7e50f4b00a0fe01ba5c03879e858ca6f0c9b46",
+    "build.json": "26762208769a8cf1012b4f33b1c1608556d275187ce21117d0b9632cdf951864"
+  },
+  "derivation": "Three existing fictional workload/compute/storage records and two estimated rates; distinct A/B release pins, a new compute version and corrected illustrative rate; unchanged original example files. Build remains a draft; no compatibility or complete-cost conclusion. Correction/retraction triggers use the existing internal EvidenceChangeEvent, not an invented frozen Event wire type."
+}

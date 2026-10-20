@@ -74,6 +74,48 @@ cannot format the date exactly, the original recorded date remains available.
 The [date contract, primary references and focused test obligations](../../tools/evidence-rendering/README.md#captured-date-presentation-under-58)
 keep current date work separate from the historical #36 results below.
 
+The separate #58 explanatory-copy extension uses the `PlannerUI` resource bundle
+for the claim card's static labels and closed grade/review messages. English,
+German and Arabic are explicit presentation examples; other languages fall back
+to English. Resource selection follows this view's current locale on each render.
+The original status, component/version/snapshot, raw capture date, source,
+retrieval method and both receipt types remain verbatim, including values that
+look like translation keys or Markdown. The existing Core mapping alone chooses
+the grade and review requirement. This adds no source inspection, acceptance,
+expiry rule or action. [Copy and native coverage](../../tools/evidence-rendering/README.md#claim-card-explanatory-copy-under-58)
+remain separate from whole-app language/market acceptance and #75's current
+analysis/response integration.
+
+The original copy-source macOS screenshot at
+`c6d7d313d723b924bb675a13c4f25208f8d55452` / prepared
+`f142c713bf667e25a69422384e38b348842f7452` exposed a visual defect in the
+Arabic card: neutral punctuation in values such as `method:%@` and
+`receipt:**literal**` could reorder beside the RTL label. The six original
+automated methods passed; their logical accessibility strings did not prove
+visual identifier order. The original artifact remains
+[artifact 12192650675 from run 39258577523](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39258577523/artifacts/12192650675).
+Its five selected PNG payloads and metadata were decoded without a new rendering
+run, and the Arabic image was independently inspected.
+
+The correction isolates each displayed value with Unicode FSI/PDI. Labels retain
+the view's language and layout, while each value takes its own first-strong
+direction. The production accessibility label uses those same real label/value
+inputs without presentation controls; stored values, dates, grades, receipts and
+the test host remain unchanged. No expected fixture text is injected into the
+production view. The mechanism follows
+[Unicode UAX #9 revision 52, sections 2.4–2.5](https://www.unicode.org/reports/tr9/tr9-52.html#Explicit_Directional_Isolates)
+(read on 2026-10-19). This uses the existing SwiftUI text/accessibility APIs rather
+than a newer-platform writing-direction API.
+
+The unchanged 14-scenario sixth method already includes the observed
+punctuation-heavy Arabic case, exact logical values, locale changes, recheck and
+English recovery, with all five selected viewport attachments. The correction
+requires new actual source-bound native results and inspection of the new Arabic
+PNG beside the original; the old successful run does not qualify the corrected
+pixels. Accessibility-string equality remains a logical-content check. Neither
+that equality nor these scoped screenshots establish a complete VoiceOver,
+physical-device or arbitrary mixed-script text-safety qualification.
+
 The two conflict fixtures deliberately preserve different centrally supplied
 dispositions. One contains numeric disagreement with a producer-reported
 conservative failure; the other contains equally ranked opposite yes/no claims
@@ -134,12 +176,12 @@ accessibility text; it is not evidence of physical-device layout, visual contras
 localization or a complete VoiceOver journey.
 
 The existing native UI job runs the original package model tests and the separate
-host's five macOS UI tests. The existing Core workflow runs the same five selected
+host's six macOS UI tests. The existing Core workflow runs the same six selected
 UI tests on its already inventoried iPhone and iPad. At this source baseline the pin is Xcode 16.4/16F6 and iOS
 18.5; each delivering run must retain its actual selected toolchain and destination
 identities. The new log gate reuses the strict XCTest parser with explicit module
 `PlannerEvidenceUITests`, keeping `PlannerCoreTests` as its unchanged default.
-It requires all five exact methods, unique starts and passes, exactly one complete
+It requires all six exact methods, unique starts and passes, exactly one complete
 matching `All tests` or `Selected tests` session and zero failures or skips. Its
 synthetic adversarial logs qualify the parser only; the older `PlannerUITests`
 module cannot qualify this host.
@@ -149,6 +191,18 @@ year limits and recovery with a required recheck. The four original native
 method bodies and all 37 frozen vectors remain unchanged. Their prior results
 do not establish execution of this additional method; the delivering date PR
 must retain its own actual configured native results.
+The sixth method adds 14 same-view copy scenarios: English/German/Arabic,
+Arabic right-to-left layout, unsupported-language English fallback, literal
+identifiers/receipts and return to English with the recheck still required.
+They use accessibility-sized text and retain named PNG attachments from the final
+visible viewport for five selected scenarios. These are scoped screenshots,
+not full scroll-content captures or an app-wide visual matrix. The first four
+method bodies remain exact; the fifth retains all ten date cases and assertions,
+with translated German/Arabic explanatory-label expectations and additional
+negative-label checks. All five old method identities remain required. A prior
+five-method receipt cannot qualify the six-method extension. Local source and
+synthetic receipt checks do not establish Swift compilation or native rendering;
+the new configured results and attachment review remain pending.
 Independent review reproduced a false acceptance of bare class/method names in
 the initial qualifier. The corrected UI call requires an explicit module prefix;
 the regression rejects those same bare names while Core's existing default

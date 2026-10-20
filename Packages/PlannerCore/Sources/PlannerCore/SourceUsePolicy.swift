@@ -173,6 +173,13 @@ public struct SourceUseAudit: Equatable, Sendable {
         self.conditionsReceiptReference = conditionsReceiptReference
         self.promotionReceiptReference = promotionReceiptReference
     }
+
+    // Receipt references are provenance identities and retain their exact bytes.
+    public static func == (lhs: Self, rhs: Self) -> Bool {
+        lhs.request == rhs.request && lhs.rightsRow == rhs.rightsRow
+            && lhs.conditionsReceiptReference.utf8.elementsEqual(rhs.conditionsReceiptReference.utf8)
+            && lhs.promotionReceiptReference.utf8.elementsEqual(rhs.promotionReceiptReference.utf8)
+    }
 }
 public enum SourceUseAssessment: Equatable, Sendable {
     case authorized(SourceUseAudit)
