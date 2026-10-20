@@ -4,7 +4,6 @@ import json
 import os
 from pathlib import Path
 import select
-import signal
 import subprocess
 import sys
 import tempfile
@@ -586,13 +585,20 @@ class SwiftMutationTests(unittest.TestCase):
                               for path in package.rglob('*') if path.is_file()}
                     identity = root / 'owned-processes.json'
                     address = root / 'child.pipe'
+                    stop = root / 'stop-child'
                     os.mkfifo(address)
                     connection = os.fdopen(os.open(address, os.O_RDONLY | os.O_NONBLOCK), 'rb', buffering=0)
                     self.addCleanup(connection.close)
                     child_program = ('import os, time\n'
-                                     f'connection = os.open({str(address)!r}, os.O_WRONLY)\n'
-                                     'os.write(connection, b"ready")\n'
-                                     'time.sleep(10)\n')
+                                     f'connection = os.open({str(address)!r}, os.O_WRONLY | os.O_NONBLOCK)\n'
+                                     'try:\n'
+                                     '    os.write(connection, b"ready")\n'
+                                     '    deadline = time.monotonic() + 10\n'
+                                     f'    while (time.monotonic() < deadline and os.path.isdir({str(root)!r})\n'
+                                     f'           and not os.path.exists({str(stop)!r})):\n'
+                                     '        time.sleep(0.05)\n'
+                                     'finally:\n'
+                                     '    os.close(connection)\n')
                     executable = root / 'synthetic-swift'
                     executable.write_text(
                         f'#!{sys.executable}\nimport json, os, subprocess, sys, time\n'
@@ -607,13 +613,10 @@ class SwiftMutationTests(unittest.TestCase):
                         'raise SystemExit(0 if mode == "baseline" else 1)\n', encoding='utf-8')
                     executable.chmod(0o755)
                     output = root / 'evidence'
-                    child = None
-                    child_closed = False
                     try:
                         with self.assertRaisesRegex(ValueError, 'Swift test timed out'):
                             runner.run(package, output, str(executable), 1)
                         ids = json.loads(identity.read_text())
-                        child = ids['child']
                         # Only the compiler child opens this pipe for writing. EOF
                         # observes its descriptor closure without confusing an
                         # unreaped zombie or host PID namespace with a live child.
@@ -623,7 +626,6 @@ class SwiftMutationTests(unittest.TestCase):
                         readable, _, _ = select.select([connection], [], [], 2)
                         self.assertTrue(readable, 'Owned compiler child kept its pipe open after the deadline')
                         self.assertEqual(connection.read(1), b'')
-                        child_closed = True
                         self.assertEqual(ids['group'], ids['parent'])
                         self.assertNotEqual(ids['group'], os.getpgrp())
                         with self.assertRaises(ProcessLookupError):
@@ -637,14 +639,17 @@ class SwiftMutationTests(unittest.TestCase):
                         self.assertEqual({path.relative_to(package): path.read_bytes()
                                           for path in package.rglob('*') if path.is_file()}, before)
                     finally:
-                        connection.close()
-                        if child is None and identity.exists():
-                            child = json.loads(identity.read_text())['child']
-                        if child is not None and not child_closed:
-                            try:
-                                os.kill(child, signal.SIGKILL)
-                            except ProcessLookupError:
-                                pass
+                        # Request cooperative cleanup only after the leak and
+                        # evidence assertions. The indirect child's recorded PID
+                        # cannot authorize a signal after its identity expires.
+                        try:
+                            stop.touch()
+                            for _ in range(40):
+                                readable, _, _ = select.select([connection], [], [], 0.05)
+                                if readable and connection.read(4096) == b'':
+                                    break
+                        finally:
+                            connection.close()
         finally:
             sentinel.kill()
             sentinel.wait(timeout=5)
