@@ -164,12 +164,45 @@ is reconciled: current documentation explicitly names this budget change.
 
 The separate simulator-inventory limit remains 60 seconds. Cost scan bounds,
 Cost and simulator job limits, device selection, attempts and every other
-command deadline remain unchanged. The Core job's separate outer allowance is
+command deadline remain unchanged. That preceding Core job's outer allowance was
 60 minutes after its original 40-minute budget expired during the final iPad
 Cost method. The [original timeout and bounded correction](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6283643770)
 retain all later negative/mutation checks and require complete fresh execution.
 No failed original was retried or relabelled, and no production App journey was
 changed to address these environment outcomes.
+
+## Core execution allowance after the 26543 original
+
+The Core job now allows 90 minutes for its unchanged required work. The
+`26543fcfc24a20be83c6288994d1473c939e31d5` original
+[job 118743047178](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39455999854/job/118743047178)
+emitted the required mutation command at 17:53:26.926540 UTC after its first
+setup line at 16:54:53.085190 UTC, an observed prefix of 58 minutes 33.841 seconds.
+Using the first displayed setup line only as a planning origin, subtracting that
+prefix from a nominal 60-minute allowance yields approximately 86.159 seconds.
+This is arithmetic against that chosen origin, not a measurement of GitHub's
+remaining job time or an assertion about its timer origin. The unchanged mutation runner performs one baseline and three fresh
+mutation processes, each with a 300-second wait. Their four wait allowances add
+20 minutes before copying, process creation and reaping, log reads, receipt work
+and artifact retention are accounted for. Using the same planning origin, subtracting that observed prefix and the four
+wait allowances from a nominal 90 minutes yields approximately 11 minutes
+26.159 seconds. This is again nominal arithmetic, not measured remaining job
+time. This is a finite capacity allowance, not a whole-step duration bound
+or a guarantee that a later original will finish.
+
+The original's four 151-case Core cohorts, six Evidence methods and three Cost
+methods on each iOS destination, both 27-control observations and the negative
+gate retain their completed scopes. Its mutation result is incomplete. The
+console reports cancellation, but its mechanism has not been independently
+established; the capacity correction does not relabel that cancellation as a
+confirmed job timeout. The complete original remains under its
+[existing custody and disposition](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6299259609).
+
+Only `jobs.macos-core.timeout-minutes` changes. All mutation anchors, child
+waits, process ownership and cleanup, exact test/negative-result qualification,
+toolchain pins, device selection and required-result gates remain unchanged.
+The simulator inventory deadline remains 60 seconds. No old original is rerun
+or promoted, and this new allowance has no completed current-source result yet.
 
 ## Delivery boundary
 
