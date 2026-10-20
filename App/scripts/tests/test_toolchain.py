@@ -186,5 +186,63 @@ class ToolchainPinTests(unittest.TestCase):
         self.assertEqual(run.call_args.kwargs["env"], verified)
 
 
+    def assert_json_pin_rejected_before_side_effects(self, data, diagnostic):
+        self.pin_file.write_text(data, encoding="utf-8")
+        environment_file = self.root / "json-github-env"
+        environment_file.write_text("EXISTING=value\n", encoding="utf-8")
+        out, err = io.StringIO(), io.StringIO()
+        verified = {"DEVELOPER_DIR": str(self.directory)}
+        with patch.object(toolchain, "verify_pin", return_value=verified) as verify, \
+             patch.object(toolchain.subprocess, "run", return_value=subprocess.CompletedProcess([], 0)) as command, \
+             patch("sys.stdout", out), patch("sys.stderr", err):
+            code = toolchain.main(["--pin", str(self.pin_file), "--github-env", str(environment_file),
+                                   "--", "synthetic-command-must-not-run"])
+        self.assertEqual(code, 2, out.getvalue() + err.getvalue())
+        self.assertIn(diagnostic, err.getvalue())
+        self.assertIn("Restore", err.getvalue())
+        self.assertNotIn("SYNTHETIC_UNTRUSTED_PIN", err.getvalue())
+        self.assertEqual(out.getvalue(), "")
+        verify.assert_not_called()
+        command.assert_not_called()
+        self.assertEqual(environment_file.read_text(encoding="utf-8"), "EXISTING=value\n")
+        self.assertEqual(self.pin_file.read_text(encoding="utf-8"), data)
+
+    def test_duplicate_json_members_fail_before_toolchain_or_environment_selection(self):
+        original = json.dumps(self.pin)
+        cases = [
+            ("conflicting-version", '{"xcodeVersion": "99.9",' + original[1:]),
+            ("identical-version", '{"xcodeVersion": "16.4",' + original[1:]),
+            ("escaped-version", '{"\\u0078codeVersion": "99.9",' + original[1:]),
+            ("conflicting-build", '{"xcodeBuildVersion": "SYNTHETIC_UNTRUSTED_PIN",' + original[1:]),
+            ("nested-discarded-object", '{"developerDirectory": {"child": 1, "child": 2},' + original[1:]),
+        ]
+        for name, data in cases:
+            with self.subTest(case=name):
+                self.assert_json_pin_rejected_before_side_effects(data, "duplicate object key")
+        self.pin_file.write_text(original, encoding="utf-8")
+        self.assertEqual(toolchain.load_pin(self.pin_file), self.pin)
+
+    def test_non_json_constants_fail_before_toolchain_or_environment_selection(self):
+        original = json.dumps(self.pin)
+        for token in ("NaN", "Infinity", "-Infinity"):
+            for location, prefix in [
+                ("member", '{"xcodeVersion": ' + token + ','),
+                ("nested-array", '{"developerDirectory": [' + token + '],'),
+            ]:
+                with self.subTest(token=token, location=location):
+                    self.assert_json_pin_rejected_before_side_effects(
+                        prefix + original[1:], "non-JSON number")
+        self.pin_file.write_text(original, encoding="utf-8")
+        self.assertEqual(toolchain.load_pin(self.pin_file), self.pin)
+
+    def test_unique_escaped_keys_and_quoted_constant_text_preserve_pin_values(self):
+        for build in ("16F6", "NaN", "Infinity"):
+            with self.subTest(build=build):
+                expected = {**self.pin, "xcodeBuildVersion": build}
+                data = json.dumps(expected, sort_keys=True).replace('"xcodeVersion"', '"\\u0078codeVersion"')
+                self.pin_file.write_text(data, encoding="utf-8")
+                self.assertEqual(toolchain.load_pin(self.pin_file), expected)
+
+
 if __name__ == "__main__":
     unittest.main()
