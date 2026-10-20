@@ -163,9 +163,13 @@ ownership, fresh evidence paths and cleanup acceptance remain. The independent
 is reconciled: current documentation explicitly names this budget change.
 
 The separate simulator-inventory limit remains 60 seconds. Cost scan bounds,
-Cost/Core/simulator job limits, device selection, attempts and every other
-command deadline remain unchanged. No failed original was retried or relabelled,
-and no production App journey was changed to address these environment outcomes.
+Cost and simulator job limits, device selection, attempts and every other
+command deadline remain unchanged. The Core job's separate outer allowance is
+60 minutes after its original 40-minute budget expired during the final iPad
+Cost method. The [original timeout and bounded correction](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6283643770)
+retain all later negative/mutation checks and require complete fresh execution.
+No failed original was retried or relabelled, and no production App journey was
+changed to address these environment outcomes.
 
 ## Delivery boundary
 
