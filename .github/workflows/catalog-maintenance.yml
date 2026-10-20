@@ -91,6 +91,15 @@ jobs:
             test_qualification.JSONIdentityQualificationTests.test_integral_numeric_history_and_pin_observations_remain_valid \
             test_qualification.JSONIdentityQualificationTests.test_nested_history_cannot_alias_boolean_currentness_with_numeric_zero \
             test_qualification.JSONIdentityQualificationTests.test_nonintegral_or_text_numeric_identities_remain_rejected \
+            test_qualification.ProducerJSONQualificationTests.test_duplicate_status_is_rejected_in_every_original_phase \
+            test_qualification.ProducerJSONQualificationTests.test_nested_history_and_cache_identity_duplicates_are_rejected \
+            test_qualification.ProducerJSONQualificationTests.test_escaped_names_and_equal_duplicate_values_are_rejected \
+            test_qualification.ProducerJSONQualificationTests.test_ignored_deep_duplicates_fail_with_value_free_diagnostics \
+            test_qualification.ProducerJSONQualificationTests.test_nonstandard_constants_in_ignored_nested_fields_are_rejected \
+            test_qualification.ProducerJSONQualificationTests.test_valid_distinct_names_strings_and_numeric_identity_still_qualify \
+            test_qualification.ProducerJSONQualificationTests.test_ordinary_failed_and_malformed_observations_remain_rejected \
+            test_qualification.ProducerJSONQualificationTests.test_output_budget_failed_exit_and_timeout_still_precede_json_admission \
+            test_qualification.ProducerJSONQualificationTests.test_source_change_still_precedes_json_admission \
             2>&1 | tee "$MAINTENANCE_EVIDENCE/qualification-tests.log"
       - name: Build the real cross-package executable with two jobs
         run: |
