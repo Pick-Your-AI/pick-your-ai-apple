@@ -11,7 +11,9 @@ conservative, explicitly pinned proof for unchanged package jobs.
 
 The native/package workflows still trigger on the same pull-request events
 and main pushes. A read-only Ubuntu job runs the scope regressions and
-[`native_scope.py`](../../tools/ci/native_scope.py) before allocating macOS:
+[`native_scope.py`](../../tools/ci/native_scope.py) before allocating macOS.
+The common package/UI/SDK scopes use the following rules; maintenance has the
+narrower single-record boundary described below.
 
 | Input | Native allocation |
 | --- | --- |
@@ -89,13 +91,56 @@ It is a prospective source offer, not an adopted receiver or hosted/native resul
 the 40-method accepted-base execution above keeps its own input identity.
 
 The historical package audit still conservatively allocates native when its
-inputs drift. The separate [catalog-maintenance workflow](../../.github/workflows/catalog-maintenance.yml)
-does not use this scope selector and remains allocated. No workflow, required
-context, timeout, current run or native assertion is changed. In particular the
-original #427 iPad launch timeout remains failed and unexplained. The selector
-and test changes themselves require applicable hosted/native gates before normal
-delivery. The broader #30 criteria and canonical editor/rendering closures retain
-their separate review and acceptance requirements.
+inputs drift. At this three-file offer, the separate
+[catalog-maintenance workflow](../../.github/workflows/catalog-maintenance.yml)
+did not use this selector and remained allocated. That offer changed no workflow,
+required context, timeout, current run or native assertion. The later bounded
+maintenance addition below has its own source and portable evidence. The original
+#427 iPad launch timeout remains failed and unexplained. These selector and test
+changes require applicable hosted/native gates before normal delivery. The broader
+#30 criteria and canonical editor/rendering closures retain their separate review
+and acceptance requirements.
+
+
+### Maintenance: one explanatory record
+
+The named `macos-catalog-maintenance` scope may skip only the exact regular
+`docs/validation/issue-72-finding-explanations.md` record after the same complete
+Git comparison and head-tree checks. It does not inherit the other 34 paths in
+the broader documentation set and has no package-audit entry. Any package change,
+other document, tool, fixture, workflow or unknown input still runs maintenance.
+The current event-base/receiving-parent mismatch also remains a native decision.
+
+The bounded input review covers the complete maintenance workflow, executable,
+manifests and Python driver/tests. Swift reads five fixed bundled JSON fixtures
+and isolated SQLite/cache state. Python selects the tool manifest and Sources,
+the four package manifests/Sources, basename/hash-pinned canonical schemas and
+temporary observations; it does not read or traverse repository docs. The separate
+#421 JSON-parser correction retains these roots and all 25 required receipt guards.
+If a later reader consumes this explanatory record, remove the exemption with it.
+
+The workflow retains its existing pull-request/main-push triggers, native job
+identity, toolchain, deadline, credentials policy and complete native steps.
+A five-minute Ubuntu preflight runs all scope controls and exports the exact
+Boolean decision. Its existing conservative condition pattern allocates the native
+job unless scope succeeds with explicit `false`; cancellation remains respected.
+The maintenance native body is otherwise byte-for-byte unchanged. The selector
+and workflow modifications themselves require ordinary receiving/native gates.
+This proposal neither adopts another branch nor restarts a current job.
+
+Four additional real-Git methods exercise all 35 general document entries plus
+maintenance/tool/neighbor inputs, exact add/modify/delete push and PR comparisons,
+mismatched parent, unsafe modes/links/renames, real CLI output and all five package
+comparisons with and without the record. All 42 preceding method bodies remain
+exact. The unchanged selector produced 35 expected assertion failures across two
+of four methods in 1.267 seconds; the other two passed. An earlier first baseline
+had one additional fixture-output cleanup cascade, retained separately; the new
+CLI fixture now cleans its own output in `finally`. The corrected complete suite
+passed all 46 distinct methods in 8.966 seconds on Linux CPython 3.12.14 /
+Git 2.51.1, with no failures, errors or skips. Its 7,401-byte original log has
+SHA-256 `f586b720e9461a825b3665f133e54d83e309f822cf731c36fa6e3f37a369b626`.
+These are disposable Python/Git decisions, not executed workflow, Swift, cache,
+simulator, physical-device or production maintenance evidence.
 
 ## Audited package inputs
 
@@ -473,7 +518,7 @@ reported as an executed Swift test, SDK build or device journey. No required-che
 setting or repository protection is changed. Future branch-protection setup must
 include meaningful preparation/scope checks and retain the native job names.
 
-The [42 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
+The [46 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
 PR test merges and main comparisons, a 3,006-file mixed change, source deletion and
 rename, unknown Markdown/fixtures, executable files, indirect symlink/submodule
 inputs, newline paths, invalid identities, divergent history, empty changes and the
@@ -513,7 +558,7 @@ with `--no-detach`, and zero detach regions. Fresh hosted scope results remain
 required for delivery.
 
 That 15-method lifetime receipt belongs to the linked editor checkpoint. The
-selector's current 42-method suite shares the same corrected setup across its original
+selector's current 46-method suite shares the same corrected setup across its original
 and audited-package classes; no assertion or cleanup error is suppressed.
 
 This change schedules future runs. It neither cancels existing main/current-head

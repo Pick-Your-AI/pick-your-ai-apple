@@ -206,6 +206,12 @@ def choose(repo: Path, *, event: str, head: str, base: str = "", before: str = "
         if len(entries) % 2:
             return Scope(True, "Unrecognized comparison format")
         count = len(entries) // 2
+        # Maintenance has only a separately reviewed single-record exemption.
+        # It has no package audit and does not inherit the broader document set.
+        documentation_paths = (
+            {"docs/validation/issue-72-finding-explanations.md"}
+            if job == "macos-catalog-maintenance" else DOCUMENTATION_PATHS
+        )
         only_documentation = True
         for index in range(0, len(entries), 2):
             fields = entries[index].split()
@@ -217,7 +223,7 @@ def choose(repo: Path, *, event: str, head: str, base: str = "", before: str = "
                     or any(not SHA.fullmatch(value.decode("ascii")) for value in fields[2:4])):
                 return Scope(True, "Change includes unsupported modes or metadata", count)
             path = entries[index + 1].decode("utf-8", errors="strict")
-            if path not in DOCUMENTATION_PATHS:
+            if path not in documentation_paths:
                 only_documentation = False
                 if not package_path(path):
                     return Scope(True, "Change includes inputs outside audited packages", count)

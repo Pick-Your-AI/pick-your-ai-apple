@@ -220,6 +220,103 @@ class NativeScopeTests(unittest.TestCase):
 
 
 
+    def test_maintenance_rejects_the_broader_documentation_and_tool_inputs(self):
+        allowed = "docs/validation/issue-72-finding-explanations.md"
+        # Enumerate the existing broader set; its membership is not permission
+        # for the independent maintenance job. The expected allowance is literal.
+        paths = scope.DOCUMENTATION_PATHS | {
+            "tools/catalog-maintenance/README.md",
+            "tools/catalog-maintenance/run.py",
+            "tools/catalog-maintenance/fixture-manifest.json",
+            ".github/workflows/catalog-maintenance.yml",
+            allowed + ".extra",
+            "Docs/validation/issue-72-finding-explanations.md",
+            "Packages/PlannerTransfer/Resources/issue-72-finding-explanations.md",
+        }
+        self.assertIn(allowed, paths)
+        for path in sorted(paths):
+            with self.subTest(path=path):
+                self.command("reset", "--hard", self.initial)
+                self.write(path, "Changed maintenance comparison input\n")
+                head = self.commit()
+                result = scope.choose(self.repo, event="push", head=head,
+                                      before=self.initial, job="macos-catalog-maintenance")
+                self.assertEqual(result.native_required, path != allowed)
+                self.assertEqual(result.changed_files, 1)
+
+    def test_maintenance_exact_record_retains_merge_mode_and_tree_guards(self):
+        path = "docs/validation/issue-72-finding-explanations.md"
+        previous = self.initial
+        for action in ("add", "modify", "delete"):
+            if action == "delete":
+                (self.repo / path).unlink()
+            else:
+                self.write(path, f"Synthetic maintenance comparison: {action}\n")
+            head = self.commit()
+            with self.subTest(action=action, event="push"):
+                result = scope.choose(self.repo, event="push", head=head,
+                                      before=previous, job="macos-catalog-maintenance")
+                self.assertFalse(result.native_required)
+                self.assertEqual(result.changed_files, 1)
+            tree = self.command("rev-parse", "HEAD^{tree}")
+            merge = self.command("commit-tree", tree, "-p", previous, "-p", head,
+                                 input=b"Synthetic maintenance documentation merge\n")
+            self.command("checkout", "--quiet", "--detach", merge)
+            with self.subTest(action=action, event="pull_request"):
+                result = scope.choose(self.repo, event="pull_request", head=merge,
+                                      base=previous, job="macos-catalog-maintenance")
+                self.assertFalse(result.native_required)
+                self.assertEqual(result.changed_files, 1)
+                self.assertTrue(scope.choose(
+                    self.repo, event="pull_request", head=merge, base=head,
+                    job="macos-catalog-maintenance").native_required)
+            self.command("checkout", "--quiet", "--detach", head)
+            previous = head
+
+        for kind in ("executable", "symlink", "indirect-source", "source-rename", "mixed-source"):
+            with self.subTest(kind=kind):
+                self.command("reset", "--hard", self.initial)
+                target = self.repo / path
+                target.parent.mkdir(parents=True, exist_ok=True)
+                if kind == "source-rename":
+                    self.command("mv", "Sources/Value.swift", path)
+                elif kind == "symlink":
+                    target.symlink_to("../../README.md")
+                else:
+                    self.write(path, "Synthetic finding receipt\n")
+                    if kind == "executable":
+                        os.chmod(target, 0o755)
+                    elif kind == "indirect-source":
+                        (self.repo / "Sources/Indirect.swift").symlink_to("../" + path)
+                    else:
+                        self.write("Sources/Value.swift", "struct ChangedValue {}\n")
+                head = self.commit()
+                self.assertTrue(scope.choose(
+                    self.repo, event="push", head=head, before=self.initial,
+                    job="macos-catalog-maintenance").native_required)
+
+    def test_maintenance_real_cli_requires_the_exact_document_and_valid_comparison(self):
+        for path, valid, expected in (
+                ("docs/validation/issue-72-finding-explanations.md", True, False),
+                ("README.md", True, True),
+                ("docs/validation/issue-72-finding-explanations.md", False, True)):
+            with self.subTest(path=path, valid_comparison=valid):
+                self.command("reset", "--hard", self.initial)
+                self.write(path, "Synthetic CLI maintenance comparison\n")
+                head = self.commit()
+                output = self.repo / "scope-output.txt"
+                env = dict(os.environ, APPLE_CI_EVENT="push", APPLE_CI_HEAD=head,
+                           APPLE_CI_BEFORE=self.initial if valid else "0" * 40,
+                           APPLE_CI_JOB="macos-catalog-maintenance", GITHUB_OUTPUT=str(output))
+                result = subprocess.run([sys.executable, str(SOURCE)], cwd=self.repo, env=env,
+                                        check=True, capture_output=True, text=True)
+                try:
+                    self.assertIs(json.loads(result.stdout)["native_required"], expected)
+                    self.assertEqual(output.read_text(), f"native_required={str(expected).lower()}\n")
+                finally:
+                    output.unlink(missing_ok=True)
+
+
 class AuditedPackageScopeTests(unittest.TestCase):
     command = NativeScopeTests.command
     write = NativeScopeTests.write
@@ -585,6 +682,24 @@ class AuditedPackageScopeTests(unittest.TestCase):
                 self.change_package("PlannerCore")
                 self.assert_all_native(before=previous)
 
+
+
+    def test_maintenance_never_uses_a_package_audit_skip(self):
+        job = "macos-catalog-maintenance"
+        self.assertNotIn(job, scope.JOB_INPUTS)
+        self.assertNotIn(job, self.audit["jobs"])
+        for package in self.packages:
+            for with_record in (False, True):
+                with self.subTest(package=package, with_record=with_record):
+                    self.command("reset", "--hard", self.initial)
+                    if with_record:
+                        self.write("docs/validation/issue-72-finding-explanations.md",
+                                   "Synthetic finding receipt\n")
+                    self.change_package(package)
+                    result = self.decide(job)
+                    self.assertTrue(result.native_required)
+                    self.assertEqual(result.changed_files, 2 if with_record else 1)
+                    self.assertEqual(result.reason, "No audited native job identity")
 
 
 if __name__ == "__main__":
