@@ -95,6 +95,31 @@ settings or prove that a branch check is required. An iOS SDK compile is not a
 simulator execution, physical-device result, signed app, TestFlight or release.
 Refer to the delivering PR and its exact Actions runs for observed results.
 
+### Hosted Core job runtime budget
+
+The [`macos-core` workflow](../../.github/workflows/swift-core.yml) has a finite
+60-minute job limit. This allowance covers its existing package tests, both
+mobile rendering sessions, intentional-failure check and mutation checks.
+Every existing command, toolchain pin, destination, receipt assertion and
+single-attempt behavior remains required.
+
+The [original #387 Core job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39380724292/job/118495515251)
+checked out `c83ca1d4bbef325bd64add00c1ef5903f67992af` and was cancelled at its
+previous 40-minute limit. GitHub's
+[check annotation](https://api.github.com/repos/Pick-Your-AI/pick-your-ai-apple/check-runs/118495515251/annotations)
+explicitly records that limit. All four Core sessions completed with 151 passing
+methods each, and all seven iPhone rendering methods passed. The iPad session
+completed five methods before stopping during its sixth; its seventh method did
+not start. The unchanged seven-method rendering receipt parser rejects that
+partial session. The later intentional-failure and mutation steps were skipped.
+
+The additional allowance addresses the observed outer-job cutoff; it does not
+identify the source of the slow execution or guarantee completion within 60
+minutes. The cancelled original stays cancelled. A fresh run of the actual
+receiving source must complete both rendering sessions and every later required
+step before the job can qualify. This budget change supplies no physical-device,
+accessibility-journey or release acceptance.
+
 ## Issue-level acceptance limits
 
 | Issues | Implemented slice | Remaining criteria |
