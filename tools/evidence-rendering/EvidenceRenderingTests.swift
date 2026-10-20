@@ -248,9 +248,39 @@ final class EvidenceRenderingTests: XCTestCase {
         #if os(macOS)
         button.click()
         #else
+        waitForScrollGeometryToSettle(app)
+        XCTAssertTrue(button.isHittable, "The fixture control must be hittable after scrolling stops.")
         button.tap()
         #endif
     }
+
+    #if !os(macOS)
+    private func waitForScrollGeometryToSettle(_ app: XCUIApplication) {
+        let content = app.descendants(matching: .any).matching(identifier: "evidence-harness-content").firstMatch
+        var previousCount: Int?
+        var previousFrames: [CGRect]?
+        var unchanged = 0
+        // Repeated labels establish content coverage, but not the end of an
+        // overscroll animation. Observe geometry without issuing another swipe.
+        let stationary = expectation(for: NSPredicate { _, _ in
+            let text = content.descendants(matching: .staticText)
+            let count = text.count
+            guard count > 0 else {
+                previousCount = nil
+                previousFrames = nil
+                unchanged = 0
+                return false
+            }
+            let frames = [content.frame, text.element(boundBy: 0).frame,
+                          text.element(boundBy: count - 1).frame]
+            unchanged = count == previousCount && frames == previousFrames ? unchanged + 1 : 0
+            previousCount = count
+            previousFrames = frames
+            return unchanged >= 2
+        }, evaluatedWith: content)
+        wait(for: [stationary], timeout: 10)
+    }
+    #endif
 
     @discardableResult
     private func assertRendered(_ app: XCUIApplication, id: String, index: Int, total: Int,
