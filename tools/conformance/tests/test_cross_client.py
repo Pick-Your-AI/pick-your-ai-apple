@@ -32,9 +32,18 @@ class CrossClientVectorTests(unittest.TestCase):
         self.assertEqual(sum(case['valid'] for case in result['cases']), 141)
         inputs = exporter.checked_inputs(self.placement)
         cases = {case['id']: case for case in result['cases']}
-        for case in json.loads(inputs['evidence'])['cases']:
+        source = json.loads(inputs['evidence'])
+        profile = exporter.evidence_cases(inputs['evidence'])
+        self.assertEqual(len(source['cases']), 41)
+        self.assertEqual(len(profile), 37)
+        self.assertEqual([case['id'] for case in profile], exporter.LOCK['evidenceProfile']['caseIDs'])
+        self.assertEqual(exporter.sha256(exporter.encoded_bundle(dict(source, cases=profile))),
+                         exporter.LOCK['evidenceProfile']['sha256'])
+        for case in profile:
             self.assertEqual(cases[case['id']]['payloadJSON'], case['payloadJSON'])
             self.assertEqual(cases[case['id']]['valid'], case['valid'])
+        for case_id in exporter.LOCK['evidenceProfile']['excludedSourceCaseIDs']:
+            self.assertNotIn(case_id, cases)
         placement = [case for case in result['cases'] if case['id'].startswith('placement/')]
         self.assertEqual(len(placement), 98)
         self.assertEqual({label: sum(case['disposition'] == label for case in placement)
@@ -42,6 +51,64 @@ class CrossClientVectorTests(unittest.TestCase):
                          {'preserved': 30, 'unresolved': 20, 'unsupported-field': 24, 'invalid-contract': 24})
         decimal = json.loads(cases['boundary/build/exact-decimal-string']['payloadJSON'])
         self.assertEqual(decimal['objectives']['monthly_budget_amount'], '9007199254740993.000000000001')
+
+    def require_profile_rejections_before_consumption(self, variants, message):
+        inputs = exporter.checked_inputs(self.placement)
+        baseline = exporter.bundle(self.contract, self.placement)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, entry in exporter.LOCK['inputs'].items():
+                path = root / entry['path']
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(inputs[name])
+            evidence = root / exporter.LOCK['inputs']['evidence']['path']
+            with patch.object(exporter, 'ROOT', root):
+                for label, changed in variants.items():
+                    with self.subTest(change=label):
+                        contents = exporter.encoded_bundle(changed)
+                        lock = deepcopy(exporter.LOCK)
+                        lock['inputs']['evidence']['sha256'] = exporter.sha256(contents)
+                        evidence.write_bytes(contents)
+                        try:
+                            with patch.object(exporter, 'LOCK', lock), \
+                                    patch.object(exporter, 'load_placement_adapter') as load_adapter, \
+                                    patch.object(exporter.reference, 'schema_results') as consume:
+                                with self.assertRaisesRegex(ValueError, message):
+                                    exporter.bundle(self.contract)
+                                load_adapter.assert_not_called()
+                                consume.assert_not_called()
+                            self.assertEqual(evidence.read_bytes(), contents)
+                        finally:
+                            evidence.write_bytes(inputs['evidence'])
+                self.assertEqual(exporter.bundle(self.contract), baseline)
+
+    def test_evidence_profile_requires_exact_source_case_identity_order_and_count(self):
+        source = json.loads(exporter.checked_inputs(self.placement)['evidence'])
+        variants = {name: deepcopy(source) for name in [
+            'missing-original', 'missing-excluded', 'duplicate-original', 'reordered-original',
+            'reordered-excluded', 'renamed-excluded', 'unrecognized-extra',
+        ]}
+        variants['missing-original']['cases'].pop(0)
+        variants['missing-excluded']['cases'].pop()
+        variants['duplicate-original']['cases'][1] = deepcopy(source['cases'][0])
+        variants['reordered-original']['cases'][0:2] = list(reversed(source['cases'][0:2]))
+        variants['reordered-excluded']['cases'][-2:] = list(reversed(source['cases'][-2:]))
+        variants['renamed-excluded']['cases'][-1]['id'] = 'evidence/unreviewed-explanation'
+        variants['unrecognized-extra']['cases'].append(dict(source['cases'][-1], id='evidence/unreviewed-extra'))
+        self.require_profile_rejections_before_consumption(
+            variants, 'Pinned cross-client evidence profile identities differ')
+
+    def test_evidence_profile_rejects_changed_original_bytes_even_with_a_new_source_pin(self):
+        source = json.loads(exporter.checked_inputs(self.placement)['evidence'])
+        variants = {name: deepcopy(source) for name in [
+            'payload-bytes', 'expectation', 'row-metadata', 'source-metadata',
+        ]}
+        variants['payload-bytes']['cases'][0]['payloadJSON'] += ' '
+        variants['expectation']['cases'][0]['valid'] = not source['cases'][0]['valid']
+        variants['row-metadata']['cases'][0]['unreviewed'] = True
+        variants['source-metadata']['unreviewed'] = True
+        self.require_profile_rejections_before_consumption(
+            variants, 'Pinned cross-client evidence profile bytes differ')
 
     def test_each_input_pin_rejects_drift_before_importing_the_placement_adapter(self):
         inputs = exporter.checked_inputs(self.placement)

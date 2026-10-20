@@ -123,10 +123,10 @@ parity. Require both checks for the same commit. This is partial #32/#37/#104
 coverage for evaluation reports only, not all 29 catalog kinds or service parity.
 The decoder's documented number/depth/timestamp exclusions remain client limits.
 
-`evidence_vectors.py --contract-root "$CONTRACT_ROOT" --check` adds 37 shared
+`evidence_vectors.py --contract-root "$CONTRACT_ROOT" --check` adds 41 shared
 evidence inputs for the Core decoder and actual SwiftUI rendering tests. It
 uses the shared source-copy containment check, re-verifies the completed frozen
-manifest and copied bytes, checks 28 accepted and nine rejected cases with the
+manifest and copied bytes, checks 32 accepted and nine rejected cases with the
 canonical schema consumer, and requires exact matching
 bytes in both package resources. The [evidence state mapping](../../Packages/PlannerUI/EVIDENCE_RENDERING.md)
 records the presence, conflict, skipped-rule and claim-grade boundaries, the
@@ -262,7 +262,16 @@ adds 223 identical golden wire payloads for actual Swift, canonical Python and
 the pinned website validator, plus six distinct Apple-local migration fixture
 descriptions. `cross_client.py --contract-root "$CONTRACT_ROOT" --check` verifies
 all derived bytes and canonical schema expectations, retaining all 98 placement
-and 37 evidence inputs. It does not change the original frozen import or model
+and 37 original evidence inputs. The lock explicitly names this 37-case profile
+within the accepted complete 41-case Core/UI evidence source: it pins the full
+source file, all 41 IDs and their order, the exact selected 37 IDs, and the
+canonical original 37-case file hash. The four named explanation cases remain
+in the complete Core/UI resources and tests, outside this shared profile.
+Unknown, missing, duplicate, reordered or changed selected rows are rejected
+before adapter/reference consumption. The generated 223 case rows stay exact;
+only their containing bundle's evidence-source pin changes. The prior bundle
+and its actual executions remain separately identified in the linked record.
+This does not change the original frozen import or model
 boundaries. `web_consumer.mjs` executes a private verified copy of the original
 website/runtime closure; it does not modify or deploy the website.
 

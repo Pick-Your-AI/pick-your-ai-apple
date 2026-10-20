@@ -1,5 +1,7 @@
 # Shared wire conformance and Apple local migrations
 
+The [2026-10-20 receiving evidence](#receiving-evidence--2026-10-20) below records the current prepared outputs and actual delegated decisions. Earlier preparation and pending-status accounts retain their original dates.
+
 This is the named **language-neutral conformance bundle and Apple migration
 results** for [Apple #37](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/37).
 `PlannerConformance` is a test-only package consuming existing `PlannerCore` and
@@ -17,11 +19,14 @@ source recovery alone.
 
 The [wire bundle](Tests/PlannerConformanceTests/Fixtures/cross-client-v1.json)
 has version `apple-cross-client-1`, SHA-256
-`8151da7e58e21f29acc5e1594950f1425bc2fb77eb46863a24df91ee39205cf4`.
+`8ae0d15ae236003d350d17066dfd1928cbe8a339095dac0299f4fefd4303d8cf`.
+The separately executed `41c6772c` preparation used the preceding bundle
+`8151da7e58e21f29acc5e1594950f1425bc2fb77eb46863a24df91ee39205cf4`;
+the evidence-profile continuation below requires its own receiving qualification.
 The original archive and previously executed consumer bundle remains
 `499fd9a01780ac42fa9bf2ab8cf9e1195db27321fec36040451b553a8b9ea5f9`.
 The current bundle changes only source-pin metadata for the accepted placement
-adapter and its checked helper; all 223 complete case rows, including every
+adapter, its checked helper and the complete 41-case evidence source; all 223 complete case rows, including every
 payload byte, and every other bundle field remain unchanged. Current execution
 and the original consumer receipts retain their separate source identities.
 Its [input lock](../../tools/conformance/cross-client-lock.json) pins every
@@ -58,6 +63,26 @@ including catalog's six and quality's eighteen documented client exclusions.
 | [Reviewed #35 placement output](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/e027fa8edaedb2ebfe11ede8ddd028e1e4c278b9/Packages/PlannerTransfer/PLACEMENT_RELATIONSHIPS.md) | All 98 original cases materialized: 30 preserved, 20 unresolved, 24 unsupported fields and 24 invalid contracts. |
 | [#36 evidence output](../PlannerUI/EVIDENCE_RENDERING.md) | All 37 original payload strings, byte-identical: 28 accepted and nine rejected. |
 | Explicit boundary additions | Required/unknown/null fields; unsupported wire versions; retained component revision strings; missing locks; incomplete drafts; decimal strings beyond binary64 precision; rejection of numeric or literal-unknown money. |
+
+The input lock names `apple-cross-client-1/original-evidence-37` explicitly.
+It first verifies the complete 41-case Core evidence file at SHA-256
+`12e4ce069d9bdf3055d5eb1400a33b3643a2860403d111ac95dd92bd09a81b72`.
+All source identities must equal the 37 selected IDs followed by the four named
+excluded IDs, in their exact order. The selected rows and all other source
+fields must reproduce the entire original 48,128-byte canonical evidence file
+at `9db8c150e7666549cd4ddeacf57bcbd4a0277c193090f9d55a7f90e22154d7be`.
+Missing, duplicate, reordered, renamed or additional rows, changed selected
+payload bytes or expectations, and changed source metadata reject before the
+placement adapter or canonical schema consumer is invoked.
+
+The four additional #72 cases are `evidence/explanation/reported-action`,
+`evidence/explanation/absent-action`, `evidence/explanation/empty-action` and
+`evidence/explanation/whitespace-action`. They remain unchanged in the complete
+41-case Core/UI resources and their accepted tests. They are explicitly outside
+this original 223-case shared profile; this record does not claim cross-client
+coverage of all 41 evidence cases. Relative to the preceding `8151da7e` bundle,
+only `inputPins.evidence.sha256` changes. Restoring that one pin recovers the
+preceding bundle byte-for-byte, preserving its original execution attribution.
 
 The distinction between a structurally accepted and an unresolved placement case
 is retained as `disposition`. Duplicate bindings, missing optional facts, unknown
@@ -576,3 +601,231 @@ evidence and saved-build semantic authority. Actual shared-service integration,
 browser journeys, installed mobile behavior, physical-device and release
 qualification keep their separate issue gates.
 No frozen source, wire schema, production model or repository ownership is changed.
+
+## Receiving evidence — 2026-10-20
+
+This dated section records the current received evidence for
+[Apple #37](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/37).
+The earlier preparation, failure and recovery accounts above retain their
+original dates and source identities. Their then-pending statements do not
+replace the current observations below. This section does not mark the issue
+complete or claim a main delivery that has not happened.
+
+### Exact source and observed preparation
+
+The contribution is
+[`66aef338b6a70909ee6663b5da98023bb25e6f36`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/66aef338b6a70909ee6663b5da98023bb25e6f36),
+tree `43bc23b9fc4acd081e70a5ad1d442f336a2ac03c`, with ordered parents
+`74d8387faa4d0354f6a5a6ff4afd97393d21f0c7` and
+`2a800687deb0e2c5356b226d309e36cc14f7b087`. Its
+[guarded adoption](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/383#issuecomment-6281264343)
+preserves both contributions and the existing implementation and receiving
+roles. The contributor commit is unsigned. The
+[public source review](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/383#pullrequestreview-5580563868)
+covers its two README resolutions and the unchanged remainder of that merge.
+
+The completed current Apple observations in this section belong to the actual valid-signed
+preparation
+[`41c6772c86f227b6f487f89af8e4448655b0ecad`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/41c6772c86f227b6f487f89af8e4448655b0ecad),
+with the same `43bc23b9` tree and ordered parents
+`[2a800687deb0e2c5356b226d309e36cc14f7b087, 66aef338b6a70909ee6663b5da98023bb25e6f36]`.
+Each linked current Apple job checked out that preparation. A later documentation
+commit carrying this record does not become the execution identity.
+
+Accepted main subsequently reached
+[`7f16020b21d890c9a391c8d4936e67ab33c4760e`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/7f16020b21d890c9a391c8d4936e67ab33c4760e).
+The reviewed, conflict-free source composition with `66aef338` is tree
+`6b8de7aecd18d7459454358ebc3847f89a3c63f7`: it retains all 341 contribution-tree
+entries and adds the four accepted #416 entries. This is a source preservation
+finding. The `41c6772c` results are not assigned to that larger tree or to an
+unperformed main push.
+
+### Current wire, reference and migration observations
+
+The selected wire input remains `apple-cross-client-1`, frozen contract `1.0.0`,
+canonical Research
+[`7acbefbf4e4e700231e88be272bc89e3a73dde15`](https://github.com/Pick-Your-AI/pick-your-ai-research/tree/7acbefbf4e4e700231e88be272bc89e3a73dde15/contracts/v1).
+All 43 manifest-listed canonical inputs retain their original bytes. The current
+wire fixture is blob `1566506e4bbf22508be6f089bde9670d112a2feb`, SHA-256
+`8151da7e58e21f29acc5e1594950f1425bc2fb77eb46863a24df91ee39205cf4`.
+Its 223 distinct case IDs have 141 accepted/preserved and 82
+rejected/preservation-null expectations. There are 220 distinct payload digests;
+three intentionally repeated payload pairs have different case IDs. Exact
+case attendance and complete values, rather than a unique-payload total, define
+this profile.
+
+The seven callable input pins, the complete current Swift wire and migration
+methods, and the original artifact contents were checked against immutable
+source. Original logs, their artifact copies and generated typed receipts agree.
+
+| Actual current output | Observed result at `41c6772c` | Public original evidence |
+| --- | --- | --- |
+| Swift wire consumer and existing Transfer suite | All 203 Transfer methods and all four exact wire methods pass. Every one of the 223 complete typed observations occurs inside its required method: 141 accepted with preserved values and 82 rejected with null preservation. The strict qualifier succeeds; the generic unsigned iOS Simulator compile also succeeds. | [Transfer job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066774/job/118404849482), [two-member wire artifact](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066774/artifacts/12239120342) |
+| Canonical Python and producer preparation | Both 21-method acceptance cohorts and all 88 conformance methods pass. All 137 schema payload results, six typed domain checks and three detected semantic mutants agree with the pinned inputs. The actual current canonical producer check verifies all 223 wire cases. | [Contract job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066744/job/118404703776), [preparation report](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066744/artifacts/12234596867) |
+| Apple local migration on macOS | All 70 exact Storage methods and all 20 typed, method-scoped migration observations pass. | [Storage job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066786/job/118404966211), [three-platform Storage artifact](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066786/artifacts/12238403161) |
+| Apple local migration on iPhone Simulator | The same 70-method set and all 20 observations pass on the selected iPhone simulator. | Same Storage job and artifact, with a separate platform log and receipt |
+| Apple local migration on iPad Simulator | The same 70-method set and all 20 observations pass on the selected iPad simulator. | Same Storage job and artifact, with a separate platform log and receipt |
+| Actual crash and recovery checks | Ten original draft-driver guards and eleven pending-write-driver guards pass. The compiled probes execute all three draft/future-migration exits and six pending-write cuts; recovery preserves the tested durable state. | Same Storage job and artifact; driver and native outcomes remain distinct |
+
+The exact Storage cohort is 31 `DraftStoreTests`, 35
+`PendingBuildWriteStoreTests` and four `MigrationFixtureTests`: 210 named method
+executions across the three platforms. Each platform's 20 migration observations
+contain six migration/reopen results, eight rollback/retry boundaries, three
+unsupported-version retention/compatible-backup recoveries and three history
+restorations. The six fixture descriptions still use
+`apple-local-migrations-1`, SHA-256
+`244e97154bb19b77b454280ba73fabe06a0f75f4fe353fdf5f265509e6100394`.
+The current Storage run used Xcode 16.4 build 16F6, Swift 6.1.2 and the selected
+iOS 18.5 simulator runtime. Its macOS, iPhone and iPad receipts are distinct
+executions, not a multiplication of one platform's output.
+
+The current strict log framing remains required. Earlier broken framing is not
+accepted by relaxing method identity, ownership, JSON types or whole-session
+attendance. The synchronous observation emitters and complete 70-method receipt
+now have actual successful current outputs. Earlier failed full runs and their
+separately identified corrections remain in the history above and in #383.
+
+The canonical reference subprocess reports success, but its individual method
+output is captured by its parent and is not present in the original job stream.
+This record therefore retains aggregate reference success and the exposed typed
+report; it does not invent a separate named child-method attendance list.
+
+### Available references retain their actual execution identities
+
+The original reference bundle is blob
+`69718936a83b83e91aca7a492e48720fd2fe6cce`, SHA-256
+`499fd9a01780ac42fa9bf2ab8cf9e1195db27321fec36040451b553a8b9ea5f9`.
+Every complete case row, `payloadJSON` byte sequence, expected Boolean/null
+value, reason and disposition equals the current `1566506e` bundle. Every other
+non-`inputPins` field is also exact. Replacing only the accepted placement-adapter
+and helper metadata reproduces the complete original bytes in both directions.
+This comparison supports reuse of the same observed vectors; it does not claim
+that an old consumer executed the later metadata file.
+
+| Available reference | Actual retained result and boundary | Receiving evidence |
+| --- | --- | --- |
+| Android repository test consumer | The original signed `3b5a8eaecb4c618c4a2c926b64e9a7312af4f0bb` preparation executes 260 distinct tests: 223 wire observations, 34 Android-private migration observations and three guards. All 24 receipt controls pass. The recovered original XMLs reproduce the entire original 65,948-byte qualified JSON. The ZIP, log, source, JAR, inventory and packaged schemas were recovered and compared; no consumer was rerun. | [Actual Android Core job](https://github.com/Pick-Your-AI/pick-your-ai-android/actions/runs/39282506990/job/118159391651), [original artifact](https://github.com/Pick-Your-AI/pick-your-ai-android/actions/runs/39282506990/artifacts/12201343431), and [accepted consumer source record](https://github.com/Pick-Your-AI/pick-your-ai-android/pull/432#pullrequestreview-5564990088) |
+| Website contract validator | The unchanged `dc66a9e269917ab7241c7d08fd0e7f2a2f039872` validator and 4,851-byte harness use the same eleven closure pins, Node 24.19.0, Ajv 8.20.0 and ajv-formats 3.0.1. The publicly retained original review records 223 observed cases, 141 accepted/deeply preserved and 82 rejected/null. The old raw console was not reacquired after workspace loss; this is attributed original evidence with exact current source/input equivalence, not a new execution. | [Original observation record](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/37#issuecomment-6273342904), [independent original review](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/37#issuecomment-6273752891), and [current website-reference receiving decision](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/37#issuecomment-6283186508) |
+| Future unshipped consumer | Explicitly unverified until it executes the published input/result interface and produces its own qualified observations. | No execution is inferred from a source port or another client's result. |
+
+Apple-private storage versions 1–3 and Android-private formats 1–5 keep their
+own definitions and failure/recovery observations. They are not a common on-disk
+migration protocol. The shared result is agreement on this pinned structural
+admission and typed-preservation profile, together with the explicitly versioned
+private migration boundaries.
+
+### Literal criteria and receiving roles
+
+The contract-governance and affected-client reviewers have each made an actual
+**ACCEPT WITH CONSTRAINTS** decision for source `66aef338`, tree `43bc23b9` and
+the current `41c6772c` evidence. Both reviewed version 2 of the complete 2026-10-20 receiving section
+and its index amendment, including all three literal criteria and four tasks. The affected-client delegate independently joined all 223 current Swift,
+canonical and recovered Android rows and all three 70-method/20-observation
+Storage receipts. The website-reference portion has the separately linked
+acceptance above. These are disclosed in-session project-delegate judgments,
+not named-person approvals, separate-account formal votes or substitutes for
+repository rules. Their accepted content still requires incorporation,
+publication and actual delivery reconciliation; it does not approve unseen
+changes or assign `41c6772c` outputs to a later source.
+
+| Literal #37 criterion | Current receiving disposition | Remaining recording or delivery work |
+| --- | --- | --- |
+| All clients agree on pinned cross-platform fixtures and migration behavior. | Contract governance and the affected-client delegate accept the concrete pinned profile with constraints. Current Swift/Python, the actual historical Android consumer and the attributed website original agree on the same complete 223 rows. Current Apple migrations have all 20 observations on each of three platforms; Android-private migrations remain separately versioned. | Preserve the two actual joint dispositions and the stated client/version limits through the subsequent source and delivery checks. |
+| Run identical version-pinned vectors through Swift and available references; a future unshipped client uses the published harness interface and remains explicitly unverified. | Both receiving roles accept current Swift and the available-reference evidence. Full input equivalence supports reuse of the actual historical Android/website results; their dates and original bundle identities remain literal. | Preserve the explicit unverified status of any additional unshipped consumer. Complete the selected configured delivery gates. |
+| The language-neutral conformance bundle and Apple migration results is linked with criterion results, exact versions, limitations and receiving-review disposition. | This amendment links the two versioned bundles, current original jobs/artifacts, concrete criterion outcomes and the actual receiving roles. Both receiving roles accepted the evidence package and version 2 record content with constraints. This continuation preserves those decisions and separately records the later failure status and source correction. | Publish the reviewed amendment with both actual decisions, link it from #37, then reconcile the configured gates, actual signed delivery and post-main results. No unseen amendment or future run is approved. |
+
+The four implementation tasks are mapped to concrete outputs: the shared
+223-row bundle and existing Python/web/Android interfaces; the historical-import
+and unsupported-version cases; the actual migration, rollback and crash outputs;
+and this versioned record of changed test interfaces, evidence, decisions and
+remaining limits. No production decoder schema, service, frozen contract,
+repository ownership or #346 implementation lane changes in this record.
+
+### Other configured results and remaining delivery gates
+
+The current preparation also has completed public Core and Catalog jobs and the
+macOS renderer. Core passes all 151 methods in each configured debug, release,
+iPhone, iPad and mutation-baseline cohort, both six-method Core rendering cohorts,
+and the intended mutation/negative controls. Catalog passes all 92 methods and
+its unsigned generic Simulator compile. The macOS evidence renderer passes six
+exact methods and all 64 source-defined scenario checks, with five retained
+screenshot attachments. Its result bundle records nine build warnings; this is
+not a warning-free or visual pixel-equivalence claim.
+
+Public evidence: [Core](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066710/job/118404829182),
+[Catalog](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066735/job/118404898456),
+and [macOS renderer](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066728/job/118404774780).
+All eight portable jobs are complete: six conservative scope jobs (including
+the SDK job's additional portable controls), dependency review and Contract
+preparation remain in their actual workflow groups. Their 431 literal passing observations cover 230
+distinct method identities; repeated scope cohorts are not counted as distinct
+methods. Every scope decision selected native work on the real 19-path change.
+
+At the 04:44 UTC checkpoint on 2026-10-20, the
+[native simulator job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066728/job/118404774801)
+and final `native-ui` job had completed with failure. The actual simulator
+original passes all 81 host guards, all 25 editor-model methods and the unsigned
+generic simulator build. Its first owned iPhone 17 Pro / iOS 26.2 destination
+then reaches the unchanged 300-second `simctl bootstatus -b` deadline while
+waiting on System App. No app install or launch and no iPad creation occurs.
+Shutdown and deletion of that exact owned device each succeed. The retained
+load and bounded diagnostic-probe timeouts are observations; they do not prove
+an underlying cause or authorize a changed deadline. The
+[original failure artifact](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066728/artifacts/12241212098)
+retains all 16 original members.
+
+The [native SDK job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066791/job/118404936631)
+and [Catalog maintenance job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39354066733/job/118404703649)
+now have completed successful public job states. Their distinct original logs
+and artifacts are retained; this statement records those job outcomes without
+assigning their output to another source. The failed whole-UI gate, repository
+approval requirements, actual signed integration and post-main observation
+remain open. No original job is restarted or its failure removed by this record.
+
+### Accepted #419 evidence-source continuation
+
+Accepted main subsequently reached
+[`e742379f9a474e632a998f1586515f4cb1280b18`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/e742379f9a474e632a998f1586515f4cb1280b18).
+Its four additional report-explanation cases remain in both complete 41-case
+Core/UI resources and all accepted native tests. The normal source merge with
+`66aef338` is conflict-free, but the unchanged cross-client producer rejects its
+changed evidence file at the exact input pin. That rejection was reproduced
+locally without changing any source bytes.
+
+The receiving correction explicitly selects the original 37 evidence cases
+through the named profile described above. It verifies the whole 41-case file,
+all selected and excluded IDs in order, and the entire original canonical
+37-case file hash before adapter/reference consumption. The four explanation
+cases are explicit exclusions from this original shared profile. The correction
+changes only `inputPins.evidence.sha256` in the wire bundle, producing blob
+`cc3ce4f61269f38e87be79ca80daa21608cc8a45`, SHA-256
+`8ae0d15ae236003d350d17066dfd1928cbe8a339095dac0299f4fefd4303d8cf`.
+Every complete case row and every other bundle field equals the actually
+executed `1566506e` bundle; restoring the single source pin recovers all of its
+original bytes. The earlier `69718936` available-reference comparison also
+remains exact through this metadata-only chain.
+
+Actual local validation of this correction passes all 92 conformance methods,
+all 11 focused cross-client methods under optimized Python, and the canonical
+223-case CLI check. The two added methods exercise eleven explicit rejection
+conditions for missing, duplicate, reordered, renamed or extra identities and
+changed selected bytes, expectations or metadata. Each requires rejection
+before adapter/reference consumption and successful restoration/retry. The
+complete accepted Core/UI resources, Swift observation emitters, native
+qualifiers and configured workflows are preserved.
+
+These local correction results are separate from all `41c6772c` observations
+above. The next normal receiving source must retain its own immutable source
+and preparation identities and qualify its actual configured outputs. The
+completed joint decisions remain scoped to the concrete received profile and
+version 2 record. The later profile correction has its own source review and
+local results; no new native result or final signed delivery is inferred.
+
+The retained evidence does not establish physical-device behavior, VoiceOver,
+browser journeys, installed Android behavior, remote service integration,
+production evaluator parity, arbitrary future payloads, TestFlight review or
+store/release approval. Temporary SQLite/probe binaries are not represented as
+retained artifact files. Screenshot bytes and recorded UI assertions do not
+constitute a separate visual review. The named #33/#35/#36 prerequisite outputs
+remain the concrete outputs already linked above; unrelated epic and release
+scope is not silently added to or completed by #37.

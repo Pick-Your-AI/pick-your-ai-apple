@@ -5,7 +5,7 @@
   "websiteRevision": "dc66a9e269917ab7241c7d08fd0e7f2a2f039872",
   "wireFixture": {
     "path": "Packages/PlannerConformance/Tests/PlannerConformanceTests/Fixtures/cross-client-v1.json",
-    "sha256": "8151da7e58e21f29acc5e1594950f1425bc2fb77eb46863a24df91ee39205cf4"
+    "sha256": "8ae0d15ae236003d350d17066dfd1928cbe8a339095dac0299f4fefd4303d8cf"
   },
   "migrationFixture": {
     "path": "Packages/PlannerData/Tests/PlannerDataTests/Fixtures/migration-cases.json",
@@ -27,7 +27,7 @@
     },
     "evidence": {
       "path": "Packages/PlannerCore/Tests/PlannerCoreTests/Fixtures/evidence-vectors.json",
-      "sha256": "9db8c150e7666549cd4ddeacf57bcbd4a0277c193090f9d55a7f90e22154d7be"
+      "sha256": "12e4ce069d9bdf3055d5eb1400a33b3643a2860403d111ac95dd92bd09a81b72"
     },
     "placement": {
       "path": "Packages/PlannerTransfer/Tests/PlannerTransferTests/Fixtures/placement-conformance.json",
@@ -102,5 +102,54 @@
       "integrity": "sha512-f3qQ9oQy9j2AhBe/H9VC91wLmKBCCU/gDOnKNAYG5hswO7BLKj09Hc5HYNz9cGI++xlpDCIgDaitVs03ATR84Q=="
     }
   },
-  "nodeVersion": "24.19.0"
+  "nodeVersion": "24.19.0",
+  "evidenceProfile": {
+    "name": "apple-cross-client-1/original-evidence-37",
+    "caseIDs": [
+      "evidence/outcome/pass/error",
+      "evidence/outcome/pass/warning",
+      "evidence/outcome/pass/info",
+      "evidence/outcome/fail/error",
+      "evidence/outcome/fail/warning",
+      "evidence/outcome/fail/info",
+      "evidence/outcome/unknown/error",
+      "evidence/outcome/unknown/warning",
+      "evidence/outcome/unknown/info",
+      "evidence/outcome/skipped/error",
+      "evidence/outcome/skipped/warning",
+      "evidence/outcome/skipped/info",
+      "evidence/absent-collection",
+      "evidence/empty-collection",
+      "evidence/reported-pass-without-support",
+      "evidence/no-findings",
+      "evidence/contradictory-evidence",
+      "evidence/unresolved-opposite-claims",
+      "evidence/not-applicable-reason",
+      "evidence/skipped-without-applicability",
+      "evidence/false-is-data",
+      "evidence/zero-is-data",
+      "evidence/empty-string",
+      "evidence/literal-not-applicable",
+      "evidence/literal-pass",
+      "evidence/literal-null-string",
+      "evidence/nested-unknown",
+      "evidence/escaped-controls",
+      "evidence/unsupported-version/0.9.0",
+      "evidence/unsupported-version/1.0.1",
+      "evidence/unsupported-version/2.0.0",
+      "evidence/missing-finding/outcome",
+      "evidence/missing-finding/severity",
+      "evidence/missing-finding/message",
+      "evidence/unsupported-verification-field",
+      "evidence/unsupported-evidence-field",
+      "evidence/null-collection"
+    ],
+    "excludedSourceCaseIDs": [
+      "evidence/explanation/reported-action",
+      "evidence/explanation/absent-action",
+      "evidence/explanation/empty-action",
+      "evidence/explanation/whitespace-action"
+    ],
+    "sha256": "9db8c150e7666549cd4ddeacf57bcbd4a0277c193090f9d55a7f90e22154d7be"
+  }
 }

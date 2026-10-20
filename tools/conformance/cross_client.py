@@ -36,7 +36,27 @@ def checked_inputs(placement_root=None):
         if sha256(data) != entry['sha256']:
             raise ValueError(f'Pinned cross-client input differs: {name}')
         result[name] = data
+    evidence_cases(result['evidence'])
     return result
+
+
+def evidence_cases(data):
+    """Select the exact original profile only after admitting the whole source."""
+    evidence = json.loads(data)
+    profile = LOCK['evidenceProfile']
+    selected = profile['caseIDs']
+    excluded = profile['excludedSourceCaseIDs']
+    expected = selected + excluded
+    if (profile['name'] != 'apple-cross-client-1/original-evidence-37' or
+            len(selected) != 37 or len(excluded) != 4 or len(set(expected)) != 41 or
+            evidence['lock']['contract_version'] != '1.0.0' or
+            [case['id'] for case in evidence['cases']] != expected):
+        raise ValueError('Pinned cross-client evidence profile identities differ')
+    by_id = {case['id']: case for case in evidence['cases']}
+    projected = dict(evidence, cases=[by_id[case_id] for case_id in selected])
+    if sha256(encoded_bundle(projected)) != profile['sha256']:
+        raise ValueError('Pinned cross-client evidence profile bytes differ')
+    return projected['cases']
 
 
 def load_placement_adapter(inputs, temporary):
@@ -98,10 +118,7 @@ def cases(inputs, placement_adapter):
         add('placement/' + case['name'], 'BuildSnapshot' if is_build else 'CatalogItem', payload,
             case['canonicalValid'], case['reason'], disposition=case['disposition'])
 
-    evidence = json.loads(inputs['evidence'])
-    if evidence['lock']['contract_version'] != '1.0.0' or len(evidence['cases']) != 37:
-        raise ValueError('The reviewed evidence corpus changed')
-    for case in evidence['cases']:
+    for case in evidence_cases(inputs['evidence']):
         add(case['id'], 'EvaluationReport', None, case['valid'],
             'Retain the published #36 payload bytes and presence/outcome boundary.', raw=case['payloadJSON'])
 
