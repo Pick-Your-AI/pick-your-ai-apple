@@ -59,7 +59,7 @@ supersede those source PRs.
 
 ## Validation and remaining acceptance
 
-Eight model/source regressions exercise the exact synthetic fixture, concurrent
+Eight original model/source regressions exercise the exact synthetic fixture, concurrent
 initialization, filter persistence and distinct versions, failed-page retry,
 cancellation-ignoring late reads, refresh between pages, invalid preferences and
 queries, and empty versus unavailable results. Tests use the real search actor
@@ -67,6 +67,12 @@ and controlled continuations; they do not shorten production delays or seed app
 storage. The native editor model suite and unsigned iOS app build must run on the
 exact proposed tree. Existing native checks and pinned source validators remain
 required; local whitespace/reference checks are not Swift execution evidence.
+
+The later [exact browser row identity correction](catalog-browser-row-identity.md)
+retains those eight methods and adds three regressions for UTF-8-distinct version
+pins, complete filtered pages and failed-page retry. Its eleven browser methods
+require their own actual native result; the bounded local value/index proof does
+not execute the browser model or replace that native qualification.
 
 An additional XCUITest journey exercises the actual browser query, Accelerator
 kind and kind ordering, process relaunch with persisted filters, exact pinned
@@ -95,7 +101,7 @@ git diff --check
 ```
 
 On the pinned Xcode/macOS host, run the full UI-model suite and app build using
-the checked-in native workflow. Inspect the eight `CatalogBrowserModelTests`
+the checked-in native workflow. Inspect all eleven `CatalogBrowserModelTests`
 results in its retained logs before accepting the model/source gate.
 
 The [native UI journey record](../../App/UI_JOURNEY.md) describes the exact controls,

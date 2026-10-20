@@ -151,7 +151,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
         root = Path(__file__).resolve().parents[3]
         for package, profile, count in (("PlannerData", "integrated-pending-data", 69),
                                         ("PlannerTransfer", "integrated-historical-resource-transfer", 209),
-                                        ("PlannerUI", "planning-inputs-descriptor-ui", 228)):
+                                        ("PlannerUI", "catalog-row-identity-ui", 231)):
             expected, groups = gate.PROFILES[profile]
             actual = set()
             for path in (root / "Packages" / package / "Tests" / (package + "Tests")).glob("*.swift"):
@@ -171,7 +171,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
         for profile in ("integrated-pending-data", "integrated-retained-transfer",
                         "integrated-ruleset-cache-transfer", "integrated-historical-resource-transfer",
                         "integrated-retained-ui",
-                        "planning-inputs-ui", "planning-inputs-descriptor-ui"):
+                        "planning-inputs-ui", "planning-inputs-descriptor-ui", "catalog-row-identity-ui"):
             text = self.profile_log(profile)
             self.assertEqual(self.run_profile(profile, text), 0)
             for suite, names in gate.PROFILES[profile][1].items():
@@ -189,7 +189,8 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                              ("integrated-ruleset-cache-transfer", "integrated-historical-resource-transfer"),
                              ("integrated-retained-ui-before-descriptor", "planning-inputs-ui"),
                              ("integrated-retained-ui", "planning-inputs-descriptor-ui"),
-                             ("planning-inputs-ui", "planning-inputs-descriptor-ui")):
+                             ("planning-inputs-ui", "planning-inputs-descriptor-ui"),
+                             ("planning-inputs-descriptor-ui", "catalog-row-identity-ui")):
             padded = self.profile_log(old, total=gate.PROFILES[current][0])
             with self.subTest(profile=current), self.assertRaises(SystemExit):
                 self.run_profile(current, padded)

@@ -33,7 +33,7 @@ Notes journey passes on both pinned simulators, with successful owned cleanup;
 see the [completed editor receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution).
 Its separate scope-cleanup failure remains recorded. The earlier 110 UI / 57
 Transfer composition is historical input. The current preparation requires all
-228 UI and 209 Transfer methods plus all seven complete journeys on each destination;
+231 UI and 209 Transfer methods plus all seven complete journeys on each destination;
 none of those expanded results is inferred from the earlier editor run.
 
 ## Current receiving source and required validation
@@ -108,7 +108,7 @@ fourth T6 journey exercises actual tab withdrawal, reopen and retained-input ret
 | Mandatory current job | Exact selected work |
 | --- | --- |
 | `native-evidence-rendering` | All six accepted real macOS Evidence methods and strict receipt, including Gregorian capture dates and localized claim copy, Xcode 16.4, unchanged 20-minute job. |
-| `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 228 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
+| `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 231 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
 | `native-cost-rendering` | Three real macOS Cost methods and their strict receipt, Xcode 16.4, separate 20-minute job. |
 | `native-ui-journey (iphone)` and `(ipad)` | All seven app journeys on each fresh pinned 18.5 destination, 24 runner controls, separate 20-minute jobs and unchanged 900-second inner test limit. |
 | `native-ui` | Result-only aggregate requires successful scope and every selected job's success; only an audited false scope permits all native jobs to skip. |
@@ -119,7 +119,7 @@ methods: 34 retained draft cases and 35 accepted pending-write cases, with both
 actual crash/recovery probes. The strict Data receiver checks every identity in
 the macOS, iPhone, iPad and submission SDK logs. Transfer requires 209 exact methods,
 the original nine reference phases and the separate Manifest controls. Submission
-SDK requires all five packages (151 Core, 69 Data, 209 Transfer, 92 Catalog, 228 UI; 749 total),
+SDK requires all five packages (151 Core, 69 Data, 209 Transfer, 92 Catalog, 231 UI; 752 total),
 all current App guards and both unsigned Release products with their separate SDK
 and privacy receipts. Static inventories are not execution observations.
 
@@ -167,7 +167,7 @@ package/target dependencies and both Resources and privacy-manifest processing.
 The original `682f04a8` / prepared `1e5b90b6` and planning donor `3f7f48ec` /
 prepared `228840ae` results describe their own source and base. Earlier original
 comparison and renderer results likewise retain their exact execution identities.
-Their receipt counts do not qualify this 749-method, seven-journey composition;
+Their receipt counts do not qualify this 752-method, seven-journey composition;
 the configured current-source native jobs and ordinary review/merge gates remain
 required. No native command, destination, attempt, deadline or cleanup rule changes.
 
@@ -181,7 +181,14 @@ signed receiving commit `c81a2806e41608856d799d47a51c82ebcd7e42c4`, tree
 The present documentation reconciliation leaves every executable input in that
 union unchanged. The earlier 744-declaration public source, its 17 portable
 controls, and each native preparation retain their original identities; no
-old native result qualifies this 749-declaration source.
+old native result qualifies that 749-declaration source.
+
+The subsequent [exact browser row identity correction](../docs/validation/catalog-browser-row-identity.md)
+retains those 749 declarations and adds three UI regressions. Its current
+`catalog-row-identity-ui` profile requires all 231 UI identities, including complete
+filtered pages and failed-page retry with distinct Unicode version pins. The
+752-declaration inventory above preserves all earlier profiles and original result
+attribution; the new source requires its own configured native qualification.
 
 ## Retained smoke and toolchain history
 

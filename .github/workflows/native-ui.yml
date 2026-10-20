@@ -133,7 +133,7 @@ jobs:
         run: |
           set -euo pipefail
           swift test --package-path Packages/PlannerUI --cache-path "$PWD/.build/native-package-cache" --scratch-path "$PWD/.build/native-swift-tests" 2>&1 | tee .build/native-evidence/model-tests.txt
-          python3 tools/ci/require_swift_test_results.py planning-inputs-descriptor-ui .build/native-evidence/model-tests.txt
+          python3 tools/ci/require_swift_test_results.py catalog-row-identity-ui .build/native-evidence/model-tests.txt
       - name: Build unsigned simulator app
         run: |
           set -o pipefail

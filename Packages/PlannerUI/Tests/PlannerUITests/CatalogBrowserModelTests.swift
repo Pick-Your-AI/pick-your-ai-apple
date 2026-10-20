@@ -212,4 +212,119 @@ final class CatalogBrowserModelTests: XCTestCase {
         XCTAssertNil(model.notice)
         XCTAssertFalse(model.canRetry)
     }
+
+    private func exactVersionEntries() -> [CatalogSearchEntry] {
+        [CatalogSearchEntry(id: "cat.alpha", version: "release.caf\u{00e9}", kind: "model", title: "Cafe Alpha"),
+         CatalogSearchEntry(id: "cat.alpha", version: "release.cafe\u{0301}", kind: "model", title: "Cafe Alpha"),
+         CatalogSearchEntry(id: "cat.other", version: "unrelated", kind: "accelerator", title: "Cafe Other")]
+    }
+
+    func testExactVersionRowIDsKeepEquivalentSpellingsSeparateAndExactCopiesEqual() throws {
+        let entries = exactVersionEntries()
+        let composed = CatalogBrowserRow(item: entries[0], snapshot: identity())
+        let decomposed = CatalogBrowserRow(item: entries[1], snapshot: identity())
+        // Swift's display-string equality must not define a catalog pin.
+        XCTAssertEqual(composed.item.version, decomposed.item.version)
+        XCTAssertNotEqual(Array(composed.item.version.utf8), Array(decomposed.item.version.utf8))
+        XCTAssertNotEqual(composed, decomposed)
+        XCTAssertNotEqual(composed.id, decomposed.id)
+        XCTAssertEqual(Set([composed.id, decomposed.id]).count, 2)
+
+        let copy = CatalogBrowserRow(item: CatalogSearchEntry(
+            id: String(decoding: Array(composed.item.id.utf8), as: UTF8.self),
+            version: String(decoding: Array(composed.item.version.utf8), as: UTF8.self),
+            kind: "model", title: "A new display title"), snapshot: identity(2))
+        XCTAssertEqual(composed.id, copy.id)
+        XCTAssertEqual(Set([composed.id, copy.id, decomposed.id]).count, 2)
+        var labels: [CatalogBrowserRow.ID: String] = [:]
+        labels[composed.id] = "composed"
+        labels[decomposed.id] = "decomposed"
+        XCTAssertEqual(labels.count, 2)
+        XCTAssertEqual(labels[copy.id], "composed")
+        XCTAssertEqual(labels[decomposed.id], "decomposed")
+        XCTAssertNotEqual(composed.id, CatalogBrowserRow(item: CatalogSearchEntry(
+            id: "cat.other", version: composed.item.version, kind: "model", title: "Cafe Alpha"),
+            snapshot: identity()).id)
+    }
+
+    func testExactVersionRowsRemainDistinctInOneFilteredPage() async throws {
+        for sort in CatalogBrowserSort.allCases {
+            let entries = exactVersionEntries()
+            let index = CatalogSearchIndex()
+            try await index.install(identity: identity(), entries: entries)
+            let source = ControlledCatalogSource(index: index)
+            let model = CatalogBrowserModel(source: source, availableKinds: ["model", "accelerator"], pageSize: 10)
+            model.setKind("model", included: true)
+            await model.waitForCurrentRequest()
+            model.setQuery(" CAFE ")
+            await model.waitForCurrentRequest()
+            model.setSort(sort)
+            await model.waitForCurrentRequest()
+            XCTAssertNil(model.notice)
+            XCTAssertFalse(model.isLoading)
+            XCTAssertEqual(model.rows.count, 2)
+            XCTAssertEqual(model.totalCount, 2)
+            XCTAssertEqual(Set(model.rows.map(\.id)).count, 2)
+            XCTAssertEqual(model.rows.map { Array($0.item.version.utf8) },
+                           [Array(entries[1].version.utf8), Array(entries[0].version.utf8)])
+            XCTAssertEqual(model.snapshot, identity())
+            XCTAssertFalse(model.canLoadMore)
+            XCTAssertFalse(model.canRetry)
+
+            let rows = model.rows, filters = model.filters
+            try await index.install(identity: identity(), entries: Array(entries.reversed()))
+            model.reload(); await model.waitForCurrentRequest()
+            XCTAssertEqual(model.rows, rows)
+            XCTAssertEqual(model.filters, filters)
+            XCTAssertEqual(model.totalCount, 2)
+            XCTAssertNil(model.notice)
+        }
+    }
+
+    func testExactVersionPaginationFailureRetryKeepsBothPinsCountsAndOrder() async throws {
+        for sort in CatalogBrowserSort.allCases {
+            let entries = exactVersionEntries()
+            let index = CatalogSearchIndex()
+            try await index.install(identity: identity(), entries: entries)
+            let source = ControlledCatalogSource(index: index)
+            let model = CatalogBrowserModel(source: source, availableKinds: ["model", "accelerator"], pageSize: 1)
+            model.setKind("model", included: true)
+            await model.waitForCurrentRequest()
+            model.setQuery(" CAFE ")
+            await model.waitForCurrentRequest()
+            model.setSort(sort)
+            await model.waitForCurrentRequest()
+            XCTAssertEqual(model.rows.count, 1)
+            XCTAssertEqual(model.totalCount, 2)
+            XCTAssertNil(model.notice)
+            XCTAssertTrue(model.canLoadMore)
+            let firstRows = model.rows, filters = model.filters, pin = model.snapshot
+
+            await source.failNextPage()
+            model.loadMore(); await model.waitForCurrentRequest()
+            XCTAssertEqual(model.notice, .unavailable)
+            XCTAssertEqual(model.rows, firstRows)
+            XCTAssertEqual(model.totalCount, 2)
+            XCTAssertEqual(model.filters, filters)
+            XCTAssertEqual(model.snapshot, pin)
+            XCTAssertFalse(model.canLoadMore)
+            XCTAssertTrue(model.canRetry)
+
+            // An idempotently reordered release must keep the failed page's cursor.
+            try await index.install(identity: identity(), entries: Array(entries.reversed()))
+            model.retry(); await model.waitForCurrentRequest()
+            XCTAssertNil(model.notice)
+            XCTAssertFalse(model.isLoading)
+            XCTAssertEqual(model.rows.count, 2)
+            XCTAssertEqual(model.totalCount, 2)
+            XCTAssertEqual(model.rows.prefix(firstRows.count), firstRows[...])
+            XCTAssertEqual(Set(model.rows.map(\.id)).count, 2)
+            XCTAssertEqual(model.rows.map { Array($0.item.version.utf8) },
+                           [Array(entries[1].version.utf8), Array(entries[0].version.utf8)])
+            XCTAssertEqual(model.filters, filters)
+            XCTAssertEqual(model.snapshot, pin)
+            XCTAssertFalse(model.canLoadMore)
+            XCTAssertFalse(model.canRetry)
+        }
+    }
 }

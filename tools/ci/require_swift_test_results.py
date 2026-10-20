@@ -952,6 +952,19 @@ PROFILES["planning-inputs-descriptor-ui"] = (228, {
 })
 
 
+# Keep the complete historical planning/descriptor inventory for its own source.
+# The current browser receiver additionally requires all three exact-row cases.
+PROFILES["catalog-row-identity-ui"] = (231, {
+    **PROFILES["planning-inputs-descriptor-ui"][1],
+    "PlannerUITests.CatalogBrowserModelTests": (
+        *PROFILES["planning-inputs-descriptor-ui"][1]["PlannerUITests.CatalogBrowserModelTests"],
+        "testExactVersionRowIDsKeepEquivalentSpellingsSeparateAndExactCopiesEqual",
+        "testExactVersionRowsRemainDistinctInOneFilteredPage",
+        "testExactVersionPaginationFailureRetryKeepsBothPinsCountsAndOrder",
+    ),
+})
+
+
 # Accepted historical-resource comparison adds nineteen exact Transfer identities.
 # Keep every earlier receiver unchanged for its original source.
 PROFILES['integrated-historical-resource-transfer'] = (209, {

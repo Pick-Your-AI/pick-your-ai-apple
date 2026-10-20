@@ -12,12 +12,18 @@ The [current App requirements](../../App/README.md#current-receiving-source-and-
 and [planning boundary](issue-64-planning-inputs.md) describe the combined source.
 
 Required package declarations are 151 Core, 69 Data, 209 Transfer, 92 Catalog and
-228 UI: 749 total, plus all seven App journeys per selected destination and all
+231 UI: 752 total, plus all seven App journeys per selected destination and all
 six Evidence-rendering methods. The nineteen accepted historical-resource methods
 extend the strict Transfer map without changing any earlier map or parser. The
 complete planning and accepted main Swift/test bodies, resource values, canonical
 four-package UI dependencies and privacy processing are retained. No prior native
 pass is promoted to this combined source; its configured results remain required.
+
+The [exact browser row identity follow-up](catalog-browser-row-identity.md) adds
+three UI regressions to the preceding 228-method browser/editor suite. The current
+profile preserves every earlier identity while requiring both distinct Unicode
+version pins in complete and retried pages. All earlier 749-declaration results
+remain observations of their original source; they do not qualify these additions.
 
 The current follow-up additionally receives accepted main
 `c512e99d9042669171cf418ddace3e3769fc854f` onto published

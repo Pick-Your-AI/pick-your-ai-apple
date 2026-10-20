@@ -65,6 +65,18 @@ public struct CatalogBrowserRow: Identifiable, Equatable, Sendable {
     public struct ID: Hashable, Sendable {
         public let catalogItemID: String
         public let version: String
+
+        // Catalog pins preserve original bytes; display-string equivalence must
+        // not collapse distinct versions in pagination or SwiftUI row identity.
+        public static func == (lhs: Self, rhs: Self) -> Bool {
+            lhs.catalogItemID.utf8.elementsEqual(rhs.catalogItemID.utf8) &&
+            lhs.version.utf8.elementsEqual(rhs.version.utf8)
+        }
+
+        public func hash(into hasher: inout Hasher) {
+            hasher.combine(Array(catalogItemID.utf8))
+            hasher.combine(Array(version.utf8))
+        }
     }
     public let item: CatalogSearchEntry
     public let snapshot: ArtifactIdentity
