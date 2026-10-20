@@ -167,6 +167,52 @@ def verified_bundle(root, dependencies):
     changed["findings"][0]["evidence"] = None
     add("null-collection", changed, False)
 
+    # Append consumer explanation cases without changing the original 37
+    # presence/conflict inputs. These are synthetic producer statements, not
+    # an approved rule, navigation target or client-generated corrective action.
+    for index, (label, outcome, action, selections) in enumerate((
+        ("reported-action", "fail",
+         "Compare **reported** limits for [sel_z_limit](fixture:only); keep the selection until review is complete.",
+         ["sel_z_limit", "sel_a_model"]),
+        ("absent-action", "unknown", None, ["sel_unresolved"]),
+        ("empty-action", "fail", "", []),
+        ("whitespace-action", "unknown", "\t \n\r\u00a0", ["sel_model", "sel_engine"]),
+    ), start=1):
+        changed = copy.deepcopy(base)
+        changed.update(id="evaluation.explanation." + label,
+                       build_id="build.explanation.fixture", build_revision=7,
+                       catalog_snapshot_id="catalog.explanation.fixture",
+                       ruleset_id="rules.explanation." + label,
+                       ruleset_version=f"2.3.4-draft.{index}",
+                       result="invalid" if outcome == "fail" else "indeterminate",
+                       deployment_readiness="needs_review",
+                       summary={"passed": 0, "failed": int(outcome == "fail"),
+                                "unknown": int(outcome == "unknown"), "skipped": 0})
+        finding = changed["findings"][0]
+        finding.update(rule_id="rule.explanation." + label,
+                       outcome=outcome, severity="warning", code="SYNTHETIC_EXPLANATION",
+                       message="Synthetic finding: inspect the recorded inputs for " + label + ".",
+                       selection_ids=selections, evidence=[])
+        if action is None:
+            finding.pop("remediation", None)
+        else:
+            finding["remediation"] = action
+        visible = [
+            "Reported ruleset: " + changed["ruleset_id"],
+            "Reported ruleset version: " + changed["ruleset_version"],
+            finding["rule_id"], finding["message"],
+        ]
+        if selections:
+            visible += [f"Reported participant selection {position}: {selection}"
+                        for position, selection in enumerate(selections, start=1)]
+        else:
+            visible.append("Reported participant selections: none supplied.")
+        if label == "reported-action":
+            visible.append("Reported remediation: " + action)
+        else:
+            visible.append("No corrective action is described in this finding. Review its evidence before changing a setting.")
+        add("explanation/" + label, changed, True, "empty", text=visible)
+
     results = reference.schema_results(root, cases)
     failures = [result["id"] for result in results if not result["passed"]]
     if failures:

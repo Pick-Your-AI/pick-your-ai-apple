@@ -32,14 +32,75 @@ class EvidenceVectorTests(unittest.TestCase):
         for path in exporter.OUTPUTS:
             self.assertEqual(path.read_bytes(), encoded, path)
         cases = result["cases"]
-        self.assertEqual(len(cases), 37)
-        self.assertEqual(sum(case["valid"] for case in cases), 28)
+        self.assertEqual(len(cases), 41)
+        self.assertEqual(sum(case["valid"] for case in cases), 32)
         matrix = [case for case in cases if case["id"].startswith("evidence/outcome/")]
         self.assertEqual({(case["outcome"], case["severity"]) for case in matrix},
                          {(outcome, severity) for outcome in ("pass", "fail", "unknown", "skipped")
                           for severity in ("error", "warning", "info")})
         self.assertTrue(all(case["observed"] == ["absent", "explicitNull", "literalUnknown"] for case in matrix))
         self.assertTrue(all(case["expected"] == ["absent", "explicitNull", "literalUnknown"] for case in matrix))
+
+    def test_explanations_keep_exact_rule_identity_participant_order_and_supplied_action(self):
+        cases = exporter.bundle(self.root)["cases"]
+        case = next(case for case in cases if case["id"] == "evidence/explanation/reported-action")
+        payload = json.loads(case["payloadJSON"])
+        finding = payload["findings"][0]
+        self.assertTrue(case["valid"])
+        self.assertEqual(payload["ruleset_id"], "rules.explanation.reported-action")
+        self.assertEqual(payload["ruleset_version"], "2.3.4-draft.1")
+        self.assertEqual(finding["rule_id"], "rule.explanation.reported-action")
+        self.assertEqual(finding["selection_ids"], ["sel_z_limit", "sel_a_model"])
+        action = ("Compare **reported** limits for [sel_z_limit](fixture:only); "
+                  "keep the selection until review is complete.")
+        self.assertEqual(finding["remediation"], action)
+        self.assertEqual(case["outcome"], "fail")
+        self.assertEqual(case["collection"], "empty")
+        for expected in (
+            "Reported ruleset: rules.explanation.reported-action",
+            "Reported ruleset version: 2.3.4-draft.1",
+            "rule.explanation.reported-action",
+            "Synthetic finding: inspect the recorded inputs for reported-action.",
+            "Reported participant selection 1: sel_z_limit",
+            "Reported participant selection 2: sel_a_model",
+            "Reported remediation: " + action,
+        ):
+            self.assertIn(expected, case["visibleText"])
+        self.assertFalse(any("No corrective action" in text for text in case["visibleText"]))
+
+    def test_unavailable_actions_preserve_omitted_empty_and_whitespace_inputs(self):
+        cases = {case["id"]: case for case in exporter.bundle(self.root)["cases"]}
+        expected_inputs = (
+            ("absent-action", None, ["sel_unresolved"], "unknown", "2.3.4-draft.2"),
+            ("empty-action", "", [], "fail", "2.3.4-draft.3"),
+            ("whitespace-action", "\t \n\r\u00a0", ["sel_model", "sel_engine"], "unknown", "2.3.4-draft.4"),
+        )
+        for label, action, selections, outcome, version in expected_inputs:
+            with self.subTest(label=label):
+                case = cases["evidence/explanation/" + label]
+                payload = json.loads(case["payloadJSON"])
+                finding = payload["findings"][0]
+                self.assertTrue(case["valid"])
+                self.assertEqual(case["outcome"], outcome)
+                self.assertEqual(case["collection"], "empty")
+                self.assertEqual(finding["selection_ids"], selections)
+                if action is None:
+                    self.assertNotIn("remediation", finding)
+                else:
+                    self.assertEqual(finding["remediation"], action)
+                    self.assertEqual(finding["remediation"].strip(), "")
+                self.assertEqual(payload["ruleset_id"], "rules.explanation." + label)
+                self.assertEqual(payload["ruleset_version"], version)
+                self.assertIn("Reported ruleset: rules.explanation." + label, case["visibleText"])
+                self.assertIn("Reported ruleset version: " + version, case["visibleText"])
+                self.assertIn("No corrective action is described in this finding. Review its evidence before changing a setting.",
+                              case["visibleText"])
+                self.assertFalse(any(text.startswith("Reported remediation:") for text in case["visibleText"]))
+                if not selections:
+                    self.assertIn("Reported participant selections: none supplied.", case["visibleText"])
+                else:
+                    for position, selection in enumerate(selections, start=1):
+                        self.assertIn(f"Reported participant selection {position}: {selection}", case["visibleText"])
 
     def test_either_consumer_drift_is_rejected_and_restored_bytes_recover(self):
         with tempfile.TemporaryDirectory() as directory:
@@ -73,7 +134,7 @@ class EvidenceVectorTests(unittest.TestCase):
         with patch.object(exporter.shutil, "copyfileobj", side_effect=corrupted_snapshot):
             with self.assertRaisesRegex(ValueError, "hash mismatch: examples/evaluation-report.json"):
                 exporter.bundle(self.root)
-        self.assertEqual(len(exporter.bundle(self.root)["cases"]), 37)
+        self.assertEqual(len(exporter.bundle(self.root)["cases"]), 41)
 
 
     def test_source_redirect_during_copy_is_rejected_before_consumption_and_recovers(self):
