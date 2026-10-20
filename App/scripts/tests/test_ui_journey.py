@@ -351,7 +351,14 @@ class UIJourneyRunnerTests(unittest.TestCase):
 
     def exercise_inventory_failure(self, error, expected_output, representation, exit_code):
         with tempfile.TemporaryDirectory() as directory:
-            evidence = Path(directory) / "evidence"
+            # Exercise the macOS temporary-directory alias boundary on every host.
+            canonical = Path(directory).resolve() / "canonical"
+            canonical.mkdir()
+            alias = Path(directory) / "alias"
+            alias.symlink_to(canonical, target_is_directory=True)
+            requested_evidence = alias / "evidence"
+            self.assertNotEqual(requested_evidence, requested_evidence.resolve())
+            evidence = requested_evidence.resolve()
             stderr_bytes = b"synthetic inventory stderr\x00\xff\n"
 
             def fail(command, **kwargs):
@@ -361,7 +368,7 @@ class UIJourneyRunnerTests(unittest.TestCase):
                     kwargs["stderr"].write(stderr_bytes)
                 raise error
 
-            with patch("sys.argv", ["ui-journey.py", "--evidence-directory", str(evidence),
+            with patch("sys.argv", ["ui-journey.py", "--evidence-directory", str(requested_evidence),
                                     "--suite", "all", "--destination", "iphone"]), \
                     patch.object(journey.subprocess, "check_output", side_effect=fail) as command, \
                     patch("time.monotonic", side_effect=[10.0, 70.25]), \
