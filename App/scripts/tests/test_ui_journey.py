@@ -6,7 +6,7 @@ from pathlib import Path
 import re
 import tempfile
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 SPEC = importlib.util.spec_from_file_location("ui_journey", Path(__file__).resolve().parents[1] / "ui-journey.py")
 journey = importlib.util.module_from_spec(SPEC)
@@ -568,6 +568,226 @@ class UIJourneyRunnerTests(unittest.TestCase):
                     self.assertFalse((evidence / "simulator-inventory-attempt.json").exists())
                 self.assertFalse((evidence / "journey-results.json").exists())
 
+
+
+class InventoryObserverTests(unittest.TestCase):
+    def test_observer_start_defers_diagnostic_directory_creation_to_its_worker(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(journey.sys, "platform", "darwin"), \
+                patch.object(journey.InventoryObserver, "start") as start, \
+                patch.object(Path, "mkdir", side_effect=OSError("caller must not perform diagnostic file I/O")) as mkdir:
+            observer = journey.start_inventory_observer(Path(directory))
+            self.assertIsInstance(observer, journey.InventoryObserver)
+            self.assertEqual(observer.evidence, Path(directory) / "inventory-observer")
+            start.assert_called_once_with()
+            mkdir.assert_not_called()
+
+    def test_still_running_observer_stop_performs_no_file_io_on_inventory_caller(self):
+        with tempfile.TemporaryDirectory() as directory:
+            observer = journey.InventoryObserver(Path(directory))
+            observer.worker = Mock()
+            observer.worker.is_alive.return_value = True
+            with patch.object(Path, "write_text", side_effect=OSError("caller must not write a completion marker")) as write:
+                observer.stop()
+            self.assertTrue(observer.stopped.is_set())
+            observer.worker.join.assert_called_once_with(timeout=1)
+            write.assert_not_called()
+
+    def test_fast_stop_cancels_and_joins_the_real_delayed_worker_without_a_probe(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(journey.subprocess, "Popen") as spawn:
+            observer = journey.InventoryObserver(Path(directory))
+            observer.start()
+            observer.stop()
+            self.assertFalse(observer.worker.is_alive())
+            spawn.assert_not_called()
+            self.assertEqual(list(Path(directory).iterdir()), [])
+
+    def test_original_inventory_outcome_survives_observer_stop_and_reporting_failure(self):
+        command = ["xcrun", "simctl", "list", "--json"]
+        cases = (None, journey.subprocess.TimeoutExpired(command, 60, output=b"partial\x00\xff"),
+                 journey.subprocess.CalledProcessError(73, command, output=b"partial\x00\xff"),
+                 FileNotFoundError("synthetic missing xcrun"))
+        for error in cases:
+            with self.subTest(error=type(error).__name__), tempfile.TemporaryDirectory() as directory:
+                observer = Mock()
+                observer.stop.side_effect = RuntimeError("synthetic observer stop failure")
+                text = json.dumps(inventory())
+                with patch.object(journey, "start_inventory_observer", return_value=observer), \
+                        patch.object(journey.subprocess, "check_output", side_effect=error, return_value=text) as call, \
+                        patch("builtins.print", side_effect=OSError("synthetic diagnostic stream failure")):
+                    if error is None:
+                        self.assertEqual(journey.collect_inventory(Path(directory), "ipad"), text)
+                    else:
+                        with self.assertRaises(type(error)) as caught:
+                            journey.collect_inventory(Path(directory), "ipad")
+                        self.assertIs(caught.exception, error)
+                observer.stop.assert_called_once_with()
+                call.assert_called_once()
+                self.assertEqual(call.call_args.args, (command,))
+                self.assertEqual(set(call.call_args.kwargs), {"text", "timeout", "stderr"})
+                self.assertIs(call.call_args.kwargs["text"], True)
+                self.assertEqual(call.call_args.kwargs["timeout"], 60)
+                self.assertTrue(call.call_args.kwargs["stderr"].closed)
+                if error is not None:
+                    raw = getattr(error, "output", None) or b""
+                    self.assertEqual((Path(directory) / "simulator-inventory.stdout.bin").read_bytes(), raw)
+                attempt = json.loads((Path(directory) / "simulator-inventory-attempt.json").read_text())
+                self.assertEqual(attempt["outcome"], "returned" if error is None else "failed")
+
+    def test_observer_start_failure_cannot_replace_the_inventory_exception(self):
+        error = journey.subprocess.TimeoutExpired(["xcrun", "simctl", "list", "--json"], 60)
+        with tempfile.TemporaryDirectory() as directory, patch.object(journey.sys, "platform", "darwin"), \
+                patch.object(journey.InventoryObserver, "start", side_effect=RuntimeError("no thread")), \
+                patch.object(journey.subprocess, "check_output", side_effect=error) as call, \
+                patch("builtins.print", side_effect=ValueError("closed diagnostic stream")):
+            with self.assertRaises(journey.subprocess.TimeoutExpired) as caught:
+                journey.collect_inventory(Path(directory), "iphone")
+            self.assertIs(caught.exception, error)
+            call.assert_called_once()
+            self.assertTrue(call.call_args.kwargs["stderr"].closed)
+
+    def test_non_macos_or_cancelled_delay_does_not_start_diagnostic_commands(self):
+        with tempfile.TemporaryDirectory() as directory, patch.object(journey.subprocess, "Popen") as spawn:
+            with patch.object(journey.sys, "platform", "linux"):
+                self.assertIsNone(journey.start_inventory_observer(Path(directory)))
+            observer = journey.InventoryObserver(Path(directory))
+            observer.stopped.set()
+            observer.capture()
+            spawn.assert_not_called()
+            self.assertEqual(list(Path(directory).iterdir()), [])
+
+    def test_cancelled_or_exhausted_budget_prevents_diagnostic_launch(self):
+        for stopped in (True, False):
+            with self.subTest(stopped=stopped), tempfile.TemporaryDirectory() as directory, \
+                    patch.object(journey.subprocess, "Popen") as spawn:
+                observer = journey.InventoryObserver(Path(directory))
+                observer.deadline = journey.time.monotonic() + (10 if stopped else -1)
+                if stopped:
+                    observer.stopped.set()
+                result = observer.command(["/bin/ps"], "not-started", 2)
+                self.assertEqual(result["outcome"], "not-started")
+                spawn.assert_not_called()
+                self.assertEqual(list(Path(directory).iterdir()), [])
+
+    def test_only_owned_diagnostic_children_are_cancelled_or_timed_out_and_reaped(self):
+        # These two short-lived Python children prove host process ownership and
+        # cleanup; they run no Apple tool, simulator, application, or native test.
+        real_popen = journey.subprocess.Popen
+        for cancel_after_spawn in (True, False):
+            children = []
+            with self.subTest(cancel_after_spawn=cancel_after_spawn), tempfile.TemporaryDirectory() as directory:
+                observer = journey.InventoryObserver(Path(directory))
+                observer.deadline = journey.time.monotonic() + 5
+
+                def spawn(*args, **kwargs):
+                    child = real_popen(*args, **kwargs)
+                    children.append(child)
+                    if cancel_after_spawn:
+                        observer.stopped.set()
+                    return child
+
+                try:
+                    with patch.object(journey.subprocess, "Popen", side_effect=spawn):
+                        result = observer.command(
+                            [journey.sys.executable, "-c", "import time; time.sleep(30)"], "owned", 0.1)
+                    self.assertEqual(len(children), 1)
+                    self.assertEqual(result["diagnosticPID"], children[0].pid)
+                    self.assertEqual(result["outcome"], "cancelled" if cancel_after_spawn else "timed-out")
+                    self.assertIsNotNone(children[0].returncode)
+                    self.assertLess(children[0].returncode, 0)
+                    self.assertEqual(children[0].wait(timeout=0.5), result["exitCode"])
+                    self.assertTrue((Path(directory) / "owned.stdout.bin").is_file())
+                    self.assertTrue((Path(directory) / "owned.stderr.bin").is_file())
+                finally:
+                    for child in children:
+                        if child.poll() is None:
+                            child.kill()
+                            child.wait(timeout=1)
+
+    def test_reported_process_selection_preserves_spelling_and_refuses_ambiguity(self):
+        raw = (b"42 41 Tue Oct 20 10:00:00 2026 /Applications/Xcode 16.4.app/Contents/Developer/usr/bin/simctl\n"
+               b"99 1 Tue Oct 20 09:00:00 2026 /Library/Developer/PrivateFrameworks/simdiskimaged\n"
+               b"7 6 Tue Oct 20 09:00:00 2026 /unrelated/simctl\n")
+        rows = journey.InventoryObserver.processes(raw)
+        self.assertEqual([row["pid"] for row in journey.InventoryObserver.targets(rows, 41)], [42, 99])
+        self.assertEqual(rows[0]["reportedStartTime"], "Tue Oct 20 10:00:00 2026")
+        self.assertIn("Xcode 16.4.app", rows[0]["reportedCommand"])
+        self.assertEqual(journey.InventoryObserver.targets(rows + [rows[0], rows[1]], 41), [])
+        for invalid in (b"bad identity\n", b"-1 41 Tue Oct 20 10:00:00 2026 /simctl\n", b"x" * (1024 * 1024 + 1)):
+            with self.subTest(invalid=invalid[:40]), self.assertRaises(ValueError):
+                journey.InventoryObserver.processes(invalid)
+
+    def capture_specimen(self, directory, changed_child=False):
+        evidence = Path(directory) / "inventory-observer"
+        observer = journey.InventoryObserver(evidence)
+        child = b"42 41 Tue Oct 20 10:00:00 2026 /Applications/Xcode_16.4.app/Contents/Developer/usr/bin/simctl\n"
+        service = b"99 1 Tue Oct 20 09:00:00 2026 /Library/Developer/PrivateFrameworks/simdiskimaged\n"
+        unrelated = b"7 6 Tue Oct 20 09:00:00 2026 /unrelated/simctl\n"
+        calls = []
+
+        def command(argv, stem, timeout):
+            calls.append((argv, stem, timeout))
+            stdout = stem + ".stdout.bin"
+            if argv[0] == "/bin/ps":
+                if "-ax" in argv:
+                    raw = child + service + unrelated
+                else:
+                    raw = child if argv[argv.index("-p") + 1] == "42" else service
+                    if changed_child and raw == child:
+                        raw = raw.replace(b"10:00:00", b"10:01:00")
+                (evidence / stdout).write_bytes(raw)
+            else:
+                self.assertEqual(argv[0], "/usr/bin/sample")
+                self.assertEqual(argv[2:4], ["1", "10"])
+                Path(argv[-1]).write_text("Synthetic sample specimen; no native execution.\n")
+            return {"command": argv, "stdoutFile": stdout, "outcome": "returned", "exitCode": 0}
+
+        with patch.object(observer.stopped, "wait", return_value=False), \
+                patch.object(observer, "command", side_effect=command), \
+                patch.object(journey.os, "getpid", return_value=41), \
+                patch.dict(journey.os.environ, {"DEVELOPER_DIR": "/Applications/Xcode_16.4.app/Contents/Developer",
+                                               "ImageVersion": "synthetic-image", "SYNTHETIC_SECRET": "never retain"}):
+            observer.capture()
+        pending = json.loads((evidence / "pending.json").read_text())
+        self.assertIs(pending["observerStarted"], True)
+        self.assertEqual(pending["completionFile"], "observation.json")
+        return calls, json.loads((evidence / "observation.json").read_text())
+
+    def test_pending_capture_uses_one_table_bounded_rechecks_and_at_most_two_samples(self):
+        with tempfile.TemporaryDirectory() as directory:
+            calls, record = self.capture_specimen(directory)
+        self.assertEqual([argv[0] for argv, _, _ in calls],
+                         ["/bin/ps", "/bin/ps", "/usr/bin/sample", "/bin/ps", "/usr/bin/sample"])
+        self.assertEqual(sum("-ax" in argv for argv, _, _ in calls), 1)
+        self.assertEqual([argv[argv.index("-p") + 1] for argv, _, _ in calls if "-p" in argv], ["42", "99"])
+        self.assertTrue(all(0 < timeout <= 3 for _, _, timeout in calls))
+        self.assertEqual([row["target"]["pid"] for row in record["samples"]], [42, 99])
+        self.assertTrue(record["selectionIsInferred"])
+        self.assertIn("not a process handle", record["identityLimit"])
+        self.assertEqual(record["budgetSeconds"], 10)
+        self.assertNotIn("SYNTHETIC_SECRET", record["environment"])
+        self.assertEqual(record["environment"]["ImageVersion"], "synthetic-image")
+
+    def test_changed_reported_process_identity_is_not_sampled(self):
+        with tempfile.TemporaryDirectory() as directory:
+            calls, record = self.capture_specimen(directory, changed_child=True)
+        self.assertEqual([argv[1] for argv, _, _ in calls if argv[0] == "/usr/bin/sample"], ["99"])
+        self.assertEqual(record["samples"][0]["outcome"], "identity-unavailable-or-changed")
+
+    def test_optional_capture_and_recording_errors_do_not_escape(self):
+        with tempfile.TemporaryDirectory() as directory:
+            evidence = Path(directory) / "inventory-observer"
+            observer = journey.InventoryObserver(evidence)
+            with patch.object(observer.stopped, "wait", return_value=False), \
+                    patch.object(observer, "command", side_effect=OSError("synthetic unavailable ps")):
+                observer.capture()
+            record = json.loads((evidence / "observation.json").read_text())
+            self.assertEqual(record["diagnosticError"]["class"], "OSError")
+            observer = journey.InventoryObserver(Path(directory) / "unwritable-observer")
+            with patch.object(observer.stopped, "wait", return_value=False), \
+                    patch.object(observer, "command", side_effect=OSError("synthetic unavailable ps")), \
+                    patch.object(Path, "write_text", side_effect=OSError("synthetic full disk")), \
+                    patch("builtins.print", side_effect=ValueError("synthetic closed diagnostic stream")):
+                observer.capture()
 
 
 if __name__ == "__main__":

@@ -60,6 +60,44 @@ are reused here, with no new execution claim. The following earlier receiving
 record retains its original revisions and counts; its 209 Transfer /
 756 package inventory is not the requirement for this new source.
 
+#### Evidence from a pending simulator inventory attempt
+
+The [04b iPad original](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39398429701/job/118548102048)
+passed its 29 portable controls, then the single `xcrun simctl list --json` call
+timed out after 60 seconds with empty retained stdout/stderr, before device
+selection or App build. Its cause remains unresolved. The runner now preserves
+that exact command, timeout, output streams and original error while a macOS-only
+observer waits 20 seconds for the same attempt to remain pending.
+
+The observer has a separate ten-second command budget. It retains whitelisted
+image/toolchain metadata and one `ps` table containing PID, parent PID, reported
+start time and command, without argument or environment columns. At most two
+inferred candidates are eligible for one-second `sample` observations: the unique
+inventory child candidate and unique `simdiskimaged`. Each gets a bounded identity
+recheck first; ambiguity, disappearance or changed reported fields prevents that
+sample. These snapshots do not provide a race-free process handle or verified
+binary identity. Sampling permission failures remain diagnostic results.
+
+When inventory returns or fails, cancellation terminates/reaps only observer-created
+diagnostic children, and the caller allows at most one second for the observer
+thread to finish. That separate shutdown allowance does not change the inventory
+command's 60-second deadline or its recorded duration. Diagnostic OS process
+creation and file I/O cannot be forcibly interrupted. Directory creation, the
+initial `inventory-observer/pending.json` marker and the final `observation.json`
+all belong to the daemon; starting or stopping it performs no diagnostic file or
+stream I/O on the inventory caller. A pending marker without a final record means
+no completion was retained. Failed or blocked setup may leave no marker, and
+missing evidence never proves completion. Optional observer errors cannot replace
+the inventory outcome. All observer files stay inside the fresh
+owned evidence directory and follow its existing artifact retention. No additional
+inventory, service control, privilege escalation, runtime installation or retry is
+introduced, and this change establishes no native pass or runtime fix.
+
+The scope follows Apple's [narrow simulator backtrace guidance](https://developer.apple.com/forums/thread/756767)
+and [documented sample duration/interval](https://developer.apple.com/library/archive/documentation/Performance/Conceptual/LaunchTime/Articles/MeasuringLaunch.html).
+The portable observer controls exercise process ownership and failure preservation;
+real Apple diagnostic behavior still needs its own current-source hosted result.
+
 ### Earlier receiving record
 
 The [integration record](../docs/validation/imported-build-integration.md) names the
@@ -134,7 +172,7 @@ fourth T6 journey exercises actual tab withdrawal, reopen and retained-input ret
 | `native-evidence-rendering` | All six accepted real macOS Evidence methods and strict receipt, including Gregorian capture dates and localized claim copy, Xcode 16.4, unchanged 20-minute job. |
 | `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 235 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
 | `native-cost-rendering` | Three real macOS Cost methods and their strict receipt, Xcode 16.4, separate 20-minute job. |
-| `native-ui-journey (iphone)` and `(ipad)` | All seven app journeys on each fresh pinned 18.5 destination, 29 runner controls, separate 55-minute jobs and a bounded 2,700-second inner test limit. |
+| `native-ui-journey (iphone)` and `(ipad)` | All seven app journeys on each fresh pinned 18.5 destination, 41 runner controls, separate 55-minute jobs and a bounded 2,700-second inner test limit. |
 | `native-ui` | Result-only aggregate requires successful scope and every selected job's success; only an audited false scope permits all native jobs to skip. |
 
 The inventory runner retains evidence from the same single 60-second
