@@ -10,4 +10,5 @@ let package = Package(
               .target(name: "PlannerData", dependencies: ["CSQLite"]),
               .executableTarget(name: "DraftCrashProbe", dependencies: ["PlannerData"]),
               .executableTarget(name: "PendingWriteCrashProbe", dependencies: ["PlannerData"]),
-              .testTarget(name: "PlannerDataTests", dependencies: ["PlannerData", "CSQLite"])])
+              .testTarget(name: "PlannerDataTests", dependencies: ["PlannerData", "CSQLite"],
+                          resources: [.process("Fixtures")])])
