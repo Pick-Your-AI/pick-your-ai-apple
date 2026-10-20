@@ -19,7 +19,7 @@ class EvidenceRenderingReceiptTests(unittest.TestCase):
                   f"\t Executed {len(methods)} tests, with 0 failures (0 unexpected) in 0.040 (0.040) seconds"]
         return "\n".join(lines) + "\n"
 
-    def test_exact_native_ui_module_and_all_six_methods_are_required(self):
+    def test_exact_native_ui_module_and_all_current_methods_are_required(self):
         qualifier.require_rendering_receipt(self.receipt())
         qualifier.require_rendering_receipt(self.receipt().replace("Selected tests", "All tests"))
         for text in [self.receipt(module="PlannerCoreTests"), self.receipt(module="PlannerUITests"),
@@ -50,9 +50,19 @@ class EvidenceRenderingReceiptTests(unittest.TestCase):
     def test_previous_four_method_receipt_cannot_qualify_the_date_extension(self):
         previous = sorted(qualifier.REQUIRED - {
             "EvidenceRenderingTests.testCaptureDateLocaleChangesPreserveGregorianDayAndRetainedEvidence",
-            "EvidenceRenderingTests.testVisibleBuildAnalysisNeverRendersRetainedReportsForOtherRevisionsOrRetiredRequests"
+            "EvidenceRenderingTests.testVisibleBuildAnalysisNeverRendersRetainedReportsForOtherRevisionsOrRetiredRequests",
+            "EvidenceRenderingTests.testClaimCopyLocaleRTLAndRecoveryPreserveVerbatimEvidenceAndRecheck",
         })
         self.assertEqual(len(previous), 4)
+        with self.assertRaises(ValueError):
+            qualifier.require_rendering_receipt(self.receipt(methods=previous))
+
+    def test_previous_five_method_receipt_cannot_qualify_the_copy_extension(self):
+        previous = sorted(qualifier.REQUIRED - {
+            "EvidenceRenderingTests.testClaimCopyLocaleRTLAndRecoveryPreserveVerbatimEvidenceAndRecheck",
+            "EvidenceRenderingTests.testVisibleBuildAnalysisNeverRendersRetainedReportsForOtherRevisionsOrRetiredRequests",
+        })
+        self.assertEqual(len(previous), 5)
         with self.assertRaises(ValueError):
             qualifier.require_rendering_receipt(self.receipt(methods=previous))
 
@@ -63,11 +73,27 @@ class EvidenceRenderingReceiptTests(unittest.TestCase):
             "EvidenceRenderingTests.testVisibleBuildAnalysisNeverRendersRetainedReportsForOtherRevisionsOrRetiredRequests",
         }:
             with self.subTest(absent=absent):
-                previous = sorted(qualifier.REQUIRED - {absent})
+                previous = sorted(qualifier.REQUIRED - {absent,
+                    "EvidenceRenderingTests.testClaimCopyLocaleRTLAndRecoveryPreserveVerbatimEvidenceAndRecheck"})
                 self.assertEqual(len(previous), 5)
                 with self.assertRaises(ValueError):
                     qualifier.require_rendering_receipt(self.receipt(methods=previous))
         qualifier.require_rendering_receipt(self.receipt())
+
+    def test_each_six_method_predecessor_cannot_qualify_the_combined_extension(self):
+        extensions = {
+            "EvidenceRenderingTests.testCaptureDateLocaleChangesPreserveGregorianDayAndRetainedEvidence",
+            "EvidenceRenderingTests.testVisibleBuildAnalysisNeverRendersRetainedReportsForOtherRevisionsOrRetiredRequests",
+            "EvidenceRenderingTests.testClaimCopyLocaleRTLAndRecoveryPreserveVerbatimEvidenceAndRecheck",
+        }
+        original = qualifier.REQUIRED - extensions
+        self.assertEqual(len(original), 4)
+        for absent in extensions:
+            with self.subTest(absent=absent):
+                previous = sorted(original | (extensions - {absent}))
+                self.assertEqual(len(previous), 6)
+                with self.assertRaises(ValueError):
+                    qualifier.require_rendering_receipt(self.receipt(methods=previous))
 
 
 if __name__ == "__main__":

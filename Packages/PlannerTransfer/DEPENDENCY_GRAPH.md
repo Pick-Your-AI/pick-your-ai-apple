@@ -67,8 +67,8 @@ swift test --package-path Packages/PlannerTransfer
 
 Use the [locked Transfer reference environment](Tools/reference-environment.md)
 with its complete hash-pinned requirements in a fresh virtual environment. The
-validator remains `jsonschema==4.26.0`; the combined verifier expects fourteen
-pins and seven corpora. These are current source expectations; the historical
+validator remains `jsonschema==4.26.0`; the combined verifier expects seventeen
+pins and nine corpora. These are current source expectations; the historical
 execution records below retain their actual counts and environments.
 The graph generator writes only its synthetic compact mutation resource when invoked
 with `--write`; its default mode verifies deterministic bytes. The same 150 cases

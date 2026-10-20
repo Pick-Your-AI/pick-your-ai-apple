@@ -45,6 +45,11 @@
       ]
     },
     "macos-core": {
+      "Packages/PlannerCatalog": [
+        "040000",
+        "tree",
+        "95d4ca5098801a2e8dc35bcf83e25923267b8b5c"
+      ],
       "Packages/PlannerCore": [
         "040000",
         "tree",
@@ -96,6 +101,11 @@
       ]
     },
     "native-ui": {
+      "Packages/PlannerCatalog": [
+        "040000",
+        "tree",
+        "95d4ca5098801a2e8dc35bcf83e25923267b8b5c"
+      ],
       "Packages/PlannerCore": [
         "040000",
         "tree",

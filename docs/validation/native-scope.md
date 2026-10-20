@@ -59,19 +59,19 @@ objects for the following dependency closure, including test targets:
 
 | Native job | Complete package trees that must match at both endpoints |
 | --- | --- |
-| `macos-core` | `PlannerCore`, `PlannerUI`, `PlannerData`, `PlannerTransfer` |
+| `macos-core` | `PlannerCore`, `PlannerUI`, `PlannerData`, `PlannerTransfer`, `PlannerCatalog` |
 | `macos-storage` | `PlannerData` |
 | `macos-transfer` | `PlannerTransfer`, `PlannerData`, `PlannerCore`, `PlannerCatalog` |
 | `macos-catalog-cache` | `PlannerCatalog` |
-| `native-ui` | `PlannerUI`, `PlannerData`, `PlannerCore`, `PlannerTransfer` |
+| `native-ui` | `PlannerUI`, `PlannerData`, `PlannerCore`, `PlannerTransfer`, `PlannerCatalog` |
 
 These are entire package trees, including sources, tests, fixtures, resources,
 tools and metadata. Transfer's durable boundary test imports PlannerData, and
 its synthetic fixture admission tests import Core and Catalog. Its library target
-also links Core; Data and Catalog are test-target dependencies. PlannerUI depends
+links Core and Catalog; its test target additionally links Data. PlannerUI depends
 on PlannerData, PlannerCore and PlannerTransfer.
 The Core and UI jobs both execute EvidenceHarness, which explicitly links
-PlannerUI and PlannerCore and includes PlannerUI's transitive Data and Transfer dependencies.
+PlannerUI and PlannerCore and includes PlannerUI's transitive Data, Transfer and Catalog dependencies.
 The Core package itself and Catalog declare no sibling package dependencies. A future
 test that reads another package's fixture without changing `Package.swift` still
 changes its own package tree, so that job remains allocated until explicitly
@@ -378,28 +378,47 @@ assertions, timeouts, permissions, concurrency and current runs are unchanged.
 The correction itself requires all applicable hosted/native gates and independent
 review before ordinary delivery. Whole #30 remains open.
 
-### Visible-analysis Transfer dependency
+### Historical visible-analysis Transfer dependency
 
-The #75 visible-analysis contribution adds PlannerTransfer to PlannerUI's
-production target and its test target. Both rendering jobs therefore also
-consume the complete Transfer package tree. Transfer's production target links
-Core, already present in both closures. Catalog is used only by Transfer's test
-target, which neither rendering command executes; its existing selective
-allocation remains intact.
+This record describes #401 source
+`10ba74c4ae32dcef7147e3b860e62210187062b8`, before the accepted #395 Transfer
+library change. At that source, the #75 visible-analysis contribution added
+PlannerTransfer to PlannerUI's production target and its test target. Both
+rendering jobs therefore also consumed the complete Transfer package tree.
+Transfer's production target linked Core, already present in both closures.
+Catalog was used only by Transfer's test target, which neither rendering command
+executed; that source retained Catalog's existing selective allocation.
 
-The new real-Git regression reconstructs a refreshed record that omits Transfer
-from both rendering closures. Against the preceding selector, a Transfer source
-change falsely skipped both jobs: one method produced two assertion failures.
-The corrected matrix rejects both legacy closures, and the existing resource
-regression now also checks Transfer additions and deletions for each renderer.
-The independent 25-combination matrix includes these two required relationships.
+The original real-Git regression reconstructed a refreshed record that omitted
+Transfer from both rendering closures. Against the preceding selector, a Transfer
+source change falsely skipped both jobs: one method produced two assertion
+failures. That correction rejected both legacy closures and added Transfer
+additions/deletions to the resource regression for each renderer. The independent
+25-combination matrix included both required relationships.
 
-Only the two job entries are added to the audit, using its existing historical
-Transfer tree object. Its source revision, every existing pin and all surrounding
-inputs remain exact. Current source drift still selects native execution; this
-change grants no current-source skip or blind pin refresh. The complete current
-scope suite has 37 methods. Its Python results qualify scheduling behavior only;
-Apple SDK and rendering execution retain their configured gates.
+That correction added only the two job entries to the audit, using its existing
+historical Transfer tree object. Its source revision, every existing pin and all
+surrounding inputs stayed exact. Source drift still selected native execution;
+the change granted no current-source skip or blind pin refresh. The scope suite
+at that source had 37 methods. Its original Python and native results retain
+their exact source and execution attribution.
+
+### Current Catalog dependency at the analysis/localization join
+
+Accepted #395 makes Catalog a production dependency of PlannerTransfer. With
+PlannerUI's Transfer dependency, both rendering jobs now consume Catalog too.
+Their complete five-package closures are listed above. The additional real-Git
+guard reconstructs the preceding four-package closures without Catalog: the
+unchanged prior selector incorrectly skips both jobs after a Catalog-only change,
+while the corrected selector rejects both incomplete closures. The independent
+package matrix and added/deleted resource cases retain the same full dependency.
+
+The audit adds only the same historical Catalog tree already pinned by its
+Catalog and Transfer entries. No previous object pin, source revision or
+surrounding input is refreshed. Current drift continues to require native work.
+The complete scope suite now contains 38 methods. These Python controls establish
+scheduling behavior; the combined source still requires its own Apple SDK and
+seven-method rendering execution.
 
 ## Preserved checks and evidence
 
@@ -411,7 +430,7 @@ reported as an executed Swift test, SDK build or device journey. No required-che
 setting or repository protection is changed. Future branch-protection setup must
 include meaningful preparation/scope checks and retain the native job names.
 
-The [37 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
+The [38 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
 PR test merges and main comparisons, a 3,006-file mixed change, source deletion and
 rename, unknown Markdown/fixtures, executable files, indirect symlink/submodule
 inputs, newline paths, invalid identities, divergent history, empty changes and the
@@ -451,7 +470,7 @@ with `--no-detach`, and zero detach regions. Fresh hosted scope results remain
 required for delivery.
 
 That 15-method lifetime receipt belongs to the linked editor checkpoint. The
-selector's current 37-method suite shares the same corrected setup across its original
+selector's current 38-method suite shares the same corrected setup across its original
 and audited-package classes; no assertion or cleanup error is suppressed.
 
 This change schedules future runs. It neither cancels existing main/current-head
