@@ -308,6 +308,83 @@ final class CatalogCacheHistoryTests: XCTestCase, @unchecked Sendable {
             } catch { XCTAssertEqual(error as? CatalogCacheError, .corruptCache) }
             XCTAssertEqual(try Data(contentsOf: file(url)), bytes)
         }
+
+        // The partial envelopes above must remain portable controls. A complete
+        // envelope additionally isolates version refusal: otherwise a missing
+        // activeManifest/records field can hide an accidentally relaxed guard.
+        let digests: [CatalogArtifact: String] = [
+            .catalog: "3ed422368acd0a94bc067edb8d99b46f38460c9f677c8d8408b9a9004d70d859",
+            .pricebook: "749135f7dc69e851ba4ddbec69f14011937f0af8e09b1fae4d4f254a90da7f53"
+        ]
+        var pins: [ArtifactPin] = []
+        var artifacts: [CatalogArtifact: Data] = [:]
+        for kind in CatalogArtifact.allCases {
+            let identity = ArtifactIdentity(schemaVersion: "1.0.0", id: "synthetic-history-\(kind.rawValue)",
+                                            revision: 1, capturedAt: "2026-10-18T00:00:00Z")
+            // Literal bytes and their fixed digests avoid a hashing fallback on
+            // Linux. They remain header-only cache-mechanics fixtures.
+            let text = #"{"schema_version":"1.0.0","id":"synthetic-history-\#(kind.rawValue)","revision":1,"captured_at":"2026-10-18T00:00:00Z"}"#
+            artifacts[kind] = Data(text.utf8)
+            pins.append(ArtifactPin(kind: kind, identity: identity, sha256: try XCTUnwrap(digests[kind])))
+        }
+        let completeRequest = CacheManifest(pins: pins)
+        let completeArtifacts = artifacts
+        let manifest = try JSONSerialization.jsonObject(with: JSONEncoder().encode(completeRequest))
+        let knownPins = try JSONSerialization.jsonObject(with: JSONEncoder().encode(pins))
+        let record: [String: Any] = [
+            "manifest": manifest,
+            "artifacts": Dictionary(uniqueKeysWithValues: completeArtifacts.map { ($0.key.rawValue, $0.value.base64EncodedString()) }),
+            "cachedAt": 123, "synthetic": true
+        ]
+        let object: [String: Any] = [
+            "storageVersion": "__CACHE_VERSION__", "activeManifest": manifest,
+            "records": [record], "knownPins": knownPins
+        ]
+        let template = String(decoding: try JSONSerialization.data(withJSONObject: object, options: .sortedKeys), as: UTF8.self)
+        let versionField = #""storageVersion":"__CACHE_VERSION__""#
+        XCTAssertEqual(template.components(separatedBy: versionField).count, 2, "Exactly one top-level version field is changed")
+        let original = Data(template.replacingOccurrences(of: versionField, with: #""storageVersion":2"#).utf8)
+        let completeStore = try cache(url)
+
+        func checkCompleteEnvelopeAdmission() async throws {
+            #if canImport(CryptoKit)
+            let active = try await completeStore.load(mode: .syntheticPreview)
+            try assertPair(active, completeRequest, completeArtifacts, date: Date(timeIntervalSinceReferenceDate: 123))
+            let historical = try await completeStore.load(completeRequest, mode: .syntheticPreview)
+            try assertPair(historical, completeRequest, completeArtifacts, date: Date(timeIntervalSinceReferenceDate: 123))
+            #else
+            // This proves only that decoding reached the real hash boundary;
+            // unsupportedHashPlatform is never successful cache admission.
+            do { _ = try await completeStore.load(mode: .syntheticPreview); XCTFail("Unavailable hashing unexpectedly succeeded") }
+            catch { XCTAssertEqual(error as? CatalogCacheError, .unsupportedHashPlatform) }
+            do { _ = try await completeStore.load(completeRequest, mode: .syntheticPreview); XCTFail("Unavailable hashing unexpectedly succeeded") }
+            catch { XCTAssertEqual(error as? CatalogCacheError, .unsupportedHashPlatform) }
+            #endif
+            XCTAssertEqual(try Data(contentsOf: file(url)), original)
+        }
+
+        try original.write(to: file(url))
+        try await checkCompleteEnvelopeAdmission()
+        for token in ["3", "null", #""2""#, "true"] {
+            let changed = Data(template.replacingOccurrences(of: versionField, with: #""storageVersion":"# + token).utf8)
+            try changed.write(to: file(url))
+            do { _ = try await completeStore.load(mode: .syntheticPreview); XCTFail("Unsupported complete envelope became active") }
+            catch { XCTAssertEqual(error as? CatalogCacheError, .corruptCache, token) }
+            XCTAssertEqual(try Data(contentsOf: file(url)), changed)
+            do { _ = try await completeStore.load(completeRequest, mode: .syntheticPreview); XCTFail("Unsupported complete history was returned") }
+            catch { XCTAssertEqual(error as? CatalogCacheError, .corruptCache, token) }
+            XCTAssertEqual(try Data(contentsOf: file(url)), changed)
+            do {
+                try await completeStore.refresh(completeRequest, mode: .syntheticPreview) { _ in
+                    XCTFail("Unsupported complete storage reached download")
+                    return Data()
+                }
+                XCTFail("Unsupported complete storage was replaced")
+            } catch { XCTAssertEqual(error as? CatalogCacheError, .corruptCache, token) }
+            XCTAssertEqual(try Data(contentsOf: file(url)), changed)
+        }
+        try original.write(to: file(url))
+        try await checkCompleteEnvelopeAdmission()
     }
 
     func testCorruptHistoricalPayloadBlocksReturnAndRefreshUntilExplicitRecovery() async throws {
