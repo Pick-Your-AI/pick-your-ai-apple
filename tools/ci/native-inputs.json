@@ -59,6 +59,16 @@
         "040000",
         "tree",
         "799df7059dc278cc3df7522013917e4d6bb72962"
+      ],
+      "Packages/PlannerCatalog": [
+        "040000",
+        "tree",
+        "95d4ca5098801a2e8dc35bcf83e25923267b8b5c"
+      ],
+      "Packages/PlannerTransfer": [
+        "040000",
+        "tree",
+        "494b756c1dc90cfafc79e8cd4943cfddf6741476"
       ]
     },
     "macos-storage": {
@@ -105,6 +115,16 @@
         "040000",
         "tree",
         "799df7059dc278cc3df7522013917e4d6bb72962"
+      ],
+      "Packages/PlannerCatalog": [
+        "040000",
+        "tree",
+        "95d4ca5098801a2e8dc35bcf83e25923267b8b5c"
+      ],
+      "Packages/PlannerTransfer": [
+        "040000",
+        "tree",
+        "494b756c1dc90cfafc79e8cd4943cfddf6741476"
       ]
     }
   },

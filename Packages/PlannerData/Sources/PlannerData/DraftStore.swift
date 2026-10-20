@@ -202,6 +202,18 @@ public actor DraftStore {
         }
     }
 
+    /// Persist a caller-prepared fork only while its captured source is current.
+    /// The source revision check and distinct, create-only insert share one write
+    /// transaction, including when preparation happened outside this actor.
+    public func duplicate(id: UUID, expectedRevision: Int, newID: UUID = UUID(),
+                          title: String, payload: Data) throws -> DraftRecord {
+        try transaction {
+            let prior = try read(id: id)
+            guard prior.revision == expectedRevision else { throw DraftStoreError.conflict }
+            return try write(id: newID, expected: nil, title: title, payload: payload, restored: nil)
+        }
+    }
+
     public func delete(id: UUID, expectedRevision: Int) throws {
         try transaction {
             let prior = try read(id: id)

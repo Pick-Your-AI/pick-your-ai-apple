@@ -2,6 +2,42 @@
 
 This portable Swift 6 package implements part of Apple [#32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32), [#33](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/33), [#49](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/49), [#82](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/82) and [#102](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/102). It has no storage, network, credential or UI authority. A successful parse establishes schema validity only, never compatibility, ownership, deployment readiness or source-use rights.
 
+## Current imported-build and T6 receiving source
+
+The [new integration record](../../docs/validation/imported-build-integration.md)
+identifies this separate preparation selected on 2026-10-19. It composes the
+reviewed catalog-envelope/reference boundary with retained catalog details,
+quality guidance and the private proposed-plan pair. The package currently
+contains 181 XCTest methods; this is a required source inventory until an actual
+current-source native receipt qualifies it. Earlier counts and execution records
+below retain their named original sources.
+
+`CatalogItemDetails(item:)` enumerates supplied and missing specification/license
+fields from the same admitted catalog item and schema. It preserves declared
+provenance without authenticating it or granting permission to open a source URL.
+`T6QualityGuidance(build:run:)` preserves the selected Build and optional admitted
+quality record, reported failures and meaningful next steps. Compatibility remains
+a separate report input; a compatibility pass supplies no quality approval.
+`DeploymentManifest.decode` reads reported frozen declarations, while
+`ProposedDeploymentPlan(build:manifest:)` accepts only an exact proposed Build/target
+pair. Its two encoded values are private local serialization, not sharing or
+execution authority. See the unchanged [guidance](T6_QUALITY_GUIDANCE.md) and
+[manifest](DEPLOYMENT_MANIFEST.md) source records for their original scopes.
+
+Accepted main `a3365dac` also retains the pure dependency-participant adapter
+and its five tests from #350. It supplies a planning result from explicit complete
+before/after context, with the graph identity preserved. It does not evaluate,
+reuse report fragments or weaken the complete Build identity of the T6 caller;
+see [the participant boundary](../PlannerCore/DEPENDENCY_INVALIDATION.md).
+
+The nine-phase generic reference verifier remains the selected 3,355-case,
+17-pin boundary. The independently pinned deployment-manifest entry adds 133
+reference cases and seven verifier controls in the same locked environment; it is
+not silently counted as a tenth generic phase or an eighteenth generic pin.
+Current Swift qualification must match all 181 exact class/method identities.
+Neither these declarations nor the earlier 141-method Transfer observation runs
+the expanded receiving source.
+
 ## API and integration
 
 - `CatalogItem.decode(_:)` validates a single frozen-v1 catalog item, preserves its exact `CatalogKind` identity and every supported field, and returns an immutable value. Kind-specific specs and their required tier are checked against the unchanged canonical schema. No missing optional fact is filled in and no catalog item becomes a user selection.
@@ -97,8 +133,8 @@ numeric range, IP-literal URI, and terminal-newline pattern limits. The existing
 leap-second, precision and size/depth/complexity limits also remain in force. Unsupported
 representations fail rather than being rounded, discarded or reported as a canonical
 schema failure. This is a bounded schema-driven item decoder, not whole JSON Schema
-conformance, generated per-field DTOs, a catalog-snapshot validator, approved real
-catalog activation or an Apple UI integration.
+conformance, generated per-field DTOs, approved real catalog activation or an Apple
+UI integration. The separate envelope boundary below validates a whole snapshot.
 
 Original preparation evidence for this slice: Python 3.12/jsonschema 4.26.0 verified
 all six source hashes, the existing 129 cases and the 1,635 catalog cases. Swift/Xcode

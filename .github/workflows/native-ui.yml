@@ -23,6 +23,11 @@ jobs:
           fetch-depth: 0
       - name: Test conservative scope selection
         run: python3 -m unittest discover -s tools/ci/tests -p 'test_native_scope.py' -v
+      - name: Test complete native result gate and exact Swift inventories
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s tools/ci/tests -p 'test_native_ui_gate.py' -v
+          python3 -m unittest discover -s tools/ci/tests -p 'test_swift_test_results.py' -v
       - name: Inspect complete exact Git comparison
         id: scope
         env:
@@ -126,8 +131,9 @@ jobs:
           xcrun simctl list runtimes | tee .build/native-evidence/runtimes.txt
       - name: Test native editor model
         run: |
-          set -o pipefail
+          set -euo pipefail
           swift test --package-path Packages/PlannerUI --cache-path "$PWD/.build/native-package-cache" --scratch-path "$PWD/.build/native-swift-tests" 2>&1 | tee .build/native-evidence/model-tests.txt
+          python3 tools/ci/require_swift_test_results.py catalog-selection-identity-ui .build/native-evidence/model-tests.txt
       - name: Build unsigned simulator app
         run: |
           set -o pipefail
@@ -148,8 +154,114 @@ jobs:
             .build/native-evidence
           retention-days: 14
 
+  cost:
+    name: native-cost-rendering
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
+    runs-on: macos-15-intel
+    timeout-minutes: 20
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify Xcode pins
+        run: |
+          set -e -o pipefail
+          mkdir -p .build/native-evidence
+          python3 App/scripts/toolchain.py --github-env "$GITHUB_ENV" 2>&1 | tee .build/native-evidence/pin-selection.txt
+      - name: Verify fresh dependency and build caches
+        run: |
+          set -o pipefail
+          python3 - <<'PY' | tee .build/native-evidence/empty-caches.txt
+          from pathlib import Path
+          for name in ("native-package-cache", "native-swift-tests", "native-source-packages", "native", "evidence-native", "cost-native"):
+              path = Path(".build") / name
+              if path.exists():
+                  raise SystemExit(f"Expected an empty clean-checkout cache at {path}; use a fresh checkout without restored caches.")
+              print(f"Verified absent before dependency resolution/build: {path}")
+          PY
+      - name: Record toolchain
+        run: |
+          mkdir -p .build/native-evidence
+          xcodebuild -version | tee .build/native-evidence/xcode.txt
+          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') .build/native-evidence/xcode.txt
+          sw_vers | tee .build/native-evidence/macos.txt
+          swift --version | tee .build/native-evidence/swift.txt
+          xcrun simctl list runtimes | tee .build/native-evidence/runtimes.txt
+      - name: Test native cost rendering receipt guards
+        run: python3 -m unittest discover -s tools/ci/tests -p 'test_cost_rendering_results.py' -v
+      - name: Inspect actual cost views through macOS UI automation
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/cost-rendering"
+          xcodebuild test -project tools/cost-rendering/CostHarness.xcodeproj -scheme CostHarness \
+            -sdk macosx -destination "platform=macOS,arch=$(uname -m)" \
+            -parallel-testing-enabled NO \
+            -only-testing:PlannerCostUITests/CostRenderingTests \
+            -derivedDataPath .build/cost-native \
+            -resultBundlePath "$RUNNER_TEMP/cost-rendering/cost-macos.xcresult" \
+            CODE_SIGNING_ALLOWED=NO ONLY_ACTIVE_ARCH=YES \
+            2>&1 | tee .build/native-evidence/cost-macos-test.log
+          python3 tools/cost-rendering/qualify.py .build/native-evidence/cost-macos-test.log
+      - name: Retain cost rendering evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-cost-rendering
+          path: |
+            .build/native-evidence
+            ${{ runner.temp }}/cost-rendering/
+          retention-days: 14
+
+  journeys:
+    name: native-ui-journey (${{ matrix.destination }})
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
+    runs-on: macos-15-intel
+    # Leave cleanup and original-artifact retention time after the bounded runner.
+    timeout-minutes: 55
+    strategy:
+      fail-fast: false
+      matrix:
+        destination: [iphone, ipad]
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
+        with:
+          persist-credentials: false
+      - name: Verify Xcode pins
+        run: |
+          set -euo pipefail
+          mkdir -p .build/native-evidence
+          python3 App/scripts/toolchain.py --github-env "$GITHUB_ENV" 2>&1 | tee .build/native-evidence/pin-selection.txt
+      - name: Test journey ownership and exact method receipts
+        run: |
+          set -euo pipefail
+          python3 -m unittest discover -s App/scripts/tests -p 'test_ui_journey.py' -v 2>&1 | tee .build/native-evidence/journey-guards.txt
+      - name: Require fresh build inputs and record toolchain
+        run: |
+          set -euo pipefail
+          test ! -e .build/native
+          xcodebuild -version | tee .build/native-evidence/xcode.txt
+          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') .build/native-evidence/xcode.txt
+          swift --version | tee .build/native-evidence/swift.txt
+          sw_vers | tee .build/native-evidence/macos.txt
+      - name: Exercise every declared real app journey on the selected fresh destination
+        env:
+          JOURNEY_DESTINATION: ${{ matrix.destination }}
+        run: |
+          set -euo pipefail
+          python3 App/scripts/ui-journey.py --suite all --destination "$JOURNEY_DESTINATION" 2>&1 | tee .build/native-evidence/ui-journey-run.txt
+      - name: Retain original journey evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02
+        with:
+          name: native-ui-journey-${{ matrix.destination }}
+          path: .build/native-evidence
+          if-no-files-found: error
+          retention-days: 14
+
   native-ui:
-    needs: [scope, rendering, simulator]
+    needs: [scope, rendering, simulator, cost, journeys]
     if: ${{ always() }}
     runs-on: ubuntu-latest
     timeout-minutes: 5
@@ -160,6 +272,8 @@ jobs:
           NATIVE_REQUIRED: ${{ needs.scope.outputs.native_required }}
           RENDERING_RESULT: ${{ needs.rendering.result }}
           SIMULATOR_RESULT: ${{ needs.simulator.result }}
+          COST_RESULT: ${{ needs.cost.result }}
+          JOURNEYS_RESULT: ${{ needs.journeys.result }}
         run: |
           set -euo pipefail
           test "$SCOPE_RESULT" = success
@@ -167,10 +281,14 @@ jobs:
             true)
               test "$RENDERING_RESULT" = success
               test "$SIMULATOR_RESULT" = success
+              test "$COST_RESULT" = success
+              test "$JOURNEYS_RESULT" = success
               ;;
             false)
               test "$RENDERING_RESULT" = skipped
               test "$SIMULATOR_RESULT" = skipped
+              test "$COST_RESULT" = skipped
+              test "$JOURNEYS_RESULT" = skipped
               ;;
             *)
               echo "Missing or invalid native scope result" >&2

@@ -227,8 +227,13 @@ identities; this API never silently discards an intent to create space.
 
 ### Queue validation
 
-The new suite declares 35 queue methods in addition to the 31 unchanged draft
-methods. It covers exact byte identity and copying, duplicate and capacity rules,
+The accepted #382 source declared 35 queue methods alongside 31 draft methods.
+The current #391 composition retains its additional three prepared-duplicate draft
+cases, requiring all **69** identities: 34 draft and 35 queue methods. A strict
+receiver checks that union in each macOS/iPhone/iPad storage log and the submission
+SDK log; an older receipt padded with unrelated successes cannot qualify it.
+These are source requirements, not a new 69-method execution observation.
+The queue suite covers exact byte identity and copying, duplicate and capacity rules,
 cross-handle/ABA sessions, ordering and outcomes, failed commits, actual
 `SQLITE_FULL`, foreign/corrupt storage retention, supported WAL/hot-journal recovery
 and rejection of committed future metadata held only in an orphaned WAL. Those
