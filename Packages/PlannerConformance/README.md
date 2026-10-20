@@ -1,5 +1,9 @@
 # Shared wire conformance and Apple local migrations
 
+The [current a3/986 continuation](#current-receiving-continuation--2026-10-20-a3986)
+below records completed, failed and incomplete originals and the separate source
+proposal. Earlier receiving sections retain their dated source and decisions.
+
 The [2026-10-20 receiving evidence](#receiving-evidence--2026-10-20) below records the current prepared outputs and actual delegated decisions. Earlier preparation and pending-status accounts retain their original dates.
 
 This is the named **language-neutral conformance bundle and Apple migration
@@ -829,3 +833,198 @@ retained artifact files. Screenshot bytes and recorded UI assertions do not
 constitute a separate visual review. The named #33/#35/#36 prerequisite outputs
 remain the concrete outputs already linked above; unrelated epic and release
 scope is not silently added to or completed by #37.
+
+## Current receiving continuation — 2026-10-20, a3/986
+
+This is a newly assembled dated amendment to the exact public record. Every
+preceding byte, including the `41c6772c` evidence and decisions, remains intact.
+A separately accepted private proposal had a 10,623-byte dated section and a
+17,361-byte two-document patch. Its original text remains retained in its own
+checkpoint but is not presently accessible to this assembly. This amendment is
+written from the public record and current originals. It is not represented as
+byte-identical to that private proposal or as inheriting its exact-text approval.
+
+### Source and fixed profile
+
+The current public contributor is
+[`a3a4648eba7cb9aa77d33c3b57c4f6d1da223410`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/a3a4648eba7cb9aa77d33c3b57c4f6d1da223410),
+tree `61da7d50c7138514e948f5474912dde474366c41`, ordered parents
+`[66aef338b6a70909ee6663b5da98023bb25e6f36, e742379f9a474e632a998f1586515f4cb1280b18]`.
+The [public source review](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/383#pullrequestreview-5581139627)
+covers this unsigned contribution and the full accepted 41-case Core/UI source.
+
+The current Apple executions below checked out valid-signed preparation
+[`9861d6db49046d7f66549fa757e811b10c22c78c`](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/9861d6db49046d7f66549fa757e811b10c22c78c),
+the same `61da7d50` tree, with ordered parents `[e742379f, a3a4648e]`.
+These results are not assigned to later accepted main, this amendment or the
+proposed workflow split. Earlier `41c6772c` results keep their original identity.
+
+The current wire fixture is blob `cc3ce4f61269f38e87be79ca80daa21608cc8a45`,
+SHA-256 `8ae0d15ae236003d350d17066dfd1928cbe8a339095dac0299f4fefd4303d8cf`.
+Its `apple-cross-client-1/original-evidence-37` profile verifies the complete
+41-case input, the exact 37 selected and four excluded IDs in order, and the
+whole original canonical 37-case file before consumption. The four explanation
+cases remain present in the complete accepted Core/UI resources and tests, and
+explicitly outside this 223-case shared profile.
+
+Every complete case row, payload string, Boolean/null expectation, reason and
+disposition remains exact through `cc3ce4f6` → `1566506e` → `69718936`. The
+whole-file inverses change only the documented source-pin metadata. There are
+223 case IDs, 141 accepted/preserved and 82 rejected/null expectations, with 220
+distinct payload digests. Repeated payload bytes are not missing case IDs.
+Frozen contract `1.0.0` and Research `7acbefbf4e4e700231e88be272bc89e3a73dde15`
+remain unchanged; no full 41-case cross-client coverage is claimed.
+
+### Completed current originals
+
+| Actual `9861d6db` output | Qualified observation | Public original evidence |
+| --- | --- | --- |
+| Canonical preparation | Both 21-method acceptance cohorts and all 92 conformance methods pass. The report has 137 schema results, six typed domain checks and three detected semantic mutants; the actual canonical producer check verifies all 223 current wire cases. | [Contract job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393128/job/118472274678), [report artifact](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393128/artifacts/12244165728) |
+| Swift Transfer and wire | All 220 Transfer methods, four exact wire methods and 223 complete typed observations pass, with each observation inside its required method. The original strict receipt reconstructs exactly. All 19 host methods, nine canonical parity summaries and the unsigned generic Simulator compile also succeed. | [Transfer job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393123/job/118477890408), [wire artifact](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393123/artifacts/12247988779) |
+| Apple Storage | macOS, iPhone Simulator and iPad Simulator each execute 70 exact methods and 20 typed, method-scoped migration observations: 210 method executions and 60 observations. All 21 driver guards, three actual draft/future-migration exits and six pending-write cuts pass. | [Storage job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393202/job/118478018147), [three-platform artifact](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393202/artifacts/12247477353) |
+| Native SDK | The original has 558 passing Swift method executions, 81 host guards and 20 migration observations, with two unsigned Release product builds. These are configured package/SDK outputs, not installed-app or release approval. | [SDK job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393191/job/118477507610), [SDK artifact](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393191/artifacts/12247795115) |
+| Other completed checks | Catalog passes 92 methods and its unsigned generic Simulator compile. The eight portable jobs have 435 literal passing observations across 234 distinct method identities; repeated scope cohorts are not distinct methods. All scope decisions require native work for the actual 19-path comparison. | [Catalog job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393215/job/118477957581), [dependency job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393183/job/118472274773), and [source check records](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/383) |
+
+The independent Contract qualification has SHA-256
+`7367517cf1f58a384539b201745261178d72b1461ee0098d28ddfd8ecc028240`.
+The compressed Transfer qualification has SHA-256
+`9bb440f14b35443edd7579b2546ce51fec1998b2f8027e31d7f428d294455d6b`;
+the Storage qualification has SHA-256
+`8610a4e14b05101ce95824efa11d62d9b40f21817c1eb685e7cbc482e5a49fef`.
+They bind the immutable source, original logs, exact attendance, generated
+receipts and retained artifact members. Opaque xcresult objects that were only
+hash-bound are not described as semantically decoded. Temporary database and
+probe binaries are not described as retained archive members.
+
+Storage remains 31 draft-store, 35 pending-write and four migration methods.
+Each platform's 20 observations cover six migration/reopen cases, eight
+interrupted-step rollback/retries, three unsupported-version/compatible-backup
+cases and three history restorations. All six fixture descriptions and the
+original migration hash remain unchanged. Apple and Android private storage
+formats and migration version numbers remain separate.
+
+### Incomplete and failed originals
+
+The [Core job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393187/job/118478040315)
+started at 09:01:45 UTC and ended with a cancelled conclusion at 09:42:52 UTC.
+Its 1,809,007-byte original log has SHA-256
+`5607ff1ff24205274f4a8b99ad03c8e857e928ee748c07644a9b8c90d5f0bb6e`.
+All four complete macOS debug, release, iPhone and iPad package sessions pass
+151 methods each: 604 completed executions. Both 27-method host cohorts pass.
+The iPhone renderer completes six methods and its strict qualifier. The iPad
+renderer completes five and starts the sixth before the literal cancellation.
+No failed renderer assertion is demonstrated. The later intentional-failure and
+semantic-mutation steps are skipped; this is not a complete successful Core run.
+
+The [34,189,286-byte Core archive](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393187/artifacts/12255956116),
+log and metadata were captured once. Initial archive capture enumerated 773 safe
+CRC-valid members. The independent full renderer/xcresult interpretation remains
+pending while the shared analysis executor is unavailable. Source and literal
+lifecycle analysis do not infer the missing iPad result or an underlying cause.
+The 40-minute limit covers the whole serial job; that source-defined scheduling
+constraint does not establish who or what cancelled it.
+
+The separate [native simulator job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393144/job/118477424697)
+failed. Its original passes 81 host guards, 25 model methods and the unsigned
+generic Simulator build. The owned iPhone boots, then the unchanged 180-second
+app-install command reaches its deadline. No app launch or iPad execution occurs;
+owned-device cleanup succeeds. The cause remains unproved. This differs from
+the earlier `41c6772c` 300-second boot-readiness failure.
+
+The separate [native-evidence-rendering job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393144/job/118477424636)
+completed successfully at 11:04:05 UTC with all nine steps successful. Its
+original log contains six exact macOS renderer methods, all 68 source-defined
+scenarios in their owning methods and the strict six-method qualifier's passing
+line. This separately completed macOS job does not complete the cancelled Core
+iPad session or the failed installed-app check.
+
+The 1,252,811-byte renderer log has SHA-256
+`2610667923bbb97b6beab42f3728d2ab503880cd77717d7711fe8a72c3ce2441`.
+The [4,045,627-byte rendering artifact](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393144/artifacts/12260620567)
+was captured once. Its API and original upload digests agree; independent archive
+member, xcresult and screenshot inspection remain pending executor access. The
+source/log qualification does not claim image comparison, VoiceOver or another
+platform's outcome.
+
+The [`native-ui` aggregate](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393144/job/118592858135)
+failed at 11:04:12 UTC. Its actual gate receives `RENDERING_RESULT=success` and
+`SIMULATOR_RESULT=failure`, then exits 1; the parent UI workflow is completed
+with a failure conclusion. The original simulator failure is retained and no
+successful retry is inferred. The [Catalog maintenance job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393140/job/118472274624)
+has a completed successful job state and one retained original log/artifact
+capture; its independent archive audit remains pending. No result from another
+source substitutes for that audit.
+
+### Current receiving decisions and literal criteria
+
+The contract-governance and affected-client delegates each made an actual
+**ACCEPT WITH CONSTRAINTS** continuation for `a3a4648e` / `9861d6db` / `61da7d50`
+and the existing version-4 public record. Each independently joined all 223
+current Swift/canonical/historical Android rows, the full 37-of-41 projection,
+both complete fixture-byte inverses and the current three-platform Storage
+evidence. These are disclosed in-session project-role judgments, not named-person
+or separate-account formal approvals.
+
+The compressed governance decision has SHA-256
+`d56e1d6d3bd5b6779694fd8b8db8a9f644aae959b1cfbb286135af47526d0c2a`.
+The affected-client decision has SHA-256
+`6d1c21364d84a6b47949e89d500e1073056b05ad5b9507164ac9d7dfbb61ec39`.
+The prior `41c6772c` / version-2 decisions remain intact. Those actual decisions
+do not approve unseen native output, the proposed workflow split or newly
+assembled text by association. This amendment has its own concrete content and
+publication review.
+
+| Literal #37 criterion | Current evidence disposition | Remaining boundary |
+| --- | --- | --- |
+| All clients agree on pinned cross-platform fixtures and migration behavior. | Both actual current roles accept the bounded profile. Current Swift/Python agrees with historically observed Android and website rows; Apple and Android private migrations remain separately versioned and attributed. | Preserve client/version limits and real receiving judgments through incorporation and delivery. No installed-client or common on-disk format claim follows. |
+| Run identical version-pinned vectors through Swift and available references; a future unshipped client uses the published harness interface and remains explicitly unverified. | Current Swift and canonical checks consume the fixed profile. Whole-row and byte inverses support comparison with actual older Android/website observations, without changing their execution identities. | Any additional unshipped consumer remains unverified. Complete configured gates and ordinary delivery of the final reviewed source. |
+| The language-neutral conformance bundle and Apple migration results is linked with criterion results, exact versions, limitations and receiving-review disposition. | This new dated amendment links current originals and records the actual role decisions while preserving the complete prior record. | Complete this concrete amendment's content review and public linking, then reconcile final configured results, signed delivery and actual post-main observations. This dated text alone does not close the issue. |
+
+Android remains actual signed `3b5a8eae` execution of original `69718936`:
+223 wire observations, 34 Android-private migration observations and three
+guards. The website remains the attributed original `dc66a9e2` validator/harness
+execution; its raw console was not reacquired after workspace loss. The
+[website receiving decision](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/37#issuecomment-6283186508)
+and original public references above retain their scope. No consumer was rerun
+solely because input-pin metadata changed or a scratch copy disappeared.
+
+### Source continuation and delivery limits
+
+Accepted [1cea369a](https://github.com/Pick-Your-AI/pick-your-ai-apple/commit/1cea369a68239ed16fe381d466d9247d855f3c9c)
+changes four reviewed #421 maintenance paths. Its union with `a3a4648e` is
+`21eab53b59794574688ef51e272183c992ceb211`, preserving all 19 authored and four
+accepted paths. No `9861d6db` outcome is assigned to its nine new maintenance
+regression methods before their actual execution.
+
+The proposed [Core workflow](../../.github/workflows/swift-core.yml) separates
+Core validation, the complete iPhone renderer and complete iPad renderer into
+three macOS jobs. All six renderer methods, 68 scenarios, exact destinations,
+assertions and strict qualifiers remain unchanged. The final `macos-core`
+aggregate runs with `always()`. Native work requires scope success and all three
+native successes. Its audited-skip branch requires explicit successful
+`native_required=false` and all three native jobs skipped. Missing, failed,
+cancelled or unexpectedly skipped required work cannot pass.
+
+Each native job keeps a 40-minute limit; the aggregate has five minutes. Two
+additional macOS allocations and independent renderer builds are required; no
+faster runner availability is promised. The unchanged selector/audit pins keep
+package-only comparisons conservative until a separate reviewed refresh.
+Exact allowlisted documentation-only comparisons retain their existing skip
+rule. The [native scope guide](../../docs/validation/native-scope.md) records
+these boundaries and unchanged per-PR concurrency.
+
+This source-reviewed budget change is not a new native observation, a proven
+cancellation fix, or relaxed method attendance or operation deadlines. A later
+ordinary same-PR source advance may retire an older workflow under the existing
+concurrency rule. Any such outcome must be recorded as source-lifecycle
+cancellation, never as a passing original or old-source retry. The original
+renderer and UI aggregate are now terminal. Their original logs, metadata and
+renderer artifact capture remain separate from this proposed source and its
+future configured execution.
+
+#37 remains open. The concrete amendment's public incorporation/review links,
+successful configured gates on the final actual receiving source, normal signed
+delivery and post-main reconciliation require their own observations. Nothing
+here closes unrelated #30, the separate #346 lane, installed mobile or physical
+device behavior, VoiceOver, browser journeys, remote service integration,
+production evaluator parity, TestFlight or store/release approval.
