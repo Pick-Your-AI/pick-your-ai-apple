@@ -141,11 +141,11 @@ def run(*args, timeout=COMMAND_TIMEOUT_SECONDS):
         result = subprocess.run(args, capture_output=True, text=True, errors="replace",
                                 check=False, timeout=timeout)
     except subprocess.TimeoutExpired as error:
-        emit_output(error.stdout, error.stderr)
         report(f"Smoke command timed out after {timeout}s: {command}", file=sys.stderr, flush=True)
+        emit_output(error.stdout, error.stderr)
         raise
-    emit_output(result.stdout, result.stderr)
     report(f"Smoke command exited {result.returncode}: {command}", flush=True)
+    emit_output(result.stdout, result.stderr)
     result.check_returncode()
     return result.stdout.strip()
 
