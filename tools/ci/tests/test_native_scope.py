@@ -157,6 +157,69 @@ class NativeScopeTests(unittest.TestCase):
         self.assertEqual(output.read_text(), "native_required=false\n")
 
 
+    def test_finding_record_regular_changes_skip_exact_push_and_pr_comparisons(self):
+        path = "docs/validation/issue-72-finding-explanations.md"
+        previous = self.initial
+        for action in ("add", "modify", "delete"):
+            if action == "delete":
+                (self.repo / path).unlink()
+            else:
+                self.write(path, f"Synthetic finding receipt: {action}\n")
+            head = self.commit()
+            with self.subTest(action=action, event="push"):
+                result = self.push(head, before=previous)
+                self.assertFalse(result.native_required)
+                self.assertEqual(result.changed_files, 1)
+            tree = self.command("rev-parse", "HEAD^{tree}")
+            merge = self.command("commit-tree", tree, "-p", previous, "-p", head,
+                                 input=b"Synthetic finding-record test merge\n")
+            self.command("checkout", "--quiet", "--detach", merge)
+            with self.subTest(action=action, event="pull_request"):
+                result = scope.choose(self.repo, event="pull_request",
+                                      head=merge, base=previous)
+                self.assertFalse(result.native_required)
+                self.assertEqual(result.changed_files, 1)
+            self.command("checkout", "--quiet", "--detach", head)
+            previous = head
+
+    def test_finding_record_neighbor_and_mixed_source_changes_still_run(self):
+        path = "docs/validation/issue-72-finding-explanations.md"
+        for other in (
+                path + ".extra",
+                "docs/validation/issue-72-finding-explanations-copy.md",
+                "Docs/validation/issue-72-finding-explanations.md",
+                "Packages/PlannerUI/Tests/Fixtures/issue-72-finding-explanations.md",
+                "Sources/Value.swift",
+                ".github/workflows/native-ui.yml"):
+            with self.subTest(other=other):
+                self.command("reset", "--hard", self.initial)
+                self.write(path, "Synthetic finding receipt\n")
+                self.write(other, "Changed native or unreviewed input\n")
+                result = self.push(self.commit())
+                self.assertTrue(result.native_required)
+                self.assertEqual(result.changed_files, 2)
+
+    def test_finding_record_unsupported_modes_and_indirection_still_run(self):
+        path = "docs/validation/issue-72-finding-explanations.md"
+        for kind in ("executable", "symlink", "indirect-source", "source-rename"):
+            with self.subTest(kind=kind):
+                self.command("reset", "--hard", self.initial)
+                target = self.repo / path
+                target.parent.mkdir(parents=True, exist_ok=True)
+                if kind == "source-rename":
+                    self.command("mv", "Sources/Value.swift", path)
+                elif kind == "symlink":
+                    target.symlink_to("../../README.md")
+                else:
+                    self.write(path, "Synthetic finding receipt\n")
+                    if kind == "executable":
+                        os.chmod(target, 0o755)
+                    else:
+                        (self.repo / "Sources/Indirect.swift").symlink_to("../" + path)
+                self.assertTrue(self.push(self.commit()).native_required)
+
+
+
 class AuditedPackageScopeTests(unittest.TestCase):
     command = NativeScopeTests.command
     write = NativeScopeTests.write
@@ -494,6 +557,34 @@ class AuditedPackageScopeTests(unittest.TestCase):
                                 check=True, capture_output=True, text=True)
         self.assertFalse(json.loads(result.stdout)["native_required"])
         self.assertEqual(output.read_text(), "native_required=false\n")
+
+
+    def test_finding_record_does_not_hide_package_or_prior_audit_drift(self):
+        path = "docs/validation/issue-72-finding-explanations.md"
+        self.write(path, "Synthetic finding receipt\n")
+        self.commit()
+        for job in self.audit["jobs"]:
+            with self.subTest(case="only-record", job=job):
+                self.assertFalse(self.decide(job).native_required)
+
+        self.command("reset", "--hard", self.initial)
+        self.write(path, "Synthetic finding receipt\n")
+        self.change_package("PlannerCore")
+        for job in self.audit["jobs"]:
+            with self.subTest(case="mixed-package", job=job):
+                result = self.decide(job)
+                self.assertEqual(result.native_required, job in self.affected["PlannerCore"])
+                self.assertEqual(result.changed_files, 2)
+
+        for drift in ("Packages/PlannerData/Package.swift", ".github/workflows/native-ui.yml"):
+            with self.subTest(case="prior-drift", path=drift):
+                self.command("reset", "--hard", self.initial)
+                self.write(drift, "Changed synthetic native input\n")
+                previous = self.commit()
+                self.write(path, "Synthetic finding receipt\n")
+                self.change_package("PlannerCore")
+                self.assert_all_native(before=previous)
+
 
 
 if __name__ == "__main__":

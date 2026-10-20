@@ -47,6 +47,56 @@ GitHub's [event path filters](https://docs.github.com/en/actions/reference/workf
 currently inspect at most 3,000 changed files; this selector does not use that trigger
 filter or a paginated API file list to decide that native inputs are unchanged.
 
+### Reviewed finding-explanation record
+
+The exact path
+[`docs/validation/issue-72-finding-explanations.md`](issue-72-finding-explanations.md)
+is explanatory acceptance evidence, rather than a native input. The bounded
+[review and original failed run](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/427#issuecomment-6285001942)
+are pinned to accepted source `e742379f9a474e632a998f1586515f4cb1280b18`.
+The three table-cell corrections proposed in #427 retain its other content.
+
+The input review checked the complete 334 regular-file source map, package
+resource declarations, both Xcode projects, workflow commands and helper input
+roots. Its only exact document backlink is explanatory PlannerUI guidance.
+The five packages select their own Resources/Fixtures; native helpers select
+fixed scripts, pins, products, reports or temporary fixtures. A separate full
+read of the native test readers and their imported Transfer helpers found no
+read or directory enumeration of this document or its enclosing docs directory.
+The review covers this exact record and those source inputs; it does not approve
+other Markdown paths or replace a future review if a reader changes.
+
+Only this one literal path is added. All selector functions, historical audit
+pins and package closures remain unchanged. Four additive real-Git methods
+exercise regular add/modify/delete changes through exact push and PR merges,
+neighboring paths and mixed source changes, executable/link/rename cases, and
+mixed-package or prior dependency/workflow drift. All 36 previous method bodies
+are retained. Against the unchanged selector, the four focused methods produced
+13 expected assertion failures across two methods in 0.647 seconds; the two
+negative-only methods passed. With the one-path entry, all 40 distinct methods
+passed in 7.541 seconds on Linux CPython 3.12.14 / Git 2.51.1, with no failures,
+errors or skips. The complete 6,325-byte original has SHA-256
+`393f262c908ce72c5e3e64eeeb4781ddc443b199d8c2f7c8b7a14fc8a0ea7ba1`.
+This is scheduling evidence from disposable Git repositories, not native execution.
+
+The optional composition with the existing
+`058ce7a9b933e45311362c70ad6dc1b224b91500` receiver preserves all 38 of its
+scope methods and its complete Core/UI package closures. Its two composed Python
+inputs passed all 42 distinct methods locally in 9.602 seconds, with no failures,
+errors or skips. That separate 6,705-byte original has SHA-256
+`a1cb57baad443e4411bddd88acbbf80cd3074c7c3a21d621d499c9fa4b1aa857`.
+It is a prospective source offer, not an adopted receiver or hosted/native result;
+the 40-method accepted-base execution above keeps its own input identity.
+
+The historical package audit still conservatively allocates native when its
+inputs drift. The separate [catalog-maintenance workflow](../../.github/workflows/catalog-maintenance.yml)
+does not use this scope selector and remains allocated. No workflow, required
+context, timeout, current run or native assertion is changed. In particular the
+original #427 iPad launch timeout remains failed and unexplained. The selector
+and test changes themselves require applicable hosted/native gates before normal
+delivery. The broader #30 criteria and canonical editor/rendering closures retain
+their separate review and acceptance requirements.
+
 ## Audited package inputs
 
 Each of the five package scope steps supplies its native job's literal `APPLE_CI_JOB` name.
@@ -423,7 +473,7 @@ reported as an executed Swift test, SDK build or device journey. No required-che
 setting or repository protection is changed. Future branch-protection setup must
 include meaningful preparation/scope checks and retain the native job names.
 
-The [38 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
+The [42 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
 PR test merges and main comparisons, a 3,006-file mixed change, source deletion and
 rename, unknown Markdown/fixtures, executable files, indirect symlink/submodule
 inputs, newline paths, invalid identities, divergent history, empty changes and the
@@ -463,7 +513,7 @@ with `--no-detach`, and zero detach regions. Fresh hosted scope results remain
 required for delivery.
 
 That 15-method lifetime receipt belongs to the linked editor checkpoint. The
-selector's current 38-method suite shares the same corrected setup across its original
+selector's current 42-method suite shares the same corrected setup across its original
 and audited-package classes; no assertion or cleanup error is suppressed.
 
 This change schedules future runs. It neither cancels existing main/current-head
