@@ -123,10 +123,10 @@ parity. Require both checks for the same commit. This is partial #32/#37/#104
 coverage for evaluation reports only, not all 29 catalog kinds or service parity.
 The decoder's documented number/depth/timestamp exclusions remain client limits.
 
-`evidence_vectors.py --contract-root "$CONTRACT_ROOT" --check` adds 37 shared
+`evidence_vectors.py --contract-root "$CONTRACT_ROOT" --check` adds 41 shared
 evidence inputs for the Core decoder and actual SwiftUI rendering tests. It
 uses the shared source-copy containment check, re-verifies the completed frozen
-manifest and copied bytes, checks 28 accepted and nine rejected cases with the
+manifest and copied bytes, checks 32 accepted and nine rejected cases with the
 canonical schema consumer, and requires exact matching
 bytes in both package resources. The [evidence state mapping](../../Packages/PlannerUI/EVIDENCE_RENDERING.md)
 records the presence, conflict, skipped-rule and claim-grade boundaries, the
