@@ -150,7 +150,9 @@ struct PlanningCatalogChoice: Equatable, Sendable {
     init(_ pinned: CatalogPinnedDetails) throws {
         reference = try PlanningCatalogReference(pinned)
         let key = reference.kind == .workload ? "workload_type" : "mode"
-        guard let value = pinned.details.item.spec[key]?.string else { throw DraftInputFormatError.unsupported }
+        guard case .string(let value)? = pinned.details.item.spec[key] else {
+            throw DraftInputFormatError.unsupported
+        }
         declaration = value
     }
 }
