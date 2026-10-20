@@ -147,11 +147,11 @@ private struct Scenario {
                 throw InputError.invalidFixture
             }
             let bundle = try JSONDecoder().decode(VectorBundle.self, from: Data(contentsOf: url))
-            guard bundle.lock["contract_version"] == "1.0.0", bundle.cases.count == 37,
-                  Set(bundle.cases.map(\.id)).count == 37 else { throw InputError.invalidFixture }
+            guard bundle.lock["contract_version"] == "1.0.0", bundle.cases.count == 41,
+                  Set(bundle.cases.map(\.id)).count == 41 else { throw InputError.invalidFixture }
             if group == "shared" {
                 let accepted = bundle.cases.filter(\.valid)
-                guard accepted.count == 28 else { throw InputError.invalidFixture }
+                guard accepted.count == 32 else { throw InputError.invalidFixture }
                 return try accepted.map {
                     Scenario(id: $0.id, content: .report(try EvaluationReport.decode(Data($0.payloadJSON.utf8)),
                                                         width: nil, largeText: false))

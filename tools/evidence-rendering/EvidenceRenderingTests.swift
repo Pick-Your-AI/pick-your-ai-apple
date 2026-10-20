@@ -24,8 +24,8 @@ final class EvidenceRenderingTests: XCTestCase {
         let bundle = try JSONDecoder().decode(VectorBundle.self, from: Data(contentsOf: url))
         XCTAssertEqual(bundle.lock["contract_version"], "1.0.0")
         XCTAssertEqual(bundle.schema, "evaluation-report.schema.json")
-        XCTAssertEqual(bundle.cases.count, 37)
-        XCTAssertEqual(Set(bundle.cases.map(\.id)).count, 37)
+        XCTAssertEqual(bundle.cases.count, 41)
+        XCTAssertEqual(Set(bundle.cases.map(\.id)).count, 41)
         return bundle.cases
     }
 
@@ -60,7 +60,7 @@ final class EvidenceRenderingTests: XCTestCase {
 
     func testSharedEvidenceVectorsRenderReportedOutcomesSeverityAndEveryPresenceState() throws {
         let accepted = try vectors().filter(\.valid)
-        XCTAssertEqual(accepted.count, 28)
+        XCTAssertEqual(accepted.count, 32)
         let app = launch("shared")
         defer { app.terminate() }
         for (index, vector) in accepted.enumerated() {

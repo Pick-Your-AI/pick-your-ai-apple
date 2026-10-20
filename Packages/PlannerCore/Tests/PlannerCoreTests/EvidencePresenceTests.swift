@@ -26,9 +26,9 @@ final class EvidencePresenceTests: XCTestCase {
         let bundle = try JSONDecoder().decode(VectorBundle.self, from: Data(contentsOf: url))
         XCTAssertEqual(bundle.lock["contract_version"], "1.0.0")
         XCTAssertEqual(bundle.schema, "evaluation-report.schema.json")
-        XCTAssertEqual(bundle.cases.count, 37)
+        XCTAssertEqual(bundle.cases.count, 41)
         XCTAssertEqual(Set(bundle.cases.map(\.id)).count, bundle.cases.count)
-        XCTAssertEqual(bundle.cases.filter(\.valid).count, 28)
+        XCTAssertEqual(bundle.cases.filter(\.valid).count, 32)
         return bundle.cases
     }
 

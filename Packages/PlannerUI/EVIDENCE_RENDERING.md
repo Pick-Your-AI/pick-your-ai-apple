@@ -17,6 +17,13 @@ and catalog snapshot remain visible so the reported identity is retained. A
 caller must use the current response selected by its existing generation and
 identity boundary; this component introduces no request or storage path.
 
+The [bounded #72 explanation extension](../../docs/validation/issue-72-finding-explanations.md)
+also displays the reported ruleset ID/version and each participant selection ID
+in its supplied order. Nonblank remediation remains verbatim and is labeled as
+reported. Omitted, empty or whitespace-only remediation receives an explicit
+unavailable-action explanation. Empty participant lists remain explicit; the
+view does not invent an affected setting, navigation target or safe correction.
+
 `EvidenceValuePresence` and `EvidenceCollectionPresence` classify presence only.
 `ClaimEvidenceView` separately renders the already accepted `EvidencePresentation`
 mapping. A report's `pass` or `valid` value cannot construct a source-inspection
@@ -138,11 +145,13 @@ resources. The `--check` gate rejects any drift in either resource.
 | Frozen import manifest SHA-256 | `ef6d5801eec10f3169e2bf84653e7026b33088e305a987991ec52faadcd7f554` |
 | Evaluation-report schema SHA-256 | `78935ec78848de7655bd972851aa0357c4426f6870fc028ba81739c85040359b` |
 | Original evaluation fixture SHA-256 | `039626962ef0f2c4f706614d775ad47eda1d148c58f736c98ad169fc153221f3` |
-| Shared evidence resource | 48,128 bytes in each package; SHA-256 `9db8c150e7666549cd4ddeacf57bcbd4a0277c193090f9d55a7f90e22154d7be` |
+| Shared evidence resource | 54,476 bytes in each package; SHA-256 `12e4ce069d9bdf3055d5eb1400a33b3643a2860403d111ac95dd92bd09a81b72` |
 | Reference environment | Python 3.12.14, exact [conformance requirements](../../tools/conformance/requirements.txt), including `jsonschema==4.25.1`; all installed versions are embedded in the bundle |
 | Swift source | The delivering PR pins the complete source tree; `EvaluationReport` and `EvidencePresentation` remain unchanged from signed main `074ae4bffec6066d3fe6e6a5fe47ab429dde54ed` |
 
-The 37 vectors contain 28 accepted and nine rejected payloads:
+The current 41 vectors contain 32 accepted and nine rejected payloads. The original
+37 case objects, payload strings and expectations remain unchanged; four #72 cases
+are appended after them:
 
 - All 12 outcome/severity combinations include absent, explicit-null and literal-unknown observed and expected values.
 - Four cases cover absent/empty collections, reported pass without support, and empty findings.
@@ -150,6 +159,7 @@ The 37 vectors contain 28 accepted and nine rejected payloads:
 - Two skipped cases distinguish a supplied not-applicable reason from unestablished applicability.
 - Eight scalar/structured-data cases retain false, zero, empty string, literal status words, nested unknown and escaped controls.
 - Nine rejections cover versions `0.9.0`, `1.0.1` and `2.0.0`, missing outcome/severity/message, unsupported finding/evidence verification fields, and a null collection.
+- Four explanation cases retain exact ruleset and ordered participant identities, supplied verbatim remediation, omitted/empty/whitespace-only remediation, and an empty participant list.
 
 The Core tests pass the exact payload bytes through `EvaluationReport.decode`,
 verify the full semantic JSON round trip, check every presence/outcome/severity
@@ -168,7 +178,7 @@ launch/readiness, the exact selected fixture and sequence, and native static-tex
 elements. Empty or missing output fails. Bounded scrolling materializes lazy
 content and keeps later observed text in the negative outcome/grade assertions.
 
-The four original methods render all 28 valid shared cases, test independent outcome/severity
+The first four methods now render all 32 valid shared cases, test independent outcome/severity
 labels, exercise compact and wide widths at an accessibility text size, and cover
 the claim grades and retained-identity change events. A horizontal viewport
 exposes the requested wide report on a compact screen. This checks native
@@ -185,6 +195,12 @@ It requires all six exact methods, unique starts and passes, exactly one complet
 matching `All tests` or `Selected tests` session and zero failures or skips. Its
 synthetic adversarial logs qualify the parser only; the older `PlannerUITests`
 module cannot qualify this host.
+The date/copy and failed-host records below retain their original source and
+37-vector counts. The #72 extension changes only the six total/valid count
+literals in the shared host and tests; all six method identities, remaining
+method bodies and earlier 37 cases stay intact. Its new native execution is a
+separate receiving requirement, recorded in the linked #72 guide.
+
 The fifth method adds ten date/locale cases on one retained view identity,
 including Arabic text, calendar and time-zone overrides, the Gregorian switch,
 year limits and recovery with a required recheck. The four original native

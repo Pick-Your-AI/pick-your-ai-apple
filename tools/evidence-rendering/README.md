@@ -11,7 +11,7 @@ evidence projection. The application and UI-test target use local packages only.
 Its seven methods preserve the original four checks and add date presentation,
 explanatory-copy localization and visible-analysis binding:
 
-- All 28 valid shared payloads render their existing outcome, severity, presence
+- All 32 valid shared payloads render their existing outcome, severity, presence
   and conflict text; other outcome/severity labels remain absent.
 - The already reported pass/ready state stays separate from missing support at
   requested widths 375 and 820 with an accessibility text size. A horizontal
@@ -31,11 +31,11 @@ explanatory-copy localization and visible-analysis binding:
   revisions, pending retries, cancellation, failure, disconnect and clear explicit.
 
 Both native targets copy the same existing
-[37-case resource](../../Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evidence-vectors.json).
+[41-case resource](../../Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evidence-vectors.json).
 The app decodes only IDs, payloads and validity; it does not read `visibleText`.
 Tests send only one of seven scenario-group IDs in launch arguments. Expected
 strings stay in the test process and are never installed in app accessibility
-labels. The original Core tests still execute all 37 decoder cases, including
+labels. The original Core tests still execute all 41 decoder cases, including
 the nine rejections and recovery of the prior report.
 
 The test asserts a foreground app, the selected fixture ID and exact sequence
@@ -294,12 +294,16 @@ The 37 unique Xcode project objects, their references and input paths, and the
 active shared UI-test scheme were checked locally. Actual Xcode project loading,
 Apple SDK compilation and application/test execution remain hosted gates.
 
-The existing native UI job runs all original editor-model methods, then these
-seven macOS UI tests before its separate production-app build/launch checks. The
-existing Core job runs these seven UI tests on its selected iPhone and iPad,
-alongside all original Core and mutation gates. Both retain exact logs and
-`.xcresult` bundles. No extra workflow job, remote task or parallel runner is
-introduced.
+The current [native UI workflow](../../.github/workflows/native-ui.yml) runs
+the macOS evidence-rendering tests in `native-evidence-rendering`. Its separate
+`native-simulator` job runs the editor-model methods and unsigned production-app
+build/launch checks. The `native-ui` aggregate requires a successful scope job
+and all native child jobs to succeed when `native_required` is `true`, or all
+to be skipped when it is `false`. Each child retains its own evidence artifact.
+
+The existing Core job runs the evidence-rendering tests on its selected iPhone
+and iPad, alongside all original Core and mutation gates. The Core and macOS
+rendering jobs retain their exact logs and `.xcresult` bundles.
 
 From the repository root with the selected Apple toolchain:
 
