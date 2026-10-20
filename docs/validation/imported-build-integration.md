@@ -1,5 +1,17 @@
 # New imported-build, catalog and T6 receiving preparation
 
+## Current accepted-main, exact-selection and cost-observation composition
+
+The [2026-10-20 receiving record](receiving-main7f-row-cost.md) joins the complete
+reviewed exact-selection donor `70c45be7` with accepted main `7f16020b`.
+It retains all prior source and now requires **773 package declarations**:
+151 Core, 69 Data, 226 Transfer, 92 Catalog and 235 UI, plus the existing seven
+App journeys, six Evidence methods and three Cost methods. The 48-input portable
+inventory needs its own original qualification. Earlier 209/235/756 and older
+counts below remain records of their original source; they do not qualify this
+new 226/235/773 composition. The original `5e111f68` failures and the bounded
+test-only macOS observation change are separately described in that record.
+
 ## Accepted historical-resource, localization and planning carry
 
 The reviewed #391 planning composition joins the reviewed planning donor

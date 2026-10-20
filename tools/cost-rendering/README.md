@@ -12,6 +12,25 @@ positive and negative assertions, and outcome checks live in the separate XCTest
 process. Every scenario passes `isSynthetic: true` to the production view and
 requires its actual synthetic-pricing label in the observed native content.
 
+## Current receiving composition
+
+The [current receiving record](../../docs/validation/receiving-main7f-row-cost.md)
+receives reviewed donor `3476c279` and accepted main `7f16020b`. Its native UI
+profile requires 235 exact identities; the derived Transfer profile requires
+226, for 773 package declarations and 48 direct portable inputs. The later donor
+preserves all catalog identity corrections and supplies the macOS-only `Other`
+label query qualified below. The strict StaticText helper and iOS collection
+behavior remain unchanged. The initial settling assertion additionally retains
+the actual observed text before the test stops on a failure.
+
+All three complete Cost method bodies, 17 declared states, positive/negative
+disclosures, exact-money boundaries, viewport/position checks, sixteen-scroll
+bound and two-stable-observation condition remain. Host and production bytes
+are unchanged. The separate App journey command/job allowances are qualified in
+the receiving record; they change no Cost scan or Cost job deadline. The original
+133-method integration account below remains historical. Neither the original
+three macOS failures nor earlier-source mobile passes qualify this correction.
+
 ## Declared scenarios and required observations
 
 The three methods declare **17 view states**, not 17 separately named test

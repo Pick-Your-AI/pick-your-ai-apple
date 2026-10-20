@@ -38,6 +38,30 @@ none of those expanded results is inferred from the earlier editor run.
 
 ## Current receiving source and required validation
 
+### Current 2026-10-20 composition
+
+The [current receiving record](../docs/validation/receiving-main7f-row-cost.md)
+joins reviewed donor `3476c279` (retaining exact row/details source `70c45be7`)
+with accepted main `7f16020b` and all prior source corrections.
+Required package declarations are **151 Core, 69 Data, 226 Transfer, 92 Catalog
+and 235 UI: 773 total**, with all seven App journeys, six Evidence methods and
+three Cost methods still required in their configured native lanes. The Transfer
+gate selects `integrated-alternative-transfer`; every earlier profile remains.
+The new accepted Transfer file expands the portable inventory to 48 direct inputs,
+so an older 47-input observation cannot qualify this composition.
+
+The same record preserves the actual failed iPhone, iPad and macOS Cost originals
+and the test-only macOS accessible-text observation correction. It establishes no
+new native pass, whole-issue acceptance or main delivery. The separate journey
+command/job allowances are 2,700 seconds and 55 minutes; their sufficiency remains
+unproved, and the simulator-inventory limit stays 60 seconds. The original 438
+portable observation passed 17 controls in 1.579 seconds; only its 48 exact inputs
+are reused here, with no new execution claim. The following earlier receiving
+record retains its original revisions and counts; its 209 Transfer /
+756 package inventory is not the requirement for this new source.
+
+### Earlier receiving record
+
 The [integration record](../docs/validation/imported-build-integration.md) names the
 actual 2026-10-19 selection, immutable donors, current-module joins and remaining
 receiving gates. The fixed preparation selected on `888cb7e7` carried accepted
@@ -185,7 +209,8 @@ prepared `228840ae` results describe their own source and base. Earlier original
 comparison and renderer results likewise retain their exact execution identities.
 Their receipt counts do not qualify this 756-method, seven-journey composition;
 the configured current-source native jobs and ordinary review/merge gates remain
-required. No native command, destination, attempt, deadline or cleanup rule changes.
+required. Native destinations, method selection and owned-simulator cleanup remain
+unchanged; the separate journey command and job budgets are qualified above.
 
 The later accepted main `c512e99d9042669171cf418ddace3e3769fc854f`
 adds five Core methods for exact evidence/audit receipt identity, preserves

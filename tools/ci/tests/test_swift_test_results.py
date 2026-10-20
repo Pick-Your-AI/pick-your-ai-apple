@@ -150,7 +150,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
     def test_integrated_profiles_match_every_current_source_method(self):
         root = Path(__file__).resolve().parents[3]
         for package, profile, count in (("PlannerData", "integrated-pending-data", 69),
-                                        ("PlannerTransfer", "integrated-historical-resource-transfer", 209),
+                                        ("PlannerTransfer", "integrated-alternative-transfer", 226),
                                         ("PlannerUI", "catalog-selection-identity-ui", 235)):
             expected, groups = gate.PROFILES[profile]
             actual = set()
@@ -170,6 +170,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
     def test_integrated_profiles_reject_every_same_count_identity_substitution(self):
         for profile in ("integrated-pending-data", "integrated-retained-transfer",
                         "integrated-ruleset-cache-transfer", "integrated-historical-resource-transfer",
+                        "integrated-alternative-transfer",
                         "integrated-retained-ui",
                         "planning-inputs-ui", "planning-inputs-descriptor-ui", "catalog-row-identity-ui",
                         "catalog-selection-identity-ui"):
@@ -188,6 +189,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                              ("comparison-catalog-source-privacy-cost-ui", "integrated-retained-ui"),
                              ("integrated-retained-transfer", "integrated-ruleset-cache-transfer"),
                              ("integrated-ruleset-cache-transfer", "integrated-historical-resource-transfer"),
+                             ("integrated-historical-resource-transfer", "integrated-alternative-transfer"),
                              ("integrated-retained-ui-before-descriptor", "planning-inputs-ui"),
                              ("integrated-retained-ui", "planning-inputs-descriptor-ui"),
                              ("planning-inputs-ui", "planning-inputs-descriptor-ui"),

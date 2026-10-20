@@ -29,8 +29,11 @@ All six preceding App method bodies and their helpers remain exact. The historic
 CI's `--suite all` adds this seventh exact identity; its structured count and every
 method's single start/pass are required. The same 24 portable controls reject an
 older six-method result and same-count substitution. Both pinned destinations,
-the 900-second inner deadline, single attempts and mandatory owned cleanup remain
-unchanged. Only the workflow step's display name changes.
+single attempts and mandatory owned cleanup remain unchanged. The current
+`xcodebuild` command has a 2,700-second limit per destination within each
+55-minute workflow job. The [execution-budget qualification](README.md#current-receiving-source-and-required-validation)
+retains the original 900-second timeout and explains the finite allowance;
+sufficiency still requires completed execution of the expanded journeys.
 
 This is test source awaiting actual native execution on the current source. It
 does not simulate an interrupted unacknowledged write, prove a manual accessibility

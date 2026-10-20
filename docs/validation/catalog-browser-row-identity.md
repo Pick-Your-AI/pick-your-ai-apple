@@ -1,5 +1,15 @@
 # Exact catalog selection identity in browser rows and details
 
+## Current preserving receipt
+
+The [current receiving composition](receiving-main7f-row-cost.md) retains this
+complete donor at `70c45be7` and accepted main `7f16020b`. All three corrected
+production files, both native test files, seven added method bodies and the
+235-method UI profile remain exact donor bytes. The later main contribution adds
+seventeen Transfer methods, requiring 226 Transfer / 773 package declarations and
+48 portable inputs. The 756-declaration donor observations below remain attached
+to their original source. No new row/details native result is inferred.
+
 This bounded correction follows [Apple #59](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/59)
 on the existing [#391 receiving route](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391),
 starting at `6a7b164a1806659ae0f166f1589d367b289299ba`. The canonical controller

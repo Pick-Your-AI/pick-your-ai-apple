@@ -1,5 +1,15 @@
 # #64: Local planning input preparation
 
+## Current 2026-10-20 receiving requirement
+
+The [current composition](receiving-main7f-row-cost.md) preserves every planning
+body and receives the exact row/details correction from `70c45be7` plus accepted
+main `7f16020b`. Its required inventory is **773 package declarations**, including
+226 Transfer and 235 UI, with all seven App journeys unchanged. The accepted
+seventeen alternatives methods extend the Transfer gate; they do not supply a
+new planning UI, compatibility result or whole-#64 acceptance. Earlier source
+revisions, 209/756 counts and original observations below keep their own scope.
+
 ## Current canonical receiving boundary
 
 The reviewed #391 planning composition receives this exact reviewed donor

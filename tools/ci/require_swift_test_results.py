@@ -1007,6 +1007,32 @@ PROFILES['integrated-historical-resource-transfer'] = (209, {
 })
 
 
+# Accepted #416 alternatives retain every prior Transfer identity.
+# The 209-method source remains a separate historical receipt profile.
+PROFILES['integrated-alternative-transfer'] = (226, {
+    **PROFILES['integrated-historical-resource-transfer'][1],
+    'PlannerTransferTests.SelectionAlternativeTests': (
+        'testProposalChangesOnlyTheSelectedCatalogReferenceAndDraftRevision',
+        'testRejectsWrongCatalogMissingCandidateAndCrossKindReplacement',
+        'testDuplicateIdentitiesAndDisabledOrWorkloadSlotsReject',
+        'testCandidateVersionIdentityIsExactUTF8',
+        'testLowerReportedCostKeepsWeakerEvidenceAndOriginalRuleTradeoffs',
+        'testMissingSkippedAndUnknownFindingsDoNotBecomeResolvedOrCandidateCaused',
+        'testReportPinsParticipantsAndDuplicateFindingsAreValidatedIndependently',
+        'testFindingTextAndEvidenceVersionsUseExactUTF8',
+        'testEvidenceMustMatchItsActualComponentAndRetainsRetraction',
+        'testPartialMissingAndInconsistentReportedTotalsAreNeverRanked',
+        'testReportedDecimalOrderingPreservesDigitsBeyondFloatingPointPrecision',
+        'testConfirmationIsExplicitSingleUseAndForeignSessionsCannotConfirm',
+        'testDismissalAndSameContentReopeningRejectOldCallbacksWithoutRetiringNewReview',
+        'testBuildCatalogAndNewAssessmentChangesRevokeConfirmation',
+        'testSameWireSnapshotCannotCrossLocalStoreDraftRevisionOrSelectionSession',
+        'testPreviewAndDismissalPreserveDurableSelectionUntilConfirmedCAS',
+        'testConcurrentDurableEditWinsAfterConfirmationWithoutAutomaticRetry',
+    ),
+})
+
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

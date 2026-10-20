@@ -217,7 +217,8 @@ final class CostRenderingTests: XCTestCase {
             #endif
         }
         let text = labels.sorted().joined(separator: "\n")
-        XCTAssertTrue(settled, "Bounded native cost scan did not settle: \(id)", file: file, line: line)
+        XCTAssertTrue(settled, "Bounded native cost scan did not settle: \(id); actual native text: \(text)",
+                      file: file, line: line)
         XCTAssertFalse(text.isEmpty, "No native cost text was rendered: \(id)", file: file, line: line)
         for value in expected {
             XCTAssertTrue(text.contains(value), "\(id): missing \(value); actual native text: \(text)", file: file, line: line)

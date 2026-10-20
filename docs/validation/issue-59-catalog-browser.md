@@ -1,5 +1,15 @@
 # Native catalog browsing — bounded synthetic slice
 
+## Current exact-selection receiving source
+
+The complete [row/details correction](catalog-browser-row-identity.md) from
+`70c45be7` is preserved in the [current main7f composition](receiving-main7f-row-cost.md).
+The original fixed fixture, every prior browser/details test body, request
+ownership and all seven App journeys remain. Its required UI inventory is 235;
+accepted main adds the distinct seventeen alternatives methods, producing
+226 Transfer / 773 total package declarations. Original donor probes and native
+receiving outcomes retain their separate source identities and do not close #59.
+
 Tracks [Apple #59](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/59).
 
 ## User behavior
