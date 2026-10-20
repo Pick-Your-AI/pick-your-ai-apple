@@ -1,0 +1,25 @@
+/* Bounded Arabic presentation examples for the claim-evidence card. */
+"Evidence quality:" = "جودة الأدلة:";
+"Original recorded status:" = "الحالة الأصلية المسجلة:";
+"Component:" = "المكوّن:";
+"Version:" = "الإصدار:";
+"Retained snapshot:" = "اللقطة المحتفَظ بها:";
+"Source claim has not been inspected." = "لم يُفحص الادعاء الوارد في المصدر.";
+"Source claim is unavailable." = "الادعاء الوارد في المصدر غير متاح.";
+"Inspected source:" = "المصدر المفحوص:";
+"Inspection receipt:" = "سجل فحص المصدر:";
+"Retrieval method:" = "طريقة الاسترجاع:";
+"Independent support receipt:" = "سجل الدعم المستقل:";
+"Receiving acceptance:" = "سجل قبول المراجعة:";
+"Facts remain pinned to this version." = "تظل الوقائع مرتبطة بهذا الإصدار.";
+"Capture date (Gregorian):" = "تاريخ الالتقاط (ميلادي):";
+"Current-state facts as of" = "وقائع الحالة الراهنة بتاريخ";
+"A newer version is available. The retained selection has not changed." = "يتوفر إصدار أحدث. لم يتغير الاختيار المحتفَظ به.";
+"A newer snapshot is available. Review the evidence for this selection." = "تتوفر لقطة أحدث. راجع الأدلة الخاصة بهذا الاختيار.";
+"Selected evidence changed. A recheck is required." = "تغيرت الأدلة المحددة. يلزم إعادة التحقق.";
+"Independently verified" = "تم التحقق بصورة مستقلة";
+"Source checked" = "تم فحص المصدر";
+"User supplied" = "مقدّم من المستخدم";
+"Estimated" = "تقديري";
+"Unverified" = "غير متحقق منه";
+"Unavailable" = "غير متاح";

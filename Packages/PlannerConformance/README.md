@@ -191,11 +191,11 @@ backup**; it never relabels the unknown database or claims an installed binary
 downgrade. Restoring an old draft revision appends a new revision, preserves all
 original history and rejects a stale expected revision.
 
-All 31 currently accepted storage methods, including future-history restoration
+All 31 accepted draft-store methods, including future-history restoration
 rejection, all five WAL/hot-journal cases, actual `SQLITE_FULL` recovery,
 corrupt-record isolation and the
-separate-process `_exit(73)` crash replay remain required. The four migration
-methods make the exact storage set 35. Fixture fault injection is distinct
+separate-process `_exit(73)` crash replay remain required. With the 35 pending-write
+methods and four migration methods, the exact storage set is 70. Fixture fault injection is distinct
 from actual process exit, physical power loss, protected-data/device behavior
 and recovery of a deployed application or service.
 
@@ -265,9 +265,9 @@ the real test command, so an early command failure cannot retain old success.
 
 The existing [Transfer workflow](../../.github/workflows/swift-transfer.yml) adds
 the four-method/223-vector macOS execution and exact receipt. The existing
-[Storage workflow](../../.github/workflows/swift-storage.yml) requires all 35
+[Storage workflow](../../.github/workflows/swift-storage.yml) requires all 70
 methods and 20 observations on macOS and each of its selected iPhone/iPad
-simulators, alongside its existing crash replay and SDK compile. The
+simulators, alongside its existing crash replays and SDK compile. The
 [preparation workflow](../../.github/workflows/contract-preparation.yml) checks
 the derived bytes and all adversarial guards. No additional job or runner is
 introduced. A Swift macOS wire result is not relabeled as executing those 223
@@ -348,9 +348,9 @@ new Swift, simulator, website or Android execution, public source delivery or
 whole-issue acceptance. The archived `37792e22` ancestry remains intact locally
 and in the verified bundles; the public `b0c4e108` archive is its storage anchor.
 
-The required current native source inventory is four wire methods with 223
-observations and 35 storage methods with 20 migration observations on each
-configured platform. Actual receiving execution and source-bound review remain
+At the earlier `ccf280e3` receiving source, the required native inventory was four
+wire methods with 223 observations and 35 storage methods with 20 migration
+observations on each configured platform. Actual receiving execution and source-bound review remain
 required before any criterion is reconciled. The separately owned opt-in
 [CD11 consumer proposal #346](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/346)
 retains its own source and receiving lane; this recovery does not adopt a new
