@@ -99,9 +99,39 @@ final class T6ReviewJourneyTests: XCTestCase {
         let disclosure = app.switches["t6-report-disclosure"]
         let save = app.buttons["t6-save-report"]
         for _ in 0..<12 where !disclosure.isHittable { scroll.swipeUp() }
-        XCTAssertTrue(disclosure.waitForExistence(timeout: 5))
+        guard disclosure.waitForExistence(timeout: 5) else {
+            XCTFail("The report disclosure must be present"); return
+        }
         XCTAssertFalse(save.isEnabled)
-        disclosure.tap()
+        guard !save.isEnabled else { XCTFail("Save must remain disabled before disclosure activation"); return }
+        // SwiftUI exposes an identified row and a separate intrinsic switch.
+        // Activate exactly one leaf inside this disclosure, never the row label.
+        let descendants = disclosure.descendants(matching: .switch).allElementsBoundByIndex
+        let leaves = descendants.filter { $0.descendants(matching: .switch).count == 0 }
+        let control: XCUIElement
+        if descendants.isEmpty {
+            control = disclosure
+        } else {
+            guard leaves.count == 1 else {
+                XCTFail("The report disclosure must have one intrinsic switch"); return
+            }
+            control = leaves[0]
+        }
+        let ready = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "hittable == true AND enabled == true"), object: control)
+        guard XCTWaiter.wait(for: [ready], timeout: 5) == .completed,
+              (control.value as? String) == "0" else {
+            XCTFail("The report disclosure must be ready and off before its single activation"); return
+        }
+        control.tap()
+        let reviewed = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "value == %@", "1"), object: control)
+        let enabled = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "hittable == true AND enabled == true"), object: save)
+        guard XCTWaiter.wait(for: [reviewed, enabled], timeout: 5) == .completed,
+              (control.value as? String) == "1", save.isEnabled else {
+            XCTFail("The disclosure must switch on and enable Save before opening Files"); return
+        }
         XCTAssertTrue(save.isEnabled); save.tap()
         // Exercise the real system presentation. Missing receiver/Files behavior
         // fails this journey; no injected success or test-only save is accepted.

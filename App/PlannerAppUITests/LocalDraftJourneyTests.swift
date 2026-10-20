@@ -393,6 +393,9 @@ final class LocalDraftJourneyTests: XCTestCase {
         reveal(load, in: app, towardTop: false)
         tap(load)
         let rows = app.staticTexts.matching(NSPredicate(format: "identifier BEGINSWITH %@", "revisionTitle-"))
+        // The newly loaded section can be virtualized below the Load button.
+        // Reveal its first title before the existing bounded row assertion.
+        reveal(rows.firstMatch, in: app, towardTop: false)
         XCTAssertTrue(rows.firstMatch.waitForExistence(timeout: 10))
         let revisions = rows.allElementsBoundByIndex.compactMap {
             Int($0.identifier.dropFirst("revisionTitle-".count))
@@ -410,6 +413,7 @@ final class LocalDraftJourneyTests: XCTestCase {
         // The required next revision was absent from the preceding history load.
         // Its exact title therefore proves a new durable undo/redo acknowledgement.
         let row = app.staticTexts["revisionTitle-\(revision)"]
+        reveal(row, in: app, towardTop: false)
         XCTAssertTrue(row.waitForExistence(timeout: 10))
         XCTAssertEqual(row.label, title)
     }
@@ -439,7 +443,7 @@ final class LocalDraftJourneyTests: XCTestCase {
     private func dismissKeyboardGestureIntroductionIfPresent(_ app: XCUIApplication) {
         // A fresh iPad may cover its keyboard after the first system Paste with
         // an automatically rotating gesture tutorial. Recognize its exact
-        // instructional copy before using Continue; unrelated dialogs still fail.
+        // instructional copy before dismissing editor focus; unrelated dialogs still fail.
         let introduction = app.staticTexts.matching(NSPredicate(format: "label IN %@", [
             "Double-tap with three fingers.",
             "Double-tap with three fingers.\n",
@@ -453,9 +457,10 @@ final class LocalDraftJourneyTests: XCTestCase {
         let continueButton = app.buttons["Continue"]
         XCTAssertTrue(continueButton.waitForExistence(timeout: 10))
         wait(continueButton, matching: "hittable == true AND enabled == true")
-        // The recognized system tutorial stayed open after a centered 50 ms
-        // event. Try one bounded press; both disappearance checks still decide.
-        continueButton.press(forDuration: 0.2)
+        // The original centered Continue press left this tutorial over the
+        // keyboard toolbar. Use the app's single visible focus-only control;
+        // the keyboard and both recognized tutorial elements must disappear.
+        dismissEditorKeyboard(app)
         wait(continueButton, matching: "exists == false")
         wait(introduction, matching: "exists == false")
     }
@@ -467,20 +472,40 @@ final class LocalDraftJourneyTests: XCTestCase {
         // Scroll only this editor Form, never the first hittable collection.
         let container = app.descendants(matching: .any).matching(identifier: "draftEditorForm").firstMatch
         XCTAssertTrue(container.waitForExistence(timeout: 10), "The editor Form must be present")
+        let navigationBar = app.navigationBars["Edit local draft"]
+        guard navigationBar.exists else { XCTFail("The editor navigation bar must be present"); return }
+        let bounds = container.frame
+        let navigation = navigationBar.frame
+        guard [bounds.minX, bounds.minY, bounds.maxX, bounds.maxY,
+               navigation.minX, navigation.minY, navigation.maxX, navigation.maxY].allSatisfy({ $0.isFinite }),
+              bounds.width > 0, bounds.height > 0,
+              navigation.width > 0, navigation.height > 0 else {
+            XCTFail("The editor Form viewport geometry is unavailable"); return
+        }
+        let overlap = bounds.intersection(navigation)
+        let top = overlap.isNull ? bounds.minY : max(bounds.minY, overlap.maxY)
+        let viewport = CGRect(x: bounds.minX, y: top, width: bounds.width,
+                              height: bounds.maxY - top).insetBy(dx: 0, dy: 4)
+        guard viewport.width > 0, viewport.height > 0 else {
+            XCTFail("The editor Form viewport must have visible content"); return
+        }
+        func fullyVisible(_ frame: CGRect) -> Bool {
+            frame.width > 0 && frame.height > 0 &&
+                [frame.minX, frame.minY, frame.maxX, frame.maxY].allSatisfy({ $0.isFinite }) &&
+                viewport.contains(frame)
+        }
         for _ in 0..<6 {
             let exists = element.exists
-            if exists && element.isHittable { return }
+            if exists && element.isHittable && fullyVisible(element.frame) { return }
             guard container.isHittable else { XCTFail("The editor Form must be hittable"); return }
             if exists {
-                // An existing short field can pass behind the sheet navigation
-                // area. Move it toward this Form's center instead of overshooting.
+                // Hittability can expose only a thin strip of a clipped control.
+                // Move the whole target into the usable Form below navigation.
                 let target = element.frame
-                let bounds = container.frame
-                guard target.midY.isFinite, bounds.midY.isFinite,
-                      target.height > 0, bounds.height > 0 else {
+                guard target.midY.isFinite, target.height > 0 else {
                     XCTFail("The editor Form scroll geometry is unavailable"); return
                 }
-                let endY = target.midY < bounds.midY ? 0.65 : 0.35
+                let endY = target.midY < viewport.midY ? 0.65 : 0.35
                 let start = container.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
                 let end = container.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: endY))
                 start.press(forDuration: 0.05, thenDragTo: end,
@@ -491,8 +516,8 @@ final class LocalDraftJourneyTests: XCTestCase {
                 container.swipeUp()
             }
         }
-        XCTAssertTrue(element.exists && element.isHittable,
-                      "Could not reveal \(element.identifier) in the editor Form")
+        XCTAssertTrue(element.exists && element.isHittable && fullyVisible(element.frame),
+                      "Could not fully reveal \(element.identifier) in the editor Form viewport")
     }
 
     @MainActor

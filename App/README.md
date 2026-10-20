@@ -60,6 +60,56 @@ are reused here, with no new execution claim. The following earlier receiving
 record retains its original revisions and counts; its 209 Transfer /
 756 package inventory is not the requirement for this new source.
 
+#### Focused corrections from the 7d4b iPad original
+
+The [new iPad original](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39432580815/job/118664487819)
+checked out receiving `7d4b87c5` for public `3642efe9`. Its 41 portable runner
+controls passed in 0.363 seconds. Of the seven required native journeys, Catalog
+and three T6 methods passed; the planning-history, saved-notes and report/Files
+methods failed, with five assertion reports in 1,025.671 seconds overall. These
+are the original results before the following corrections, not results for the
+new source.
+
+The planning failure accepted a severely clipped Load saved revisions control:
+only its top 16 points intersected the editor Form. The actual tap was inside that
+visible strip, so a missed model action is not established. The test then waited
+for revision-title rows without revealing the section below the button. Its
+existing Form-scoped helper now requires the complete target frame inside the
+usable viewport below the editor navigation bar. After the single Load action,
+the first or exact required revision title gets its own bounded reveal before
+the existing ten-second existence and exact title/revision assertions. Each
+reveal retains six attempts and the existing drag parameters; the additional
+post-load reveal adds bounded interaction work. No history query, storage
+operation, revision ordering or acknowledgment assertion is replaced.
+
+The report original tapped the wide disclosure row at its label center. The
+retained hierarchy still showed the separate intrinsic switch off and Save
+disabled. The journey now admits exactly one leaf switch inside that identified
+disclosure, verifies its initial off state, activates it once, and requires both
+the on state and an enabled, hittable Save within a five-second state wait.
+Failure returns before attempting Save or Files cancellation. All preview,
+private-field omission, disabled-before, real Files cancellation and retained-plan
+postconditions remain. This adds explicit bounded readiness/state observation;
+it does not bypass disclosure or model admission.
+
+The recognized keyboard gesture tutorial remained after its single centered
+200 ms Continue press and covered the keyboard-toolbar Done editing control.
+On iOS, that one focus-only control now appears in the editor navigation toolbar
+while a field is focused, with the same identifier and `focusedEditorField = nil`
+action. The other platform's keyboard toolbar and both Save/Close actions and
+enabled rules remain. This is a production usability change; its native placement
+and activation still need current-source execution. Only the recognized tutorial
+branch invokes the existing keyboard-dismissal helper, then still requires the
+keyboard, Continue and instructional text to disappear and the actual pasted
+value to remain exact. The real paste still exceeds the store's 1,024-byte
+boundary. No Return behavior, repeated Continue activation, operating-system
+setting or injected application state is assumed.
+
+All seven required App method identities and the package method inventory remain.
+These source corrections establish no new native pass, simulator fix, full
+acceptance or main delivery. The configured current-source native gates retain
+their original duties.
+
 #### Evidence from a pending simulator inventory attempt
 
 The [04b iPad original](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39398429701/job/118548102048)

@@ -137,11 +137,20 @@ public struct DraftLibraryView: View {
             .accessibilityIdentifier("draftEditorForm")
             .navigationTitle("Edit local draft")
             .toolbar {
+                #if os(iOS)
+                ToolbarItem(placement: .topBarLeading) {
+                    if focusedEditorField != nil {
+                        Button("Done editing") { focusedEditorField = nil }
+                            .accessibilityIdentifier("finishDraftEditing")
+                    }
+                }
+                #else
                 ToolbarItemGroup(placement: .keyboard) {
                     Spacer()
                     Button("Done editing") { focusedEditorField = nil }
                         .accessibilityIdentifier("finishDraftEditing")
                 }
+                #endif
                 ToolbarItem(placement: .cancellationAction) {
                     Button("Close") {
                         model.requestClose()
