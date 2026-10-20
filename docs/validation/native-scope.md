@@ -389,7 +389,7 @@ reported as an executed Swift test, SDK build or device journey. No required-che
 setting or repository protection is changed. Future branch-protection setup must
 include meaningful preparation/scope checks and retain the native job names.
 
-The [36 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
+The [38 real-Git regression methods](../../tools/ci/tests/test_native_scope.py) cover exact
 PR test merges and main comparisons, a 3,006-file mixed change, source deletion and
 rename, unknown Markdown/fixtures, executable files, indirect symlink/submodule
 inputs, newline paths, invalid identities, divergent history, empty changes and the
@@ -429,7 +429,7 @@ with `--no-detach`, and zero detach regions. Fresh hosted scope results remain
 required for delivery.
 
 That 15-method lifetime receipt belongs to the linked editor checkpoint. The
-selector's current 36-method suite shares the same corrected setup across its original
+selector's current 38-method suite shares the same corrected setup across its original
 and audited-package classes; no assertion or cleanup error is suppressed.
 
 This change schedules future runs. It neither cancels existing main/current-head
