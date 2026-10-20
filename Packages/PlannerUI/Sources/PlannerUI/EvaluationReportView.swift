@@ -19,6 +19,8 @@ public struct EvaluationReportView: View {
                     .foregroundStyle(.secondary)
                 Text(verbatim: "Build: \(report.buildID), revision \(report.buildRevision)")
                 Text(verbatim: "Catalog snapshot: \(report.catalogSnapshotID)")
+                Text(verbatim: "Reported ruleset: \(report.rulesetID)")
+                Text(verbatim: "Reported ruleset version: \(report.rulesetVersion)")
                 Text(verbatim: "Evaluated at: \(report.evaluatedAt)")
                 Text(verbatim: "Reported counts — pass: \(report.summary.passed), fail: \(report.summary.failed), unknown: \(report.summary.unknown), skipped: \(report.summary.skipped)")
                 if report.findings.isEmpty {
@@ -46,8 +48,18 @@ struct EvaluationFindingView: View {
             Text(verbatim: "Severity: \(finding.severity.rawValue)")
             Text(verbatim: "Code: \(finding.code)")
             Text(verbatim: finding.message)
-            if let remediation = finding.remediation {
-                Text(verbatim: "Remediation: \(remediation)")
+            if finding.selectionIDs.isEmpty {
+                Text("Reported participant selections: none supplied.")
+            } else {
+                ForEach(finding.selectionIDs.indices, id: \.self) { index in
+                    Text(verbatim: "Reported participant selection \(index + 1): \(finding.selectionIDs[index])")
+                }
+            }
+            if let remediation = finding.remediation,
+               !remediation.trimmingCharacters(in: .whitespacesAndNewlines).isEmpty {
+                Text(verbatim: "Reported remediation: \(remediation)")
+            } else {
+                Text("No corrective action is described in this finding. Review its evidence before changing a setting.")
             }
             switch finding.evidencePresence {
             case .absent:
