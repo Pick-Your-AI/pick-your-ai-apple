@@ -643,6 +643,80 @@
       "severity": null,
       "valid": false,
       "visibleText": []
+    },
+    {
+      "collection": "empty",
+      "expected": [],
+      "id": "evidence/explanation/reported-action",
+      "observed": [],
+      "outcome": "fail",
+      "payloadJSON": "{\"build_id\":\"build.explanation.fixture\",\"build_revision\":7,\"catalog_snapshot_id\":\"catalog.explanation.fixture\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"SYNTHETIC_EXPLANATION\",\"evidence\":[],\"message\":\"Synthetic finding: inspect the recorded inputs for reported-action.\",\"outcome\":\"fail\",\"remediation\":\"Compare **reported** limits for [sel_z_limit](fixture:only); keep the selection until review is complete.\",\"rule_id\":\"rule.explanation.reported-action\",\"selection_ids\":[\"sel_z_limit\",\"sel_a_model\"],\"severity\":\"warning\"}],\"id\":\"evaluation.explanation.reported-action\",\"result\":\"invalid\",\"ruleset_id\":\"rules.explanation.reported-action\",\"ruleset_version\":\"2.3.4-draft.1\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":1,\"passed\":0,\"skipped\":0,\"unknown\":0}}",
+      "severity": "warning",
+      "valid": true,
+      "visibleText": [
+        "Reported ruleset: rules.explanation.reported-action",
+        "Reported ruleset version: 2.3.4-draft.1",
+        "rule.explanation.reported-action",
+        "Synthetic finding: inspect the recorded inputs for reported-action.",
+        "Reported participant selection 1: sel_z_limit",
+        "Reported participant selection 2: sel_a_model",
+        "Reported remediation: Compare **reported** limits for [sel_z_limit](fixture:only); keep the selection until review is complete."
+      ]
+    },
+    {
+      "collection": "empty",
+      "expected": [],
+      "id": "evidence/explanation/absent-action",
+      "observed": [],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.explanation.fixture\",\"build_revision\":7,\"catalog_snapshot_id\":\"catalog.explanation.fixture\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"SYNTHETIC_EXPLANATION\",\"evidence\":[],\"message\":\"Synthetic finding: inspect the recorded inputs for absent-action.\",\"outcome\":\"unknown\",\"rule_id\":\"rule.explanation.absent-action\",\"selection_ids\":[\"sel_unresolved\"],\"severity\":\"warning\"}],\"id\":\"evaluation.explanation.absent-action\",\"result\":\"indeterminate\",\"ruleset_id\":\"rules.explanation.absent-action\",\"ruleset_version\":\"2.3.4-draft.2\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":0,\"skipped\":0,\"unknown\":1}}",
+      "severity": "warning",
+      "valid": true,
+      "visibleText": [
+        "Reported ruleset: rules.explanation.absent-action",
+        "Reported ruleset version: 2.3.4-draft.2",
+        "rule.explanation.absent-action",
+        "Synthetic finding: inspect the recorded inputs for absent-action.",
+        "Reported participant selection 1: sel_unresolved",
+        "No corrective action is described in this finding. Review its evidence before changing a setting."
+      ]
+    },
+    {
+      "collection": "empty",
+      "expected": [],
+      "id": "evidence/explanation/empty-action",
+      "observed": [],
+      "outcome": "fail",
+      "payloadJSON": "{\"build_id\":\"build.explanation.fixture\",\"build_revision\":7,\"catalog_snapshot_id\":\"catalog.explanation.fixture\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"SYNTHETIC_EXPLANATION\",\"evidence\":[],\"message\":\"Synthetic finding: inspect the recorded inputs for empty-action.\",\"outcome\":\"fail\",\"remediation\":\"\",\"rule_id\":\"rule.explanation.empty-action\",\"selection_ids\":[],\"severity\":\"warning\"}],\"id\":\"evaluation.explanation.empty-action\",\"result\":\"invalid\",\"ruleset_id\":\"rules.explanation.empty-action\",\"ruleset_version\":\"2.3.4-draft.3\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":1,\"passed\":0,\"skipped\":0,\"unknown\":0}}",
+      "severity": "warning",
+      "valid": true,
+      "visibleText": [
+        "Reported ruleset: rules.explanation.empty-action",
+        "Reported ruleset version: 2.3.4-draft.3",
+        "rule.explanation.empty-action",
+        "Synthetic finding: inspect the recorded inputs for empty-action.",
+        "Reported participant selections: none supplied.",
+        "No corrective action is described in this finding. Review its evidence before changing a setting."
+      ]
+    },
+    {
+      "collection": "empty",
+      "expected": [],
+      "id": "evidence/explanation/whitespace-action",
+      "observed": [],
+      "outcome": "unknown",
+      "payloadJSON": "{\"build_id\":\"build.explanation.fixture\",\"build_revision\":7,\"catalog_snapshot_id\":\"catalog.explanation.fixture\",\"dependency_graph_id\":\"dependencies.core.1\",\"dependency_graph_revision\":1,\"deployment_readiness\":\"needs_review\",\"evaluated_at\":\"2026-10-16T09:00:00Z\",\"findings\":[{\"code\":\"SYNTHETIC_EXPLANATION\",\"evidence\":[],\"message\":\"Synthetic finding: inspect the recorded inputs for whitespace-action.\",\"outcome\":\"unknown\",\"remediation\":\"\\t \\n\\r\\u00a0\",\"rule_id\":\"rule.explanation.whitespace-action\",\"selection_ids\":[\"sel_model\",\"sel_engine\"],\"severity\":\"warning\"}],\"id\":\"evaluation.explanation.whitespace-action\",\"result\":\"indeterminate\",\"ruleset_id\":\"rules.explanation.whitespace-action\",\"ruleset_version\":\"2.3.4-draft.4\",\"schema_version\":\"1.0.0\",\"summary\":{\"failed\":0,\"passed\":0,\"skipped\":0,\"unknown\":1}}",
+      "severity": "warning",
+      "valid": true,
+      "visibleText": [
+        "Reported ruleset: rules.explanation.whitespace-action",
+        "Reported ruleset version: 2.3.4-draft.4",
+        "rule.explanation.whitespace-action",
+        "Synthetic finding: inspect the recorded inputs for whitespace-action.",
+        "Reported participant selection 1: sel_model",
+        "Reported participant selection 2: sel_engine",
+        "No corrective action is described in this finding. Review its evidence before changing a setting."
+      ]
     }
   ],
   "dependencies": {

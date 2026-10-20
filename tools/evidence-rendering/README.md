@@ -10,7 +10,7 @@ evidence projection. The application and UI-test target use local packages only.
 `EvidenceRenderingTests` runs in the separate `PlannerEvidenceUITests` process.
 Its six methods preserve the original checks and add date and explanatory-copy presentation:
 
-- All 28 valid shared payloads render their existing outcome, severity, presence
+- All 32 valid shared payloads render their existing outcome, severity, presence
   and conflict text; other outcome/severity labels remain absent.
 - The already reported pass/ready state stays separate from missing support at
   requested widths 375 and 820 with an accessibility text size. A horizontal
@@ -28,11 +28,11 @@ Its six methods preserve the original checks and add date and explanatory-copy p
   format placeholders remain verbatim at an accessibility text size.
 
 Both native targets copy the same existing
-[37-case resource](../../Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evidence-vectors.json).
+[41-case resource](../../Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evidence-vectors.json).
 The app decodes only IDs, payloads and validity; it does not read `visibleText`.
 Tests send only one of six scenario-group IDs in launch arguments. Expected
 strings stay in the test process and are never installed in app accessibility
-labels. The original Core tests still execute all 37 decoder cases, including
+labels. The original Core tests still execute all 41 decoder cases, including
 the nine rejections and recovery of the prior report.
 
 The test asserts a foreground app, the selected fixture ID and exact sequence
