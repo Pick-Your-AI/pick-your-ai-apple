@@ -2,12 +2,15 @@ import contextlib
 import importlib.util
 import io
 import json
+import os
 from pathlib import Path
+import signal
 import subprocess
 import sys
+import tempfile
 import time
 import unittest
-from unittest.mock import patch
+from unittest.mock import Mock, patch
 
 SPEC = importlib.util.spec_from_file_location(
     "simulator_smoke", Path(__file__).resolve().parents[1] / "simulator-smoke.py")
@@ -63,11 +66,62 @@ class UnavailableOutput(io.StringIO):
         return super().flush()
 
 
+class CommandProcessFixture:
+    """Translate only mocked command cases; never manufacture an OS process."""
+    def __init__(self, args, pid):
+        self.args, self.pid, self.returncode = args, pid, None
+        self.stdout, self.stderr = io.StringIO(), io.StringIO()
+
+    def communicate(self, timeout):
+        result = subprocess.run(self.args, capture_output=True, text=True, errors="replace",
+                                check=False, timeout=timeout)
+        self.returncode = result.returncode
+        return result.stdout, result.stderr
+
+    def kill(self):
+        if self.returncode is None:
+            self.returncode = -signal.SIGKILL
+
+    def wait(self, timeout):
+        if self.returncode is None:
+            self.returncode = -signal.SIGKILL
+        return self.returncode
+
+
 class SimulatorSmokeTests(unittest.TestCase):
     def setUp(self):
         self.inventory = inventory()
         self.stdout = io.StringIO()
         self.stderr = io.StringIO()
+        # Keep every existing command fixture at its original run interface.
+        # Real Python children still use the actual Popen and process group.
+        real_popen, real_killpg = subprocess.Popen, getattr(os, "killpg", None)
+        synthetic = {}
+
+        def popen(args, **kwargs):
+            if args[0] == sys.executable:
+                return real_popen(args, **kwargs)
+            self.assertEqual(kwargs, {"stdout": subprocess.PIPE, "stderr": subprocess.PIPE,
+                                      "text": True, "errors": "replace", "start_new_session": True})
+            pid = 2 ** 30 + len(synthetic)
+            process = CommandProcessFixture(args, pid)
+            synthetic[pid] = process
+            return process
+
+        def killpg(pid, sig):
+            if pid in synthetic:
+                self.assertEqual(sig, signal.SIGKILL)
+                synthetic[pid].kill()
+            else:
+                real_killpg(pid, sig)
+
+        popen_patch = patch.object(SMOKE.subprocess, "Popen", side_effect=popen)
+        popen_patch.start()
+        self.addCleanup(popen_patch.stop)
+        if real_killpg is not None:
+            group_patch = patch.object(SMOKE.os, "killpg", side_effect=killpg)
+            group_patch.start()
+            self.addCleanup(group_patch.stop)
 
     def completed(self, args, **kwargs):
         action = args[2]
@@ -1251,6 +1305,264 @@ class SimulatorSmokeTests(unittest.TestCase):
 
     def test_launch_failed_observation_sink_failure_preserves_original_error_diagnostics_and_cleanup(self):
         self.assert_launch_observation_is_non_authoritative("launch-failed", "sink")
+
+
+HEARTBEAT_PROGRAM = r"""
+import json, os, sys, time
+path, original_parent, lifetime, stop = sys.argv[1], int(sys.argv[2]), float(sys.argv[3]), sys.argv[4]
+end = time.monotonic() + lifetime
+counter = 0
+with open(path, "a", buffering=1) as stream:
+    while time.monotonic() < end and os.path.isdir(os.path.dirname(path)) and not os.path.exists(stop):
+        stream.write(json.dumps({"counter": counter, "pid": os.getpid(),
+                                "ppid": os.getppid(), "original_parent": original_parent,
+                                "pgid": os.getpgrp(), "sid": os.getsid(0)}) + "\n")
+        counter += 1
+        time.sleep(0.025)
+"""
+
+PARENT_COMMAND_PROGRAM = r"""
+import json, os, pathlib, subprocess, sys, time
+folder, mode, heartbeat_program = pathlib.Path(sys.argv[1]), sys.argv[2], sys.argv[3]
+(folder / "parent.json").write_text(json.dumps({"pid": os.getpid(), "pgid": os.getpgrp(),
+                                              "sid": os.getsid(0)}))
+kwargs = {"stdout": subprocess.DEVNULL, "stderr": subprocess.DEVNULL} if mode == "nonzero" else {}
+child = subprocess.Popen([sys.executable, "-c", heartbeat_program,
+                          str(folder / "child.jsonl"), str(os.getpid()), "6", str(folder / "stop-heartbeats")], **kwargs)
+print("owned parent output", flush=True)
+print("owned parent error", file=sys.stderr, flush=True)
+end = time.monotonic() + 2
+while time.monotonic() < end:
+    path = folder / "child.jsonl"
+    if path.exists() and len(path.read_text().splitlines()) >= 2:
+        break
+    time.sleep(0.01)
+else:
+    raise RuntimeError("synthetic child did not establish its heartbeat")
+if mode == "running-parent":
+    time.sleep(6)
+else:
+    raise SystemExit(23 if mode == "nonzero" else 0)
+"""
+
+COMMAND_DRIVER_PROGRAM = r"""
+import contextlib, importlib.util, io, json, pathlib, subprocess, sys, time
+source, folder, mode, parent_program, heartbeat_program = sys.argv[1:]
+spec = importlib.util.spec_from_file_location("isolated_smoke", source)
+smoke = importlib.util.module_from_spec(spec)
+spec.loader.exec_module(smoke)
+out, err = io.StringIO(), io.StringIO()
+group_signals, real_killpg = [], smoke.os.killpg
+def record_group_signal(group, sig):
+    group_signals.append({"pgid": group, "signal": int(sig)})
+    return real_killpg(group, sig)
+smoke.os.killpg = record_group_signal
+started = time.monotonic()
+with contextlib.redirect_stdout(out), contextlib.redirect_stderr(err):
+    try:
+        smoke.run(sys.executable, "-c", parent_program, folder, mode, heartbeat_program, timeout=1)
+        result = {"exception": None}
+    except (subprocess.TimeoutExpired, subprocess.CalledProcessError) as error:
+        def text(value):
+            return value.decode("utf-8", errors="replace") if isinstance(value, bytes) else value
+        result = {"exception": type(error).__name__, "timeout": getattr(error, "timeout", None),
+                  "returncode": getattr(error, "returncode", None),
+                  "stdout": text(error.stdout), "stderr": text(error.stderr)}
+    result["elapsed_seconds"] = time.monotonic() - started
+    result["next_command"] = smoke.run(sys.executable, "-c", "print('next owned command')", timeout=1)
+result["reported_stdout"], result["reported_stderr"] = out.getvalue(), err.getvalue()
+result["group_signals"] = group_signals
+print(json.dumps(result))
+"""
+
+
+class SimulatorCommandOwnershipTests(unittest.TestCase):
+    @staticmethod
+    def heartbeat(path):
+        rows = []
+        if path.exists():
+            for line in path.read_text().splitlines():
+                try:
+                    rows.append(json.loads(line))
+                except json.JSONDecodeError:
+                    # A killed writer may leave an incomplete final record.
+                    pass
+        return rows
+
+    @staticmethod
+    def stop_fixture_process(process):
+        # Retain the private direct-child handle as the ownership anchor. A
+        # completed communicate()/poll() may already have released its group ID.
+        if process.returncode is not None:
+            return
+        try:
+            os.killpg(process.pid, signal.SIGKILL)
+        except ProcessLookupError:
+            pass
+        finally:
+            for stream in (process.stdout, process.stderr):
+                if stream is not None:
+                    stream.close()
+        process.wait(timeout=2)
+
+    def assert_owned_process_boundary(self, mode):
+        # Every fixture has its own session and a finite self-expiry. The outer
+        # supervisor signals only still-unreaped direct children; indirect
+        # heartbeat writers receive a private cooperative stop request.
+        with tempfile.TemporaryDirectory(prefix="smoke-owned-process-") as directory:
+            folder = Path(directory)
+            sentinel = subprocess.Popen([sys.executable, "-c", HEARTBEAT_PROGRAM,
+                                         str(folder / "sentinel.jsonl"), str(os.getpid()), "12",
+                                         str(folder / "stop-heartbeats")],
+                                        start_new_session=True, stdout=subprocess.DEVNULL,
+                                        stderr=subprocess.DEVNULL)
+            driver = None
+            try:
+                ready_deadline = time.monotonic() + 2
+                while len(self.heartbeat(folder / "sentinel.jsonl")) < 2 and time.monotonic() < ready_deadline:
+                    time.sleep(0.01)
+                self.assertGreaterEqual(len(self.heartbeat(folder / "sentinel.jsonl")), 2)
+                driver = subprocess.Popen([sys.executable, "-c", COMMAND_DRIVER_PROGRAM,
+                                           str(Path(SMOKE.__file__).resolve()), str(folder), mode,
+                                           PARENT_COMMAND_PROGRAM, HEARTBEAT_PROGRAM],
+                                          start_new_session=True, stdout=subprocess.PIPE,
+                                          stderr=subprocess.PIPE, text=True)
+                stdout, stderr = driver.communicate(timeout=8)
+                self.assertEqual(driver.returncode, 0, stderr)
+                result = json.loads(stdout)
+                parent = json.loads((folder / "parent.json").read_text())
+                # Signal authority is limited to the fixture's own new session.
+                self.assertIn(parent["pgid"], (driver.pid, parent["pid"]))
+                self.assertEqual(parent["sid"], parent["pgid"])
+                self.assertNotEqual(parent["pgid"], sentinel.pid)
+                time.sleep(0.10)
+                first = self.heartbeat(folder / "child.jsonl")
+                sentinel_first = self.heartbeat(folder / "sentinel.jsonl")
+                time.sleep(0.20)
+                second = self.heartbeat(folder / "child.jsonl")
+                sentinel_second = self.heartbeat(folder / "sentinel.jsonl")
+                observed = {"mode": mode, "parent": parent, "driver_pid": driver.pid,
+                            "sentinel_pid": sentinel.pid, "exception": result["exception"],
+                            "timeout": result.get("timeout"), "returncode": result.get("returncode"),
+                            "elapsed_seconds": result["elapsed_seconds"],
+                            "child_samples": [len(first), len(second)],
+                            "sentinel_samples": [len(sentinel_first), len(sentinel_second)],
+                            "observed_orphan": any(row["ppid"] != parent["pid"] for row in second),
+                            "next_command": result["next_command"],
+                            "group_signals": result["group_signals"]}
+                print("owned-command-fixture " + json.dumps(observed, sort_keys=True), flush=True)
+                self.assertEqual(result["exception"], "CalledProcessError" if mode == "nonzero" else "TimeoutExpired")
+                self.assertEqual(result["returncode"] if mode == "nonzero" else result["timeout"],
+                                 23 if mode == "nonzero" else 1)
+                self.assertIn("owned parent output", result["stdout"])
+                self.assertIn("owned parent error", result["stderr"])
+                self.assertEqual(result["next_command"], "next owned command")
+                self.assertLess(result["elapsed_seconds"], 4)
+                self.assertGreater(len(first), 0)
+                self.assertGreater(len(sentinel_second), len(sentinel_first))
+                self.assertIsNone(sentinel.poll(), "unrelated sentinel was terminated")
+                if mode == "exited-parent":
+                    self.assertTrue(observed["observed_orphan"], "parent exit was not actually observed")
+                if mode == "nonzero":
+                    self.assertEqual(result["group_signals"], [], "reaped process-group identity must not be signalled")
+                    self.assertGreater(len(second), len(first), "completed command descendants are outside timeout cleanup")
+                else:
+                    self.assertEqual(len(second), len(first), "owned descendant still writes after command failure")
+                    self.assertEqual(result["group_signals"], [{"pgid": parent["pid"], "signal": int(signal.SIGKILL)}])
+            finally:
+                # This request occurs only after the behavioral assertions. The
+                # heartbeat also stops if its private directory is removed and
+                # always retains its finite lifetime, even if cleanup is cut off.
+                (folder / "stop-heartbeats").touch()
+                for process in (driver, sentinel):
+                    if process is not None:
+                        self.stop_fixture_process(process)
+
+    @unittest.skipUnless(os.name == "posix", "requires POSIX process-group ownership")
+    def test_fixture_cleanup_signals_only_unreaped_direct_process_handles(self):
+        completed = Mock(pid=2 ** 30, returncode=0)
+        with patch.object(os, "killpg") as group:
+            self.stop_fixture_process(completed)
+        group.assert_not_called()
+        completed.poll.assert_not_called()
+        completed.wait.assert_not_called()
+
+        live = Mock(pid=2 ** 30, returncode=None)
+        live.stdout, live.stderr = io.StringIO(), io.StringIO()
+        with patch.object(os, "killpg") as group:
+            self.stop_fixture_process(live)
+        group.assert_called_once_with(live.pid, signal.SIGKILL)
+        live.poll.assert_not_called()
+        live.wait.assert_called_once_with(timeout=2)
+        self.assertTrue(live.stdout.closed)
+        self.assertTrue(live.stderr.closed)
+
+    @unittest.skipUnless(os.name == "posix", "requires POSIX process-group ownership")
+    def test_timeout_stops_pipe_holding_descendant_after_observed_parent_exit(self):
+        self.assert_owned_process_boundary("exited-parent")
+
+    @unittest.skipUnless(os.name == "posix", "requires POSIX process-group ownership")
+    def test_timeout_stops_running_parent_and_owned_descendant(self):
+        self.assert_owned_process_boundary("running-parent")
+
+    @unittest.skipUnless(os.name == "posix", "requires POSIX process-group ownership")
+    def test_nonzero_exit_preserves_result_without_signalling_reaped_group(self):
+        self.assert_owned_process_boundary("nonzero")
+
+    @unittest.skipUnless(os.name == "posix", "requires POSIX process-group ownership")
+    def test_cleanup_errors_preserve_original_timeout_and_finite_reap_budget(self):
+        command = ("synthetic-required-command", "argument")
+        error = subprocess.TimeoutExpired(command, 7, output=b"partial output\n", stderr=b"partial error\n")
+        process = Mock(pid=2 ** 30, returncode=None)
+        process.stdout, process.stderr = io.StringIO(), io.StringIO()
+        process.communicate.side_effect = error
+        process.kill.side_effect = OSError("synthetic kill failure")
+        process.wait.side_effect = subprocess.TimeoutExpired(command, SMOKE.COMMAND_REAP_TIMEOUT_SECONDS)
+        out, err = io.StringIO(), io.StringIO()
+        with patch.object(SMOKE.subprocess, "Popen", return_value=process) as popen, \
+                patch.object(SMOKE.os, "killpg", side_effect=OSError("synthetic group failure")) as group, \
+                contextlib.redirect_stdout(out), contextlib.redirect_stderr(err), \
+                self.assertRaises(subprocess.TimeoutExpired) as caught:
+            SMOKE.run(*command, timeout=7)
+        self.assertIs(caught.exception, error)
+        popen.assert_called_once_with(command, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                      text=True, errors="replace", start_new_session=True)
+        process.communicate.assert_called_once_with(timeout=7)
+        group.assert_called_once_with(process.pid, signal.SIGKILL)
+        process.kill.assert_called_once_with()
+        process.wait.assert_called_once_with(timeout=5)
+        self.assertTrue(process.stdout.closed)
+        self.assertTrue(process.stderr.closed)
+        self.assertIn("partial output", out.getvalue())
+        self.assertIn("partial error", err.getvalue())
+        self.assertIn("Owned command reap did not complete: TimeoutExpired", err.getvalue())
+        self.assertIn("timed out after 7s", err.getvalue())
+
+    def test_non_posix_preserves_existing_required_command_contract(self):
+        command = ("synthetic-required-command", "argument")
+        timeout = subprocess.TimeoutExpired(command, 7, output=b"partial", stderr=b"error")
+        for outcome in (subprocess.CompletedProcess(command, 0, "success\n", ""),
+                        subprocess.CompletedProcess(command, 23, "output", "error"), timeout):
+            with self.subTest(outcome=type(outcome).__name__, status=getattr(outcome, "returncode", None)):
+                kwargs = {"side_effect": outcome} if isinstance(outcome, Exception) else {"return_value": outcome}
+                with patch.object(SMOKE.os, "name", "nt"), \
+                        patch.object(SMOKE.subprocess, "run", **kwargs) as runner, \
+                        patch.object(SMOKE.subprocess, "Popen") as popen, \
+                        contextlib.redirect_stdout(io.StringIO()), contextlib.redirect_stderr(io.StringIO()):
+                    if outcome is timeout:
+                        with self.assertRaises(subprocess.TimeoutExpired) as caught:
+                            SMOKE.run(*command, timeout=7)
+                        self.assertIs(caught.exception, timeout)
+                    elif outcome.returncode:
+                        with self.assertRaises(subprocess.CalledProcessError) as caught:
+                            SMOKE.run(*command, timeout=7)
+                        self.assertEqual((caught.exception.returncode, caught.exception.stdout, caught.exception.stderr),
+                                         (23, "output", "error"))
+                    else:
+                        self.assertEqual(SMOKE.run(*command, timeout=7), "success")
+                runner.assert_called_once_with(command, capture_output=True, text=True, errors="replace",
+                                               check=False, timeout=7)
+                popen.assert_not_called()
 
 
 if __name__ == "__main__":
