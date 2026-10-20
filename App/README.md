@@ -1,20 +1,400 @@
 # Native local draft preview
 
 This unsigned iPhone/iPad app composes `PlannerUI` and `PlannerData`. It is a local
-editor, with no catalog, evaluation, snapshot export, account, remote sync or release
-configuration. The reserved `invalid.pickyourai.localpreview` bundle ID is for simulator
+editor with a separate local imported-build library, reviewed JSON file export and
+a separately reviewed proposed-plan text report. The report is not a private
+Build/Manifest pair or a deployment action.
+The Demo catalog tab browses a pinned, explicitly synthetic fixture and its typed
+component details; compatibility and price remain unknown. A selected imported
+Build can open a local T6 declaration review. No ordinary compatibility evaluator,
+account, remote sync or release configuration is connected. The reserved
+`invalid.pickyourai.localpreview` bundle ID is for simulator
 use only; it does not allocate a production application identifier or signing team.
 
-The delegated engineering mandate selects SwiftUI/iOS 17 and the local SQLite actor
-implemented in PlannerData for this executable slice. This advances the proposed
-[#22 ADR](../docs/decisions/issue-22-platform.md); its previous Core Data recommendation
-is superseded for this local store only. Product receiving acceptance stays separate.
+The [accepted #22 ADR](../docs/decisions/issue-22-platform.md) selects SwiftUI with
+native adapters, iPhone/adaptive iPad on iOS/iPadOS 17, and the local SQLite actor
+implemented in PlannerData. Preserve those module boundaries; product, device,
+service and release receiving acceptance retain their separate criteria.
 
 On macOS, use the [pinned toolchain setup and commands](#pinned-toolchain) below.
 
 The workflow records the actual compiler/SDK/runtime and runs model tests, an unsigned
-simulator build, and iPhone/iPad launch smoke checks. It contains no signing secrets.
-The smoke script is not an accessibility or complete journey test.
+simulator build, iPhone/iPad launch smoke checks, and seven XCUITest journeys on each
+pinned UI-test destination: local notes with production autosave, durable undo/redo
+and discard recovery; catalog filters, pagination, relaunch and exact details; and
+four T6 journeys using two explicitly synthetic retained-review scenarios, including
+report disclosure/Files cancellation and actual tab withdrawal; and the planning-input
+edit, acknowledged-save, relaunch and revision-restoration journey. It contains no signing
+secrets. The launch-only smoke script remains a separate check; see the
+[UI journey evidence and limits](UI_JOURNEY.md).
+
+The exact canonical editor `8e76d0ee` has an actual 71-model pass and complete
+Notes journey passes on both pinned simulators, with successful owned cleanup;
+see the [completed editor receipt](../docs/validation/editor-integration.md#completed-corrected-editor-execution).
+Its separate scope-cleanup failure remains recorded. The earlier 110 UI / 57
+Transfer composition is historical input. That earlier preparation required all
+235 UI and 209 Transfer methods plus all seven complete journeys on each destination;
+none of those expanded results is inferred from the earlier editor run.
+
+## Current receiving source and required validation
+
+### Current accepted-main cache-validator composition through #433
+
+This source preserves the reviewed `88a704c9` integration and receives accepted
+main `09667e27`. Its three exact additions provide the
+[whole-artifact cache validator](../Packages/PlannerTransfer/CATALOG_CACHE_VALIDATION.md),
+ten focused methods and that contribution's guide. Validation passes original
+bytes to the existing decoders; it does not grant cache production, graph,
+source-use or current-check authority. The existing iPad interactions and all
+their assertions remain unchanged.
+
+Required declarations are **151 Core, 84 Data, 275 Transfer, 92 Catalog and
+235 UI: 837 total**. Transfer adds the ten exact `CatalogCacheValidatorTests`
+identities to the complete prior 265. The dedicated Transfer and submission-SDK
+jobs select `integrated-catalog-cache-transfer`; all 27 preceding profiles remain
+exact for their own original sources. Data and UI keep their existing strict
+84/235 profiles.
+
+The one added Swift test file expands direct receiver inputs from 51 to **52**.
+All 17 portable control identities remain; the current-source comparison,
+same-count substitutions and padded-history rejection include the new profile.
+The earlier 51-input control result and 265-method Transfer original retain
+their actual `26543` source. They do not execute these expanded inputs. All seven
+App journeys on each configured destination, six Evidence methods and three Cost
+methods remain required. No new control or native execution is claimed by this
+source inventory.
+
+### Historical accepted-main composition through #431
+
+This source preserves the reviewed iPad interaction correction at `a924668d`
+and receives accepted main `49bf4d59`: strict JSON pin admission (#432), local
+conflict preparation (#429), caller-supplied pending-write dispatch (#425), and
+immutable reported-summary projection (#431). All existing app interactions and
+their assertions, including the separate iPad correction, remain intact.
+
+The required package declarations are **151 Core, 84 Data, 265 Transfer,
+92 Catalog and 235 UI: 827 total**. Data is the prior 69 plus 15 exact dispatcher
+methods. Transfer is the prior 226 plus 15 exact conflict and 24 exact summary
+methods. Storage and submission SDK select `integrated-dispatch-data`; Transfer
+and submission SDK select `integrated-summary-transfer`. Each profile requires
+every named identity exactly once, a passing result, and the exact aggregate.
+All 25 preceding profiles remain unchanged for their historical source scopes.
+
+The three new package test files expand the receiver's direct source inputs from
+48 to **51**. The existing 17 portable receiver controls now require the exact
+84/265/235 source groups and reject every same-count identity substitution and
+padded preceding receipt. No prior 48-input execution qualifies those expanded
+controls. All seven App journeys on each configured destination, six Evidence
+methods and three Cost methods remain required. No local control or native run
+is claimed for this composition; its ordinary configured current-source jobs
+must supply their own results. Earlier counts and outputs below remain tied to
+the named source that actually produced them.
+
+### Historical 7f composition and its original boundaries
+
+The [current receiving record](../docs/validation/receiving-main7f-row-cost.md)
+joins reviewed donor `3476c279` (retaining exact row/details source `70c45be7`)
+with accepted main `7f16020b` and all prior source corrections.
+Required package declarations are **151 Core, 69 Data, 226 Transfer, 92 Catalog
+and 235 UI: 773 total**, with all seven App journeys, six Evidence methods and
+three Cost methods still required in their configured native lanes. The Transfer
+gate selects `integrated-alternative-transfer`; every earlier profile remains.
+The new accepted Transfer file expands the portable inventory to 48 direct inputs,
+so an older 47-input observation cannot qualify this composition.
+
+The same record preserves the actual failed iPhone, iPad and macOS Cost originals
+and the test-only macOS accessible-text observation correction. It establishes no
+new native pass, whole-issue acceptance or main delivery. The separate journey
+command/job allowances are 2,700 seconds and 55 minutes; their sufficiency remains
+unproved, and the simulator-inventory limit stays 60 seconds. The original 438
+portable observation passed 17 controls in 1.579 seconds; only its 48 exact inputs
+are reused here, with no new execution claim. The following earlier receiving
+record retains its original revisions and counts; its 209 Transfer /
+756 package inventory is not the requirement for this new source.
+
+#### Focused corrections from the 7d4b iPad original
+
+The [new iPad original](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39432580815/job/118664487819)
+checked out receiving `7d4b87c5` for public `3642efe9`. Its 41 portable runner
+controls passed in 0.363 seconds. Of the seven required native journeys, Catalog
+and three T6 methods passed; the planning-history, saved-notes and report/Files
+methods failed, with five assertion reports in 1,025.671 seconds overall. These
+are the original results before the following corrections, not results for the
+new source.
+
+The planning failure accepted a severely clipped Load saved revisions control:
+only its top 16 points intersected the editor Form. The actual tap was inside that
+visible strip, so a missed model action is not established. The test then waited
+for revision-title rows without revealing the section below the button. Its
+existing Form-scoped helper now requires the complete target frame inside the
+usable viewport below the editor navigation bar. After the single Load action,
+the first or exact required revision title gets its own bounded reveal before
+the existing ten-second existence and exact title/revision assertions. Each
+reveal retains six attempts and the existing drag parameters; the additional
+post-load reveal adds bounded interaction work. No history query, storage
+operation, revision ordering or acknowledgment assertion is replaced.
+
+The report original tapped the wide disclosure row at its label center. The
+retained hierarchy still showed the separate intrinsic switch off and Save
+disabled. The journey now admits exactly one leaf switch inside that identified
+disclosure, verifies its initial off state, activates it once, and requires both
+the on state and an enabled, hittable Save within a five-second state wait.
+Failure returns before attempting Save or Files cancellation. All preview,
+private-field omission, disabled-before, real Files cancellation and retained-plan
+postconditions remain. This adds explicit bounded readiness/state observation;
+it does not bypass disclosure or model admission.
+
+The recognized keyboard gesture tutorial remained after its single centered
+200 ms Continue press and covered the keyboard-toolbar Done editing control.
+On iOS, that one focus-only control now appears in the editor navigation toolbar
+while a field is focused, with the same identifier and `focusedEditorField = nil`
+action. The other platform's keyboard toolbar and both Save/Close actions and
+enabled rules remain. This is a production usability change; its native placement
+and activation still need current-source execution. Only the recognized tutorial
+branch invokes the existing keyboard-dismissal helper, then still requires the
+keyboard, Continue and instructional text to disappear and the actual pasted
+value to remain exact. The real paste still exceeds the store's 1,024-byte
+boundary. No Return behavior, repeated Continue activation, operating-system
+setting or injected application state is assumed.
+
+All seven required App method identities and the package method inventory remain.
+These source corrections establish no new native pass, simulator fix, full
+acceptance or main delivery. The configured current-source native gates retain
+their original duties.
+
+#### Evidence from a pending simulator inventory attempt
+
+The [04b iPad original](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39398429701/job/118548102048)
+passed its 29 portable controls, then the single `xcrun simctl list --json` call
+timed out after 60 seconds with empty retained stdout/stderr, before device
+selection or App build. Its cause remains unresolved. The runner now preserves
+that exact command, timeout, output streams and original error while a macOS-only
+observer waits 20 seconds for the same attempt to remain pending.
+
+The observer has a separate ten-second command budget. It retains whitelisted
+image/toolchain metadata and one `ps` table containing PID, parent PID, reported
+start time and command, without argument or environment columns. At most two
+inferred candidates are eligible for one-second `sample` observations: the unique
+inventory child candidate and unique `simdiskimaged`. Each gets a bounded identity
+recheck first; ambiguity, disappearance or changed reported fields prevents that
+sample. These snapshots do not provide a race-free process handle or verified
+binary identity. Sampling permission failures remain diagnostic results.
+
+When inventory returns or fails, cancellation terminates/reaps only observer-created
+diagnostic children, and the caller allows at most one second for the observer
+thread to finish. That separate shutdown allowance does not change the inventory
+command's 60-second deadline or its recorded duration. Diagnostic OS process
+creation and file I/O cannot be forcibly interrupted. Directory creation, the
+initial `inventory-observer/pending.json` marker and the final `observation.json`
+all belong to the daemon; starting or stopping it performs no diagnostic file or
+stream I/O on the inventory caller. A pending marker without a final record means
+no completion was retained. Failed or blocked setup may leave no marker, and
+missing evidence never proves completion. Optional observer errors cannot replace
+the inventory outcome. All observer files stay inside the fresh
+owned evidence directory and follow its existing artifact retention. No additional
+inventory, service control, privilege escalation, runtime installation or retry is
+introduced, and this change establishes no native pass or runtime fix.
+
+The scope follows Apple's [narrow simulator backtrace guidance](https://developer.apple.com/forums/thread/756767)
+and [documented sample duration/interval](https://developer.apple.com/library/archive/documentation/Performance/Conceptual/LaunchTime/Articles/MeasuringLaunch.html).
+The portable observer controls exercise process ownership and failure preservation;
+real Apple diagnostic behavior still needs its own current-source hosted result.
+
+### Earlier receiving record
+
+The [integration record](../docs/validation/imported-build-integration.md) names the
+actual 2026-10-19 selection, immutable donors, current-module joins and remaining
+receiving gates. The fixed preparation selected on `888cb7e7` carried accepted
+main through `0e289d81`; the preceding composition carried accepted `7431b7d6`.
+The reviewed planning composition receives accepted main `4632c72a` and
+the exact planning donor `3f7f48ec`, with their boundaries below.
+It does not recover an absent old #198 tree or deliver its signed
+staging branch to main. The separately prepared T6 report/route follow-up starts
+on published #391 source `9e7cc629`, with the exact donor `394ff3ba` and
+[explicit route ownership](../docs/validation/imported-build-integration.md#t6-report-and-route-lifecycle-follow-up).
+Its local source checkpoint is not a native or main-delivery observation. The
+[current-main intake](../docs/validation/imported-build-integration.md#accepted-ruleset-cache-adapter-carry)
+preserves the bounded SDK inputs, regular-file admission, accepted catalog-envelope delivery and later
+documentation changes with their original source identities. The existing
+Build configuration comparison is independent of the separately owned catalog
+component comparison in #365.
+
+Opening, forking or deleting the selected imported snapshot updates its T6 owner
+synchronously with complete Build equality. Local label changes retain the same
+immutable Build; changed locks, another fork or selected deletion retire prior
+T6 inputs, compatibility and pending picker authority. Ordinary navigation begins
+without a compatibility result. The user explicitly reviews retained quality and
+proposed deployment declarations; no service, default pass, approval or execution
+is manufactured. The original six real-store binding tests remain exact. Eight
+additional receiver methods specify the captured full-Build route, actual tab
+withdrawal, stale callbacks, selected closure/deletion and fresh recovery.
+Six further callback regressions specify the separately identified
+[stale child-disappearance correction](../docs/validation/imported-build-integration.md#route-captured-child-disappearance-correction):
+completed and pending no-Files reviews, both current-route cancellation controls,
+and live importer/exporter protection. The original eight method bodies remain.
+
+Six test-only exact-fixture controls now require direct raw admission, complete
+no-op value preservation, unrelated-mutation fraction preservation, quality
+threshold/false preservation and rejection of floating or bridged numeric inputs.
+The four T6 test families use the existing exact Transfer parser/value encoder;
+their original method bodies, raw fixtures and production numeric limits remain.
+The [fixture correction record](../docs/validation/imported-build-integration.md#exact-t6-fixture-mutation-correction)
+preserves the actual older 52-failure native observation separately from the
+new source and portable controls. It claims no corrected native execution.
+
+Files intake additionally requires the seven [descriptor admission regressions](../docs/validation/imported-build-integration.md#regular-import-descriptor-admission).
+The existing security scope, URL preflight, cancellation and byte limit remain.
+Nonblocking open and a regular-type check on the actual descriptor prevent a
+pathname replacement from turning that intake into a blocking FIFO read.
+
+The App reports tab withdrawal synchronously before changing selectedTab. The
+library uses a separate opaque route for each T6 presentation; a stale Back
+binding cannot cancel a reopened same-Build route. Files temporarily covering
+the view preserves its exact owned request. The destination also captures that
+same route for its MainActor disappearance callback: a callback from an old child
+cannot cancel a reopened review, including when no Files request is active.
+Back navigation, another tab, selected
+closure/deletion or a replaced library owner cancels it explicitly. Closing the
+selection preserves every stored row. Report disclosure and source rights remain
+separate; a successful system callback is only a reported file-save result.
+
+Only an explicitly selected Debug UI-journey argument admits the two synthetic T6
+scenarios. Each such app launch uses a fresh temporary library, preserves the exact
+three donor fixture byte strings and visibly labels its record synthetic. Its
+synthetic compatibility report uses the existing analysis store. Release builds
+contain neither that fixture path nor its bytes. Ordinary app launches create no
+fixture and receive no synthetic report. The source-defined two original T6 test
+bodies remain unchanged; their shared navigation helper uses the same adaptive
+button lookup as the existing catalog journey and bounded scrolling in the exact
+imported-build Form. The donor third Files-cancellation body is also exact; the
+fourth T6 journey exercises actual tab withdrawal, reopen and retained-input retry.
+
+| Mandatory current job | Exact selected work |
+| --- | --- |
+| `native-evidence-rendering` | All six accepted real macOS Evidence methods and strict receipt, including Gregorian capture dates and localized claim copy, Xcode 16.4, unchanged 20-minute job. |
+| `native-simulator` | Existing Xcode 26.3 / SDK 26.2 selection, Xcode-pin, smoke-runner and SDK guards, all 235 UI methods, unsigned Debug build and both highest-runtime fresh smoke destinations; unchanged 20-minute job and command deadlines. |
+| `native-cost-rendering` | Three real macOS Cost methods and their strict receipt, Xcode 16.4, separate 20-minute job. |
+| `native-ui-journey (iphone)` and `(ipad)` | All seven app journeys on each fresh pinned 18.5 destination, 41 runner controls, separate 55-minute jobs and a bounded 2,700-second inner test limit. |
+| `native-ui` | Result-only aggregate requires successful scope and every selected job's success; only an audited false scope permits all native jobs to skip. |
+
+The inventory runner retains evidence from the same single 60-second
+`xcrun simctl list --json` call before device selection. File-backed stderr,
+partial stdout and a structured attempt record preserve the original command
+failure even when secondary evidence or diagnostic I/O fails. A successful
+command still cannot proceed if required evidence retention fails. The five added
+portable controls make 29 runner controls; all 24 earlier methods remain exact.
+The [reviewed diagnostic source](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6284168303)
+and [close-error finding](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/391#issuecomment-6284203858)
+retain their original observations. This change does not establish the cause of
+the CoreSimulator delay or turn either failed native original into a pass.
+All seven real journeys and existing ownership, selection and cleanup gates
+remain required; the inventory command, timeout and attempt count are unchanged.
+
+The original [iPad journey job 118384069059](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39347486216/job/118384069059)
+on prepared `5e111f687139dee1533f3d92f47e7a142df0df7a` timed out after 900 seconds.
+Its cold build and setup consumed approximately 379 seconds; only the first of
+seven selected methods began and none completed. Retained artifact `12236051485`
+(SHA-256 `46ca786235cb1f658e5355eae8fca14a59fdff07ee512221f00921f3883e07ec`)
+records the command timeout, incomplete result summary, failed acceptance and
+successful owned-simulator shutdown/deletion. This does not prove a product
+assertion failure. The 45-minute command allowance and 55-minute job limit leave
+bounded room for the full selection, cleanup and original-artifact retention;
+their sufficiency still requires completed native execution. All seven exact
+method identities, failure/skip rejection, ownership and cleanup checks remain.
+The separate [iPhone inventory timeout](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39347486216/job/118384069103)
+occurred at the existing 60-second simulator-discovery limit before a journey
+started; that limit and the failed original remain unchanged.
+
+Core retains every existing package, mutation, guard and Evidence-rendering step
+and adds the three Cost methods on each pinned simulator. Storage requires all 69
+methods: 34 retained draft cases and 35 accepted pending-write cases, with both
+actual crash/recovery probes. The strict Data receiver checks every identity in
+the macOS, iPhone, iPad and submission SDK logs. Transfer requires 209 exact methods,
+the original nine reference phases and the separate Manifest controls. Submission
+SDK requires all five packages (151 Core, 69 Data, 209 Transfer, 92 Catalog, 235 UI; 756 total),
+all current App guards and both unsigned Release products with their separate SDK
+and privacy receipts. Static inventories are not execution observations.
+
+The current carry preserves the accepted evidence-date presentation and adds the
+sixth localized claim-copy method, with its exact English/German/Arabic resources, the native package-path preflight before mutation-output cleanup,
+the maintenance runbook and the exact #317 smoke source. The combined Transfer
+receiver keeps the same nine reference phases now accepted through #285 at
+`b35414a8`; this source carry does not reexecute their earlier receipts.
+Earlier four-method rendering results remain observations
+of those earlier inputs; they do not execute the added date method.
+
+The complete Core/native UI scope footprints include this UI package's Catalog
+and Transfer dependencies. The historical audit gains only the four corresponding
+existing package-tree values and supplies no current skip authority. The separate
+journey execution budget is qualified above.
+
+The exact method receiver rejects missing, duplicated, skipped or substituted
+methods and an older padded receipt. Its 17 portable controls and the exhaustive
+4,096-state result-gate control do not execute an Apple application. New source,
+current-main composition, configured native results and actual main readback must
+retain their own identities.
+
+The [planning-input source and journey record](../docs/validation/issue-64-planning-inputs.md)
+describes the local raw fields, unanswered catalog references and lossless editor-v1
+reading. Its 17 added UI methods retain all 204 preceding identities. The new App
+journey creates only its own draft through ordinary controls, retains invalid usage
+units and exact budget spelling across a process relaunch, explicitly chooses the
+fictional workload/deployment records, then restores the earlier invalid/unanswered
+revision and verifies it after another relaunch. It also checks that catalog usage,
+classification and region declarations do not become fabricated user input.
+The six preceding App method bodies and both historical local/T6 selector groups
+remain exact; `--suite all` additionally requires the new method's start and pass.
+An older six-method result cannot qualify the expanded current suite. This is a
+declared journey awaiting its own native execution, not a simulated interruption,
+manual accessibility audit, evaluated filter result or completed #64 criterion.
+
+The accepted [historical resource comparison](../Packages/PlannerTransfer/HISTORICAL_RESOURCE_COMPARISON.md)
+retains complete estimate rows and their own build/selection bindings. Its nineteen
+methods join the unchanged 190-method receiver as `integrated-historical-resource-transfer`
+in both Transfer and submission SDK workflows. All earlier receiver maps and parser
+functions remain intact. The accepted [claim-copy rendering](../Packages/PlannerUI/EVIDENCE_RENDERING.md)
+keeps six exact rendering methods, three 24-key localization tables, and verbatim
+evidence values with directional isolation. The UI manifest preserves all four
+package/target dependencies and both Resources and privacy-manifest processing.
+
+The original `682f04a8` / prepared `1e5b90b6` and planning donor `3f7f48ec` /
+prepared `228840ae` results describe their own source and base. Earlier original
+comparison and renderer results likewise retain their exact execution identities.
+Their receipt counts do not qualify this 756-method, seven-journey composition;
+the configured current-source native jobs and ordinary review/merge gates remain
+required. Native destinations, method selection and owned-simulator cleanup remain
+unchanged; the separate journey command and job budgets are qualified above.
+
+The later accepted main `c512e99d9042669171cf418ddace3e3769fc854f`
+adds five Core methods for exact evidence/audit receipt identity, preserves
+simulator command outcomes when observation or output reporting fails, and
+requires literal Boolean acceptance-map states. Its complete runtime, regression
+and documentation changes join the reviewed public `086492dd` source. The first
+signed receiving commit `c81a2806e41608856d799d47a51c82ebcd7e42c4`, tree
+`cfde13b48c82da69eb540ce02036df5da972b479`, binds that actual current-main union.
+The present documentation reconciliation leaves every executable input in that
+union unchanged. The earlier 744-declaration public source, its 17 portable
+controls, and each native preparation retain their original identities; no
+old native result qualifies that 749-declaration source.
+
+The subsequent [exact catalog selection correction](../docs/validation/catalog-browser-row-identity.md)
+retains those 749 declarations and adds three browser regressions. Its first frozen
+`catalog-row-identity-ui` profile requires 231 UI identities, including complete
+filtered pages and failed-page retry with distinct Unicode version pins. That
+752-declaration checkpoint retains its original bounded value/index observations.
+The coherent details follow-up adds four methods for exact sheet identity and
+hostile version/name responses, retaining ID/kind admission, retry and dismissal.
+The current `catalog-selection-identity-ui` profile requires all 235 UI identities
+and the 756-declaration inventory above. All earlier profiles and result attribution
+remain exact; the expanded source requires its own configured native qualification.
+
+## Retained smoke and toolchain history
+
+The dated paragraphs below preserve each original runner revision and observation.
+Their 17-, 24-, 27-, 29- and earlier 25-model references describe those source-time
+profiles; the current job inventory is the table above. Original failures remain
+failures. The selected 55f continuation retains its existing Intel host and actual
+qualified original receipt; the separate reviewed arm64 offer is not selected here.
 
 The simulator qualification job uses the existing Xcode 26.3 / 17C529 and SDK 26.2
 pins described in the [toolchain continuation](#simulator-toolchain-continuation-2026-10-19).
@@ -353,11 +733,11 @@ keep their original source; they are not thirty-two-method or new native results
 
 | Issue / acceptance contribution | Implementation and check | Remaining evidence |
 | --- | --- | --- |
-| #26 pinned clean checkout; #30 native CI | Checked-in project/local packages, explicit Xcode pin, actual CLI missing-pin regression and isolated-cache workflow | Exact-head hosted evidence and receiving review; #30 untrusted-PR and release-secret gates remain separate |
-| #28 restore correct draft | SceneStorage selection, explicit dirty-discard guard, background save attempt | Cold-link routing, process-kill replay and physical lifecycle qualification |
-| #80 local library operations | Create, title edit, duplicate, confirmed delete; real-store model tests including reopen | Complete build metadata/organization and receiving review |
+| #26 pinned clean checkout; #30 native CI | Checked-in app/UI-test targets and shared scheme, local packages, explicit Xcode pin, actual CLI missing-pin regression and isolated-cache workflow | Exact-head hosted evidence and receiving review; #30 untrusted-PR and release-secret gates remain separate |
+| #28 restore correct draft | SceneStorage selection, explicit dirty-discard guard, background save attempt; UI test reopens an acknowledged revision after process termination | Current expanded-source native execution; cold-link routing, interrupted unacknowledged edits and physical lifecycle qualification |
+| #80 local library operations | Notes CRUD and UI save/reopen/discard/delete; imported-build local labels, fresh-fork duplication, confirmed deletion, revision/qualification display and bounded corrupt-wrapper recovery | Exact-head native CRUD/recovery and UI execution, UI duplicate/cross-client journey and receiving review |
 | #87 offline editing | All operations use local storage; unknown compatibility/pricing always explicit | Governed catalog cache and downstream evaluation integration |
-| #105 accessibility | System controls, visible labels, Dynamic Type, editor/action identifiers | Automated complete journeys, VoiceOver, large text and physical device audits |
+| #105 accessibility | System controls, visible labels, Dynamic Type, editor/action identifiers; bounded XCUITest local-draft journey | Current expanded-source native execution; wider complete journeys, VoiceOver, large text and physical device audits |
 
 Save is acknowledged only after storage commits. Failed saves preserve the in-memory
 input and display a retry notice; revision conflicts never overwrite newer revisions.
@@ -377,9 +757,20 @@ Seven additional model regressions cover restore/reopen/history retention, dirty
 concurrent edit guards, binding updates during restore, bounded history, unsupported
 history, and background saves during paused history/restore operations. These are
 controlled actor-boundary tests, not simulated OS termination or end-to-end UI taps.
-Undo/redo, timed autosave, process-kill during UI autosave and physical lifecycle
-qualification remain work under #69. Hosted exact-head compilation and model tests
-are required before this slice is accepted.
+The subsequent [undo and autosave implementation](../docs/validation/editor-autosave.md)
+adds bounded session undo/redo and a 750 ms typing debounce through the same queued
+save path. Input remains editable while saving, and delayed timers/opens cannot
+overwrite another draft or newer input. Actual process-kill during UI autosave,
+full builder journeys and physical lifecycle qualification remain work under #69.
+Hosted exact-head compilation and model tests are required before acceptance.
+The [combined editor integration record](../docs/validation/editor-integration.md)
+tracks the stronger delayed-open generation guard, retained lifecycle-save regressions,
+separate library/editor failure notices and the updated real-timer journey. The
+later accepted-main carry also retains independent history failure and recovery;
+the [current receiving receipt](../docs/validation/catalog-editor-receiving.md)
+records that composition and its complete test inventory. Previously
+passed source runs are historical evidence; the combined source still requires its
+own native package execution and both pinned UI destinations.
 
 Storage opens in Application Support under a directory protected until first unlock.
 A failure shows an unavailable screen and never resets the database. Locked-device
@@ -405,6 +796,8 @@ Run commands from a fresh repository checkout through the verifier:
 python3 App/scripts/toolchain.py -- swift test --package-path Packages/PlannerUI
 python3 App/scripts/toolchain.py -- xcodebuild -project App/Planner.xcodeproj -scheme Planner -configuration Debug -sdk iphonesimulator -destination 'generic/platform=iOS Simulator' -derivedDataPath .build/native -clonedSourcePackagesDirPath .build/native-source-packages CODE_SIGNING_ALLOWED=NO build
 python3 App/scripts/toolchain.py -- python3 App/scripts/simulator-smoke.py
+python3 -m unittest discover -s App/scripts/tests -v
+python3 App/scripts/toolchain.py -- python3 App/scripts/ui-journey.py --suite all
 ```
 
 The verifier checks the selected directory and exact version/build before executing
@@ -424,6 +817,199 @@ negative case and the required hosted failure/recovery and clean-build evidence.
 Apple's [command-line tools configuration](https://developer.apple.com/documentation/xcode/configuring-command-line-tools-settings)
 documents the command-scoped DEVELOPER_DIR override; [TN2339](https://developer.apple.com/library/archive/technotes/tn2339/_index.html)
 describes the full Xcode command-line tools and build commands.
+
+## Asynchronous local startup
+
+The #86/#29 startup correction builds on the independently available libraries in
+[PR #159](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/159), baseline
+`a8d3ac6c449a483a3373ebfaecc6eab4fa9af861`. Each scene owns a `LocalLibraryStartup`
+model. Its SwiftUI `.task` awaits `LocalLibraryStores.open`; a detached worker prepares
+the same protected Application Support directory and opens/migrates each SQLite
+file. App initialization and the main actor do not perform those blocking operations.
+Each tab shows a loading indicator, then either its library or an explicit unavailable
+state. One failed database still cannot hide the other database's records.
+
+SwiftUI cancellation is forwarded to the detached worker. Synchronous SQLite work
+already in flight is allowed to finish or roll back normally; cancellation is checked
+before directory preparation, between opens and before publishing. Cancelled results
+are discarded, and a generation token prevents an older attempt from replacing a
+newer one even if the older operation ignores cancellation. A reappearing scene can
+retry incomplete startup; a ready scene retains its connections and editor state.
+Separate windows own separate startup lifetimes and use the existing SQLite
+transaction/revision guards when accessing the same files.
+
+`LocalLibraryStartupTests` bounds the controlled opener wait to five seconds and
+checks an editor binding action on a real selected synthetic draft while opening is
+blocked. Its injected nil autosave clock isolates that startup scheduling assertion;
+the public app initializer and separate UI journey retain the production timer. It also
+checks off-main directory preparation/opening, cancellation between database opens,
+superseded results, explicit failure/retry, retained ready state and directory errors.
+The timeout is a test deadlock guard, not a responsiveness budget or performance
+measurement. `LocalLibraryStoresTests` continues to exercise both corrupt-file cases
+using real SQLite through the asynchronous factory. Run these with the existing
+`swift test --package-path Packages/PlannerUI` and native UI workflow above.
+
+This is bounded startup/cancellation coverage for #86's #29 prerequisite. Hosted
+exact-head Swift/Xcode tests, simulator launch and receiving review are still required;
+physical-device responsiveness, locked-device and low-storage behavior, and the full
+#29/#86 acceptance criteria are separate. No startup timings or device results are
+inferred from static inspection. Apple references checked 2026-10-18:
+[app responsiveness](https://developer.apple.com/documentation/xcode/improving-app-responsiveness)
+and [Task cancellation](https://developer.apple.com/documentation/swift/task).
+
+
+## Files import and reviewed export
+
+The Imported builds screen uses a separate `imported-builds.sqlite` database in the
+same protected Application Support directory. It never treats a canonical build as
+notes-editor payload or converts an incomplete note into a valid snapshot. A local
+version-1 persistence wrapper holds canonical bytes and untrusted fixture metadata;
+unsupported local formats are preserved and refused. Imported builds are read-only.
+Each library opens independently. If either database is corrupt or unsupported,
+only that tab reports an unavailable library; the other tab remains usable. Two
+regression tests corrupt each database in turn and verify that the healthy database
+still reopens its saved records (including note history) and corrupt bytes remain
+unchanged. These tests exercise real SQLite initialization, not mocked success.
+
+The system Files picker supplies one JSON URL. Security-scoped access lasts only for
+a bounded background read (512 KiB actual-byte maximum, checked independently of
+metadata); directories and malformed/unsupported/private imports fail without writes.
+A preview is not an import. Explicit confirmation creates a fresh wire build ID,
+local owner reference and local storage row, preserves version locks, and never
+updates the source identity. Imported references are not fetched or rights-approved.
+
+Export requires an explicit public alias, previews the exact projected JSON and asks
+the user to review free text before opening the system file exporter. Private owner,
+notes and extensions are stripped by PlannerTransfer. Allowed text can still be
+sensitive: field filtering is not arbitrary secret detection. Changing the alias or
+selection invalidates the prepared export. Marked synthetic imports retain their
+fixture label across persistence and re-export via the existing web envelope;
+its original source revision is untrusted metadata, not authority. Bare/unmarked
+imports remain visibly unqualified, never presented as production data.
+
+Seven controlled model tests cover preview/cancel without writes, repeated fresh-ID
+forks and durable reopen, fixture-label preservation, explicit alias/projection,
+invalid/oversized files and directories, bounded local-file preview, and preservation
+of future stored formats. The bundled synthetic fixture is copied unchanged from
+PlannerTransfer/Tests/PlannerTransferTests/Fixtures/build.json (its source manifest
+remains authoritative); test projection explicitly removes private fixture settings.
+Hosted exact-head compilation/tests are required. Actual Files-provider interactions,
+accessibility, complete cross-client UI round trips, process interruption and physical
+device/privacy receiving qualification remain unverified. Partial #82/#84/#102 only.
+
+Preview parsing and export validation/projection/encoding also use the existing
+detached preparation boundary. Export captures the selected row, qualification and
+public alias synchronously before its worker task is queued; alias changes invalidate
+both queued and in-flight results. Cancellation cannot publish prepared bytes or a
+late failure. Six controlled regressions block real preparation while another notes
+editor processes a main-actor edit, then check cancellation, invalidation, retained
+qualification and unchanged durable records. See the [preparation validation record](../docs/validation/import-preparation.md).
+Their exact hosted native execution remains required; this scheduling coverage does
+not establish a measured performance budget or full Files/lifecycle acceptance.
+
+## Organize the imported-build library
+
+Each entry displays its local revision and the fact that imported evidence has not
+been revalidated. The selected entry also shows its pinned wire snapshot revision,
+original snapshot name and existing synthetic/unknown qualification. A local label
+is revisioned library metadata: renaming preserves the exact stored snapshot bytes,
+locks and previous label revisions. Export continues to project the pinned snapshot.
+
+**Duplicate as new local fork** validates the selected stored revision, then uses
+the existing transfer fork boundary to create distinct wire and local identities.
+It preserves the local label, component/settings/version locks, and synthetic/source
+metadata; the original entry and its history remain intact. The duplicate starts at
+local revision 1 with no current analysis. The source revision check and new row
+insert share one SQLite transaction, so a newer revision or deletion during fork
+preparation causes an explicit rejection and requires reopening the entry. Confirmed
+deletion carries the exact selected row/revision; another selected entry is preserved.
+After a successful deletion, any baseline pinned from that local row and its prepared
+comparison are cleared. A failed deletion cannot acknowledge that invalidation.
+
+Pages contain at most 20 stored rows. Stored-snapshot decoding and fork preparation
+run off the main actor. Malformed or unsupported stored wrappers are preserved and
+counted alongside unreadable database rows. Page offsets count both kinds, including
+an entirely unreadable page, so later valid entries remain reachable. The Refresh
+builds action retries reading; a successful read clears only a library-read error,
+leaving unresolved mutation errors visible until the entry is reopened or corrected.
+
+Seven additional real-store model regressions cover local rename/restart/history,
+fresh-fork duplication with retained synthetic qualification, stale CRUD rejection,
+confirmed deletion after selecting another entry, 503-entry recovery beside a
+malformed wrapper, an entirely unreadable page followed by a valid entry, and invalid
+qualification metadata. The large-library case expects 501 valid entries plus the
+preserved unreadable row after one deletion, with exact unrelated metadata/history.
+The native workflow requires every one of those seven named tests to report a pass
+in the complete PlannerUI suite. Their exact-head hosted SwiftUI test/build execution
+is required before acceptance; no result is inferred from source inspection. Three added PlannerData
+regressions exercise a prepared fork against source changes/deletion through another
+connection and a successful distinct-payload insert with exact source/history
+preservation after reopening. The storage simulator gate requires the new stale-source
+cases and all 34 current storage tests to pass. Existing PlannerData tests
+separately exercise actual malformed SQLite rows, storage exhaustion and migration.
+Actual Files-provider/cross-client journeys, unavailable/revoked remote references,
+VoiceOver and physical-device behavior retain their own unverified acceptance gates.
+
+Native confirmation data follows Apple's
+[alert presentation](https://developer.apple.com/documentation/swiftui/view/alert(_:ispresented:presenting:actions:message:)-8584l)
+and [confirmation dialog](https://developer.apple.com/documentation/swiftui/view/confirmationdialog(_:ispresented:titlevisibility:presenting:actions:message:))
+interfaces (checked 2026-10-18); the captured entry/revision stays separate from the
+Boolean presentation state.
+
+## Local configuration comparison
+
+Comparison preparation runs through the existing off-main worker boundary. The
+button captures both immutable snapshots and their synthetic/unknown labels before
+queueing; changing the selected entry or replacing/clearing its pinned baseline
+invalidates the result. A newer comparison may finish while cancelled older work
+is still unwinding. The screen shows progress and a Cancel comparison control;
+leaving the library cancels pending work while opening completed details retains
+their immutable result. Committed deletion of the pinned entry clears its baseline;
+a rejected deletion preserves it. See the [comparison preparation record](../docs/validation/comparison-preparation.md)
+for the nine controlled regressions and required native execution.
+
+Open an imported build, choose **Use selected build as baseline**, open another
+imported build, and explicitly compare. The baseline is an immutable snapshot held
+in memory until replaced or cleared. Preparing a comparison captures both build
+identities and their synthetic/unknown labels together. Selecting a different build
+invalidates the prepared result; it does not silently change the pinned baseline.
+
+The result shows both names, build IDs and revisions, followed by the evidence
+notice and every returned configuration difference. Selection kinds carry their
+canonical T0–T6 display grouping. Before/after values preserve **Not set**, **Hidden
+for privacy**, zero, false, null and empty text as distinct states. Explicit type
+labels prevent user-entered strings such as "Not set" from impersonating absent or
+hidden fields. Three presentation regressions cover these collisions and full
+multiline text. Multiline system
+text and a scrolling list avoid a shortened preview of the result. An ambiguous
+identity, conflicting revision or more than 2,048 differences produces an explicit
+failure message and preserves both builds; no incomplete result is presented.
+
+This screen uses the tested PlannerTransfer comparison boundary without writes or
+service calls. It does not compare outcome, quality, capacity, compatibility or cost:
+each side still needs qualified evidence matching its own component tuple, workload,
+versions, units and conditions. Equal settings do not establish readiness or rights.
+The screen is limited to existing read-only imported local forks; it does not add a
+builder, revision-history editor or cross-client service. Partial #81 only.
+
+The portable comparison tests cover missing/zero distinctions, changed component
+settings and locks, unmatched extension measurements, privacy masking, duplicate
+identities, reordered selection/link arrays and the explicit result limit. Native
+compilation must pass in the exact-head hosted workflow. Files-picker interaction,
+the complete visible comparison journey, large text, VoiceOver and physical-device
+acceptance still require their own observed evidence.
+
+The [typed component details receipt](../docs/validation/issue-61-catalog-details.md) records exact catalog/item pins, retained source declarations and bounded read-only inspection. The [combined receiving receipt](../docs/validation/catalog-editor-receiving.md) separates this current source from earlier candidate counts and native results.
+
+The separate [comparison-worker composition](../docs/validation/comparison-preparation.md)
+retains that catalog/editor source and adds nine model cases. Its own native profile
+retains its historical 96 UI cases and 47 named identities. The then-current
+[source-link composition](../docs/validation/catalog-source-navigation.md#comparison-worker-receiving-composition)
+added fourteen cases and required all 110 UI cases and 61 named identities. That recorded carry retained
+the accepted quality boundary, so its Transfer profile required 57 cases and all
+21 named identities. The catalog/editor receipt preserves its recorded 87/48
+source and historical executions alongside these expanded receiving gates;
+those earlier results do not execute this follow-up.
 
 ## Submission SDK compatibility
 
@@ -471,3 +1057,39 @@ timeout followed by both owned cleanup attempts, and a failed deletion. All 43
 preceding method bodies remain unchanged. These controlled child processes
 demonstrate exception ordering; they do not assign a cause to any historical
 simulator failure or establish native recovery.
+
+## 2026-10-20 iPad journey interaction correction
+
+The original `c43d43269d10d877bab5724f413a61ec04850919` iPad
+[job 118590233449](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39411421045/job/118590233449)
+reached the real app and failed all seven selected methods: Catalog search did
+not appear after its tab activation; the planning journey scrolled past
+`planningInput-requests_per_day`; the saved-notes journey remained at the
+recognized system keyboard tutorial; and all four T6 journeys encountered
+duplicate nested Imported builds buttons. This saved-notes stop precedes its
+app-close assertion. The literal XCTest total is seven failures in 840.157
+seconds. The complete 533,650-byte console has SHA-256
+`01163c3acdb9f67014fa1867d83f87696426fafa28673d0a5de5729ea48d0e9b`;
+the single retained artifact is `12264287009`, 152,730,935 bytes, SHA-256
+`83c795c8cbfa74b4d8660f89ddb09143509d8aeb9826d286454b7db7db9cbbc9`.
+
+The retained native hierarchy exposes same-label tab wrappers and leaves.
+The journey selector now requires exactly one matching leaf button, then
+requires it to be enabled and hittable. For an existing occluded editor field,
+the LocalDraft helper uses the same small, frame-directed movement as the
+Catalog helper, within its original six attempts and the same editor Form.
+An absent target still uses the caller's original scroll direction.
+
+The Catalog and tutorial event records already placed their 50 ms touches at
+the centers of the intended frames; a coordinate-only change would repeat
+that input. One 200 ms press replaces the single activation only for library
+tabs and the recognized system Continue control. This duration is an
+unexecuted interaction hypothesis, not an established OS diagnosis or native
+success. The exact tutorial-copy guard, both disappearance checks, pasted-text
+equality, all seven method identities and all destination/data/revision/
+negative assertions remain. Existing per-wait limits, scroll-attempt limits, runtime
+pins, job deadlines, production model/storage code and receipt profiles remain
+unchanged; T6 also waits for enabled/hittable readiness within its existing
+five- or ten-second per-wait bound. A new configured native run must qualify the corrected source;
+neither the earlier passing portable originals nor this failed iPad original
+establishes that result.

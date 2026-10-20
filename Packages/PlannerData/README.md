@@ -1,5 +1,22 @@
 # Transactional local drafts
 
+## Current #391 receipt requirements
+
+The composition receiving accepted main through `49bf4d59` preserves all 34
+DraftStore and 35 PendingBuildWriteStore methods and adds the 15 accepted
+PendingBuildWriteDispatcher methods: **84 exact Data identities**. The
+`integrated-dispatch-data` profile requires each once with a passing result and
+the exact aggregate in the host, compact iPhone, iPad and submission-SDK logs.
+Both native Storage command blocks retain the accepted 15-name dispatcher guards
+alongside the earlier draft/queue checks; their current aggregate is 84.
+
+The 69- and 81-method paragraphs below retain the earlier integration and donor
+cohorts. Every historical profile remains available for its original source, but
+neither padded output nor a prior original qualifies the 84-method union. This
+is a source and configured-receipt requirement; no new local or native execution
+is claimed here. Adapter outcome validation, remote effects and the whole #89
+acceptance remain separate from this local dispatcher.
+
 `PlannerData` is an executable Swift 6/SQLite local storage library for Apple #33,
 #69, #80 and #86. It is independent of the client-core changes in PR #133 and uses
 only Foundation and the platform SQLite library. iOS/iPadOS 17 and macOS 14 are
@@ -227,8 +244,13 @@ identities; this API never silently discards an intent to create space.
 
 ### Queue validation
 
-The new suite declares 35 queue methods in addition to the 31 unchanged draft
-methods. It covers exact byte identity and copying, duplicate and capacity rules,
+The accepted #382 source declared 35 queue methods alongside 31 draft methods.
+The earlier #391 queue composition retained its additional three prepared-duplicate draft
+cases, requiring all **69** identities: 34 draft and 35 queue methods. A strict
+receiver checks that union in each macOS/iPhone/iPad storage log and the submission
+SDK log; an older receipt padded with unrelated successes cannot qualify it.
+These are source requirements, not a new 69-method execution observation.
+The queue suite covers exact byte identity and copying, duplicate and capacity rules,
 cross-handle/ABA sessions, ordering and outcomes, failed commits, actual
 `SQLITE_FULL`, foreign/corrupt storage retention, supported WAL/hot-journal recovery
 and rejection of committed future metadata held only in an orphaned WAL. Those
@@ -292,5 +314,7 @@ The adapter is responsible for validating any returned outcome against the exact
 An uncertain operation is not resent automatically, including after reopening the store. This helper introduces no operation-status endpoint, remote receipt store, idempotency retention or expiry policy, authentication, or shared service authority. Those service and activation requirements remain separate.
 
 `PendingBuildWriteDispatcherTests` declares 15 focused cases: exact committed-byte handoff; attempt and outcome commit failures; explicit confirmed successors; lost acknowledgement with reopen and no resend; cancellation before, during and after attempt creation; a known response after cancellation; retired and ABA callbacks; concurrent duplicate dispatch; per-build blocking; and validated conflict and invalid outcomes. The lost-acknowledgement fixture is a labelled synthetic observer, not a backend or a production idempotency implementation. Barriers control the asynchronous interleavings without sleeps.
+
+### Historical #425 donor validation cohort
 
 The existing 31 draft-store and 35 pending-write-store test methods remain unchanged. The Storage workflow requires all 15 dispatcher method names to report a pass and checks the 15-case class and 81-case aggregate for the macOS run and each configured compact iPhone and iPad run. Its existing replay commands, toolchain, simulator selection, named draft/queue guards and evidence retention remain intact. Source declarations and configured checks do not replace the corresponding original execution logs and result bundles.

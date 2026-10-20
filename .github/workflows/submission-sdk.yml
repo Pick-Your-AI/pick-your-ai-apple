@@ -29,6 +29,8 @@ jobs:
         run: python3 -m unittest discover -s tools/ci/tests -p 'test_native_scope.py' -v
       - name: Test SDK selection and built-product rejection
         run: python3 -m unittest discover -s App/scripts/tests -p 'test_*sdk.py' -v
+      - name: Test built-app privacy inventory rejection
+        run: python3 -m unittest discover -s App/scripts/tests -p 'test_privacy_inventory.py' -v
       - name: Inspect complete exact Git comparison
         id: scope
         env:
@@ -87,6 +89,12 @@ jobs:
               2>&1 | tee ".build/submission-evidence/$package-tests.txt"
             grep -E 'Executed [1-9][0-9]* tests?, with 0 failures' ".build/submission-evidence/$package-tests.txt"
           done
+      - name: Require complete integrated Data, Transfer and UI execution
+        run: |
+          set -euo pipefail
+          python3 tools/ci/require_swift_test_results.py integrated-dispatch-data .build/submission-evidence/PlannerData-tests.txt
+          python3 tools/ci/require_swift_test_results.py integrated-catalog-cache-transfer .build/submission-evidence/PlannerTransfer-tests.txt
+          python3 tools/ci/require_swift_test_results.py catalog-selection-identity-ui .build/submission-evidence/PlannerUI-tests.txt
       - name: Build unsigned Release simulator product
         run: |
           set -euo pipefail
@@ -98,6 +106,9 @@ jobs:
           python3 App/scripts/submission_sdk.py inspect --sdk iphonesimulator \
             --app .build/submission-simulator/Build/Products/Release-iphonesimulator/Planner.app \
             --output .build/submission-evidence/simulator-product.json
+          python3 App/scripts/privacy_inventory.py \
+            --app .build/submission-simulator/Build/Products/Release-iphonesimulator/Planner.app \
+            --output .build/submission-evidence/simulator-privacy.json
       - name: Build unsigned Release device product
         run: |
           set -euo pipefail
@@ -109,6 +120,9 @@ jobs:
           python3 App/scripts/submission_sdk.py inspect --sdk iphoneos \
             --app .build/submission-device/Build/Products/Release-iphoneos/Planner.app \
             --output .build/submission-evidence/device-product.json
+          python3 App/scripts/privacy_inventory.py \
+            --app .build/submission-device/Build/Products/Release-iphoneos/Planner.app \
+            --output .build/submission-evidence/device-privacy.json
       - name: Retain SDK compatibility evidence
         if: always()
         uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
