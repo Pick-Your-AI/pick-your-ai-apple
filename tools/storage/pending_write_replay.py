@@ -231,10 +231,24 @@ if mode.startswith("crash-") or mode.startswith("commit-"): os._exit(73)
                     replay(self.fake_probe(mutation), 5)
 
     def testTimeoutStopsBeforeLaterPhases(self):
-        probe = self.fake_probe('if mode == "seed":\n    pathlib.Path(__file__).with_suffix(".pid").write_text(str(os.getpid()))\n    time.sleep(10)')
-        with self.assertRaisesRegex(RuntimeError, "seed: probe exceeded"):
-            replay(probe, 0.1)
-        pid = int(probe.with_suffix(".pid").read_text())
+        from unittest.mock import patch
+
+        probe = self.fake_probe('if mode == "seed": time.sleep(10)')
+        real_popen = subprocess.Popen
+        launches = []
+
+        def observe_popen(command, *args, **kwargs):
+            process = real_popen(command, *args, **kwargs)
+            launches.append((tuple(command), process))
+            return process
+
+        # The deadline can expire before the child publishes any startup marker.
+        with patch.object(subprocess, "Popen", side_effect=observe_popen):
+            with self.assertRaisesRegex(RuntimeError, "seed: probe exceeded"):
+                replay(probe, 0.1)
+        self.assertEqual([command[:2] for command, _ in launches],
+                         [(str(probe), "seed")])
+        pid = launches[0][1].pid
         with self.assertRaises(ProcessLookupError): os.kill(pid, 0)
         with self.assertRaises(ChildProcessError): os.waitpid(pid, os.WNOHANG)
 
