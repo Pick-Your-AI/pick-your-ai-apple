@@ -36,10 +36,26 @@ def read_bounded(path, maximum_bytes, oversized_message):
     return data
 
 
+def parse_pin_json(data):
+    """Decode pin JSON without discarding ambiguous or non-JSON input."""
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("pin JSON contains a duplicate object key")
+            result[key] = value
+        return result
+
+    def invalid_constant(_):
+        raise ValueError("pin JSON contains a non-JSON number")
+
+    return json.loads(data, object_pairs_hook=unique_object, parse_constant=invalid_constant)
+
+
 def load_pin(path):
     try:
         data = read_bounded(path, 4096, "pin file exceeds 4096 bytes")
-        pin = json.loads(data)
+        pin = parse_pin_json(data)
         if not isinstance(pin, dict) or set(pin) != {"developerDirectory", "xcodeVersion", "xcodeBuildVersion"}:
             raise ValueError("expected exactly the documented pin fields")
         if any(not isinstance(value, str) or not value or any(ord(c) < 32 or ord(c) == 127 for c in value)
