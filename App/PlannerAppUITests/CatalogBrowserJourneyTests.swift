@@ -186,9 +186,7 @@ final class CatalogBrowserJourneyTests: XCTestCase {
 
     @MainActor
     private func tapNavigation(_ title: String, in app: XCUIApplication) {
-        // iOS 18 exposes adaptive iPad tabs as buttons outside a TabBar. Both
-        // layouts expose this same visible navigation label; use normal taps.
-        tap(app.buttons.matching(NSPredicate(format: "label == %@", title)).firstMatch)
+        LibraryTabJourney.select(title, in: app)
     }
 
     @MainActor

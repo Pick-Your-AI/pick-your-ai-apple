@@ -955,3 +955,39 @@ timeout followed by both owned cleanup attempts, and a failed deletion. All 43
 preceding method bodies remain unchanged. These controlled child processes
 demonstrate exception ordering; they do not assign a cause to any historical
 simulator failure or establish native recovery.
+
+## 2026-10-20 iPad journey interaction correction
+
+The original `c43d43269d10d877bab5724f413a61ec04850919` iPad
+[job 118590233449](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39411421045/job/118590233449)
+reached the real app and failed all seven selected methods: Catalog search did
+not appear after its tab activation; the planning journey scrolled past
+`planningInput-requests_per_day`; the saved-notes journey remained at the
+recognized system keyboard tutorial; and all four T6 journeys encountered
+duplicate nested Imported builds buttons. This saved-notes stop precedes its
+app-close assertion. The literal XCTest total is seven failures in 840.157
+seconds. The complete 533,650-byte console has SHA-256
+`01163c3acdb9f67014fa1867d83f87696426fafa28673d0a5de5729ea48d0e9b`;
+the single retained artifact is `12264287009`, 152,730,935 bytes, SHA-256
+`83c795c8cbfa74b4d8660f89ddb09143509d8aeb9826d286454b7db7db9cbbc9`.
+
+The retained native hierarchy exposes same-label tab wrappers and leaves.
+The journey selector now requires exactly one matching leaf button, then
+requires it to be enabled and hittable. For an existing occluded editor field,
+the LocalDraft helper uses the same small, frame-directed movement as the
+Catalog helper, within its original six attempts and the same editor Form.
+An absent target still uses the caller's original scroll direction.
+
+The Catalog and tutorial event records already placed their 50 ms touches at
+the centers of the intended frames; a coordinate-only change would repeat
+that input. One 200 ms press replaces the single activation only for library
+tabs and the recognized system Continue control. This duration is an
+unexecuted interaction hypothesis, not an established OS diagnosis or native
+success. The exact tutorial-copy guard, both disappearance checks, pasted-text
+equality, all seven method identities and all destination/data/revision/
+negative assertions remain. Existing per-wait limits, scroll-attempt limits, runtime
+pins, job deadlines, production model/storage code and receipt profiles remain
+unchanged; T6 also waits for enabled/hittable readiness within its existing
+five- or ten-second per-wait bound. A new configured native run must qualify the corrected source;
+neither the earlier passing portable originals nor this failed iPad original
+establishes that result.

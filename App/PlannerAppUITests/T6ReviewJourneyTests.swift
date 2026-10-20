@@ -1,5 +1,40 @@
 import XCTest
 
+/// Select the one native tab leaf while keeping the journey's own destination
+/// assertions authoritative. iPad exposes a same-label Button wrapper and leaf.
+enum LibraryTabJourney {
+    @MainActor
+    static func select(_ title: String, in app: XCUIApplication,
+                       timeout: TimeInterval = 10,
+                       file: StaticString = #filePath, line: UInt = #line) {
+        let label = NSPredicate(format: "label == %@", title)
+        let matches = app.buttons.matching(label)
+        guard matches.firstMatch.waitForExistence(timeout: timeout) else {
+            XCTFail("The library tab did not appear: \(title)", file: file, line: line)
+            return
+        }
+        let leaves = matches.allElementsBoundByIndex.filter {
+            $0.descendants(matching: .button).matching(label).count == 0
+        }
+        guard leaves.count == 1, let tab = leaves.first else {
+            XCTFail("Expected one library tab leaf for \(title), found \(leaves.count)",
+                    file: file, line: line)
+            return
+        }
+        let available = XCTNSPredicateExpectation(
+            predicate: NSPredicate(format: "hittable == true AND enabled == true"),
+            object: tab)
+        guard XCTWaiter.wait(for: [available], timeout: timeout) == .completed else {
+            XCTFail("The library tab is not hittable and enabled: \(title)",
+                    file: file, line: line)
+            return
+        }
+        // The retained iPad event was already centered. Keep one activation and
+        // all caller postconditions; the longer press still needs a native run.
+        tab.press(forDuration: 0.2)
+    }
+}
+
 /// Receiver integration contract. The existing Imported-builds test host must
 /// seed the three labelled fixture artifacts for the named scenario, retain the
 /// original Build identity, and enter through the actual library navigation.
@@ -10,10 +45,7 @@ final class T6ReviewJourneyTests: XCTestCase {
         let app = XCUIApplication()
         app.launchArguments += ["--t6-journey-fixture", scenario]
         app.launch()
-        // The adaptive iPad layout exposes this navigation as a normal Button,
-        // as in the existing catalog and Files-cancellation journeys.
-        let library = app.buttons["Imported builds"]
-        XCTAssertTrue(library.waitForExistence(timeout: 10)); library.tap()
+        LibraryTabJourney.select("Imported builds", in: app)
         let record = app.buttons["SYNTHETIC T6 review fixture"]
         XCTAssertTrue(record.waitForExistence(timeout: 10)); record.tap()
         let destination = app.buttons["T6 review"]
@@ -90,10 +122,8 @@ final class T6ReviewJourneyTests: XCTestCase {
         for _ in 0..<12 where !previewButton.isHittable { scroll.swipeUp() }
         XCTAssertTrue(previewButton.waitForExistence(timeout: 5)); previewButton.tap()
         XCTAssertTrue(app.staticTexts["t6-report-preview"].waitForExistence(timeout: 5))
-        let notes = app.buttons["Notes"]
-        XCTAssertTrue(notes.waitForExistence(timeout: 5)); notes.tap()
-        let library = app.buttons["Imported builds"]
-        XCTAssertTrue(library.waitForExistence(timeout: 5)); library.tap()
+        LibraryTabJourney.select("Notes", in: app, timeout: 5)
+        LibraryTabJourney.select("Imported builds", in: app, timeout: 5)
         let form = app.descendants(matching: .any).matching(identifier: "importedBuildsForm").firstMatch
         XCTAssertTrue(form.waitForExistence(timeout: 5))
         XCTAssertFalse(app.scrollViews["t6-review"].exists)

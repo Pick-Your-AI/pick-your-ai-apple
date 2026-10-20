@@ -329,8 +329,7 @@ final class LocalDraftJourneyTests: XCTestCase {
 
     @MainActor
     private func tapNavigation(_ title: String, in app: XCUIApplication) {
-        // Adaptive iPad navigation is exposed as Buttons outside a TabBar.
-        tap(app.buttons.matching(NSPredicate(format: "label == %@", title)).firstMatch)
+        LibraryTabJourney.select(title, in: app)
     }
 
     @MainActor
@@ -452,7 +451,11 @@ final class LocalDraftJourneyTests: XCTestCase {
         guard introduction.waitForExistence(timeout: 3) else { return }
         retainScreenshot(app, name: "System keyboard gesture introduction after synthetic paste")
         let continueButton = app.buttons["Continue"]
-        tap(continueButton)
+        XCTAssertTrue(continueButton.waitForExistence(timeout: 10))
+        wait(continueButton, matching: "hittable == true AND enabled == true")
+        // The recognized system tutorial stayed open after a centered 50 ms
+        // event. Try one bounded press; both disappearance checks still decide.
+        continueButton.press(forDuration: 0.2)
         wait(continueButton, matching: "exists == false")
         wait(introduction, matching: "exists == false")
     }
@@ -465,9 +468,28 @@ final class LocalDraftJourneyTests: XCTestCase {
         let container = app.descendants(matching: .any).matching(identifier: "draftEditorForm").firstMatch
         XCTAssertTrue(container.waitForExistence(timeout: 10), "The editor Form must be present")
         for _ in 0..<6 {
-            if element.exists && element.isHittable { return }
+            let exists = element.exists
+            if exists && element.isHittable { return }
             guard container.isHittable else { XCTFail("The editor Form must be hittable"); return }
-            if towardTop { container.swipeDown() } else { container.swipeUp() }
+            if exists {
+                // An existing short field can pass behind the sheet navigation
+                // area. Move it toward this Form's center instead of overshooting.
+                let target = element.frame
+                let bounds = container.frame
+                guard target.midY.isFinite, bounds.midY.isFinite,
+                      target.height > 0, bounds.height > 0 else {
+                    XCTFail("The editor Form scroll geometry is unavailable"); return
+                }
+                let endY = target.midY < bounds.midY ? 0.65 : 0.35
+                let start = container.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: 0.5))
+                let end = container.coordinate(withNormalizedOffset: CGVector(dx: 0.5, dy: endY))
+                start.press(forDuration: 0.05, thenDragTo: end,
+                            withVelocity: .slow, thenHoldForDuration: 0.1)
+            } else if towardTop {
+                container.swipeDown()
+            } else {
+                container.swipeUp()
+            }
         }
         XCTAssertTrue(element.exists && element.isHittable,
                       "Could not reveal \(element.identifier) in the editor Form")
