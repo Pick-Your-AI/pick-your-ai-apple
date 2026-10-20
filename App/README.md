@@ -471,3 +471,35 @@ timeout followed by both owned cleanup attempts, and a failed deletion. All 43
 preceding method bodies remain unchanged. These controlled child processes
 demonstrate exception ordering; they do not assign a cause to any historical
 simulator failure or establish native recovery.
+
+
+## Required-command process ownership
+
+On POSIX hosts, each required smoke command starts in its own process session.
+If capture times out or is interrupted while the direct child is still unreaped,
+the runner sends `SIGKILL` to that command's process group. This includes
+descendants which retain capture pipes after their parent exits but before the
+runner has reaped it. Cleanup does not poll or wait away that ownership anchor
+before signalling. The runner closes its own capture pipes without draining
+them and allows a separate five-second budget to reap the direct child. Cleanup
+errors are reported without replacing the original failure or partial output.
+
+A completed success or nonzero exit preserves its output and status without a
+later group signal: a reaped numeric group identity may already have been reused.
+Descendants of such a completed command are outside this timeout cleanup path.
+The operation deadlines and single-attempt policy remain unchanged. The extra
+reaping budget is bounded cleanup time, not a retry or an operation extension.
+Non-POSIX hosts retain the existing subprocess runner. A descendant which
+deliberately leaves the command's session is outside this group boundary, and
+an outer job cancellation can still prevent cleanup from running.
+
+Two bounded real-child regressions cover a pipe-holding descendant after an
+observed parent exit and a live parent with a descendant. Each checks that the
+descendant stops, only the owned group is signalled, an unrelated sentinel
+continues and a subsequent ordinary command succeeds. A completed nonzero
+control preserves the exact failure/output and verifies that no group signal
+occurs after reaping. Two additional controls preserve the original exception
+through cleanup failure and the non-POSIX command contract. All 47 preceding
+test method bodies remain unchanged. These synthetic process results do not
+establish a cause for an earlier simulator cancellation; changed-runner native
+qualification is separate.
