@@ -2,7 +2,27 @@
 
 This portable Swift 6 package implements part of Apple [#32](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/32), [#33](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/33), [#49](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/49), [#82](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/82) and [#102](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/102). It has no storage, network, credential or UI authority. A successful parse establishes schema validity only, never compatibility, ownership, deployment readiness or source-use rights.
 
-## Current #391 receipt requirements
+## Current #391 receipt requirements through #433
+
+Accepted main `09667e27` adds the ten exact `CatalogCacheValidatorTests` methods
+to the retained 265-method source: **275 exact Transfer identities**. The
+`integrated-catalog-cache-transfer` profile requires every old and new identity
+once, a passing result and the exact aggregate in the dedicated Transfer and
+submission-SDK jobs. All 27 preceding profiles remain unchanged for their
+original source scopes.
+
+The [whole-artifact cache validator](CATALOG_CACHE_VALIDATION.md) passes original
+catalog and pricebook bytes to their existing full decoders and propagates their
+errors. Its six decoder and four CryptoKit-dependent cache methods retain
+required provenance, exact-byte history, rejection and recovery boundaries.
+Structural validation grants no production source rights, graph/reference
+policy, application or physical-device acceptance, and does not close all of #39.
+
+The additional test file changes the receiver's direct input set from 51 to 52.
+The earlier `26543` 265-method Transfer execution and 17-control/51-input result
+remain separate originals; no new execution is claimed for this source inventory.
+
+## Historical #431 receipt requirements
 
 Accepted main through `49bf4d59` adds the exact 15
 `BuildConflictPreparationTests` and 24 `BuildSummaryProjectionTests` methods to

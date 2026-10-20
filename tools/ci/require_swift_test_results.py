@@ -1104,6 +1104,24 @@ PROFILES['integrated-summary-transfer'] = (265, {
 })
 
 
+# Accepted #433 adds ten whole-artifact cache-validator methods.
+# Retain the complete 265-method profile for its original receiving source.
+PROFILES['integrated-catalog-cache-transfer'] = (275, {
+    **PROFILES['integrated-summary-transfer'][1],
+    'PlannerTransferTests.CatalogCacheValidatorTests': (
+        'testCompleteWholeArtifactsRetainOriginalWhitespaceAndEncoding',
+        'testArtifactKindsAndHeaderOnlyDocumentsCannotReplaceWholeValidation',
+        'testMalformedNestedKindsUnitsAndRequiredPriceProvenanceAreRejected',
+        'testRawDuplicateKeysIncludingEscapedSpellingsReachBothDecoders',
+        'testWholeDocumentByteDepthAndNodeBoundsRemainDistinct',
+        'testValidationPreservesDuplicateIdentitiesAndUnverifiedProvenance',
+        'testValidatedPairPersistsOriginalBytesAndReopensWithoutPromotion',
+        'testValidHashMalformedCatalogPreservesHistoryAndRecovers',
+        'testValidCatalogThenValidHashMalformedPricebookPreservesHistoryAndRecovers',
+        'testContractInvalidRetainedHistoryBlocksReadsAndRefreshWithoutDeletingBytes',
+    ),
+})
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

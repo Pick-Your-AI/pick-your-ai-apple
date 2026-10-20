@@ -38,7 +38,33 @@ none of those expanded results is inferred from the earlier editor run.
 
 ## Current receiving source and required validation
 
-### Current accepted-main composition through #431
+### Current accepted-main cache-validator composition through #433
+
+This source preserves the reviewed `88a704c9` integration and receives accepted
+main `09667e27`. Its three exact additions provide the
+[whole-artifact cache validator](../Packages/PlannerTransfer/CATALOG_CACHE_VALIDATION.md),
+ten focused methods and that contribution's guide. Validation passes original
+bytes to the existing decoders; it does not grant cache production, graph,
+source-use or current-check authority. The existing iPad interactions and all
+their assertions remain unchanged.
+
+Required declarations are **151 Core, 84 Data, 275 Transfer, 92 Catalog and
+235 UI: 837 total**. Transfer adds the ten exact `CatalogCacheValidatorTests`
+identities to the complete prior 265. The dedicated Transfer and submission-SDK
+jobs select `integrated-catalog-cache-transfer`; all 27 preceding profiles remain
+exact for their own original sources. Data and UI keep their existing strict
+84/235 profiles.
+
+The one added Swift test file expands direct receiver inputs from 51 to **52**.
+All 17 portable control identities remain; the current-source comparison,
+same-count substitutions and padded-history rejection include the new profile.
+The earlier 51-input control result and 265-method Transfer original retain
+their actual `26543` source. They do not execute these expanded inputs. All seven
+App journeys on each configured destination, six Evidence methods and three Cost
+methods remain required. No new control or native execution is claimed by this
+source inventory.
+
+### Historical accepted-main composition through #431
 
 This source preserves the reviewed iPad interaction correction at `a924668d`
 and receives accepted main `49bf4d59`: strict JSON pin admission (#432), local
