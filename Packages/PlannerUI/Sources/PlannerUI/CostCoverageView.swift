@@ -82,7 +82,9 @@ public struct CostCoverageView: View {
                 if values.count > 20 {
                     Text("Showing the first 20 of \(values.count). These missing costs prevent a conclusive budget result.")
                 }
-            }.accessibilityElement(children: .combine)
+            }
+            // Keep each missing-cost row and the final warning independently accessible.
+            .accessibilityElement(children: .contain)
         }
     }
 }

@@ -12,7 +12,41 @@ positive and negative assertions, and outcome checks live in the separate XCTest
 process. Every scenario passes `isSynthetic: true` to the production view and
 requires its actual synthetic-pricing label in the observed native content.
 
-## Current receiving composition
+## Current missing-cost accessibility correction
+
+The original macOS [Cost job 118851661553](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39487406388/job/118851661553)
+used public `c2c7c9e280516446f32f5393d0774bd0b539c25e` through prepared
+checkout `306d0edd3cb3659b051601cf0f273226990026a9`, with Xcode 16.4 / 16F6
+and Swift 6.1.2. The boundaries and rate-removal methods passed. The large-text
+method failed its existing bounded scan at `wide-partial-details`; its later
+`wide-recovered` state was not reached. The original aggregate remains three
+methods, one failure, in 176.367 seconds.
+
+The complete failure text contains all twenty expected meter identifiers. Its
+single combined missing-meter label is exactly the first 512 bytes of the
+514-byte heading, twenty identifiers and warning joined by comma-space. The
+missing suffix is `t.` from `budget result.`. The test reads the native label
+without truncating it and still requires the complete warning. This observation
+does not establish a universal framework limit or the layer responsible for the
+shortened label.
+
+The production `missingValues` group now uses
+[`AccessibilityChildBehavior.contain`](https://developer.apple.com/documentation/swiftui/accessibilitychildbehavior/contain):
+the heading, each rendered row and the final warning remain separate child
+accessibility elements in the group. The amount and budget groups retain
+[`combine`](https://developer.apple.com/documentation/swiftui/accessibilitychildbehavior/combine).
+This changes the production accessibility hierarchy on all supported platforms;
+it does not alter visible text, values, ordering or the first-twenty limit.
+
+All three complete native test methods, seventeen declared states, exact-money
+and negative assertions, viewport/position checks, sixteen-scan bound and
+two-stable-observation requirement remain byte-identical. The presentation
+model, host, parser and workflows remain unchanged. The original failure is
+retained, and native execution of this correction remains required. Source
+review and the unchanged portable receipt controls do not establish a rendered
+pass, VoiceOver interaction or completion of #78.
+
+## Earlier receiving composition
 
 The [current receiving record](../../docs/validation/receiving-main7f-row-cost.md)
 receives reviewed donor `3476c279` and accepted main `7f16020b`. Its native UI
@@ -49,7 +83,9 @@ reconcile canonical line totals or establish real rate applicability.
 
 The test reads actual native static-text labels and, on macOS, their string
 values. On macOS it also reads nonempty labels from native `Other` descendants, which
-include SwiftUI's combined amount, budget and missing-cost elements. It checks
+include SwiftUI's combined amount and budget elements. Missing-cost headings,
+rows and the warning remain separate children of their accessibility container.
+It checks
 each fixture identity and position before reading only the
 production view's vertical viewport. The single vertical scroll owner avoids
 using an occluded outer horizontal viewport for gestures. The scan retains
