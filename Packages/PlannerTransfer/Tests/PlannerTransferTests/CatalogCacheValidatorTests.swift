@@ -77,9 +77,12 @@ final class CatalogCacheValidatorTests: XCTestCase, @unchecked Sendable {
         }
     }
 
-    private func pair(revision: Int, malformed: CatalogArtifact? = nil) throws -> ValidatorCachePair {
+    private func pair(revision: Int, malformed: CatalogArtifact? = nil,
+                      catalogFault: ((inout [String: Any]) throws -> Void)? = nil) throws -> ValidatorCachePair {
         let catalog = try modified(.catalog, revision: revision) { value in
-            if malformed == .catalog {
+            if malformed == .catalog, let catalogFault {
+                try catalogFault(&value)
+            } else if malformed == .catalog {
                 var items = try XCTUnwrap(value["items"] as? [[String: Any]])
                 items[items.count - 1]["kind"] = "unknown_cache_test_kind"
                 value["items"] = items
@@ -267,6 +270,109 @@ final class CatalogCacheValidatorTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(rate.unitPrice.amount.rawValue, "0.8000")
     }
 
+    // Reference-policy fixtures. The unchanged catalog.json resolves every reference to
+    // exactly one item of the documented kind, so each fault below is a single edit.
+    private static func editItem(_ value: inout [String: Any], id: String,
+                                 _ change: (inout [String: Any]) -> Void) throws {
+        var items = try XCTUnwrap(value["items"] as? [[String: Any]])
+        let index = try XCTUnwrap(items.firstIndex { $0["id"] as? String == id })
+        change(&items[index])
+        value["items"] = items
+    }
+
+    private static func setSpec(_ item: inout [String: Any], _ field: String, _ replacement: Any) {
+        var spec = item["spec"] as? [String: Any] ?? [:]
+        spec[field] = replacement
+        item["spec"] = spec
+    }
+
+    private static let wrongKindProvider = CatalogReferenceRejection(
+        sourceItemID: "cat.model.fixture", sourceKind: .model, field: "provider_ref",
+        targetID: "cat.tool.fixture", expectedKind: .modelProvider, reason: .wrongKind(actual: .tool))
+
+    private static func wrongKindProviderFault(_ value: inout [String: Any]) throws {
+        try editItem(&value, id: "cat.model.fixture") { setSpec(&$0, "provider_ref", "cat.tool.fixture") }
+    }
+
+    private static let ambiguousProvider = CatalogReferenceRejection(
+        sourceItemID: "cat.model.fixture", sourceKind: .model, field: "provider_ref",
+        targetID: "cat.model_provider.fixture", expectedKind: .modelProvider, reason: .ambiguous(candidateCount: 2))
+
+    private static func ambiguousProviderFault(_ value: inout [String: Any]) throws {
+        var items = try XCTUnwrap(value["items"] as? [[String: Any]])
+        var other = try XCTUnwrap(items.first { $0["id"] as? String == "cat.model_provider.fixture" })
+        other["version"] = "2026.11-demo"
+        items.append(other)
+        value["items"] = items
+    }
+
+    func testWrongKindReferencesRejectTheWholeCatalogWithSourceToFieldReport() throws {
+        let scalar = try modified(.catalog, Self.wrongKindProviderFault)
+        // Structural decoding alone still accepts it; the reference policy is the rejecting layer.
+        XCTAssertNoThrow(try CatalogSnapshot.decode(scalar))
+        XCTAssertThrowsError(try FrozenCatalogCacheValidator.validate(.catalog, scalar)) {
+            XCTAssertEqual($0 as? CatalogReferenceRejection, Self.wrongKindProvider)
+        }
+        // Each element of an array-valued reference is checked, so a valid first
+        // element does not hide a later wrong-kind target.
+        let array = try modified(.catalog) { value in
+            try Self.editItem(&value, id: "cat.hosting_platform.fixture") {
+                Self.setSpec(&$0, "accelerator_refs", ["cat.accelerator.fixture", "cat.storage.fixture"])
+            }
+        }
+        XCTAssertNoThrow(try CatalogSnapshot.decode(array))
+        XCTAssertThrowsError(try FrozenCatalogCacheValidator.validate(.catalog, array)) {
+            XCTAssertEqual($0 as? CatalogReferenceRejection, CatalogReferenceRejection(
+                sourceItemID: "cat.hosting_platform.fixture", sourceKind: .hostingPlatform,
+                field: "accelerator_refs", targetID: "cat.storage.fixture",
+                expectedKind: .accelerator, reason: .wrongKind(actual: .storage)))
+        }
+    }
+
+    func testAmbiguousReferenceTargetsRejectEvenWhenTheVersionOrContentsAgree() throws {
+        let differentVersion = try modified(.catalog, Self.ambiguousProviderFault)
+        let sameVersion = try modified(.catalog) { value in
+            var items = try XCTUnwrap(value["items"] as? [[String: Any]])
+            items.append(try XCTUnwrap(items.first { $0["id"] as? String == "cat.model_provider.fixture" }))
+            value["items"] = items
+        }
+        for data in [differentVersion, sameVersion] {
+            XCTAssertNoThrow(try CatalogSnapshot.decode(data))
+            XCTAssertThrowsError(try FrozenCatalogCacheValidator.validate(.catalog, data)) {
+                XCTAssertEqual($0 as? CatalogReferenceRejection, Self.ambiguousProvider)
+            }
+        }
+    }
+
+    func testReferencePolicyRejectsOnlyReferencedAmbiguityAndLeavesUnresolvedTargetsUnjudged() throws {
+        // Unreferenced duplicate identities stay available to the receiving graph policy.
+        let unreferenced = try modified(.catalog) { value in
+            var items = try XCTUnwrap(value["items"] as? [[String: Any]])
+            var other = try XCTUnwrap(items.first { $0["id"] as? String == "cat.workload.fixture" })
+            other["version"] = "2026.11-demo"
+            items.append(other)
+            value["items"] = items
+        }
+        XCTAssertNoThrow(try FrozenCatalogCacheValidator.validate(.catalog, unreferenced))
+        // Neither passed nor rejected here: the target is simply not in this snapshot.
+        let unresolved = try modified(.catalog) { value in
+            try Self.editItem(&value, id: "cat.model.fixture") { Self.setSpec(&$0, "provider_ref", "cat.absent.fixture") }
+        }
+        XCTAssertNoThrow(try FrozenCatalogCacheValidator.validate(.catalog, unresolved))
+    }
+
+    func testWrongKindReferenceQuarantinesWholeCatalogAndRetainsLastValidCache() async throws {
+        try requireHashing()
+        try await assertRejectedPairPreservesHistoryAndRecovers(
+            .catalog, catalogFault: Self.wrongKindProviderFault, expectedRejection: Self.wrongKindProvider)
+    }
+
+    func testAmbiguousReferenceQuarantinesWholeCatalogAndRetainsLastValidCache() async throws {
+        try requireHashing()
+        try await assertRejectedPairPreservesHistoryAndRecovers(
+            .catalog, catalogFault: Self.ambiguousProviderFault, expectedRejection: Self.ambiguousProvider)
+    }
+
     func testValidatedPairPersistsOriginalBytesAndReopensWithoutPromotion() async throws {
         try requireHashing()
         let pair = try ValidatorCachePair(catalog: Data(" \n".utf8) + fixture(.catalog),
@@ -306,10 +412,13 @@ final class CatalogCacheValidatorTests: XCTestCase, @unchecked Sendable {
         try await assertRejectedPairPreservesHistoryAndRecovers(.pricebook)
     }
 
-    private func assertRejectedPairPreservesHistoryAndRecovers(_ kind: CatalogArtifact) async throws {
+    private func assertRejectedPairPreservesHistoryAndRecovers(
+        _ kind: CatalogArtifact, catalogFault: ((inout [String: Any]) throws -> Void)? = nil,
+        expectedRejection: CatalogReferenceRejection? = nil
+    ) async throws {
         let first = try pair(revision: 1)
         let active = try pair(revision: 2)
-        let malformed = try pair(revision: 3, malformed: kind)
+        let malformed = try pair(revision: 3, malformed: kind, catalogFault: catalogFault)
         let recovery = try pair(revision: 4)
         let firstDate = Date(timeIntervalSince1970: 100)
         let activeDate = Date(timeIntervalSince1970: 200)
@@ -331,7 +440,8 @@ final class CatalogCacheValidatorTests: XCTestCase, @unchecked Sendable {
             try await store.refresh(malformed.manifest, mode: .syntheticPreview) { try await recorder.read($0) }
             XCTFail("Hash-valid malformed artifact replaced a retained pair")
         } catch {
-            if kind == .catalog { XCTAssertEqual(error as? TransferError, .schemaViolation) }
+            if let expectedRejection { XCTAssertEqual(error as? CatalogReferenceRejection, expectedRejection) }
+            else if kind == .catalog { XCTAssertEqual(error as? TransferError, .schemaViolation) }
             else { XCTAssertTrue(error is DecodingError) }
         }
         let downloaded = await recorder.kinds
