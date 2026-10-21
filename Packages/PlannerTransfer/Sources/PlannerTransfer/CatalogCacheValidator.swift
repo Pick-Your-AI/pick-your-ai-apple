@@ -5,8 +5,8 @@ import PlannerCore
 /// Frozen-v1 whole-artifact validation for the existing public preview pair cache.
 /// Hashing and retention use the original Data; validation neither rewrites it
 /// nor grants source-use, publication, graph, pricing or currentness authority.
-/// A catalog is also rejected as a whole when an item reference does not resolve to
-/// exactly one item of the documented kind (see `CatalogReferenceIntegrity`).
+/// A catalog is also rejected as a whole when an item reference resolves to
+/// exactly one item of a different kind or to more than one item (see `CatalogReferenceIntegrity`).
 public enum FrozenCatalogCacheValidator {
     public static func validate(_ artifact: CatalogArtifact, _ data: Data) throws {
         switch artifact {

@@ -10,7 +10,8 @@ public struct CatalogReferenceViolation: Equatable, Sendable {
         /// identity (same or different version) leaves the target undetermined. The kinds
         /// of every candidate are listed in snapshot order, so a mismatch is not masked.
         case ambiguous(candidateKinds: [CatalogKind])
-        /// No item in the snapshot has the target identity.
+        /// No item in the snapshot has the target identity. Listed by
+        /// `CatalogReferenceIntegrity.unresolvedReferences(in:)`; `validate` does not reject it.
         case unresolved
         /// The reference value or array element is not a string. Unreachable while the
         /// frozen schema types these fields as strings; kept so a relaxed schema cannot
@@ -29,8 +30,9 @@ public struct CatalogReferenceViolation: Equatable, Sendable {
     public let reason: Reason
 }
 
-/// Every reference violation found in one catalog snapshot, in deterministic order
-/// (item order, then sorted field name, then array index). The whole snapshot is rejected.
+/// Every rejecting reference violation found in one catalog snapshot, in deterministic
+/// order (item order, then sorted field name, then array index). The whole snapshot is
+/// rejected. Unresolved references are not rejecting violations.
 public struct CatalogReferenceRejection: Error, Equatable, Sendable {
     /// The report keeps at most this many violations; the rest are counted, not listed.
     public static let maximumReportedViolations = 64
@@ -43,10 +45,13 @@ public struct CatalogReferenceRejection: Error, Equatable, Sendable {
 /// catalog-item schema documents each reference field's target kind in a description
 /// only, so structural validation alone accepts a reference to the wrong kind.
 ///
-/// Every reference must resolve to exactly one item of the documented kind. A target
-/// absent from the snapshot is rejected, not treated as unknown-but-acceptable. This is
-/// an adopted conservative policy, not a canonical-contract rule: see
-/// `CATALOG_REFERENCE_REJECTIONS.md` for the evidence and the open decision.
+/// `validate` rejects a reference that resolves to exactly one item of a different kind,
+/// or to more than one item (a reference carries no version, so it cannot pick one). A
+/// target absent from the snapshot is NOT rejected: no canonical rule requires references
+/// to resolve within a snapshot, and schema-valid maintenance-drill snapshots in this
+/// repository contain unresolved references. Such a reference is neither verified nor
+/// hidden: callers can list it with `unresolvedReferences(in:)`. Whether to reject it is
+/// an open maintainer decision; see `CATALOG_REFERENCE_REJECTIONS.md`.
 /// Pricebook rate references and any pair-level check are outside this policy.
 public enum CatalogReferenceIntegrity {
     /// Mirrors the "Reference to catalog kind ..." descriptions in the bundled
@@ -67,13 +72,26 @@ public enum CatalogReferenceIntegrity {
         "dataset_refs": .trainingDataset
     ]
 
-    /// Throws one `CatalogReferenceRejection` listing all violations (up to the report
-    /// cap) when any exist. No partial catalog is produced.
+    /// Throws one `CatalogReferenceRejection` listing every rejecting violation (up to the
+    /// report cap) when any exist. No partial catalog is produced.
     public static func validate(_ snapshot: CatalogSnapshot) throws {
+        let rejecting = findings(in: snapshot).filter { !$0.isUnresolved }
+        if !rejecting.isEmpty {
+            let kept = Array(rejecting.prefix(CatalogReferenceRejection.maximumReportedViolations))
+            throw CatalogReferenceRejection(violations: kept, omittedViolationCount: rejecting.count - kept.count)
+        }
+    }
+
+    /// Every reference whose target identity is absent from the snapshot, in the same
+    /// deterministic order. Not capped; bounded by the decoder's node limit.
+    public static func unresolvedReferences(in snapshot: CatalogSnapshot) -> [CatalogReferenceViolation] {
+        findings(in: snapshot).filter { $0.isUnresolved }
+    }
+
+    private static func findings(in snapshot: CatalogSnapshot) -> [CatalogReferenceViolation] {
         var candidates: [String: [CatalogKind]] = [:]
         for item in snapshot.items { candidates[item.id, default: []].append(item.kind) }
         var violations: [CatalogReferenceViolation] = []
-        var total = 0
         for item in snapshot.items {
             let spec = item.spec
             for field in spec.keys.sorted() {
@@ -97,17 +115,19 @@ public enum CatalogReferenceIntegrity {
                         reason = .malformedReference
                     }
                     guard let reason else { continue }
-                    total += 1
-                    if violations.count < CatalogReferenceRejection.maximumReportedViolations {
-                        violations.append(CatalogReferenceViolation(
-                            sourceItemID: item.id, sourceKind: item.kind, field: field,
-                            elementIndex: index, targetID: target, expectedKind: expected, reason: reason))
-                    }
+                    violations.append(CatalogReferenceViolation(
+                        sourceItemID: item.id, sourceKind: item.kind, field: field,
+                        elementIndex: index, targetID: target, expectedKind: expected, reason: reason))
                 }
             }
         }
-        if total > 0 {
-            throw CatalogReferenceRejection(violations: violations, omittedViolationCount: total - violations.count)
-        }
+        return violations
+    }
+}
+
+extension CatalogReferenceViolation {
+    fileprivate var isUnresolved: Bool {
+        if case .unresolved = reason { return true }
+        return false
     }
 }

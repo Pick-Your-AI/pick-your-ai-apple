@@ -174,10 +174,12 @@ public actor CatalogCache {
     }
 
     /// `isReplaceableRetainedFailure` classifies validator errors for records admitted earlier
-    /// under a looser contract policy. Loads still fail closed on such a record. Only refresh
-    /// uses the classification: it prunes those records, keeps every known pin and the
-    /// immutable-version history, and commits the newly validated pair. Other errors, such as
-    /// digest, identity, structural or storage errors, still block refresh.
+    /// under a looser contract policy. Such a record is never served: a load of that exact
+    /// pair, or of the active pair when it is the failing one, throws its error. Other valid
+    /// records are still served, and loads never write. Refresh prunes those records, keeps
+    /// every known pin and the immutable-version history, and commits the newly validated
+    /// pair. Other errors, such as digest, identity, structural or storage errors, still
+    /// block loads and refresh.
     public init(directory: URL, maximumArtifactBytes: Int = 8 * 1_024 * 1_024,
                 maximumCachedPairs: Int = 32, maximumCacheBytes: Int? = nil,
                 isReplaceableRetainedFailure: @escaping @Sendable (any Error) -> Bool,
@@ -220,7 +222,7 @@ public actor CatalogCache {
         guard !refreshing else { throw CatalogCacheError.incompleteRelease }
         refreshing = true
         defer { refreshing = false }
-        let previous = try loadEnvelope(pruningReplaceable: true)
+        let previous = try loadEnvelope()?.envelope
         var records = previous?.records ?? []
         var known = previous?.knownPins ?? []
         for pin in manifest.pins {
@@ -264,10 +266,16 @@ public actor CatalogCache {
     }
 
     /// Revalidates the entire envelope, including retained history, on every load.
-    /// Corruption is unavailable and preserved; no deletion or promotion occurs.
+    /// Corruption is unavailable and preserved; no deletion or promotion occurs. A record
+    /// that fails only with a replaceable error is excluded in memory and never served:
+    /// if it is the active pair, its error is thrown; otherwise the active pair is served.
     public func load(mode: CatalogDataMode) throws -> CachedCatalog? {
         try requirePreview(mode)
-        guard let envelope = try loadEnvelope() else { return nil }
+        guard let loaded = try loadEnvelope() else { return nil }
+        let envelope = loaded.envelope
+        if let failure = loaded.excluded.first(where: { samePair($0.manifest, envelope.activeManifest) }) {
+            throw failure.error
+        }
         guard let active = envelope.records.first(where: { samePair($0.manifest, envelope.activeManifest) }) else {
             throw CatalogCacheError.corruptCache
         }
@@ -281,17 +289,25 @@ public actor CatalogCache {
     public func load(_ manifest: CacheManifest, mode: CatalogDataMode) throws -> CachedCatalog? {
         try requirePreview(mode)
         try validateManifest(manifest)
-        guard let envelope = try loadEnvelope() else { return nil }
+        guard let loaded = try loadEnvelope() else { return nil }
+        let envelope = loaded.envelope
         for pin in manifest.pins {
             if let known = envelope.knownPins.first(where: { VersionKey($0) == VersionKey(pin) }), known != pin {
                 throw CatalogCacheError.immutableVersionConflict
             }
         }
+        if let failure = loaded.excluded.first(where: { samePair($0.manifest, manifest) }) {
+            throw failure.error
+        }
         guard let record = envelope.records.first(where: { samePair($0.manifest, manifest) }) else { return nil }
         return try snapshot(record, knownPins: envelope.knownPins)
     }
 
-    private func loadEnvelope(pruningReplaceable: Bool = false) throws -> CacheEnvelope? {
+    private struct ExcludedRecord { let manifest: CacheManifest; let error: any Error }
+
+    /// `envelope` omits records that failed with a replaceable error (in memory only);
+    /// `excluded` names them so loads can refuse to serve them. Nothing is written here.
+    private func loadEnvelope() throws -> (envelope: CacheEnvelope, excluded: [ExcludedRecord])? {
         guard let bytes = try loadEnvelopeBytes() else { return nil }
         let envelope: CacheEnvelope
         do { envelope = try JSONDecoder().decode(CacheEnvelope.self, from: bytes) }
@@ -305,6 +321,7 @@ public actor CatalogCache {
         guard !envelope.records.isEmpty else { throw CatalogCacheError.corruptCache }
         guard envelope.records.count <= maximumCachedPairs else { throw CatalogCacheError.historyLimitReached }
         var retained: [CacheRecord] = []
+        var excluded: [ExcludedRecord] = []
         for (index, record) in envelope.records.enumerated() {
             guard record.synthetic else { throw CatalogCacheError.productionReceiptUnavailable }
             try validateManifest(record.manifest)
@@ -320,21 +337,23 @@ public actor CatalogCache {
                     guard let bytes = record.artifacts[pin.kind.rawValue] else { throw CatalogCacheError.incompleteRelease }
                     try validate(bytes, pin: pin)
                 }
-            } catch where pruningReplaceable && isReplaceableRetainedFailure(error) {
+            } catch where isReplaceableRetainedFailure(error) {
+                excluded.append(ExcludedRecord(manifest: record.manifest, error: error))
                 continue
             }
             retained.append(record)
         }
-        // Only refresh reaches this branch. The pruned pair's pins stay known, so its
-        // versions remain immutable; the caller's new pair becomes the active manifest.
-        guard retained.count == envelope.records.count else {
-            return CacheEnvelope(activeManifest: envelope.activeManifest, records: retained,
-                                 knownPins: envelope.knownPins)
-        }
+        // The active manifest must name a record of the stored envelope, excluded or not.
         guard envelope.records.contains(where: { samePair($0.manifest, envelope.activeManifest) }) else {
             throw CatalogCacheError.corruptCache
         }
-        return envelope
+        // Excluded pairs' pins stay known, so their versions remain immutable. Refresh
+        // commits without them and replaces the active manifest.
+        guard excluded.isEmpty else {
+            return (CacheEnvelope(activeManifest: envelope.activeManifest, records: retained,
+                                  knownPins: envelope.knownPins), excluded)
+        }
+        return (envelope, [])
     }
 
     private func samePair(_ lhs: CacheManifest, _ rhs: CacheManifest) -> Bool {
