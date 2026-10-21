@@ -165,9 +165,9 @@ public actor CatalogCache {
 
     /// No validation failure is treated as replaceable: any retained-record failure blocks
     /// loads and refresh, exactly as before the replaceable-failure hook existed.
-    public convenience init(directory: URL, maximumArtifactBytes: Int = 8 * 1_024 * 1_024,
-                            maximumCachedPairs: Int = 32, maximumCacheBytes: Int? = nil,
-                            validateContract: @escaping Validator) throws {
+    public init(directory: URL, maximumArtifactBytes: Int = 8 * 1_024 * 1_024,
+                maximumCachedPairs: Int = 32, maximumCacheBytes: Int? = nil,
+                validateContract: @escaping Validator) throws {
         try self.init(directory: directory, maximumArtifactBytes: maximumArtifactBytes,
                       maximumCachedPairs: maximumCachedPairs, maximumCacheBytes: maximumCacheBytes,
                       isReplaceableRetainedFailure: { _ in false }, validateContract: validateContract)
