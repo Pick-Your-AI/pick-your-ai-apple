@@ -160,10 +160,27 @@ public actor CatalogCache {
     private let maximumCachedPairs: Int
     private let maximumEnvelopeBytes: Int
     private let validateContract: Validator
+    private let isReplaceableRetainedFailure: @Sendable (any Error) -> Bool
     private var refreshing = false
 
+    /// No validation failure is treated as replaceable: any retained-record failure blocks
+    /// loads and refresh, exactly as before the replaceable-failure hook existed.
+    public convenience init(directory: URL, maximumArtifactBytes: Int = 8 * 1_024 * 1_024,
+                            maximumCachedPairs: Int = 32, maximumCacheBytes: Int? = nil,
+                            validateContract: @escaping Validator) throws {
+        try self.init(directory: directory, maximumArtifactBytes: maximumArtifactBytes,
+                      maximumCachedPairs: maximumCachedPairs, maximumCacheBytes: maximumCacheBytes,
+                      isReplaceableRetainedFailure: { _ in false }, validateContract: validateContract)
+    }
+
+    /// `isReplaceableRetainedFailure` classifies validator errors for records admitted earlier
+    /// under a looser contract policy. Loads still fail closed on such a record. Only refresh
+    /// uses the classification: it prunes those records, keeps every known pin and the
+    /// immutable-version history, and commits the newly validated pair. Other errors, such as
+    /// digest, identity, structural or storage errors, still block refresh.
     public init(directory: URL, maximumArtifactBytes: Int = 8 * 1_024 * 1_024,
                 maximumCachedPairs: Int = 32, maximumCacheBytes: Int? = nil,
+                isReplaceableRetainedFailure: @escaping @Sendable (any Error) -> Bool,
                 validateContract: @escaping Validator) throws {
         guard directory.isFileURL, maximumArtifactBytes > 0,
               maximumArtifactBytes <= 64 * 1_024 * 1_024,
@@ -181,6 +198,7 @@ public actor CatalogCache {
         self.maximumCachedPairs = maximumCachedPairs
         self.maximumEnvelopeBytes = envelopeLimit
         self.validateContract = validateContract
+        self.isReplaceableRetainedFailure = isReplaceableRetainedFailure
     }
 
     public static func sha256(_ bytes: Data) throws -> String {
@@ -202,7 +220,7 @@ public actor CatalogCache {
         guard !refreshing else { throw CatalogCacheError.incompleteRelease }
         refreshing = true
         defer { refreshing = false }
-        let previous = try loadEnvelope()
+        let previous = try loadEnvelope(pruningReplaceable: true)
         var records = previous?.records ?? []
         var known = previous?.knownPins ?? []
         for pin in manifest.pins {
@@ -273,7 +291,7 @@ public actor CatalogCache {
         return try snapshot(record, knownPins: envelope.knownPins)
     }
 
-    private func loadEnvelope() throws -> CacheEnvelope? {
+    private func loadEnvelope(pruningReplaceable: Bool = false) throws -> CacheEnvelope? {
         guard let bytes = try loadEnvelopeBytes() else { return nil }
         let envelope: CacheEnvelope
         do { envelope = try JSONDecoder().decode(CacheEnvelope.self, from: bytes) }
@@ -286,6 +304,7 @@ public actor CatalogCache {
         for pin in envelope.knownPins { try validatePin(pin) }
         guard !envelope.records.isEmpty else { throw CatalogCacheError.corruptCache }
         guard envelope.records.count <= maximumCachedPairs else { throw CatalogCacheError.historyLimitReached }
+        var retained: [CacheRecord] = []
         for (index, record) in envelope.records.enumerated() {
             guard record.synthetic else { throw CatalogCacheError.productionReceiptUnavailable }
             try validateManifest(record.manifest)
@@ -296,10 +315,21 @@ public actor CatalogCache {
             guard Set(record.artifacts.keys) == Set(CatalogArtifact.allCases.map(\.rawValue)) else {
                 throw CatalogCacheError.incompleteRelease
             }
-            for pin in record.manifest.pins {
-                guard let bytes = record.artifacts[pin.kind.rawValue] else { throw CatalogCacheError.incompleteRelease }
-                try validate(bytes, pin: pin)
+            do {
+                for pin in record.manifest.pins {
+                    guard let bytes = record.artifacts[pin.kind.rawValue] else { throw CatalogCacheError.incompleteRelease }
+                    try validate(bytes, pin: pin)
+                }
+            } catch where pruningReplaceable && isReplaceableRetainedFailure(error) {
+                continue
             }
+            retained.append(record)
+        }
+        // Only refresh reaches this branch. The pruned pair's pins stay known, so its
+        // versions remain immutable; the caller's new pair becomes the active manifest.
+        guard retained.count == envelope.records.count else {
+            return CacheEnvelope(activeManifest: envelope.activeManifest, records: retained,
+                                 knownPins: envelope.knownPins)
         }
         guard envelope.records.contains(where: { samePair($0.manifest, envelope.activeManifest) }) else {
             throw CatalogCacheError.corruptCache

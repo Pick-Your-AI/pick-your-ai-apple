@@ -1,25 +1,26 @@
 # Catalog reference rejection report (partial)
 
-A bounded contribution to [Apple issue #39](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/39). It records the within-snapshot reference policy that `FrozenCatalogCacheValidator` now applies after the [whole-artifact catalog decode](CATALOG_CACHE_VALIDATION.md). It is not the complete "Apple intake validation and source-to-field rejection report" the issue names: it contains no approved real snapshot, retracted snapshot, unavailable-release replay, source-use decision or receiving-review disposition, and it does not close the issue.
+A bounded contribution to [Apple issue #39](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/39). It records the within-snapshot reference policy that `FrozenCatalogCacheValidator` applies after the [whole-artifact catalog decode](CATALOG_CACHE_VALIDATION.md). It is not the complete "Apple intake validation and source-to-field rejection report" the issue names: it contains no approved real snapshot, retracted snapshot, unavailable-release replay, source-use decision or receiving-review disposition, and it does not close the issue.
 
 ## Why
 
-The unchanged frozen-v1 catalog-item schema states each reference field's target kind only in a `description` ("Reference to catalog kind ..."). JSON Schema validation therefore accepts a `provider_ref` that names a tool, and `CatalogSnapshot.decode` preserves it. Before this change the cache admitted such a catalog. References also carry an identity and no version, so an identity that appears on more than one item leaves the target undetermined.
+The unchanged frozen-v1 catalog-item schema states each reference field's target kind only in a `description` ("Reference to catalog kind ..."). JSON Schema validation therefore accepts a `provider_ref` that names a tool, and `CatalogSnapshot.decode` preserves it. Before this change the cache admitted such a catalog. References carry an identity and no version, so an identity that appears on more than one item leaves the target undetermined.
 
 ## Policy
 
-`CatalogReferenceIntegrity.validate(_:)` runs on a successfully decoded `CatalogSnapshot`, inside the same cache validation callback, so a rejection quarantines the whole pair and the previous active and historical pairs are retained byte-for-byte by the existing cache.
+`CatalogReferenceIntegrity.validate(_:)` runs on a successfully decoded `CatalogSnapshot`, inside the same cache validation callback, so a rejection quarantines the whole pair and the previous pairs are retained byte-for-byte by the existing cache.
 
-For every `spec` field below on every item, and for every string in an array-valued field, the target identity is looked up among all items of the snapshot:
+For every `spec` field below on every item, and for every element of an array-valued field, the target identity is looked up among all items of the snapshot:
 
-| Target matches | Result |
+| Target matches | Violation reason |
 | --- | --- |
-| More than one item (same or different version) | Rejected: `ambiguous(candidateCount:)` |
-| Exactly one item of a different kind | Rejected: `wrongKind(actual:)` |
-| Exactly one item of the expected kind | Accepted |
-| No item in the snapshot | Not judged (neither accepted as verified nor rejected) |
+| No item in the snapshot | `unresolved` |
+| More than one item (same or different version) | `ambiguous(candidateKinds:)`; every candidate's kind is listed, so an ambiguity whose candidates are all the wrong kind is visible as such |
+| Exactly one item of a different kind | `wrongKind(actual:)` |
+| Exactly one item of the expected kind | accepted |
+| A value or array element that is not a string | `malformedReference` (unreachable while the frozen schema types these fields as strings; it has no test because no decodable snapshot can reach it) |
 
-The first rejection is reported in item order, then sorted field name, then array order. The thrown `CatalogReferenceRejection` names the source item identity and kind, the field, the target identity, the expected kind and the reason. It carries catalog identifiers and frozen field names only, not payload text.
+All violations are collected, not only the first, and thrown as one `CatalogReferenceRejection`. Order is item order, then sorted field name, then array index. Each `CatalogReferenceViolation` names the source item identity and kind, the field, the zero-based array element index (nil for scalar fields), the target identity (nil only for `malformedReference`), the expected kind and the reason. The report lists at most 64 violations; further ones are counted in `omittedViolationCount`, and the whole snapshot is rejected regardless. It carries catalog identifiers and frozen field names only, not payload text.
 
 | Field | Expected target kind |
 | --- | --- |
@@ -34,31 +35,53 @@ The first rejection is reported in item order, then sorted field name, then arra
 | `training_framework_ref` | `training_framework` |
 | `training_dataset_ref`, `dataset_refs` | `training_dataset` |
 
-`license_ref` is a plain string in the schema with no catalog-kind description and is not checked. Source kinds that use each field are those declared by the schema's `spec_*` definitions; the check is by field name.
+`license_ref` is a plain string in the schema with no catalog-kind description and is not checked. The check is by field name; every such field appears directly under an item's `spec`.
+
+Identities shared by items that nothing references stay accepted: they remain facts for the receiving graph policy, consistent with the existing duplicate-identity test. A duplicate is therefore admitted or rejected depending on whether a reference points at it.
+
+## Open policy decision: unresolved targets are rejected
+
+Rejecting a reference whose target is absent from the snapshot is this contribution's conservative choice ("unknown is not pass"; otherwise a publisher can evade the wrong-kind check by pointing a reference at an absent identity). It is not a rule found in a canonical contract. What was checked:
+
+- The schema descriptions say only "Reference to catalog kind X"; neither the schema nor the catalog-snapshot envelope states that references resolve within a snapshot or may point outside it.
+- No document in this repository states a resolution rule.
+- Of the repository's JSON fixtures, only `Fixtures/catalog.json` holds complete catalog items. All 18 of its references resolve to exactly one item of the documented kind. The conformance vector files hold single-item mutations and do not exercise resolution.
+- No field legitimately external to the snapshot was found among the 13 reference fields (`license_ref` is a different, free string and is excluded).
+
+If a canonical rule later permits references to items outside a snapshot (for example a partial snapshot), the maintainer or the shared validation owner (Android #28) should relax or scope the `unresolved` reason in `CatalogReferenceIntegrity`; this PR does not claim that decision.
+
+"Ambiguous" is defined here as more than one item with the target identity. Whether versions may legitimately coexist in one snapshot, and how a reference would then pin one, is likewise not settled by a canonical contract.
+
+## Retained pairs admitted before this policy
+
+The policy is applied whenever the cache validates a record, which includes every retained record on every load. A pair admitted under the earlier structural-only validator that fails the new policy is therefore never served: `load` and `load(_:)` throw `CatalogReferenceRejection`, as for any contract-invalid retained record.
+
+Unlike other contract failures, that one is recoverable. `FrozenCatalogCacheValidator.isReplaceableRetainedFailure` classifies it, and `CatalogCache` accepts the classifier through a new `isReplaceableRetainedFailure:` initializer parameter (the existing initializer keeps its behavior: nothing is replaceable). During `refresh` only, a retained record that fails with a replaceable error is dropped from the retained history, every known pin is kept so its version stays immutable, and the newly downloaded and validated pair is committed in the same atomic write. If the download or its validation fails, nothing is written. Structural, digest, identity and storage failures still block refresh. The dropped pair's bytes are not kept (they are public, re-downloadable cache data). The storage version is unchanged. See [CATALOG_CACHE_VALIDATION.md](CATALOG_CACHE_VALIDATION.md).
 
 ## Evidence and status
 
 | Item | Status |
 | --- | --- |
-| Table matches the bundled schema's 13 "Reference to catalog kind" descriptions exactly, and every target kind is a `CatalogKind` | Checked by a throwaway local Python script comparing the Swift source text with `catalog-item.schema.json`; the script is not committed |
-| The unchanged `Fixtures/catalog.json` (29 items) resolves every reference to exactly one item of the expected kind | Same local script, a Python port of the Swift algorithm; this is not a Swift execution |
-| Swift compilation and the five new test methods | Pending hosted macOS CI; not run locally (no Swift toolchain in the authoring environment) |
+| Reference table equals the bundled schema's 18 "Reference to catalog kind" descriptions over 13 distinct field names; each target kind is a `CatalogKind` | Checked by a throwaway local Python script (not committed) comparing the Swift source text with `catalog-item.schema.json` |
+| The unchanged `Fixtures/catalog.json` (29 items, 18 references) resolves every reference to exactly one item of the expected kind | Same kind of local script, a Python port of the algorithm; not a Swift execution |
+| Swift compilation and the `CatalogCacheValidatorTests` methods | Hosted macOS CI only; not run locally (no Swift toolchain in the authoring environment). CI results for the exact commits are recorded in the pull request |
 | `git diff --check` and relative Markdown links | Run locally; see the pull request |
 
-The five new `CatalogCacheValidatorTests` methods:
+Reference-policy methods in `CatalogCacheValidatorTests`:
 
-- `testWrongKindReferencesRejectTheWholeCatalogWithSourceToFieldReport` (scalar and array fields; structural decode still accepts the same bytes)
+- `testWrongKindReferencesRejectTheWholeCatalogWithSourceToFieldReport` (scalar and array fields with element index; structural decode still accepts the same bytes)
 - `testAmbiguousReferenceTargetsRejectEvenWhenTheVersionOrContentsAgree`
-- `testReferencePolicyRejectsOnlyReferencedAmbiguityAndLeavesUnresolvedTargetsUnjudged`
-- `testWrongKindReferenceQuarantinesWholeCatalogAndRetainsLastValidCache` (CryptoKit lane; hash-valid catalog, previous active and historical pairs and envelope bytes preserved, valid revision recovers)
-- `testAmbiguousReferenceQuarantinesWholeCatalogAndRetainsLastValidCache` (same cache assertions)
+- `testAmbiguousTargetWhoseCandidatesAreAllWrongKindReportsTheirKinds`
+- `testUnresolvedReferenceTargetsAreRejectedSoTheyCannotEvadeTheKindCheck`
+- `testReportCollectsEveryViolationInItemFieldAndIndexOrderAndCapsTheList`
+- `testUnreferencedDuplicateIdentitiesRemainAvailableToTheReceivingGraphPolicy`
+- `testWrongKindReferenceQuarantinesWholeCatalogAndRetainsLastValidCache` and `testAmbiguousReferenceQuarantinesWholeCatalogAndRetainsLastValidCache` (CryptoKit lane; hash-valid catalog, previous pairs and envelope bytes preserved, valid revision recovers)
+- `testRetainedPairFailingOnlyTheReferencePolicyFailsClosedButRefreshReplacesIt` (CryptoKit lane; a pair admitted by a structural-only validator is not served, a failed refresh changes nothing, a good refresh replaces it and the older valid pair remains)
 
-The two cache methods skip without CryptoKit; a skip is not cache validation.
+The cache methods skip without CryptoKit; a skip is not cache validation.
 
 ## Limits and remaining decisions
 
 - The fixtures are synthetic and demonstrate the mechanism only. They are not product evidence, a source-use decision or a publication receipt.
-- Whether a reference to a target absent from the snapshot must be rejected is an open decision for the receiving graph/release policy and the shared canonical validation (Android #28). This change does not decide it and does not treat such a reference as verified.
-- "Ambiguous" is defined here as more than one item with the target identity. Whether versions may legitimately coexist in one snapshot, and how a reference would then pin one, is a canonical-contract question not settled by this change.
-- Pricebook `catalog_item_id` / `catalog_item_version` references to catalog items are a pair-level check. The cache validation callback sees one artifact at a time, so this is not implemented.
-- Malformed units and missing provenance rejection are the existing schema checks covered by the earlier contribution; replay of an approved real snapshot, a retracted snapshot and an unavailable historical release, and receiving review, remain open.
+- Pricebook `catalog_item_id` / `catalog_item_version` references to catalog items are not checked. The `CatalogCache.refresh` flow holds both validated artifacts before committing, so a pair-level check is possible there, but the per-artifact validation callback used here cannot express it. It is left to a follow-up, not implemented in this PR.
+- Malformed units and missing provenance rejection are the existing schema checks covered by the earlier contribution. Replay of an approved real snapshot, a retracted snapshot and an unavailable historical release, source-use approval and receiving review remain open.
