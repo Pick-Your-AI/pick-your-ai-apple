@@ -133,6 +133,24 @@ The [CI workflow](../../.github/workflows/swift-storage.yml) repeats macOS tests
 crash replay and an unsigned iOS Simulator SDK compile. Compilation is distinct
 from running a UI, simulator lifecycle tests or physical-device qualification.
 
+The [#37 conformance and migration record](../PlannerConformance/README.md)
+adds six pinned, language-neutral descriptions of Apple historical storage and
+four test methods. Its archived `08e54247` preparation preserved the then-current
+25 methods and production implementation; that original 29-method execution
+remains a historical receipt. The later `04d44920` preparation preserved the
+accepted #298 future-history restoration guard and executed 26 accepted methods
+plus the four migration methods; that 30-method receipt is also historical.
+The current preparation preserves that guard and all five accepted #306 WAL and
+hot-journal methods, the 35 accepted #382 pending-write store methods below,
+and all 15 accepted pending-write dispatcher methods. The exact gate requires
+31 draft, 35 pending-write store, 15 dispatcher and four migration methods
+(85 total), with 20 exact per-fixture observations on macOS and both selected
+simulators.
+These cover every migration interruption, retained unsupported databases,
+separate compatible-backup recovery and appended restoration history. Local
+storage versions remain distinct from wire contract versions. Actual local
+preparation and pending native receiving results are recorded separately there.
+
 ## Acceptance boundaries
 
 | Issue | Executed library behavior | Remaining issue-specific work |
@@ -293,4 +311,4 @@ An uncertain operation is not resent automatically, including after reopening th
 
 `PendingBuildWriteDispatcherTests` declares 15 focused cases: exact committed-byte handoff; attempt and outcome commit failures; explicit confirmed successors; lost acknowledgement with reopen and no resend; cancellation before, during and after attempt creation; a known response after cancellation; retired and ABA callbacks; concurrent duplicate dispatch; per-build blocking; and validated conflict and invalid outcomes. The lost-acknowledgement fixture is a labelled synthetic observer, not a backend or a production idempotency implementation. Barriers control the asynchronous interleavings without sleeps.
 
-The existing 31 draft-store and 35 pending-write-store test methods remain unchanged. The Storage workflow requires all 15 dispatcher method names to report a pass and checks the 15-case class and 81-case aggregate for the macOS run and each configured compact iPhone and iPad run. Its existing replay commands, toolchain, simulator selection, named draft/queue guards and evidence retention remain intact. Source declarations and configured checks do not replace the corresponding original execution logs and result bundles.
+The existing 31 draft-store and 35 pending-write-store test methods remain unchanged. The Storage workflow requires all 15 dispatcher method names to report a pass and checks the 15-case class and 85-case aggregate for the macOS run and each configured compact iPhone and iPad run. Its existing replay commands, toolchain, simulator selection, named draft/queue guards and evidence retention remain intact. Source declarations and configured checks do not replace the corresponding original execution logs and result bundles.
