@@ -7,6 +7,14 @@ public struct LocalLibraryStores: Sendable {
     public let notes: DraftStore?
     public let importedBuilds: DraftStore?
 
+    /// Neither database could be opened (for example before first unlock, or under
+    /// transient storage failure). This is reported as an error rather than a ready
+    /// pair of unavailable libraries so a later scene appearance can retry. Existing
+    /// files are never reset or modified.
+    public enum OpenFailure: Error, Equatable, Sendable {
+        case noLibraryAvailable
+    }
+
     /// Directory preparation and synchronous SQLite initialization/migrations run
     /// outside the caller's actor. The caller supplies its app-owned protected root.
     public static func open(
@@ -30,6 +38,8 @@ public struct LocalLibraryStores: Sendable {
             try Task.checkCancellation()
             let importedBuilds = try? openStore(directory.appendingPathComponent("imported-builds.sqlite"))
             try Task.checkCancellation()
+            // One healthy library keeps startup ready; losing both must stay retryable.
+            if notes == nil && importedBuilds == nil { throw OpenFailure.noLibraryAvailable }
             return Self(notes: notes, importedBuilds: importedBuilds)
         }
         return try await withTaskCancellationHandler {

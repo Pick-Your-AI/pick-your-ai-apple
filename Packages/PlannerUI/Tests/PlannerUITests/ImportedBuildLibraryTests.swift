@@ -139,4 +139,30 @@ final class ImportedBuildLibraryTests: XCTestCase {
         let unchanged = try await store.read(id: row.id)
         XCTAssertEqual(unchanged.payload, bytes)
     }
+    func testExactlyFullLastPageHasNoNextAndOnlyARealNextPageDoes() async throws {
+        let (store, model, folder) = try setup()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        for index in 0..<ImportedBuildLibraryModel.pageSize {
+            _ = try await store.save(id: UUID(), expectedRevision: nil, title: "Build \(index)", payload: Data("{}".utf8))
+        }
+        await model.refresh()
+        XCTAssertEqual(model.records.count, ImportedBuildLibraryModel.pageSize)
+        XCTAssertFalse(model.hasNext, "An exactly full final page must not offer an empty next page")
+        _ = try await store.save(id: UUID(), expectedRevision: nil, title: "Overflow", payload: Data("{}".utf8))
+        await model.refresh()
+        XCTAssertTrue(model.hasNext)
+        await model.refresh(offset: ImportedBuildLibraryModel.pageSize)
+        XCTAssertEqual(model.records.count, 1)
+        XCTAssertFalse(model.hasNext)
+        XCTAssertEqual(model.offset, ImportedBuildLibraryModel.pageSize)
+    }
+    func testNegativeOffsetLoadsTheFirstPageInsteadOfDoingNothing() async throws {
+        let (store, model, folder) = try setup()
+        defer { try? FileManager.default.removeItem(at: folder) }
+        _ = try await store.save(id: UUID(), expectedRevision: nil, title: "Only", payload: Data("{}".utf8))
+        await model.refresh(offset: -5)
+        XCTAssertEqual(model.offset, 0)
+        XCTAssertEqual(model.records.count, 1)
+        XCTAssertNil(model.notice)
+    }
 }

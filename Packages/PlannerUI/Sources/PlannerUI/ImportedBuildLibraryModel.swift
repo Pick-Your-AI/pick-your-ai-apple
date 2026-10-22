@@ -81,8 +81,10 @@ public final class ImportedBuildLibraryModel: ObservableObject {
         notice = nil
     }
     public func cancelPreview() { if !busy { preview = nil } }
-    public func refresh(offset: Int = 0) async {
-        guard !busy, offset >= 0 else { return }
+    public func refresh(offset requested: Int = 0) async {
+        guard !busy else { return }
+        // A stray negative offset loads the first page rather than doing nothing.
+        let offset = max(0, requested)
         busy = true
         defer { busy = false }
         do { try await load(offset: offset) }
@@ -91,7 +93,13 @@ public final class ImportedBuildLibraryModel: ObservableObject {
     private func load(offset: Int) async throws {
         let page = try await store.list(limit: Self.pageSize, offset: offset)
         records = page.records; unreadableCount = page.unreadableCount; self.offset = offset
-        hasNext = page.records.count + page.unreadableCount == Self.pageSize
+        let rows = page.records.count + page.unreadableCount
+        if rows < Self.pageSize { hasNext = false }
+        else {
+            // A full page may be the last one; look ahead one row instead of guessing.
+            let following = try await store.list(limit: 1, offset: offset + Self.pageSize)
+            hasNext = following.records.count + following.unreadableCount > 0
+        }
     }
     /// Every confirmation creates a new wire ID and a separate local row. Source IDs
     /// and claimed owner references never become update/authorization targets.

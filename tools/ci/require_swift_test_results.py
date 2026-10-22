@@ -282,8 +282,9 @@ PROFILES["component-comparison-inspection-ui"] = (44, {
 
 # Files intake and asynchronous startup add all 15 original methods to the
 # complete editor/comparison inventory. Keep the earlier 44-case profile bound
-# to its original source; the combined receiver must execute every class.
-PROFILES["local-libraries-comparison-ui"] = (59, {
+# to its original source; the combined receiver must execute every class. The
+# review-correction commit adds two both-stores-failed startup retry cases and two pagination cases (63).
+PROFILES["local-libraries-comparison-ui"] = (63, {
     **PROFILES["component-comparison-inspection-ui"][1],
     "PlannerUITests.ImportedBuildLibraryTests": (
         "testPreviewAndCancelNeverWriteStorage",
@@ -293,6 +294,8 @@ PROFILES["local-libraries-comparison-ui"] = (59, {
         "testInvalidAndOversizedFilesCannotCreateRows",
         "testValidLocalFileCanBePreviewedWithoutImport",
         "testUnsupportedStoredFormatIsPreserved",
+        "testExactlyFullLastPageHasNoNextAndOnlyARealNextPageDoes",
+        "testNegativeOffsetLoadsTheFirstPageInsteadOfDoingNothing",
     ),
     "PlannerUITests.LocalLibraryStartupTests": (
         "testMainActorProcessesEditorActionWhileStartupOpenerIsBlocked",
@@ -305,6 +308,8 @@ PROFILES["local-libraries-comparison-ui"] = (59, {
     "PlannerUITests.LocalLibraryStoresTests": (
         "testCorruptImportedLibraryDoesNotHideSavedNotesOrHistory",
         "testCorruptNotesDoNotHideExistingImportedLibrary",
+        "testBothLibrariesFailingIsRetryableErrorAndPreservesBytes",
+        "testStartupRetriesAfterBothLibrariesFailedToOpen",
     ),
 })
 

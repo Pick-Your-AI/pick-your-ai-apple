@@ -477,6 +477,12 @@ and [Task cancellation](https://developer.apple.com/documentation/swift/task).
 
 ## Files import and reviewed export
 
+Boundary exception: the version-1 `ImportedBuildRecord` storage envelope remains in
+PlannerUI rather than PlannerData. It validates payloads through `BuildTransfer`, and
+PlannerTransfer already depends on PlannerData (tests) while PlannerData must not
+depend on Transfer; moving it would add a package cycle or require duplicating
+validation. A future shared storage-format module should own it and its migrations.
+
 The Imported builds screen uses a separate `imported-builds.sqlite` database in the
 same protected Application Support directory. It never treats a canonical build as
 notes-editor payload or converts an incomplete note into a valid snapshot. A local
@@ -486,7 +492,13 @@ Each library opens independently. If either database is corrupt or unsupported,
 only that tab reports an unavailable library; the other tab remains usable. Two
 regression tests corrupt each database in turn and verify that the healthy database
 still reopens its saved records (including note history) and corrupt bytes remain
-unchanged. These tests exercise real SQLite initialization, not mocked success.
+unchanged. If both databases fail to open (for example before first unlock) startup
+publishes the retryable unavailable state instead of a permanent ready pair of missing
+libraries, so a later scene appearance retries; two further tests cover that case and
+byte preservation. These tests exercise real SQLite initialization, not mocked success.
+No diagnostic is emitted for the swallowed open error because the repository has no
+logging pattern yet; distinguishing corruption, a locked device and an unsupported
+schema in the field is deferred.
 
 The system Files picker supplies one JSON URL. Security-scoped access lasts only for
 a bounded background read (512 KiB actual-byte maximum, checked independently of
@@ -504,10 +516,11 @@ fixture label across persistence and re-export via the existing web envelope;
 its original source revision is untrusted metadata, not authority. Bare/unmarked
 imports remain visibly unqualified, never presented as production data.
 
-Seven controlled model tests cover preview/cancel without writes, repeated fresh-ID
+Nine controlled model tests cover preview/cancel without writes, repeated fresh-ID
 forks and durable reopen, fixture-label preservation, explicit alias/projection,
 invalid/oversized files and directories, bounded local-file preview, and preservation
-of future stored formats. The bundled synthetic fixture is copied unchanged from
+of future stored formats, and exact-boundary pagination (an exactly full last page
+does not offer a next page; a negative offset loads the first page). The bundled synthetic fixture is copied unchanged from
 PlannerTransfer/Tests/PlannerTransferTests/Fixtures/build.json (its source manifest
 remains authoritative); test projection explicitly removes private fixture settings.
 Hosted exact-head compilation/tests are required. Actual Files-provider interactions,
