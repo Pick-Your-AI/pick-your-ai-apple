@@ -72,6 +72,12 @@ links Core and Catalog; its test target additionally links Data. PlannerUI depen
 on PlannerData, PlannerCore, PlannerCatalog and PlannerTransfer.
 The Core and UI jobs both execute EvidenceHarness, which explicitly links
 PlannerUI and PlannerCore and therefore includes all five package trees.
+This widens the module graph relative to the [platform ADR](../decisions/issue-22-platform.md),
+which states that App depends on Core and Data and Data depends on Core: PlannerUI
+now also links the transfer and schema layer (UI to Transfer to Core and Catalog) so
+its comparison model can consume validated catalog items. This note records the
+dependency for CI allocation only; the ADR is not amended and no new product
+layering decision is made here.
 The UI job's App build also links PlannerUI and its complete dependency closure.
 The Core package itself and Catalog declare no sibling package dependencies. A future
 test that reads another package's fixture without changing `Package.swift` still
@@ -424,9 +430,11 @@ mutation controls, intentional failing Swift case and semantic mutation command
 are retained unchanged. The final `macos-core` name therefore cannot succeed
 only because the Core package suites passed while rendering was incomplete.
 
-The logical `macos-core` scope still includes the complete PlannerCore, PlannerUI
-and PlannerData trees. Its selector, 36 regression methods, existing audit pins
-and conservative fallback are unchanged. This is not an input-pin refresh or a
+The logical `macos-core` scope includes the complete PlannerCore, PlannerUI,
+PlannerData, PlannerCatalog and PlannerTransfer trees (the five-tree closure in the
+table above; this refresh widened the original three-tree set). Its selector now
+has 38 regression methods, the original 36 plus the two added with the widened
+closure; the original audit-pin mechanism and conservative fallback are unchanged. This is not an input-pin refresh or a
 new skip permission. The workflow change itself is outside the audited package
 roots and requires native work. The retained surrounding-input audit pins an
 older Core workflow; package-only comparisons therefore remain conservative
