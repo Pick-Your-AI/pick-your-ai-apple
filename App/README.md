@@ -144,7 +144,7 @@ The workflow now runs two separately required jobs from the same event checkout:
 | Job | Required work and original artifact |
 | --- | --- |
 | `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all six real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
-| `native-simulator` | Xcode-pin, smoke-runner and SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
+| `native-simulator` | Xcode-pin, smoke-runner and SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 63 model methods required by the `local-libraries-comparison-ui` profile, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
 
 Each native job uses its own fresh standard `macos-15-intel` host and retains the
 same 20-minute job limit. The rendering command, source and qualifier are moved
@@ -495,7 +495,10 @@ still reopens its saved records (including note history) and corrupt bytes remai
 unchanged. If both databases fail to open (for example before first unlock) startup
 publishes the retryable unavailable state instead of a permanent ready pair of missing
 libraries, so a later scene appearance retries; two further tests cover that case and
-byte preservation. These tests exercise real SQLite initialization, not mocked success.
+byte preservation. Known limitation: the app has no Retry control and a cancelled
+startup stays in the loading state, so in practice "retryable" currently means the
+scene must reappear (in practice, the app must be relaunched) before a failed open is
+attempted again. No UI was added for this. These tests exercise real SQLite initialization, not mocked success.
 No diagnostic is emitted for the swallowed open error because the repository has no
 logging pattern yet; distinguishing corruption, a locked device and an unsupported
 schema in the field is deferred.
