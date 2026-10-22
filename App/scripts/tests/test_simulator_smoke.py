@@ -1427,13 +1427,19 @@ class SimulatorCommandOwnershipTests(unittest.TestCase):
                                            PARENT_COMMAND_PROGRAM, HEARTBEAT_PROGRAM],
                                           start_new_session=True, stdout=subprocess.PIPE,
                                           stderr=subprocess.PIPE, text=True)
-                stdout, stderr = driver.communicate(timeout=8)
+                # Generous wall-clock cap only prevents a wedged driver from hanging
+                # the suite; the behavioral bound is the elapsed_seconds assertion.
+                stdout, stderr = driver.communicate(timeout=30)
                 self.assertEqual(driver.returncode, 0, stderr)
                 result = json.loads(stdout)
                 parent = json.loads((folder / "parent.json").read_text())
                 # Signal authority is limited to the fixture's own new session.
-                self.assertIn(parent["pgid"], (driver.pid, parent["pid"]))
+                # start_new_session makes the command its own group and session
+                # leader. Inheriting the driver's group (driver.pid) would be a
+                # lost-isolation regression and must not satisfy this check.
+                self.assertEqual(parent["pgid"], parent["pid"])
                 self.assertEqual(parent["sid"], parent["pgid"])
+                self.assertNotEqual(parent["pgid"], driver.pid)
                 self.assertNotEqual(parent["pgid"], sentinel.pid)
                 time.sleep(0.10)
                 first = self.heartbeat(folder / "child.jsonl")
