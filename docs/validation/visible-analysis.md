@@ -30,8 +30,24 @@ projects the expected tuple from a validated selected snapshot through public
 transfer APIs. The build ID and revision are wire identities, separate from a
 local draft row's UUID, revision or title. Required catalog, ruleset and graph
 pins are retained exactly. Positive integral revisions must be represented
-without rounding. Optional pricebook identity is outside the frozen evaluation
-report's input tuple, so it is not added to that tuple.
+without rounding. **Known limit:** the frozen-v1 report wire (`EvaluationReport`,
+strict 14-key contract) carries exactly those five input pins, so Core's report
+identity cannot represent the optional `pricebook_id` lock. Builds that differ
+only in `pricebook_id` therefore share one analysis identity, and a retained
+report can render current for either; the pricebook is not an input the frozen-v1
+evaluation report claims to depend on, and pricing currentness is outside this
+component. The build schema forbids other lock keys; if one is ever admitted, the
+projection returns nil (unavailable) rather than dropping it. A test records the
+pricebook limit explicitly; it is not desired behavior for future governed pins.
+
+Currentness is enforced by two checks, not three: the view's visible identity must
+equal the model's selection and the request identity, and Core's typed `receive`
+requires the report's own tuple to equal the request identity before `.current`
+exists. The model does not re-check the report against the visible identity.
+
+Contract for #391: `select` is a no-op for identical wire pins, so a caller that
+changes local row ownership without changing wire pins must call `clear()` first.
+The model fences wire identity only, not local ownership.
 
 [`EvaluationAnalysisView`](../../Packages/PlannerUI/Sources/PlannerUI/EvaluationAnalysisView.swift)
 requires the containing view's currently visible identity on each render. It

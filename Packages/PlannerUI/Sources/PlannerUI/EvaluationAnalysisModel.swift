@@ -37,8 +37,9 @@ public final class EvaluationAnalysisModel {
         switch state {
         case .pending(let request) where request.identity == visibleIdentity:
             return .pending
-        case .current(let request, let report)
-            where request.identity == visibleIdentity && report.analysisIdentity == visibleIdentity:
+        // Report-to-request agreement is enforced once, by Core's typed receive
+        // overload, before `.current` can be assigned. It is not re-checked here.
+        case .current(let request, let report) where request.identity == visibleIdentity:
             return .current(report)
         case .unavailable(let identity, let reason) where identity == visibleIdentity:
             return .unavailable(reason)
@@ -50,6 +51,9 @@ public final class EvaluationAnalysisModel {
     /// Changing selection revokes visible analysis before the first actor hop.
     /// Re-selecting the same immutable wire inputs preserves their current state.
     /// Clear first when switching local owners/rows with otherwise identical pins.
+    /// Contract for callers (#391): this model fences only wire identity, not local
+    /// row ownership, so selecting identical wire pins for a different row is a
+    /// no-op and the caller must call `clear()` first when ownership changes.
     public func select(_ identity: AnalysisIdentity?) {
         guard identity != selectedIdentity else { return }
         selectedIdentity = identity

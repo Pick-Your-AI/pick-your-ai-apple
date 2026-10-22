@@ -321,7 +321,8 @@ final class EvaluationAnalysisModelTests: XCTestCase {
         let before = try snapshot.encoded()
         XCTAssertEqual(snapshot.evaluationAnalysisIdentity, identity())
         XCTAssertEqual(try snapshot.encoded(), before)
-        // Optional pricebook changes are not evaluation-report input fields.
+        // DOCUMENTED LIMIT, not desired behavior: the frozen-v1 report wire cannot
+        // carry pricebook_id, so builds differing only in it share one identity.
         // Mutate the admitted exact values without a binary floating-point
         // dictionary round trip changing unrelated fractional fixture tokens.
         guard case .object(var build) = snapshot.value,
@@ -330,6 +331,9 @@ final class EvaluationAnalysisModelTests: XCTestCase {
         }
         locks["pricebook_id"] = .string("prices.other")
         build["locks"] = .object(locks)
+        let pricebookOnly = try BuildTransfer.snapshot(fromDraftJSON: JSONEncoder().encode(JSONValue.object(build)))
+        XCTAssertEqual(pricebookOnly.evaluationAnalysisIdentity, snapshot.evaluationAnalysisIdentity,
+                       "Documented limit: pricebook_id is not representable in the report identity")
         build["revision"] = .number(7)
         let changed = try BuildTransfer.snapshot(fromDraftJSON: JSONEncoder().encode(JSONValue.object(build)))
         XCTAssertEqual(changed.evaluationAnalysisIdentity, identity(revision: 7))
