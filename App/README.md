@@ -143,8 +143,8 @@ The workflow now runs two separately required jobs from the same event checkout:
 
 | Job | Required work and original artifact |
 | --- | --- |
-| `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all four real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
-| `native-simulator` | Eight Xcode-pin, 32 smoke-runner and 17 SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
+| `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all six real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
+| `native-simulator` | Xcode-pin, smoke-runner and SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
 
 Each native job uses its own fresh standard `macos-15-intel` host and retains the
 same 20-minute job limit. The rendering command, source and qualifier are moved
@@ -437,7 +437,6 @@ The native simulator launch job now reuses these pins and verifier for its Debug
 product; the separate Release-product lane does not supply its required launch
 or cleanup results.
 
-
 ## Asynchronous local startup
 
 The #86/#29 startup correction builds on the independently available libraries in
@@ -514,3 +513,38 @@ remains authoritative); test projection explicitly removes private fixture setti
 Hosted exact-head compilation/tests are required. Actual Files-provider interactions,
 accessibility, complete cross-client UI round trips, process interruption and physical
 device/privacy receiving qualification remain unverified. Partial #82/#84/#102 only.
+
+## Launch observation failure boundary
+
+The `before-launch` and `launch-failed` snapshots use the same guarded
+`observe_runtime` path as boot and installation. A collector exception or an
+unavailable observation output must not prevent the single launch attempt,
+replace its original failure, or skip its two bounded launch diagnostics. The
+existing owned shutdown/delete cleanup still applies. Commands, destinations,
+deadlines, runtime selection and successful-launch requirements are unchanged.
+
+A controlled Python probe on accepted source `0e289d81428068a0a3196cde064fda536c71691b`
+preserved two normal controls and demonstrated four violations: collector and
+output failures before launch prevented the attempt, and those failures after a
+launch timeout replaced its exact exception and skipped diagnostics. These are
+synthetic exception-ordering observations, not a cause assigned to any historical
+macOS simulator failure. Four new portable regression methods cover both device
+families, exact original failure identity, both diagnostic commands, owned
+cleanup, redaction and unchanged deadlines. All 32 earlier smoke test methods
+remain unchanged. Run the complete focused suite with
+`python3 -m unittest discover -s App/scripts/tests -p 'test_simulator_smoke.py' -v`.
+Actual changed-runner native qualification remains separate.
+
+Captured command text replaces undecodable bytes so a malformed diagnostic
+stream cannot erase a successful creation UUID, hide the actual exit status, or
+interrupt owned cleanup. These logs contain decoded text with replacement
+characters; they are not byte-exact raw process output. Returned UUID and
+inventory text still pass the existing parsers, nonzero statuses still fail,
+and unsuccessful deletion still prevents a successful smoke result.
+
+Four additional portable methods use real Python children to cover success,
+nonzero exits, valid creation output with malformed stderr, a real launch
+timeout followed by both owned cleanup attempts, and a failed deletion. All 43
+preceding method bodies remain unchanged. These controlled child processes
+demonstrate exception ordering; they do not assign a cause to any historical
+simulator failure or establish native recovery.

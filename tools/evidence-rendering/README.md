@@ -8,9 +8,9 @@ Planner editor, open a `DraftStore`, contact a service or implement another
 evidence projection. The application and UI-test target use local packages only.
 
 `EvidenceRenderingTests` runs in the separate `PlannerEvidenceUITests` process.
-Its five methods preserve the original four checks and add date presentation:
+Its six methods preserve the original checks and add date and explanatory-copy presentation:
 
-- All 28 valid shared payloads render their existing outcome, severity, presence
+- All 32 valid shared payloads render their existing outcome, severity, presence
   and conflict text; other outcome/severity labels remain absent.
 - The already reported pass/ready state stays separate from missing support at
   requested widths 375 and 820 with an accessibility text size. A horizontal
@@ -22,13 +22,17 @@ Its five methods preserve the original four checks and add date presentation:
 - Ten capture-date scenarios change locale, calendar and time-zone environments
   on the same retained view identity. Localized Gregorian labels, exact ISO dates,
   retained source identities and the final correction/recheck state remain visible.
+- Fourteen copy scenarios switch English/German/Arabic on the same card, retain
+  Arabic right-to-left layout, exercise English fallback and return to English
+  with recheck still required. Raw values that resemble copy keys, Markdown or
+  format placeholders remain verbatim at an accessibility text size.
 
 Both native targets copy the same existing
-[37-case resource](../../Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evidence-vectors.json).
+[41-case resource](../../Packages/PlannerUI/Tests/PlannerUITests/Fixtures/evidence-vectors.json).
 The app decodes only IDs, payloads and validity; it does not read `visibleText`.
-Tests send only one of five scenario-group IDs in launch arguments. Expected
+Tests send only one of six scenario-group IDs in launch arguments. Expected
 strings stay in the test process and are never installed in app accessibility
-labels. The original Core tests still execute all 37 decoder cases, including
+labels. The original Core tests still execute all 41 decoder cases, including
 the nine rejections and recovery of the prior report.
 
 The test asserts a foreground app, the selected fixture ID and exact sequence
@@ -50,7 +54,7 @@ only when the window query is empty, before the original error and case-marker
 checks. An existing window with missing or wrong content receives no retry or
 replacement window. A second window query just before selecting the command
 dismisses the menu without creating another window if a window has appeared.
-This fixture setup retains the normal `WindowGroup`, five
+This fixture setup retains the normal `WindowGroup`, six
 separate process launches, exact scenario/position checks and bounded waits.
 
 ## Captured-date presentation under #58
@@ -88,12 +92,61 @@ separate test process. Unlike the original groups, the date sequence retains one
 view identity while changing its inputs and environment.
 
 These are current source-declared obligations. No local Swift or native execution
-is claimed for this addition. The strict current qualifier requires all five
-methods; an earlier four-method receipt cannot qualify it. Actual macOS, iPhone
+is claimed for this addition. The date-only source requires all five
+methods; an earlier four-method receipt cannot qualify it. The current copy
+extension below requires a sixth method. Actual macOS, iPhone
 and iPad results belong to the later configured runs at their exact source pins.
 This bounded date-label work does not close #58, replace #75's separately owned
 analysis/current-response integration, or establish complete copy localization,
 physical-device layout, VoiceOver interaction or the broader screenshot matrix.
+
+## Claim-card explanatory copy under #58
+
+`ClaimEvidenceView` selects its closed explanatory strings from the `PlannerUI`
+resource bundle's `ClaimEvidence.strings` table. English (`en`), German (`de`)
+and Arabic (`ar`) are supported presentation examples for this card. The current
+view locale chooses the language; a locale with any other language uses English.
+This explicit selection supports changing the locale of an existing view and
+does not mutate process-wide preferences or keep a shared translated-string
+cache. A missing resource/key falls back to its English source key.
+
+Only static labels and the existing closed grade/review descriptions are looked
+up. Evidence values never become keys, format strings or Markdown: raw status,
+component/version/snapshot, original ISO date, source, method, inspection receipt
+and independent-support/acceptance references stay verbatim. The existing date
+formatter still owns its localized Gregorian representation; its raw date and
+all Core evidence/grade/recheck semantics are unchanged. This does not localize
+`EvaluationReportView`, implement #75's analysis binding, select app markets,
+or complete #58's theme/plural/unit/VoiceOver matrix.
+
+The package declares English `defaultLocalization` and processes the production
+`Resources` directory, preserving all existing package/target dependencies and
+test fixtures. Apple documents [localized package resources](https://developer.apple.com/documentation/xcode/localizing-package-resources),
+[Bundle string lookup and its explicit fallback value](https://developer.apple.com/documentation/foundation/bundle/localizedstring(forkey:value:table:)),
+[locale language](https://developer.apple.com/documentation/foundation/locale/language-swift.property),
+and [verbatim SwiftUI text](https://developer.apple.com/documentation/swiftui/text/init(verbatim:)).
+Those official pages were read on 2026-10-19. The implementation selects only the
+three fixed `.lproj` directory names, then performs bundle lookup with the English
+key as its fallback; no untrusted evidence string selects a resource.
+
+The sixth native method uses 14 scenarios in one `retained-copy-view`, with
+English-to-German-to-Arabic and later French-fallback/English-recovery transitions.
+It checks all six grades across the selected cases, both availability notices,
+required recheck, literal values, wrong-language residue and Arabic layout under
+an accessibility text size. The test process alone owns expected strings. The
+four original method bodies stay exact. The fifth preserves its ten date cases,
+raw/identity/recheck assertions and method identity; only German/Arabic expected
+explanatory labels are translated and corresponding negatives are added.
+
+Five selected copy scenarios add named, `keepAlways`
+[XCTest screenshot attachments](https://developer.apple.com/documentation/xctest/xctattachment/init(screenshot:))
+to the original `.xcresult`. Each image records the final visible viewport,
+including the current harness case; it is not a stitched full-card capture.
+The existing workflows already retain these bundles. No screenshot has been
+generated or visually accepted during local source preparation. Actual Swift
+compilation, the six methods on macOS/iPhone/iPad and attachment inspection remain
+the new source's configured qualification. Earlier five-method date results stay
+at their own immutable source and cannot qualify this extension.
 
 ## Actual failed predecessor and current qualification
 
@@ -236,8 +289,8 @@ active shared UI-test scheme were checked locally. Actual Xcode project loading,
 Apple SDK compilation and application/test execution remain hosted gates.
 
 The existing native UI job runs all original editor-model methods, then these
-five macOS UI tests before its separate production-app build/launch checks. The
-existing Core job runs these five UI tests on its selected iPhone and iPad,
+six macOS UI tests before its separate production-app build/launch checks. The
+existing Core job runs these six UI tests on its selected iPhone and iPad,
 alongside all original Core and mutation gates. Both retain exact logs and
 `.xcresult` bundles. No extra workflow job, remote task or parallel runner is
 introduced.
@@ -256,7 +309,7 @@ destination, as the checked-in Core workflow does. Require the real command to
 succeed, retain its output, then run
 `python3 tools/conformance/qualify_evidence_rendering.py /path/to/actual-test.log`.
 The qualifier requires exactly one complete `All tests` or `Selected tests`
-session, the explicit `PlannerEvidenceUITests` module and all five unique named
+session, the explicit `PlannerEvidenceUITests` module and all six unique named
 passes with zero failures/skips. The older `PlannerUITests` module, a bare class
 name, duplicate sessions and compile-only logs cannot qualify this host.
 

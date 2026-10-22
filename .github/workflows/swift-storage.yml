@@ -57,11 +57,43 @@ jobs:
       - name: Run storage regression tests
         run: |
           set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/apple-migration"
+          rm -f "$RUNNER_TEMP/apple-migration/macos.json" "$RUNNER_TEMP/apple-migration/iphone.json" "$RUNNER_TEMP/apple-migration/ipad.json"
           swift test --package-path Packages/PlannerData --scratch-path .build-storage -Xswiftc -warnings-as-errors 2>&1 | tee storage-tests.log
+          python3 tools/conformance/consumer_receipts.py migration \
+            --log storage-tests.log --exit-code 0 --output "$RUNNER_TEMP/apple-migration/macos.json"
+          for method in \
+            testAdapterReceivesOnlyCommittedExactAttempt \
+            testAttemptCommitFailureNeverInvokesAdapter \
+            testConfirmedAttemptAllowsExplicitSameBuildSuccessor \
+            testLostAcknowledgementStaysUncertainAcrossReopenWithoutResend \
+            testCancellationBeforeAttemptLeavesPendingWithoutAdapterCall \
+            testCancellationDuringAttemptCommitNeverInvokesAdapter \
+            testCooperativeCancellationAfterHandoffRecordsUncertainty \
+            testKnownConfirmationIsRecordedAfterTaskCancellation \
+            testDeactivationDuringAdapterWaitRejectsOldOutcome \
+            testSwitchAwayAndBackCannotReviveSuspendedAdapter \
+            testConcurrentPerformOfSameOperationInvokesAdapterOnlyOnce \
+            testHeldBuildBlocksItsSuccessorButNotAnotherBuild \
+            testValidatedConflictKeepsIntentAndBlocksFollower \
+            testValidatedInvalidKeepsIntentAndBlocksFollower \
+            testOutcomeCommitFailurePropagatesWithoutResend; do
+            grep -E "Test Case .*PendingBuildWriteDispatcherTests.*${method}([^[:alnum:]_]).* passed" "$GITHUB_WORKSPACE/storage-tests.log"
+          done
+          grep -E 'Executed 15 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-tests.log"
+          grep -E 'Executed 85 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-tests.log"
+      - name: Test pending-write replay guards
+        run: |
+          set -euo pipefail
+          python3 tools/storage/pending_write_replay.py --self-test 2>&1 | tee storage-pending-replay-guards.log
       - name: Replay actual process termination during write and migration
         run: |
           set -euo pipefail
           python3 tools/storage/crash_replay.py .build-storage/debug/DraftCrashProbe | tee storage-crash.log
+      - name: Replay actual pending-write commit interruptions
+        run: |
+          set -euo pipefail
+          python3 tools/storage/pending_write_replay.py .build-storage/debug/PendingWriteCrashProbe | tee storage-pending-crash.log
       - name: Compile library for iOS Simulator without signing
         working-directory: Packages/PlannerData
         run: |
@@ -95,9 +127,38 @@ jobs:
               -derivedDataPath /tmp/planner-data-simulator-tests \
               -resultBundlePath "$GITHUB_WORKSPACE/storage-$label.xcresult" \
               CODE_SIGNING_ALLOWED=NO 2>&1 | tee "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            # Require all 31 draft, 35 pending-write, 15 dispatcher and four migration methods,
+            # including future-history/WAL/journal cases and scoped observations.
+            python3 "$GITHUB_WORKSPACE/tools/conformance/consumer_receipts.py" migration \
+              --log "$GITHUB_WORKSPACE/storage-$label-tests.log" --exit-code 0 \
+              --output "$RUNNER_TEMP/apple-migration/$label.json"
             grep -E 'Test Case .*DraftStoreTests.*testInterruptedMigrationRollsBackSchemaThenRecovers.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Test Case .*DraftStoreTests.*testRestoreRejectsFutureHistoryWithoutChangingReadableDrafts.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
             grep -E 'Executed 31 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Test Case .*PendingBuildWriteStoreTests.*testReopenRecoversCommittedAttemptAsUncertainWithoutResend.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Test Case .*PendingBuildWriteStoreTests.*testFailedActivationCommitPreservesGenerationAndAttempt.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Test Case .*PendingBuildWriteStoreTests.*testActualSQLiteFullRetainsQueueThenUnconstrainedReopenRecovers.* passed' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Executed 35 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            for method in \
+              testAdapterReceivesOnlyCommittedExactAttempt \
+              testAttemptCommitFailureNeverInvokesAdapter \
+              testConfirmedAttemptAllowsExplicitSameBuildSuccessor \
+              testLostAcknowledgementStaysUncertainAcrossReopenWithoutResend \
+              testCancellationBeforeAttemptLeavesPendingWithoutAdapterCall \
+              testCancellationDuringAttemptCommitNeverInvokesAdapter \
+              testCooperativeCancellationAfterHandoffRecordsUncertainty \
+              testKnownConfirmationIsRecordedAfterTaskCancellation \
+              testDeactivationDuringAdapterWaitRejectsOldOutcome \
+              testSwitchAwayAndBackCannotReviveSuspendedAdapter \
+              testConcurrentPerformOfSameOperationInvokesAdapterOnlyOnce \
+              testHeldBuildBlocksItsSuccessorButNotAnotherBuild \
+              testValidatedConflictKeepsIntentAndBlocksFollower \
+              testValidatedInvalidKeepsIntentAndBlocksFollower \
+              testOutcomeCommitFailurePropagatesWithoutResend; do
+              grep -E "Test Case .*PendingBuildWriteDispatcherTests.*${method}([^[:alnum:]_]).* passed" "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            done
+            grep -E 'Executed 15 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
+            grep -E 'Executed 85 tests, with 0 failures' "$GITHUB_WORKSPACE/storage-$label-tests.log"
           done < "$GITHUB_WORKSPACE/storage-simulator-selection.tsv"
       - name: Retain storage evidence
         if: always()
@@ -109,5 +170,6 @@ jobs:
             storage-simulator-inventory.json
             storage-simulator-selection.tsv
             storage-*.xcresult
+            ${{ runner.temp }}/apple-migration/
           if-no-files-found: error
           retention-days: 14

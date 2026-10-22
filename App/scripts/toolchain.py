@@ -5,6 +5,7 @@ import json
 import os
 from pathlib import Path
 import re
+import stat
 import subprocess
 import sys
 
@@ -15,12 +16,46 @@ class SetupError(Exception):
     pass
 
 
+def read_bounded(path, maximum_bytes, oversized_message):
+    """Read only the permitted input plus one byte needed to detect overflow."""
+    def open_regular_file(name, flags):
+        # A FIFO must not wait for a writer before its opened type is checked.
+        descriptor = os.open(name, flags | getattr(os, "O_NONBLOCK", 0))
+        try:
+            if not stat.S_ISREG(os.fstat(descriptor).st_mode):
+                raise ValueError("input must be a regular file")
+        except BaseException:
+            os.close(descriptor)
+            raise
+        return descriptor
+
+    with open(path, "rb", opener=open_regular_file) as stream:
+        data = stream.read(maximum_bytes + 1)
+    if len(data) > maximum_bytes:
+        raise ValueError(oversized_message)
+    return data
+
+
+def parse_pin_json(data):
+    """Decode pin JSON without discarding ambiguous or non-JSON input."""
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError("pin JSON contains a duplicate object key")
+            result[key] = value
+        return result
+
+    def invalid_constant(_):
+        raise ValueError("pin JSON contains a non-JSON number")
+
+    return json.loads(data, object_pairs_hook=unique_object, parse_constant=invalid_constant)
+
+
 def load_pin(path):
     try:
-        data = path.read_bytes()
-        if len(data) > 4096:
-            raise ValueError("pin file exceeds 4096 bytes")
-        pin = json.loads(data)
+        data = read_bounded(path, 4096, "pin file exceeds 4096 bytes")
+        pin = parse_pin_json(data)
         if not isinstance(pin, dict) or set(pin) != {"developerDirectory", "xcodeVersion", "xcodeBuildVersion"}:
             raise ValueError("expected exactly the documented pin fields")
         if any(not isinstance(value, str) or not value or any(ord(c) < 32 or ord(c) == 127 for c in value)

@@ -133,6 +133,24 @@ The [CI workflow](../../.github/workflows/swift-storage.yml) repeats macOS tests
 crash replay and an unsigned iOS Simulator SDK compile. Compilation is distinct
 from running a UI, simulator lifecycle tests or physical-device qualification.
 
+The [#37 conformance and migration record](../PlannerConformance/README.md)
+adds six pinned, language-neutral descriptions of Apple historical storage and
+four test methods. Its archived `08e54247` preparation preserved the then-current
+25 methods and production implementation; that original 29-method execution
+remains a historical receipt. The later `04d44920` preparation preserved the
+accepted #298 future-history restoration guard and executed 26 accepted methods
+plus the four migration methods; that 30-method receipt is also historical.
+The current preparation preserves that guard and all five accepted #306 WAL and
+hot-journal methods, the 35 accepted #382 pending-write store methods below,
+and all 15 accepted pending-write dispatcher methods. The exact gate requires
+31 draft, 35 pending-write store, 15 dispatcher and four migration methods
+(85 total), with 20 exact per-fixture observations on macOS and both selected
+simulators.
+These cover every migration interruption, retained unsupported databases,
+separate compatible-backup recovery and appended restoration history. Local
+storage versions remain distinct from wire contract versions. Actual local
+preparation and pending native receiving results are recorded separately there.
+
 ## Acceptance boundaries
 
 | Issue | Executed library behavior | Remaining issue-specific work |
@@ -147,3 +165,150 @@ Other rows remain partial criteria results; issue closure follows its exact rece
 independent review, named prerequisites and signed main integration. See the [all-issue acceptance map](../../docs/acceptance/README.md) for exact
 criteria and remaining executable work. Product/domain receiving acceptance is not
 fabricated; it does not prevent independently testing this implementation.
+
+## Durable pending build writes — #89 client boundary
+
+`PendingBuildWriteStore` adds a separate local SQLite queue for immutable write
+intents. It implements the client persistence portion of
+[Apple #89](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/89), under the
+[accepted service decision](../../docs/decisions/issue-23-services.md). It makes no
+network request, issues no credential, supplies no service origin and does not
+activate a remote lifecycle in the app. The frozen v1 API requires an
+`Idempotency-Key` for create and update, plus the exact quoted current revision in
+`If-Match` for update. The governed service adapter remains responsible for
+BuildSnapshot validity, the candidate's next revision, credentials, object
+authority and validated response interpretation.
+
+An intent snapshots the operation ID, method, build ID, stable key, optional
+precondition and body bytes. Caller-owned backing storage and later mutations of
+returned `Data` cannot change the snapshot. All identifier, key and partition
+comparisons use UTF-8 bytes, including Swift value equality and SQLite BLOB keys.
+Composed and decomposed Unicode spellings remain different identities. The queue
+never normalizes a key, reparses and serializes a body, or advances a precondition.
+For this client, opaque labels and keys must be nonempty UTF-8, at most 1024 bytes,
+without ASCII control characters. Update preconditions admit exact quoted positive
+ASCII decimal revisions without leading zeroes; create admits no precondition.
+These admission bounds do not extend or replace the frozen service contract.
+
+The environment/authority partition is an opaque, noncredential isolation label
+supplied by the trusted local lifecycle adapter. It is not proof of authentication
+or permission to access a remote build. The app must provide its own protected
+queue directory and coordinate account changes and file lifecycle. Use a separate
+file from `DraftStore`; a distinct application ID and exact schema prevent a draft
+or unrelated database from being adopted as a queue.
+
+### Sessions and durable transitions
+
+Opening a handle does not activate a partition or invalidate another handle's
+attempt. Explicit `activate` commits a fresh persisted generation and changes all
+older attempting rows to uncertain in the same transaction. A store-issued token
+also binds the issuing instance. Returning to an earlier partition does not revive
+an old token. Reads check the active generation and load private rows in one SQLite
+snapshot. Write operations combine that check with their decision under
+`BEGIN IMMEDIATE`; actor isolation alone is not the cross-handle lock.
+
+| Operation | Durable result |
+| --- | --- |
+| `enqueue` | Commits a pending immutable intent before returning it. An identical operation/key and partition returns the existing record, even at capacity. Reuse with any different intent or partition fails without exposing another partition's payload. |
+| `beginAttempt` | Commits pending → attempting with a fresh attempt ID before handing the intent to a future adapter. Every earlier unresolved operation for the same partition/build blocks it; another build can proceed independently. |
+| `recordOutcome` | A current matching callback can record adapter-confirmed, conflict, invalid or uncertain. Late, foreign and duplicate callbacks return false without rewriting data or a newer state. The queue does not derive confirmation from a status code or current-head GET. |
+| `activate` / `deactivate` | Supersedes the active generation and conservatively retains any interrupted attempt as uncertain. A failed commit retains the previous generation and attempts. |
+
+Every transition runs synchronously inside its SQLite transaction. No `await`,
+network call or cancellation suspension occurs between validation and commit.
+SQLite DELETE journal mode, FULL synchronous writes and checked final-close WAL
+checkpoint suppression follow the existing draft storage boundary. Unknown
+versions, foreign schemas, invalid SQLite files and unreadable rows are retained.
+An unreadable row blocks the whole queue operation; it cannot disappear from
+predecessor checks through best-effort decoding. The transactional schema guard
+remains in place. Ordinary hot-journal recovery may restore database pages and
+remove the journal before schema admission; a rejected already-unsupported or
+foreign WAL database retains its main and WAL bytes, with no claim that shared
+memory reader marks stay unchanged.
+
+There is deliberately no uncertain → pending transition, automatic resend,
+expiry, receipt lookup, deletion or eviction in this increment. After an unknown
+acknowledgement, the immutable intent remains available for the separately accepted
+reconciliation policy. A latest-build response alone cannot establish which
+operation succeeded. The queue cannot revoke bytes already handed to a caller or
+cancel an external request: a future transport adapter must coordinate dispatch,
+authority changes, cancellation and server-side authorization. No remote success,
+idempotency receipt lifetime or replay-safe retention period is inferred here.
+
+Default growth bounds are 256 retained operations and 16 MiB of body bytes, with a
+1 MiB per-body bound. Explicit caller limits may allow at most 4096 operations and
+64 MiB total. All retained states and partitions count; existing records above a
+newly lowered growth limit remain readable. Confirmed records still reserve their
+operation IDs and keys. These are client resource limits, not a remote TTL. A
+future governed maintenance policy is required before removing records or reusing
+identities; this API never silently discards an intent to create space.
+
+### Queue validation
+
+The new suite declares 35 queue methods in addition to the 31 unchanged draft
+methods. It covers exact byte identity and copying, duplicate and capacity rules,
+cross-handle/ABA sessions, ordering and outcomes, failed commits, actual
+`SQLITE_FULL`, foreign/corrupt storage retention, supported WAL/hot-journal recovery
+and rejection of committed future metadata held only in an orphaned WAL. Those
+method declarations are an inventory, not evidence that a particular environment
+executed them. The hosted workflow requires both suites on macOS, compact iPhone
+and iPad, and retains the unsigned Simulator SDK compile and original draft replay.
+
+```sh
+python3 tools/storage/pending_write_replay.py --self-test
+swift test --package-path Packages/PlannerData --scratch-path .build-storage -Xswiftc -warnings-as-errors
+python3 tools/storage/crash_replay.py .build-storage/debug/DraftCrashProbe
+python3 tools/storage/pending_write_replay.py .build-storage/debug/PendingWriteCrashProbe
+```
+
+The pending-write driver requires six actual `_exit(73)` cuts, before and after
+the enqueue, attempt and outcome commits. Fresh processes and independent SQLite
+reads check state, exact intent and attempt bytes, conservative recovery, and an
+unchanged separate draft/history file. Each child has a 60-second deadline; a
+timeout stops the sequence after the direct child is killed and reaped. Explicit
+runtime checks also remain active under optimized Python. The eleven portable
+driver guard methods use synthetic Python probes and test those checks, including
+wrong exits, changed bytes/states, malformed metadata, missing output and child
+timeout cleanup. They do not execute Swift or establish queue/native durability.
+The synthetic confirmed-outcome cut tests a local commit only, not a real service
+write or successful authentication.
+
+Primary design references checked 2026-10-19:
+[SQLite transaction and failure semantics](https://www.sqlite.org/lang_transaction.html),
+[copied bindings](https://www.sqlite.org/c3ref/bind_blob.html),
+[result value lifetimes](https://www.sqlite.org/c3ref/column_blob.html),
+[checkpoint-on-close configuration](https://www.sqlite.org/c3ref/c_dbconfig_defensive.html#sqlitedbconfignockptonclose),
+and [Swift actor isolation](https://docs.swift.org/swift-book/documentation/the-swift-programming-language/concurrency/).
+They inform the implementation; source review and actual test output establish
+which behaviors have been verified in each receiving environment.
+
+Whole issue #89 remains open until the accepted remote adapter loses an
+acknowledgement after a successful server write and reconciles without a duplicate
+build or stale overwrite, with independent criterion-specific review. The named
+#46 and #86 outputs, guest/object authority, receipt retention/reconciliation,
+native app integration, physical-device behavior and operating activation retain
+their own owners and evidence gates.
+
+## Caller-supplied pending-write dispatch
+
+`PendingBuildWriteDispatcher` connects one stored intent to one caller-supplied asynchronous adapter invocation. The caller supplies an already active `PendingWriteSession` and calls `perform(operationID:session:using:)`; the helper does not activate a session, drain the queue, implement a network transport, or schedule retries.
+
+The dispatcher awaits the existing durable `beginAttempt` transition before handing the adapter that exact immutable `PendingWriteAttempt`. The body bytes, operation and build identifiers, idempotency key, precondition, partition and attempt identity are passed through without request reconstruction. A failed attempt commit propagates before the adapter can run. Concurrent dispatch of the same operation and a blocked same-build successor retain the store's existing rejection rules; an unrelated build can proceed.
+
+Cancellation and persistence have separate boundaries:
+
+- Cancellation observed before `beginAttempt` leaves the store unchanged and does not invoke the adapter.
+- Cancellation observed at the post-commit check, before adapter handoff, submits `.uncertain` to the store without invoking the adapter. There is no safe-abort transition back to pending.
+- Once the adapter has been invoked, an error, including cooperative cancellation, submits `.uncertain` to the store. The dispatcher never invokes that adapter again automatically.
+- A validated outcome returned by the adapter is retained even if the caller task is already cancelled. There is no later cancellation check that replaces a known outcome with uncertainty.
+- `recordOutcome` runs outside the adapter-error catch. A failed outcome commit propagates; it cannot trigger a second outcome write or be reported as an acknowledgement. An interrupted attempt retains the store's existing recovery-to-uncertain behavior.
+
+`PendingBuildWriteDispatchResult.recorded` reports that the store accepted and persisted the supplied outcome. `notRecorded` reports the store's rejected callback result, which can include retired, foreign or already consumed attempts; it is not remote confirmation. Explicit deactivation or a switch away and back still retires the old generation. Neither this result nor a bare HTTP status or current-head GET proves that a particular request committed.
+
+The adapter is responsible for validating any returned outcome against the exact attempt and the adopted service contract. It also owns actual request dispatch, credentials and cancellation. One adapter invocation is not a guarantee of one wire request or one remote effect. Retiring a session rejects a stale callback but cannot withdraw an immutable request already handed to an adapter; coordination of the final authority check and actual send remains the integrator's responsibility.
+
+An uncertain operation is not resent automatically, including after reopening the store. This helper introduces no operation-status endpoint, remote receipt store, idempotency retention or expiry policy, authentication, or shared service authority. Those service and activation requirements remain separate.
+
+`PendingBuildWriteDispatcherTests` declares 15 focused cases: exact committed-byte handoff; attempt and outcome commit failures; explicit confirmed successors; lost acknowledgement with reopen and no resend; cancellation before, during and after attempt creation; a known response after cancellation; retired and ABA callbacks; concurrent duplicate dispatch; per-build blocking; and validated conflict and invalid outcomes. The lost-acknowledgement fixture is a labelled synthetic observer, not a backend or a production idempotency implementation. Barriers control the asynchronous interleavings without sleeps.
+
+The existing 31 draft-store and 35 pending-write-store test methods remain unchanged. The Storage workflow requires all 15 dispatcher method names to report a pass and checks the 15-case class and 85-case aggregate for the macOS run and each configured compact iPhone and iPad run. Its existing replay commands, toolchain, simulator selection, named draft/queue guards and evidence retention remain intact. Source declarations and configured checks do not replace the corresponding original execution logs and result bundles.

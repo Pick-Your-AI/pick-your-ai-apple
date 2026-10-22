@@ -77,6 +77,9 @@ private struct ScenarioHost: View {
                             .transformEnvironment(\.layoutDirection) { value in
                                 if let environment = scenarios[index].presentationEnvironment { value = environment.layoutDirection }
                             }
+                            .transformEnvironment(\.dynamicTypeSize) { value in
+                                if scenarios[index].useLargeClaimText { value = .accessibility3 }
+                            }
                             .frame(maxWidth: .infinity, alignment: .leading)
                             .padding()
                     }
@@ -98,6 +101,7 @@ private struct Scenario {
     let content: Content
     let presentationEnvironment: PresentationEnvironment?
     let renderIdentity: String
+    let useLargeClaimText: Bool
 
     struct PresentationEnvironment {
         let locale: Locale
@@ -107,11 +111,12 @@ private struct Scenario {
     }
 
     init(id: String, content: Content, presentationEnvironment: PresentationEnvironment? = nil,
-         renderIdentity: String? = nil) {
+         renderIdentity: String? = nil, useLargeClaimText: Bool = false) {
         self.id = id
         self.content = content
         self.presentationEnvironment = presentationEnvironment
         self.renderIdentity = renderIdentity ?? id
+        self.useLargeClaimText = useLargeClaimText
     }
 
     private struct VectorBundle: Decodable {
@@ -136,11 +141,11 @@ private struct Scenario {
                 throw InputError.invalidFixture
             }
             let bundle = try JSONDecoder().decode(VectorBundle.self, from: Data(contentsOf: url))
-            guard bundle.lock["contract_version"] == "1.0.0", bundle.cases.count == 37,
-                  Set(bundle.cases.map(\.id)).count == 37 else { throw InputError.invalidFixture }
+            guard bundle.lock["contract_version"] == "1.0.0", bundle.cases.count == 41,
+                  Set(bundle.cases.map(\.id)).count == 41 else { throw InputError.invalidFixture }
             if group == "shared" {
                 let accepted = bundle.cases.filter(\.valid)
-                guard accepted.count == 28 else { throw InputError.invalidFixture }
+                guard accepted.count == 32 else { throw InputError.invalidFixture }
                 return try accepted.map {
                     Scenario(id: $0.id, content: .report(try EvaluationReport.decode(Data($0.payloadJSON.utf8)),
                                                         width: nil, largeText: false))
@@ -206,6 +211,43 @@ private struct Scenario {
                         calendar: Calendar(identifier: calendar), timeZone: timeZone,
                         layoutDirection: rtl ? .rightToLeft : .leftToRight),
                     renderIdentity: "retained-date-view")
+            }
+        case "copy":
+            // Values deliberately resemble localization keys, Markdown and
+            // format placeholders. They remain typed evidence, never copy keys.
+            let retainedIdentity = try RetainedEvidenceIdentity(componentID: "synthetic.*component*",
+                componentVersion: "1.0.0", catalogSnapshotID: "snapshot.[retained](literal)")
+            let inspected = try SourceInspectionReceipt(sourceReference: "Source checked",
+                inspectionReference: "receipt:**literal**", retrievalMethod: "method:%@")
+            let accepted = try AcceptedIndependentSupport(evidenceReference: "support:[literal]",
+                acceptanceReference: "acceptance:*literal*")
+            guard let timeZone = TimeZone(secondsFromGMT: 0) else { throw InputError.invalidFixture }
+            let inputs: [(String, String, Bool, OriginalVerificationStatus, ClaimSourceAvailability, Bool, EvidenceChangeEvent?)] = [
+                ("copy-en", "en_US", false, .verified, .inspected(inspected), true, nil),
+                ("copy-de", "de_DE", false, .verified, .inspected(inspected), true, nil),
+                ("copy-ar", "ar_EG", true, .verified, .inspected(inspected), true, nil),
+                ("copy-de-missing", "de_DE", false, .verified, .notInspected, false, nil),
+                ("copy-ar-unavailable", "ar_EG", true, .verified, .unavailable, false, nil),
+                ("copy-de-user", "de_DE", false, .userSupplied, .notInspected, false, nil),
+                ("copy-ar-estimated", "ar_EG", true, .estimated, .notInspected, false, nil),
+                ("copy-de-checked", "de_DE", false, .verified, .inspected(inspected), false, nil),
+                ("copy-de-release", "de_DE", false, .verified, .inspected(inspected), true, .newerReleaseAvailable),
+                ("copy-ar-snapshot", "ar_EG", true, .verified, .inspected(inspected), true, .newerSnapshotAvailable),
+                ("copy-de-correction", "de_DE", false, .verified, .inspected(inspected), true, .correction(retainedIdentity)),
+                ("copy-ar-correction", "ar_EG", true, .verified, .inspected(inspected), true, .correction(retainedIdentity)),
+                ("copy-fr-fallback", "fr_FR", false, .verified, .inspected(inspected), true, .correction(retainedIdentity)),
+                ("copy-en-recovery", "en_US", false, .verified, .inspected(inspected), true, .correction(retainedIdentity)),
+            ]
+            return try inputs.map { id, locale, rtl, original, source, independent, event in
+                let base = EvidencePresentation(identity: retainedIdentity, originalVerificationStatus: original,
+                    source: source, independentSupport: independent ? accepted : nil,
+                    freshness: .currentState(captureDate: try EvidenceCaptureDate("2024-01-02")))
+                let presentation = event.map { base.receiving($0) } ?? base
+                return Scenario(id: id, content: .claim(presentation),
+                    presentationEnvironment: PresentationEnvironment(locale: Locale(identifier: locale),
+                        calendar: Calendar(identifier: .gregorian), timeZone: timeZone,
+                        layoutDirection: rtl ? .rightToLeft : .leftToRight),
+                    renderIdentity: "retained-copy-view", useLargeClaimText: true)
             }
         default: throw InputError.unsupportedScenario
         }

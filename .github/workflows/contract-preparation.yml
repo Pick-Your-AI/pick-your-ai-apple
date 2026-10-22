@@ -40,6 +40,10 @@ jobs:
           python -m pip --python "$conformance_env/bin/python" --isolated install --index-url https://pypi.org/simple --require-hashes --only-binary=:all: -r tools/conformance/requirements-lock.txt
           python -m pip --python "$conformance_env/bin/python" --isolated check
           printf 'APPLE_CONFORMANCE_PYTHON=%s\n' "$conformance_env/bin/python" >> "$GITHUB_ENV"
+      - name: Test acceptance-map source preservation and duplicate rejection
+        run: |
+          "$APPLE_CONFORMANCE_PYTHON" -m unittest discover -s tools/acceptance/tests -v
+          "$APPLE_CONFORMANCE_PYTHON" -O -m unittest discover -s tools/acceptance/tests -v
       - name: Run frozen reference, vectors and mutation checks
         run: >-
           "$APPLE_CONFORMANCE_PYTHON" tools/conformance/run.py
@@ -51,6 +55,8 @@ jobs:
         run: '"$APPLE_CONFORMANCE_PYTHON" tools/conformance/raw_core_vectors.py --contract-root .canonical-research/contracts/v1'
       - name: Verify identical decoder and rendered evidence inputs
         run: '"$APPLE_CONFORMANCE_PYTHON" tools/conformance/evidence_vectors.py --contract-root .canonical-research/contracts/v1 --check'
+      - name: Verify the shared wire corpus against the pinned canonical consumer
+        run: '"$APPLE_CONFORMANCE_PYTHON" tools/conformance/cross_client.py --contract-root .canonical-research/contracts/v1 --check'
       - name: Test preparation harness failure and recovery
         env:
           CONTRACT_ROOT: .canonical-research/contracts/v1

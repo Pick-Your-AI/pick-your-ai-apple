@@ -27,10 +27,8 @@ def version(value):
 
 def load_sdk_pin(path):
     try:
-        data = path.read_bytes()
-        if len(data) > 4096:
-            raise ValueError("SDK pin exceeds 4096 bytes")
-        pin = json.loads(data)
+        data = toolchain.read_bounded(path, 4096, "SDK pin exceeds 4096 bytes")
+        pin = toolchain.parse_pin_json(data)
         if not isinstance(pin, dict) or set(pin) != {"sdkVersions", "minimumOSVersion"}:
             raise ValueError("expected exactly sdkVersions and minimumOSVersion")
         sdks = pin["sdkVersions"]
@@ -64,9 +62,8 @@ def inspect_product(app, sdk, xcode_pin, sdk_pin):
     if sdk not in SDK_PLATFORMS:
         raise toolchain.SetupError("Only the pinned iOS device or simulator product can be inspected.")
     try:
-        data = (app / "Info.plist").read_bytes()
-        if len(data) > 1024 * 1024:
-            raise ValueError("built Info.plist exceeds the inspection bound")
+        data = toolchain.read_bounded(
+            app / "Info.plist", 1024 * 1024, "built Info.plist exceeds the inspection bound")
         info = plistlib.loads(data)
         if not isinstance(info, dict):
             raise ValueError("built Info.plist must contain a dictionary")

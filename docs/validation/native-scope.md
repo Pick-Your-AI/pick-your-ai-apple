@@ -67,8 +67,9 @@ objects for the following dependency closure, including test targets:
 
 These are entire package trees, including sources, tests, fixtures, resources,
 tools and metadata. Transfer's durable boundary test imports PlannerData, and
-its synthetic fixture admission tests import Core and Catalog, even though its
-library target does not. PlannerUI depends on PlannerData and PlannerCore.
+its synthetic fixture admission tests import Core and Catalog. Its library target
+links Core and Catalog; its test target additionally links Data. PlannerUI depends
+on PlannerData and PlannerCore.
 The Core and UI jobs both execute EvidenceHarness, which explicitly links
 PlannerUI and PlannerCore and includes PlannerUI's transitive Data dependency.
 The Core package itself and Catalog declare no sibling package dependencies. A future
@@ -377,15 +378,90 @@ assertions, timeouts, permissions, concurrency and current runs are unchanged.
 The correction itself requires all applicable hosted/native gates and independent
 review before ordinary delivery. Whole #30 remains open.
 
+## Independent Core and renderer job budgets
+
+The Core workflow previously scheduled package validation, both complete renderer
+platforms and the later negative/mutation controls serially inside one 40-minute
+native job. A slow renderer therefore consumed time also needed by the remaining
+platform and controls. The [cancelled original job](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/39375393187/job/118478040315)
+remains a cancelled, incomplete execution. Its available diagnostic does not
+establish the cancellation actor or cause. This scheduling change addresses the
+shared budget; it does not reinterpret that original as a complete pass.
+
+The workflow now keeps the existing `macos-core` check name as a final aggregate
+and gives the following native work independent jobs:
+
+| Job | Required work | Job limit |
+| --- | --- | --- |
+| `macos-core-validation` | Existing macOS debug/release Core suites, unsigned Simulator build, both device package suites, intentional-failure proof and semantic mutation checks | 40 minutes |
+| `macos-core-evidence-iphone` | Complete unchanged six-method, 68-scenario evidence renderer and strict receipt qualification on the selected compact iPhone | 40 minutes |
+| `macos-core-evidence-ipad` | Complete unchanged six-method, 68-scenario evidence renderer and strict receipt qualification on the selected iPad | 40 minutes |
+| `macos-core` | Require the scope decision and all three selected results | 5 minutes on Ubuntu |
+
+Each native job depends only on the same scope job. One renderer failure cannot
+skip the other renderer or the Core validation job through a dependency or matrix
+fail-fast rule. The aggregate runs with `always()`: a successful scope result and
+literal `true` require all three native results to be `success`; literal `false`
+requires all three to be `skipped`. A failed scope, missing/invalid decision,
+cancelled or incomplete selected job cannot satisfy the final check. The
+workflow's existing concurrency and cancellation policy is unchanged.
+
+All three native jobs use `macos-15` and the same exact Xcode 16.4 / build 16F6
+and Python 3.12.10 selections. Each renderer selects its one literal platform
+from the closed `iphone`/`ipad` set, requires the installed iOS 18.5 runtime and
+exactly one available original device name, and fails if the selection is
+missing, unsupported or ambiguous. The device names remain iPhone SE (3rd
+generation) and iPad (10th generation); no runtime download or substitute
+destination is introduced. The original 120-second destination wait and
+disabled parallel XCTest execution remain unchanged.
+
+The complete rendering command and strict qualifier are preserved on each
+platform. All six methods and 68 source scenarios remain required; there is no
+new test filter, shortened scan, relaxed assertion, receipt fallback or
+production-view change. The Core package, both package simulator loops, Python
+mutation controls, intentional failing Swift case and semantic mutation command
+are retained unchanged. The final `macos-core` name therefore cannot succeed
+only because the Core package suites passed while rendering was incomplete.
+
+The logical `macos-core` scope still includes the complete PlannerCore, PlannerUI
+and PlannerData trees. Its selector, 36 regression methods, existing audit pins
+and conservative fallback are unchanged. This is not an input-pin refresh or a
+new skip permission. The workflow change itself is outside the audited package
+roots and requires native work. The retained surrounding-input audit pins an
+older Core workflow; package-only comparisons therefore remain conservative
+until a separately reviewed complete input refresh. No package-skip efficiency
+is claimed for this continuation. The separate exact, allowlisted regular
+documentation-only comparison retains its existing skip rule; that branch does
+not consult the package audit pins.
+
+Core evidence retains `swift-core-validation`. The renderer jobs retain distinct
+`swift-core-evidence-iphone` and `swift-core-evidence-ipad` artifacts, each with
+its toolchain identity, complete simulator inventory/selection, full rendering
+log and result bundle. All three uploads retain `always()` and the existing
+14-day retention. A partial artifact is diagnostic evidence, not a qualified
+platform result.
+
+This uses three separately bounded native jobs instead of one: it adds two
+macOS allocations and repeats the harness build on each renderer host. Queue
+availability and elapsed delivery time are not guaranteed by the split. No new
+cancellation or retry call is added. The unchanged workflow concurrency remains
+authoritative for a later source event, including retirement of an older run in
+the same group. The new job graph and complete outputs require their own
+configured execution before delivery;
+the retained original failure and all earlier source-specific receipts remain
+separate. Whole #30 and #37 acceptance are unchanged.
+
 ## Preserved checks and evidence
 
-All existing native job names, steps, commands, assertions, action pins, permissions,
-timeouts, evidence retention and concurrency remain intact. Contract preparation
-continues on the same events, including documentation changes. The scope jobs have
-distinct names and emit their observed decision; a skipped native job is **not**
-reported as an executed Swift test, SDK build or device journey. No required-check
-setting or repository protection is changed. Future branch-protection setup must
-include meaningful preparation/scope checks and retain the native job names.
+The existing scope contexts and final native check names remain present. The Core
+and renderer job placement, additional runner allocations and explicit aggregate
+are described above; their assertions, action pins, read-only permissions and
+evidence retention remain intact. Contract preparation continues on the same
+events, including documentation changes. The scope jobs have distinct names and
+emit their observed decision; a skipped native job is **not** reported as an
+executed Swift test, SDK build or device journey. No required-check setting or
+repository protection is changed. Future branch-protection setup must include
+meaningful preparation/scope checks and retain the final native check names.
 
 The [36 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
 PR test merges and main comparisons, a 3,006-file mixed change, source deletion and

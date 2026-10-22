@@ -1,0 +1,25 @@
+/* Bounded German presentation examples for the claim-evidence card. */
+"Evidence quality:" = "Belegqualität:";
+"Original recorded status:" = "Ursprünglich erfasster Status:";
+"Component:" = "Komponente:";
+"Version:" = "Version:";
+"Retained snapshot:" = "Beibehaltener Snapshot:";
+"Source claim has not been inspected." = "Die Aussage der Quelle wurde noch nicht geprüft.";
+"Source claim is unavailable." = "Die Aussage der Quelle ist nicht verfügbar.";
+"Inspected source:" = "Geprüfte Quelle:";
+"Inspection receipt:" = "Beleg der Quellenprüfung:";
+"Retrieval method:" = "Abrufmethode:";
+"Independent support receipt:" = "Beleg für unabhängige Bestätigung:";
+"Receiving acceptance:" = "Annahme durch die prüfende Stelle:";
+"Facts remain pinned to this version." = "Die Fakten bleiben an diese Version gebunden.";
+"Capture date (Gregorian):" = "Erfassungsdatum (gregorianisch):";
+"Current-state facts as of" = "Fakten zum aktuellen Zustand vom";
+"A newer version is available. The retained selection has not changed." = "Eine neuere Version ist verfügbar. Die beibehaltene Auswahl wurde nicht geändert.";
+"A newer snapshot is available. Review the evidence for this selection." = "Ein neuerer Snapshot ist verfügbar. Prüfen Sie die Belege für diese Auswahl.";
+"Selected evidence changed. A recheck is required." = "Die ausgewählten Belege haben sich geändert. Eine erneute Prüfung ist erforderlich.";
+"Independently verified" = "Unabhängig verifiziert";
+"Source checked" = "Quelle geprüft";
+"User supplied" = "Vom Nutzer bereitgestellt";
+"Estimated" = "Geschätzt";
+"Unverified" = "Nicht verifiziert";
+"Unavailable" = "Nicht verfügbar";

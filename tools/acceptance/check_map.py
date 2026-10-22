@@ -24,6 +24,7 @@ def main():
     data = json.loads((root / 'docs/acceptance/issues.json').read_text())
     records = data['issues']
     numbers = [r['number'] for r in records]
+    check(all(type(n) is int and n > 0 for n in numbers), 'Captured issue numbers must be positive integers')
     check(len(numbers) == len(set(numbers)), 'Duplicate issues')
     check(set(numbers) == set(range(1, 130)), 'Expected baseline issues 1–129; reconcile changed scope explicitly')
     count = 0
@@ -31,12 +32,21 @@ def main():
         n = record['number']
         exact = re.findall(r'^- \[([ xX])\] (.*(?:\n(?!- \[).+)*)', record['acceptance_criteria_markdown'], re.M)
         check(exact, f'#{n}: empty acceptance criteria')
+        check(all(type(r['source_checked']) is bool for r in record['criteria']),
+              f'#{n}: source checkbox states must be booleans')
         check([(r['source_checked'], r['text']) for r in record['criteria']] == [(c.lower() == 'x', t) for c, t in exact], f'#{n}: parsed criteria differ')
         check(record['next_executable_action'] and record['updated_at'] and record['project'], f'#{n}: missing intake/action')
         check(record['criterion_completion_claimed'] is False, f'#{n}: unsupported completion claim')
         count += len(exact)
     if args.source:
-        source = {r['number']: r for r in json.loads(args.source.read_text()) if 'pull_request' not in r}
+        source = {}
+        for original in json.loads(args.source.read_text()):
+            if 'pull_request' in original:
+                continue
+            n = original['number']
+            check(type(n) is int and n > 0, 'Source issue numbers must be positive integers')
+            check(n not in source, f'#{n}: duplicate source issue; refresh paginated export')
+            source[n] = original
         check(set(source) == set(numbers), 'Source issue set changed; refresh map')
         for record in records:
             n = record['number']
