@@ -98,7 +98,7 @@ final class BuildSettingsEditTests: XCTestCase, @unchecked Sendable {
         var values = row["settings"]!.object!
         XCTAssertEqual(values["temperature"], .number(Decimal(string: "0.75")!))
         XCTAssertEqual(values["max_output_tokens"], .number(1024))
-        for key in e.changedFieldNames { values[key] = try settings(original)[key] }
+        for key in e.changedFieldNames where key != "lifecycle" { values[key] = try settings(original)[key] }
         row["settings"] = .object(values); rows[index] = .object(row); restored["selections"] = .array(rows)
         XCTAssertEqual(restored["revision"], .number(2)); XCTAssertEqual(restored["lifecycle"], .string("draft"))
         XCTAssertEqual(restored["updated_at"], .string(later))
@@ -106,7 +106,32 @@ final class BuildSettingsEditTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(.object(restored), original.value)
         XCTAssertEqual(e.original, original); XCTAssertEqual(e.proposed.locks, original.locks)
         XCTAssertEqual(try BuildTransfer.snapshot(fromDraftJSON: e.proposed.encoded()), e.proposed)
-        XCTAssertEqual(e.changedFieldNames, ["temperature", "max_output_tokens"])
+        XCTAssertEqual(e.changedFieldNames, ["temperature", "max_output_tokens", "lifecycle"])
+        XCTAssertEqual(e.lifecycleBefore, "ready"); XCTAssertEqual(e.lifecycleAfter, "draft")
+        XCTAssertTrue(e.lifecycleChanges)
+    }
+
+    func testDeployedAndArchivedBuildsAreRefusedAndEditableLifecyclesAreDemotedVisibly() throws {
+        let schemaValues = try FrozenValidator().schemas["build.schema.json"]!.object!["properties"]!.object!["lifecycle"]!
+            .object!["enum"]!.array!.map { $0.string! }
+        XCTAssertEqual(schemaValues, ["draft", "validated", "ready", "deployed", "archived"])
+        for lifecycle in ["deployed", "archived"] {
+            let original = try build(["lifecycle": .string(lifecycle)])
+            XCTAssertThrowsError(try edit([set("temperature", "0.75")], original: original)) {
+                XCTAssertEqual($0 as? BuildSettingsEditError, .lifecycleNotEditable)
+            }
+            XCTAssertEqual(original.value.object!["lifecycle"], .string(lifecycle))
+            XCTAssertEqual(original.value.object!["revision"], .number(1))
+        }
+        for (lifecycle, demoted) in [("draft", false), ("validated", true), ("ready", true)] {
+            let original = try build(["lifecycle": .string(lifecycle)])
+            let e = try edit([set("temperature", "0.75")], original: original)
+            XCTAssertEqual(e.lifecycleBefore, lifecycle)
+            XCTAssertEqual(e.lifecycleAfter, "draft")
+            XCTAssertEqual(e.lifecycleChanges, demoted)
+            XCTAssertEqual(e.proposed.value.object!["lifecycle"], .string("draft"))
+            XCTAssertEqual(e.changedFieldNames, demoted ? ["temperature", "lifecycle"] : ["temperature"])
+        }
     }
 
     func testObjectiveMoneyPreservesDecimalSpellingAndRequiresFullRecheck() throws {

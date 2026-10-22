@@ -106,6 +106,9 @@ public enum BuildSettingsEditError: Error, Equatable, Sendable {
     case emptyChanges, duplicateField, fieldScopeMismatch, requiredField
     case missingSelection, ambiguousSelectionIdentity, unchangedValues
     case graphMismatch, unsupportedRevision
+    /// The Build's lifecycle does not permit editing in place (deployed or archived).
+    /// Fork it into a new draft through the ordinary import/fork path instead.
+    case lifecycleNotEditable
 }
 
 public enum BuildSettingsImpact: Sendable {
@@ -126,7 +129,15 @@ public struct BuildSettingsEdit: Sendable {
     public let proposed: BuildSnapshot
     public let graph: DependencyGraph
     public let target: BuildSettingsTarget
+    /// Edited setting/objective names in request order, followed by `"lifecycle"`
+    /// when the proposal also demotes the Build's lifecycle to `draft`.
     public let changedFieldNames: [String]
+    /// The Build's lifecycle before, and in the proposal. An edit always proposes
+    /// `draft`: edited settings are not validated, ready or deployed. Both are shown
+    /// so a review can display a lifecycle demotion.
+    public let lifecycleBefore: String
+    public let lifecycleAfter: String
+    public var lifecycleChanges: Bool { lifecycleBefore != lifecycleAfter }
     public let beforeEnvironment: BuildEditEnvironment
     public let afterEnvironment: BuildEditEnvironment
     public let impact: BuildSettingsImpact
@@ -137,6 +148,13 @@ public struct BuildSettingsEdit: Sendable {
         updatedAt: String
     ) throws -> Self {
         guard !changes.isEmpty else { throw BuildSettingsEditError.emptyChanges }
+        // Only not-yet-released builds may be edited in place. A deployed or archived
+        // Build is never resurrected as a draft revision; the caller must fork it.
+        // Draft, validated and ready are demoted to draft below.
+        let lifecycle = build.value.object!["lifecycle"]!.string!
+        guard Self.editableLifecycles.contains(lifecycle) else {
+            throw BuildSettingsEditError.lifecycleNotEditable
+        }
         let locks = build.locks.object!
         guard locks["dependency_graph_id"] == .string(graph.id),
               locks["dependency_graph_revision"] == .number(graph.revision) else {
@@ -181,6 +199,7 @@ public struct BuildSettingsEdit: Sendable {
             }
         }
         guard !changed.isEmpty else { throw BuildSettingsEditError.unchangedValues }
+        if lifecycle != "draft" { changed.append("lifecycle") }
         if let index = selectedIndex {
             var selection = selections[index].object!
             selection["settings"] = .object(values); selections[index] = .object(selection)
@@ -202,6 +221,9 @@ public struct BuildSettingsEdit: Sendable {
                 after: proposed.dependencyContext(mode: after.mode, production: after.production)))
         } else { impact = .objectivesRequireFullRecheck }
         return Self(original: build, proposed: proposed, graph: graph, target: target,
-                    changedFieldNames: changed, beforeEnvironment: before, afterEnvironment: after, impact: impact)
+                    changedFieldNames: changed, lifecycleBefore: lifecycle, lifecycleAfter: "draft",
+                    beforeEnvironment: before, afterEnvironment: after, impact: impact)
     }
+
+    private static let editableLifecycles: Set<String> = ["draft", "validated", "ready"]
 }
