@@ -371,12 +371,15 @@ final class OptionalTierTransitionSessionTests: XCTestCase, @unchecked Sendable 
         catch { XCTAssertEqual(error as? OptionalTierTransitionError, .staleConfirmation) }
     }
 
-    func testPreparationExposesNoSaveableBuildWithoutTheConfirmingSession() async throws {
+    func testOnlyThePresentingSessionsConfirmationYieldsTheProposedBuild() async throws {
         let t = try TierFixtures.transition(enabled: false)
         // Previews stay inspectable through the read-only summary.
         XCTAssertEqual(t.changes.count, 14)
         XCTAssertEqual(t.original.value.object!["revision"], .number(1))
         XCTAssertFalse(t.dependencyPreview.participants.affectedSelectionIDs.isEmpty)
+        // This observes session behavior only. @testable exposes internal members, so
+        // a true API-surface guard (-emit-module-interface / swift-api-digester diff)
+        // is a deferred follow-up; Mirror/dump could also reflect internal storage.
         // Package-internal access is intentionally visible to @testable tests, so
         // compile-level privacy is not asserted. Behaviorally: neither a session
         // that never presented it, a dismissed review, nor a replay yields the build.

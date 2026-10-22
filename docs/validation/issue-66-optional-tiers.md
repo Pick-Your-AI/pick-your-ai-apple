@@ -25,9 +25,12 @@ responsible for displaying the preview, supplying its actual current owner and
 inputs, confirming the action, and saving through its existing revision check.
 
 The source was prepared on accepted `e742379f9a474e632a998f1586515f4cb1280b18`.
-The three-file implementation/test tree is
-`4596d2bdc871a0d40daed94ea52bf6ab4009cd9e`; this is a Git tree identity, not a
-claim of signed delivery. Review to date is by the author and by automated
+The original local execution below was of a pre-publication three-file
+implementation/test tree that is not present in this repository's history, so
+its identity is not recomputable here and is not cited as one. Commit history on
+this branch is not all signed: the first commit (`248564ca`) is unsigned
+(GitHub verification reason: unsigned) and the later commits are signed. No
+claim of an all-signed history is made; that is a maintainer decision. Review to date is by the author and by automated
 reviewers; no independent human or distinct-author approval exists, and the
 configured receiving checks are recorded separately when they occur.
 
@@ -69,16 +72,32 @@ changes.
 The prepared proposed Build is **not public**. `OptionalTierTransition` keeps it
 package-internal and exposes only read-only preview data: `original`, `changes`,
 `lifecycleBefore`/`lifecycleAfter` and `dependencyPreview`. The saveable
-proposal is obtainable only as the return value of
-`OptionalTierTransitionSession.confirm`, mirroring the gated-proposal shape of
-the merged conflict preparation (`BuildConflictProposal` exists only as the
-result of its gated `prepare`). Calling `prepare(..., enabled: true)` therefore
-cannot yield an activated Build to save. This is access control, not
-authentication: the caller owns `original` and could construct an edit of its
-own; what the session gates is the validated, freshness-checked proposal. The
-tests use `@testable` access, so they pin the behavior (only the presenting
-session's single-use confirmation yields the Build) and cannot assert Swift
-access levels at runtime.
+proposal is not part of the public API surface: no public API of
+`OptionalTierTransition` yields it, and the public `confirm` of
+`OptionalTierTransitionSession` is the only public route that returns it. This
+mirrors the gated-proposal shape of the merged conflict preparation. It is not
+an absolute guarantee: Swift reflection (`Mirror`, `dump`) can read internal
+stored properties, so a determined in-process caller could still extract it.
+
+What is and is not guaranteed:
+
+- `prepare(..., enabled: true)` alone does not hand a caller a saveable Build
+  through the public API.
+- `confirm` is an explicit-ceremony gate, **not an authority gate**. Every
+  freshness input is supplied by the caller, so any caller can run `prepare`,
+  `present` and `confirm` and obtain an activated Build. No code checks for a
+  recorded scope decision.
+- The T3-T5 deferral is enforced only by this documentation and by the absence
+  of any UI, default or persistence path that activates a tier. It is not
+  enforced by code.
+- A user interface that later exposes a re-enable must display every widened
+  row (see the re-enable limitation below) from `changes`; that is an obligation
+  on the receiving editor, not something the package enforces.
+- The tests use `@testable` access, so they pin session behavior (only the
+  presenting session's single-use confirmation yields the Build) and cannot
+  assert Swift access levels. A true API-surface guard (for example a
+  `-emit-module-interface` or `swift-api-digester` diff) is a deferred
+  follow-up.
 
 [`OptionalTierTransition.prepare`](../../Packages/PlannerTransfer/Sources/PlannerTransfer/OptionalTierTransition.swift)
 accepts an explicit set of optional tiers and one requested enabled state. It
@@ -95,8 +114,9 @@ selection's current `enabled` flag, not whether it was disabled individually or
 by an earlier tier disable. `enabled: true` therefore enables every disabled
 retained row in the requested tiers, so disable-then-enable does not restore
 per-row prior state when some rows were already individually disabled. The
-preview lists each such row as a change, and the API neither infers hidden prior
-state nor adds any to the Build. Restoring per-row intent would need a recorded
+preview lists each such row in `changes`, and a receiving editor is obliged to
+display every one before confirmation; the package cannot enforce that. The
+API neither infers hidden prior state nor adds any to the Build. Restoring per-row intent would need a recorded
 prior state in the data model, which this change does not add. The original
 snapshot remains available for the existing owner's undo/history behavior.
 
@@ -154,7 +174,7 @@ without automatic retry. These tests do not simulate process termination or
 physical power loss; the existing storage/replay gates keep their own scope.
 
 **Evidence limit for this revision.** All Linux execution records below were
-made on tree `4596d2bd` and its 24 methods, before the access-control, re-enable
+made on the earlier pre-publication tree and its 24 methods, before the access-control, re-enable
 test, lifecycle-admission and wording changes. The current source has 28 methods
 and has not been run locally; Swift was not available when it was edited. Only
 the hosted macOS workflow results for the current head describe it, and the
@@ -167,7 +187,7 @@ Its 2,347-byte original log has SHA-256
 The command was corrected to supply the existing `--pkg-config-path` explicitly;
 no project source or shared toolchain changed for that recovery.
 
-The corrected focused invocation on tree `4596d2bd` passed all 24 new methods
+The corrected focused invocation on that earlier tree passed all 24 new methods
 and two existing methods selected by the `OptionalTier` filter: 26 passed,
 zero failures/skips, 4.6 seconds. Its original 14,103-byte log has SHA-256
 `1419d53feb3d1f1376dbb13170de03f934e2d1768b6848a994ffee5f8835ae8d`.
@@ -209,9 +229,11 @@ their original source guards require CryptoKit. These 18 platform-limited
 declarations remain for actual Apple execution, and none is reported as passed
 by this Linux record.
 
-All 337 source leaves, the generated discovery list, exact new-method attendance,
-all four original execution records and the unchanged executable were qualified
-without running another test. The 145,637-byte local qualification JSON has
+For that earlier tree only, the original local qualification recorded all 337
+source leaves, the generated discovery list, exact new-method attendance, the
+four original execution records and the unchanged executable, without running
+another test. Those counts and identities are historical, were not recomputed
+for the current head, and no byte-identity claim is made for it. The 145,637-byte local qualification JSON has
 SHA-256
 `d6593ec11f80fdefac27c4ee61f324ef894d456b416d7cc17e81acd04406e09e`.
 The successful direct run resolves the observed local collection limitation;
@@ -239,7 +261,7 @@ iOS Simulator compilation.
 | --- | --- |
 | Omitting an optional tier does not invent missing mandatory dependencies. | Package transition tests preserve 15 core selections and treat absent optional tiers as unchanged, without inserting records or emitting compatibility findings. Native editor/filter integration and criterion acceptance remain pending. |
 | Disable T3-T5 with dependent settings present; preview destructive effects, preserve intent and mark non-applicable results skipped rather than missing-required. | The preview, complete-value preservation, dependency activity and explicit confirmation boundaries are tested. The governed evaluator's actual `skipped` findings and their native presentation remain a separate integration requirement; this package does not manufacture them. |
-| The optional-tier activation/removal transition tests is linked with criterion results, exact versions, limitations and receiving-review disposition. | This record links the 24 original and four later methods and the exact local original results for the earlier tree. No independent human approval exists; Apple-domain/UX receiving disposition, normal signed delivery and actual configured native checks remain pending. |
+| The optional-tier activation/removal transition tests is linked with criterion results, exact versions, limitations and receiving-review disposition. | This record links the 24 original and four later methods and the exact local original results for the earlier tree only. No independent human approval exists; Apple-domain/UX receiving disposition, normal signed delivery and actual configured native checks remain pending. |
 
 All three whole-issue criteria remain open in this preparation record; the PR
 uses `Refs #66`, not a closing keyword. No issue

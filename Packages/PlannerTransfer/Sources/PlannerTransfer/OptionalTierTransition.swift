@@ -45,11 +45,11 @@ public struct OptionalTierSelectionChange: Sendable {
 /// storage, network or evaluator authority. Active/inactive/unknown describe the
 /// supplied graph's participation, never fabricated pass/fail/skipped findings.
 ///
-/// The prepared Build is deliberately NOT public. A caller can inspect `changes`,
-/// `lifecycleBefore`/`lifecycleAfter` and `dependencyPreview`, but can obtain the
-/// saveable proposed Build only as the return value of
-/// `OptionalTierTransitionSession.confirm`, which enforces the single-use,
-/// exact-input confirmation. Preparing is therefore never itself activation.
+/// The prepared Build is deliberately not part of the public API. A caller can
+/// inspect `changes`, `lifecycleBefore`/`lifecycleAfter` and `dependencyPreview`;
+/// the public route to the proposed Build is
+/// `OptionalTierTransitionSession.confirm`, an explicit-ceremony gate (not an
+/// authority gate; reflection can still read internal storage).
 public struct OptionalTierTransition: Sendable {
     public let original: BuildSnapshot
     /// Confirmation-only; read by `OptionalTierTransitionSession.confirm`.

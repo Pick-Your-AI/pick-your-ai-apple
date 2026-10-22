@@ -41,8 +41,9 @@ public actor OptionalTierTransitionSession {
 
     public func invalidate() { pending = nil }
 
-    /// The only route to the saveable proposed Build: `OptionalTierTransition`
-    /// keeps it internal, so `prepare` alone never yields an activated build.
+    /// The only public route to the proposed Build: `OptionalTierTransition`
+    /// keeps it internal, so `prepare` alone does not yield an activated build.
+    /// This is a ceremony gate; it does not check any recorded scope decision.
     ///
     /// Supply actual current controller inputs, not values copied out of the
     /// review. After this returns, persistence still requires expected-revision
