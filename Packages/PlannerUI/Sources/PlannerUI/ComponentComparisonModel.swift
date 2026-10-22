@@ -92,8 +92,13 @@ public struct ComponentComparisonCell: Equatable, Sendable {
     public let availability: ComponentComparisonAvailability
     public let value: JSONValue?
     fileprivate let equalityBytes: Data?
+    /// False only when a supplied value could not be encoded for comparison.
+    /// A row containing such a cell always reports a difference and unknown information.
+    public let isComparable: Bool
 
-    fileprivate init(type: String?, value: JSONValue?, applicable: Bool = true) {
+    /// `encode` is a test seam; production callers use the normalized encoder.
+    init(type: String?, value: JSONValue?, applicable: Bool = true,
+         encode: (JSONValue) throws -> Data = { try ComponentComparisonText.encoder().encode($0) }) {
         self.type = type; self.value = value
         if !applicable { availability = .notApplicable }
         else {
@@ -108,11 +113,19 @@ public struct ComponentComparisonCell: Equatable, Sendable {
             default: availability = .recorded
             }
         }
-        equalityBytes = value.flatMap { try? ComponentComparisonText.encoder().encode($0) }
+        // An absent value legitimately has no bytes. A supplied value whose
+        // encoding fails must not collapse into that same nil state.
+        if let value {
+            let bytes = try? encode(value)
+            equalityBytes = bytes; isComparable = bytes != nil
+        } else {
+            equalityBytes = nil; isComparable = true
+        }
     }
 
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        lhs.type == rhs.type && lhs.availability == rhs.availability && lhs.equalityBytes == rhs.equalityBytes
+        lhs.type == rhs.type && lhs.availability == rhs.availability
+            && lhs.isComparable == rhs.isComparable && lhs.equalityBytes == rhs.equalityBytes
     }
 }
 
@@ -126,9 +139,11 @@ public struct ComponentComparisonRow: Identifiable, Equatable, Sendable {
     public var id: String { section.rawValue + "/" + field }
     public var differs: Bool {
         guard let first = cells.first else { return false }
+        // Unknown is not equal: a value that could not be compared is a difference.
+        if cells.contains(where: { !$0.isComparable }) { return true }
         return cells.dropFirst().contains { $0 != first }
     }
-    public var hasUnknown: Bool { cells.contains { $0.availability.isUnknown } }
+    public var hasUnknown: Bool { cells.contains { $0.availability.isUnknown || !$0.isComparable } }
 }
 
 public struct ComponentComparisonInspection: Identifiable, Equatable, Sendable {

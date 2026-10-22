@@ -188,6 +188,31 @@ final class ComponentComparisonModelTests: XCTestCase {
         else { XCTFail("Fixture must be the validated object") }
     }
 
+    func testValuesThatCannotBeEncodedForComparisonNeverCollapseIntoSame() throws {
+        struct Unencodable: Error {}
+        let value = JSONValue.string("recorded")
+        let failing: (JSONValue) throws -> Data = { _ in throw Unencodable() }
+        let broken = ComponentComparisonCell(type: "string", value: value, encode: failing)
+        let otherBroken = ComponentComparisonCell(type: "string", value: .string("different"), encode: failing)
+        let healthy = ComponentComparisonCell(type: "string", value: value)
+        let absent = ComponentComparisonCell(type: "string", value: nil)
+        XCTAssertFalse(broken.isComparable); XCTAssertTrue(healthy.isComparable); XCTAssertTrue(absent.isComparable)
+        // Both encodings failing used to leave nil == nil and report "same".
+        XCTAssertNotEqual(broken, otherBroken)
+        XCTAssertNotEqual(broken, healthy)
+        XCTAssertNotEqual(broken, absent)
+        func grid(_ cells: [ComponentComparisonCell]) -> ComponentComparisonRow {
+            ComponentComparisonRow(section: .specifications, field: "field", cells: cells)
+        }
+        XCTAssertTrue(grid([broken, otherBroken]).differs)
+        XCTAssertTrue(grid([broken, broken]).differs)
+        XCTAssertTrue(grid([healthy, broken]).differs)
+        XCTAssertTrue(grid([broken, healthy]).differs)
+        XCTAssertTrue(grid([broken, otherBroken]).hasUnknown)
+        // Identical supplied declarations that did encode remain the same.
+        XCTAssertFalse(grid([healthy, ComponentComparisonCell(type: "string", value: value)]).differs)
+    }
+
     func testEmptyAndUnknownCollectionsDoNotTurnIntoSupportOrNotApplicable() throws {
         let a = try ComponentComparisonFixtures.candidate(extra: ["tags": .array([])])
         let b = try ComponentComparisonFixtures.candidate(id: "cat.other", extra: ["tags": .array([.string("unknown")])])

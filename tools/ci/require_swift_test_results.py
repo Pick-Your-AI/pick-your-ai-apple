@@ -280,6 +280,16 @@ PROFILES["component-comparison-inspection-ui"] = (44, {
     ),
 })
 
+# Difference detection now fails closed: a supplied value that cannot be encoded
+# for comparison is a difference, never "same". One new model case is required.
+PROFILES["component-comparison-failclosed-ui"] = (45, {
+    **PROFILES["component-comparison-inspection-ui"][1],
+    "PlannerUITests.ComponentComparisonModelTests": (
+        *PROFILES["component-comparison-inspection-ui"][1]["PlannerUITests.ComponentComparisonModelTests"],
+        "testValuesThatCannotBeEncodedForComparisonNeverCollapseIntoSame",
+    ),
+})
+
 CASE = re.compile(
     r"^Test Case '-\[([A-Za-z_][A-Za-z0-9_.]*) (test[A-Za-z0-9_]+)\]' "
     r"(passed|failed|skipped) \([^\r\n]*\)\.$", re.MULTILINE

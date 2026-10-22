@@ -91,7 +91,7 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                         "comparison-catalog-source-privacy-ui",
                         "graph-resource-quality-catalog-editor-transfer",
                         "component-comparison-main-ui", "component-comparison-current-main-ui",
-                        "component-comparison-inspection-ui"):
+                        "component-comparison-inspection-ui", "component-comparison-failclosed-ui"):
             text = self.profile_log(profile)
             with self.subTest(profile=profile):
                 self.assertEqual(self.run_profile(profile, text), 0)
@@ -141,7 +141,8 @@ class SwiftExecutionEvidenceTests(unittest.TestCase):
                 ("catalog-source-ui", "comparison-catalog-source-ui"),
                 ("comparison-catalog-source-ui", "comparison-catalog-source-privacy-ui"),
                 ("component-comparison-main-ui", "component-comparison-current-main-ui"),
-                ("component-comparison-current-main-ui", "component-comparison-inspection-ui")):
+                ("component-comparison-current-main-ui", "component-comparison-inspection-ui"),
+                ("component-comparison-inspection-ui", "component-comparison-failclosed-ui")):
             with self.subTest(stacked=stacked):
                 self.assertEqual(self.run_profile(stacked, self.profile_log(stacked)), 0)
                 padded = self.profile_log(stacked, total=gate.PROFILES[receiving][0])
