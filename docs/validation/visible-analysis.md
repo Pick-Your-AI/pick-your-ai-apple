@@ -40,6 +40,10 @@ component. The build schema forbids other lock keys; if one is ever admitted, th
 projection returns nil (unavailable) rather than dropping it. A test records the
 pricebook limit explicitly; it is not desired behavior for future governed pins.
 
+`knownLockKeys` in `BuildAnalysisIdentity.swift` mirrors the six lock properties of
+`build.schema.json` and must be updated together with the schema; a future seventh
+pin would otherwise make valid builds unavailable.
+
 Currentness is enforced by two checks, not three: the view's visible identity must
 equal the model's selection and the request identity, and Core's typed `receive`
 requires the report's own tuple to equal the request identity before `.current`
@@ -51,8 +55,10 @@ The model fences wire identity only, not local ownership.
 
 [`EvaluationAnalysisView`](../../Packages/PlannerUI/Sources/PlannerUI/EvaluationAnalysisView.swift)
 requires the containing view's currently visible identity on each render. It
-displays the existing `EvaluationReportView` only when the native request and the
-validated report both match. Pending, cancelled, failed, disconnected and
+displays the existing `EvaluationReportView` only when the model's request
+identity equals the visible identity and Core's typed `receive` has accepted the
+validated report for that request (Core enforces report-to-request identity
+agreement; the model enforces request-to-visible-identity agreement). Pending, cancelled, failed, disconnected and
 unrequested inputs remain explicitly unavailable or pending. Reported findings,
 severity, outcomes, readiness and unknowns are not rewritten or promoted into
 verified claims.
