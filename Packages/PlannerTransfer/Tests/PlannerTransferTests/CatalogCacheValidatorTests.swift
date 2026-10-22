@@ -567,7 +567,69 @@ final class CatalogCacheValidatorTests: XCTestCase, @unchecked Sendable {
         } catch { XCTAssertEqual(error as? CatalogCacheError, .immutableVersionConflict) }
     }
 
-    func testPruningDoesNotHideAnActiveManifestThatNamesNoStoredRecord() async throws {
+    // A replaceable policy failure in one artifact must not hide a non-replaceable failure
+    // in another artifact of the same retained pair. The legacy catalog (wrong-kind reference,
+    // replaceable) is validated first; the tampered artifact is then still reached.
+    private func assertCombinedFaultBlocksLoadAndRefresh(tampering kind: CatalogArtifact) async throws {
+        try requireHashing()
+        let legacy = try pair(revision: 1, malformed: .catalog, catalogFault: Self.wrongKindProviderFault)
+        let good = try pair(revision: 2)
+        let recovery = try pair(revision: 3)
+        let goodDate = Date(timeIntervalSince1970: 200)
+        let url = try directory()
+        try await admitWithoutReferencePolicy([(legacy, Date(timeIntervalSince1970: 100)), (good, goodDate)], into: url)
+        let stored = url.appendingPathComponent("active-preview-v1.json")
+        let before = try Data(contentsOf: stored)
+
+        // Control: with only the replaceable fault the good active pair is served.
+        let control = try cache(url)
+        try assertSnapshot(try await control.load(mode: .syntheticPreview), equals: good, at: goodDate)
+
+        // Corrupt ONLY the legacy pair's bytes for `kind`, leaving its recorded digest unchanged.
+        var envelope = try object(before)
+        var records = try XCTUnwrap(envelope["records"] as? [[String: Any]])
+        var artifacts = try XCTUnwrap(records[0]["artifacts"] as? [String: String])
+        let original = try XCTUnwrap(Data(base64Encoded: XCTUnwrap(artifacts[kind.rawValue])))
+        XCTAssertEqual(original, try legacy.bytes(kind))
+        artifacts[kind.rawValue] = (original + Data(" ".utf8)).base64EncodedString()
+        records[0]["artifacts"] = artifacts
+        envelope["records"] = records
+        let corrupt = try encoded(envelope)
+        XCTAssertNotEqual(corrupt, before)
+        try corrupt.write(to: stored, options: .atomic)
+
+        let current = try cache(url)
+        do {
+            _ = try await current.load(mode: .syntheticPreview)
+            XCTFail("Load served a pair beside a retained pair with a digest failure")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .digestMismatch) }
+        for requested in [good.manifest, legacy.manifest] {
+            do {
+                _ = try await current.load(requested, mode: .syntheticPreview)
+                XCTFail("Exact load bypassed a retained digest failure")
+            } catch { XCTAssertEqual(error as? CatalogCacheError, .digestMismatch) }
+        }
+        let recorder = ValidatorDownloadRecorder(recovery)
+        do {
+            try await current.refresh(recovery.manifest, mode: .syntheticPreview) { try await recorder.read($0) }
+            XCTFail("Refresh pruned a pair that has a digest failure")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .digestMismatch) }
+        let downloaded = await recorder.kinds
+        XCTAssertEqual(downloaded, [], "A blocked refresh must not download")
+        XCTAssertEqual(try Data(contentsOf: stored), corrupt, "Failing bytes must be preserved")
+    }
+
+    func testReplaceablePolicyFaultDoesNotHideALaterPricebookDigestFailureOfTheSamePair() async throws {
+        try await assertCombinedFaultBlocksLoadAndRefresh(tampering: .pricebook)
+    }
+
+    // A digest failure in the catalog itself precedes the policy check (the digest is
+    // verified first), so it also blocks; this pins that same-artifact order unchanged.
+    func testCatalogDigestFailureBlocksBeforeItsReferencePolicyCanExcludeThePair() async throws {
+        try await assertCombinedFaultBlocksLoadAndRefresh(tampering: .catalog)
+    }
+
+    func testPruningDoesNotHideAnActiveManifestThatNamesNoStoredRecord()async throws {
         try requireHashing()
         let good = try pair(revision: 1)
         let legacy = try pair(revision: 2, malformed: .catalog, catalogFault: Self.wrongKindProviderFault)

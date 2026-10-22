@@ -178,8 +178,9 @@ public actor CatalogCache {
     /// pair, or of the active pair when it is the failing one, throws its error. Other valid
     /// records are still served, and loads never write. Refresh prunes those records, keeps
     /// every known pin and the immutable-version history, and commits the newly validated
-    /// pair. Other errors, such as digest, identity, structural or storage errors, still
-    /// block loads and refresh.
+    /// pair. Every artifact of a retained pair is validated; a replaceable error never hides
+    /// another artifact's failure. Other errors, such as digest, identity, structural or
+    /// storage errors, still block loads and refresh and the pair is neither excluded nor pruned.
     public init(directory: URL, maximumArtifactBytes: Int = 8 * 1_024 * 1_024,
                 maximumCachedPairs: Int = 32, maximumCacheBytes: Int? = nil,
                 isReplaceableRetainedFailure: @escaping @Sendable (any Error) -> Bool,
@@ -332,13 +333,21 @@ public actor CatalogCache {
             guard Set(record.artifacts.keys) == Set(CatalogArtifact.allCases.map(\.rawValue)) else {
                 throw CatalogCacheError.incompleteRelease
             }
-            do {
-                for pin in record.manifest.pins {
-                    guard let bytes = record.artifacts[pin.kind.rawValue] else { throw CatalogCacheError.incompleteRelease }
-                    try validate(bytes, pin: pin)
+            // Validate EVERY artifact of the pair. A replaceable failure is only recorded, so it
+            // can never hide a digest, identity, size, structural or storage failure of another
+            // artifact. The first non-replaceable error in pin order is thrown (as before the
+            // classifier existed) and blocks the operation without excluding the pair. Only a
+            // pair whose every failure is replaceable is excluded, with the first such error.
+            var replaceable: (any Error)?
+            for pin in record.manifest.pins {
+                guard let bytes = record.artifacts[pin.kind.rawValue] else { throw CatalogCacheError.incompleteRelease }
+                do { try validate(bytes, pin: pin) }
+                catch where isReplaceableRetainedFailure(error) {
+                    if replaceable == nil { replaceable = error }
                 }
-            } catch where isReplaceableRetainedFailure(error) {
-                excluded.append(ExcludedRecord(manifest: record.manifest, error: error))
+            }
+            if let replaceable {
+                excluded.append(ExcludedRecord(manifest: record.manifest, error: replaceable))
                 continue
             }
             retained.append(record)

@@ -57,6 +57,7 @@ The policy is applied whenever the cache validates a record, which includes ever
 
 - A retained record that fails with a replaceable error is excluded in memory and never served. Loading that exact pair, or the active pair when it is the failing one, throws the rejection. Other valid records, including a valid active pair, are still served, so an offline device keeps its valid cached catalog. Loads never write.
 - During `refresh`, excluded records are pruned, every known pin is kept so its version stays immutable, and the newly validated pair is committed in the same atomic write. A failed or cancelled download or validation writes nothing.
+- Each retained pair is validated artifact by artifact in pin order (catalog, then pricebook). A replaceable `CatalogReferenceRejection` is recorded and validation continues, so it cannot hide another artifact's failure. If any other artifact fails with a non-replaceable error, the first non-replaceable error in pin order is thrown and the pair is neither excluded nor pruned: load and refresh are blocked, nothing is downloaded and the bytes are preserved. Only a pair with no non-replaceable error and at least one replaceable error is excluded (on load) or pruned (on refresh). An earlier head of this PR let a replaceable catalog rejection skip the same pair's pricebook validation; this was found by the maintainer delegate's review and fixed.
 - Structural, digest, identity and storage failures still block loads and refresh. A corrupt envelope, including an active manifest that names no stored record, still raises `corruptCache` even when another record is prunable.
 - The pruned pair's bytes are not kept (public, re-downloadable cache data). The storage version is unchanged.
 
@@ -83,6 +84,7 @@ Reference-policy methods in `CatalogCacheValidatorTests`:
 - `testWrongKindReferenceQuarantinesWholeCatalogAndRetainsLastValidCache` and `testAmbiguousReferenceQuarantinesWholeCatalogAndRetainsLastValidCache` (CryptoKit lane; hash-valid catalog, previous pairs and envelope bytes preserved, valid revision recovers)
 - `testValidActivePairLoadsBesideAnOlderPolicyViolatingRecordAndRefreshPrunesIt` (CryptoKit lane; a pair admitted by a structural-only validator is not servable, the valid active pair is, loads do not write, a failed refresh changes nothing, a good refresh prunes)
 - `testActivePairFailingTheReferencePolicyIsNeverServedButRefreshReplacesIt` (CryptoKit lane; the failing active pair throws, the older valid pair is served, refresh replaces it, the pruned version stays immutable)
+- `testReplaceablePolicyFaultDoesNotHideALaterPricebookDigestFailureOfTheSamePair` and `testCatalogDigestFailureBlocksBeforeItsReferencePolicyCanExcludeThePair` (CryptoKit lane; a legacy wrong-kind catalog plus a pair artifact altered without updating its digest, beside a good active pair: every load and refresh throws `digestMismatch`, zero downloads, bytes unchanged; the untampered control serves the good pair)
 - `testPruningDoesNotHideAnActiveManifestThatNamesNoStoredRecord` (CryptoKit lane; `corruptCache` despite a prunable record)
 
 The cache methods skip without CryptoKit; a skip is not cache validation.
