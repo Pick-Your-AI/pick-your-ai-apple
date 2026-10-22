@@ -41,6 +41,9 @@ public actor OptionalTierTransitionSession {
 
     public func invalidate() { pending = nil }
 
+    /// The only route to the saveable proposed Build: `OptionalTierTransition`
+    /// keeps it internal, so `prepare` alone never yields an activated build.
+    ///
     /// Supply actual current controller inputs, not values copied out of the
     /// review. After this returns, persistence still requires expected-revision
     /// CAS and a durable acknowledgement; this method does not retry either.

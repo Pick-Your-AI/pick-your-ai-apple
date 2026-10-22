@@ -1,5 +1,21 @@
 # Optional-tier activation and removal — Apple #66
 
+## Scope status: T3-T5 are deferred
+
+The [#21 release inclusion record](../decisions/issue-21-scope.md) classifies
+the optional T3-T5 breadth rows (#92-#94) as **deferred and excluded from this
+first release**. It keeps #66's omitted-tier behavior while "T3-T5 choices remain
+deferred", and says a later scope review must establish a specific user outcome
+and its evidence before activation. Core T6 guidance survives that deferral.
+
+This change only **prepares** transitions. It adds no editor control, default,
+setting, deep link, restored state or persistence that activates any optional
+tier, and `prepare` has no defaulted parameters: the tiers and requested state
+are always explicit. Activating T3-T5 for a user (in particular wiring an
+enable affordance, `enabled: true`, into the editor) requires a recorded scope
+decision under that record; nothing in this package, this guide or its tests
+supplies one.
+
 ## Receiving scope
 
 This record covers the opt-in `PlannerTransfer` transition and confirmation API
@@ -11,8 +27,9 @@ inputs, confirming the action, and saving through its existing revision check.
 The source was prepared on accepted `e742379f9a474e632a998f1586515f4cb1280b18`.
 The three-file implementation/test tree is
 `4596d2bdc871a0d40daed94ea52bf6ab4009cd9e`; this is a Git tree identity, not a
-claim of signed delivery. Independent source review and the configured receiving
-checks are recorded separately when they occur.
+claim of signed delivery. Review to date is by the author and by automated
+reviewers; no independent human or distinct-author approval exists, and the
+configured receiving checks are recorded separately when they occur.
 
 [Apple #64](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/64)'s
 [current input handoff](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/64#issuecomment-6280451575)
@@ -49,6 +66,20 @@ changes.
 
 ## Preview, confirmation and persistence
 
+The prepared proposed Build is **not public**. `OptionalTierTransition` keeps it
+package-internal and exposes only read-only preview data: `original`, `changes`,
+`lifecycleBefore`/`lifecycleAfter` and `dependencyPreview`. The saveable
+proposal is obtainable only as the return value of
+`OptionalTierTransitionSession.confirm`, mirroring the gated-proposal shape of
+the merged conflict preparation (`BuildConflictProposal` exists only as the
+result of its gated `prepare`). Calling `prepare(..., enabled: true)` therefore
+cannot yield an activated Build to save. This is access control, not
+authentication: the caller owns `original` and could construct an edit of its
+own; what the session gates is the validated, freshness-checked proposal. The
+tests use `@testable` access, so they pin the behavior (only the presenting
+session's single-use confirmation yields the Build) and cannot assert Swift
+access levels at runtime.
+
 [`OptionalTierTransition.prepare`](../../Packages/PlannerTransfer/Sources/PlannerTransfer/OptionalTierTransition.swift)
 accepts an explicit set of optional tiers and one requested enabled state. It
 changes only `enabled` on retained selections in those tiers. Each actual change
@@ -59,15 +90,29 @@ and selection order remain in both complete snapshots.
 An omitted tier is not populated. An empty request returns `emptyTierRequest`;
 an absent or already satisfied selection state returns `unchangedSelectionState`
 without a proposed revision. A mixed tier changes only rows whose state differs
-from the explicit request. Enabling a tier explicitly enables every retained row
-in that tier, including individually disabled rows shown in that new preview;
-the API does not infer a hidden prior activation state. The original snapshot
-remains available for the existing owner's undo/history behavior.
+from the explicit request. **Re-enable limitation:** a Build records only each
+selection's current `enabled` flag, not whether it was disabled individually or
+by an earlier tier disable. `enabled: true` therefore enables every disabled
+retained row in the requested tiers, so disable-then-enable does not restore
+per-row prior state when some rows were already individually disabled. The
+preview lists each such row as a change, and the API neither infers hidden prior
+state nor adds any to the Build. Restoring per-row intent would need a recorded
+prior state in the data model, which this change does not add. The original
+snapshot remains available for the existing owner's undo/history behavior.
 
 A changed snapshot increments its wire revision exactly once, uses the supplied
 validated timestamp and returns to lifecycle `draft`. The ordinary bounded
 Build decoder validates the encoded proposal. Old validation or deployment
 labels cannot qualify the changed snapshot.
+
+Lifecycle admission: only `draft`, `validated` and `ready` Builds may be edited
+in place; `validated` and `ready` are demoted to `draft`, and the preview
+exposes that through `lifecycleBefore`, `lifecycleAfter` and `lifecycleChanges`.
+A `deployed` or `archived` Build is refused with `lifecycleNotEditable` and is
+never resurrected as a draft revision; the caller must fork it through the
+ordinary import/fork path. The schema lists the five lifecycle values but does
+not define which are editable, so this is a conservative package choice that
+the receiving editor owner may revisit.
 
 The preview uses the existing direct `DependencyInvalidation` behavior and keeps
 original graph edge order. Optional branches that become inactive retain their
@@ -94,9 +139,10 @@ production API.
 ## Transition tests and original execution
 
 The new [test source](../../Packages/PlannerTransfer/Tests/PlannerTransferTests/OptionalTierTransitionTests.swift)
-contains 16 transition methods and eight confirmation/persistence methods.
+contains 19 transition methods and nine confirmation/persistence methods.
 These use the existing fictional frozen fixtures. They cover all three tiers,
-full-value disable/re-enable preservation, mixed activation, multiple rows of one
+all-enabled disable/re-enable byte restoration, mixed-state re-enable widening,
+the confirmation-only access path, lifecycle admission and demotion, mixed activation, multiple rows of one
 kind, omitted tiers, core participant retention, active/inactive/unknown graph
 states, pin and identity admission, exact Unicode versions, numeric/timestamp
 reopening limits, foreign/stale/replayed confirmations and real local SQLite CAS.
@@ -106,6 +152,13 @@ stored bytes unchanged until an explicit save; the saved proposal reopens with
 the original history retained. A concurrent durable edit rejects the older save
 without automatic retry. These tests do not simulate process termination or
 physical power loss; the existing storage/replay gates keep their own scope.
+
+**Evidence limit for this revision.** All Linux execution records below were
+made on tree `4596d2bd` and its 24 methods, before the access-control, re-enable
+test, lifecycle-admission and wording changes. The current source has 28 methods
+and has not been run locally; Swift was not available when it was edited. Only
+the hosted macOS workflow results for the current head describe it, and the
+records below must not be read as results for it.
 
 The first local invocation stopped before test execution because SwiftPM did not
 find the already present SQLite pkg-config record through environment settings.
@@ -186,8 +239,9 @@ iOS Simulator compilation.
 | --- | --- |
 | Omitting an optional tier does not invent missing mandatory dependencies. | Package transition tests preserve 15 core selections and treat absent optional tiers as unchanged, without inserting records or emitting compatibility findings. Native editor/filter integration and criterion acceptance remain pending. |
 | Disable T3-T5 with dependent settings present; preview destructive effects, preserve intent and mark non-applicable results skipped rather than missing-required. | The preview, complete-value preservation, dependency activity and explicit confirmation boundaries are tested. The governed evaluator's actual `skipped` findings and their native presentation remain a separate integration requirement; this package does not manufacture them. |
-| The optional-tier activation/removal transition tests is linked with criterion results, exact versions, limitations and receiving-review disposition. | This record links all 24 new methods and the exact local original results. Independent Apple-domain/UX receiving disposition, normal signed delivery and actual configured native checks remain pending. |
+| The optional-tier activation/removal transition tests is linked with criterion results, exact versions, limitations and receiving-review disposition. | This record links the 24 original and four later methods and the exact local original results for the earlier tree. No independent human approval exists; Apple-domain/UX receiving disposition, normal signed delivery and actual configured native checks remain pending. |
 
-All three whole-issue criteria remain open in this preparation record. No issue
+All three whole-issue criteria remain open in this preparation record; the PR
+uses `Refs #66`, not a closing keyword. No issue
 checkbox, assignee, prerequisite, frozen schema or shared evaluator is changed.
 The active #391 editor receiver and its #64 inputs retain their canonical scope.

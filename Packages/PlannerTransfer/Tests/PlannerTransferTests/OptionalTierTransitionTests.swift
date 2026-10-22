@@ -107,7 +107,7 @@ final class OptionalTierTransitionTests: XCTestCase {
         XCTAssertEqual(try BuildTransfer.snapshot(fromDraftJSON: transition.proposed.encoded()), transition.proposed)
     }
 
-    func testReenablingRestoresRetainedSelectionsSettingsAndLinks() throws {
+    func testReenablingAnAllDisabledFixtureRestoresTheOriginalAllEnabledBytes() throws {
         let disabled = try TierFixtures.transition()
         let enabled = try TierFixtures.transition(build: disabled.proposed, enabled: true)
         XCTAssertEqual(enabled.changes.count, 14)
@@ -116,6 +116,56 @@ final class OptionalTierTransitionTests: XCTestCase {
         for key in ["revision", "updated_at", "lifecycle"] { restored[key] = disabled.original.value.object![key] }
         XCTAssertEqual(.object(restored), disabled.original.value)
         XCTAssertEqual(enabled.proposed.value.object!["revision"], .number(3))
+    }
+
+    /// Pins the actual (lossy) semantics: the Build stores only a current
+    /// `enabled` flag, so a re-enable cannot tell an individually disabled row
+    /// from one disabled by an earlier tier disable. It enables every disabled
+    /// retained row in the requested tiers and previews each one.
+    func testReenableWidensIndividuallyDisabledRowsAndPreviewsEachOne() throws {
+        let individuallyDisabled = ["sel_tool", "sel_memory_store"]
+        var mixed = try TierFixtures.build()
+        for id in individuallyDisabled {
+            mixed = try TierFixtures.replacing(mixed, selectionID: id, field: "enabled", value: .bool(false))
+        }
+        // Disable then re-enable the whole tier: the prior individual state is not restored.
+        let off = try TierFixtures.transition(build: mixed, tiers: [.t4])
+        XCTAssertEqual(Set(off.changes.map(\.selectionID)), ["sel_agent_framework", "sel_mcp_server", "sel_integration"])
+        let on = try TierFixtures.transition(build: off.proposed, tiers: [.t4], enabled: true)
+        XCTAssertEqual(Set(on.changes.map(\.selectionID)),
+                       Set(["sel_agent_framework", "sel_mcp_server", "sel_integration"] + individuallyDisabled))
+        XCTAssertTrue(on.changes.allSatisfy { !$0.beforeEnabled && $0.afterEnabled })
+        for row in on.proposed.value.object!["selections"]!.array! {
+            let fields = row.object!
+            if individuallyDisabled.contains(fields["id"]!.string!) { XCTAssertEqual(fields["enabled"], .bool(true)) }
+        }
+        XCTAssertNotEqual(on.proposed.value, mixed.value)
+        // Enabling directly from the mixed state also lists exactly the disabled rows.
+        let direct = try TierFixtures.transition(build: mixed, tiers: [.t4], enabled: true)
+        XCTAssertEqual(direct.changes.map(\.selectionID), individuallyDisabled)
+    }
+
+    func testDeployedAndArchivedBuildsAreRefusedAndNeverResurrectedAsDrafts() throws {
+        for lifecycle in ["deployed", "archived"] {
+            let build = try TierFixtures.build(["lifecycle": .string(lifecycle)])
+            for enabled in [false, true] {
+                XCTAssertThrowsError(try TierFixtures.transition(build: build, enabled: enabled)) {
+                    XCTAssertEqual($0 as? OptionalTierTransitionError, .lifecycleNotEditable)
+                }
+            }
+            XCTAssertEqual(build.value.object!["lifecycle"], .string(lifecycle))
+            XCTAssertEqual(build.value.object!["revision"], .number(1))
+        }
+    }
+
+    func testEditableLifecyclesAreDemotedToDraftAndTheDemotionIsPreviewed() throws {
+        for (lifecycle, changes) in [("draft", false), ("validated", true), ("ready", true)] {
+            let t = try TierFixtures.transition(build: TierFixtures.build(["lifecycle": .string(lifecycle)]))
+            XCTAssertEqual(t.lifecycleBefore, lifecycle)
+            XCTAssertEqual(t.lifecycleAfter, "draft")
+            XCTAssertEqual(t.lifecycleChanges, changes)
+            XCTAssertEqual(t.proposed.value.object!["lifecycle"], .string("draft"))
+        }
     }
 
     func testSingleTierRequestsPreserveOtherOptionalAndAllCoreRows() throws {
@@ -319,6 +369,28 @@ final class OptionalTierTransitionSessionTests: XCTestCase, @unchecked Sendable 
         XCTAssertEqual(result, t.proposed)
         do { _ = try await TierFixtures.confirm(review, on: session); XCTFail("replayed confirmation") }
         catch { XCTAssertEqual(error as? OptionalTierTransitionError, .staleConfirmation) }
+    }
+
+    func testPreparationExposesNoSaveableBuildWithoutTheConfirmingSession() async throws {
+        let t = try TierFixtures.transition(enabled: false)
+        // Previews stay inspectable through the read-only summary.
+        XCTAssertEqual(t.changes.count, 14)
+        XCTAssertEqual(t.original.value.object!["revision"], .number(1))
+        XCTAssertFalse(t.dependencyPreview.participants.affectedSelectionIDs.isEmpty)
+        // Package-internal access is intentionally visible to @testable tests, so
+        // compile-level privacy is not asserted. Behaviorally: neither a session
+        // that never presented it, a dismissed review, nor a replay yields the build.
+        let session = OptionalTierTransitionSession(), stranger = OptionalTierTransitionSession()
+        let review = try await session.present(t, owner: TierFixtures.owner())
+        do { _ = try await TierFixtures.confirm(review, on: stranger); XCTFail("unpresented session") }
+        catch { XCTAssertEqual(error as? OptionalTierTransitionError, .staleConfirmation) }
+        await session.invalidate()
+        do { _ = try await TierFixtures.confirm(review, on: session); XCTFail("dismissed review") }
+        catch { XCTAssertEqual(error as? OptionalTierTransitionError, .staleConfirmation) }
+        let again = try await session.present(t, owner: TierFixtures.owner())
+        let confirmed = try await TierFixtures.confirm(again, on: session)
+        XCTAssertEqual(confirmed, t.proposed)
+        XCTAssertNotEqual(confirmed, t.original)
     }
 
     func testDismissalAndSameContentReopeningDoNotReviveOldCallbacks() async throws {
