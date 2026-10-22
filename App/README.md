@@ -490,8 +490,27 @@ Descendants of such a completed command are outside this timeout cleanup path.
 The operation deadlines and single-attempt policy remain unchanged. The extra
 reaping budget is bounded cleanup time, not a retry or an operation extension.
 Non-POSIX hosts retain the existing subprocess runner. A descendant which
-deliberately leaves the command's session is outside this group boundary, and
-an outer job cancellation can still prevent cleanup from running.
+deliberately leaves the command's session is outside this group boundary.
+
+The guarantee is narrow: when a required command exceeds its own deadline (or
+capture is interrupted inside the runner) while its direct child is unreaped,
+the runner sends one `SIGKILL` to that owned process group, with no `SIGTERM`
+grace period, and then bounds reaping at five seconds. If the reap does not
+complete, the direct child stays unreaped, the run continues and the condition
+appears only as a printed exception type name. This is forceful, bounded
+cleanup on the runner's own deadline path; it is not a graceful shutdown.
+
+`start_new_session=True` also means a required command no longer shares the
+runner's process group. A cancellation signal that the CI job delivers to the
+step's process group may therefore reach the runner but not a running `simctl`
+command or its descendants. If the job is cancelled while such a command is in
+flight, the runner can exit without its `finally` cleanup running, and that
+command, its descendants and an owned booted simulator can be left running on
+the host. The five-second reap, the group kill and the owned shutdown/delete
+attempts do not cover that path, and this change does not add a cancellation
+handler. This is a reasoned consequence of the process-group change, not an
+observed cancellation result. Any such leftover owned simulator on a host that
+outlives the job needs separate cleanup.
 
 Two bounded real-child regressions cover a pipe-holding descendant after an
 observed parent exit and a live parent with a descendant. Each checks that the
