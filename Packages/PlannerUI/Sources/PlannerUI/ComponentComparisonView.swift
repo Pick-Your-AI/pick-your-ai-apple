@@ -204,6 +204,9 @@ public struct ComponentComparisonView: View {
         VStack(alignment: .leading, spacing: 6) {
             if let type = cell.type { Text(verbatim: "Type: " + type).font(.caption) }
             Text(verbatim: cell.availability.label)
+            if !cell.isComparable {
+                Text(verbatim: "Comparison unavailable: this value could not be encoded for comparison")
+            }
             if let value = cell.value { completeText(ComponentComparisonText.value(value)) }
         }
     }

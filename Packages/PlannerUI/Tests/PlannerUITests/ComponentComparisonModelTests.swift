@@ -197,8 +197,8 @@ final class ComponentComparisonModelTests: XCTestCase {
         let healthy = ComponentComparisonCell(type: "string", value: value)
         let absent = ComponentComparisonCell(type: "string", value: nil)
         XCTAssertFalse(broken.isComparable); XCTAssertTrue(healthy.isComparable); XCTAssertTrue(absent.isComparable)
-        // Both encodings failing used to leave nil == nil and report "same".
-        XCTAssertNotEqual(broken, otherBroken)
+        // Cell equality stays reflexive; the fail-closed rule is the row's `differs`.
+        XCTAssertEqual(broken, broken)
         XCTAssertNotEqual(broken, healthy)
         XCTAssertNotEqual(broken, absent)
         func grid(_ cells: [ComponentComparisonCell]) -> ComponentComparisonRow {

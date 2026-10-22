@@ -123,11 +123,13 @@ public struct ComponentComparisonCell: Equatable, Sendable {
         }
     }
 
-    /// Unknown is not equal: like NaN, a cell that could not be encoded equals nothing.
+    /// Structural and reflexive. Two cells that could not be encoded are equal
+    /// here; callers must not read that as "same declaration". The fail-closed
+    /// rule lives in `ComponentComparisonRow.differs`, which reports a difference
+    /// whenever any cell is not comparable.
     public static func == (lhs: Self, rhs: Self) -> Bool {
-        guard lhs.isComparable, rhs.isComparable else { return false }
-        return lhs.type == rhs.type && lhs.availability == rhs.availability
-            && lhs.equalityBytes == rhs.equalityBytes
+        lhs.type == rhs.type && lhs.availability == rhs.availability
+            && lhs.isComparable == rhs.isComparable && lhs.equalityBytes == rhs.equalityBytes
     }
 }
 
