@@ -4,14 +4,25 @@ import PlannerCore
 /// Observations about the supplied records, not failures of frozen-v1 decoding.
 /// A manual override or differently spelled decimal can explain a difference;
 /// this consumer does not decide whether that explanation is acceptable.
-public enum RecordedCostRateIssue: String, Equatable, Sendable {
+public enum RecordedCostRateIssue: String, Hashable, Sendable {
     case estimateBuildIDDiffers, estimateBuildRevisionDiffers
     case buildPricebookLockMissing, buildPricebookLockDiffers
     case pricebookNotSupplied, suppliedPricebookIDDiffers, estimateCurrencyDiffersFromBuild
     case duplicateLineID, selectionNotFoundInSuppliedBuild, selectionIDAmbiguous, selectionDisabled
     case rateNotFoundInSuppliedPricebook, rateIDAmbiguous
     case catalogItemIDDiffers, catalogItemVersionDiffers, meterDiffers
-    case unitPriceCurrencyDiffers, unitPriceAmountTextDiffers
+    case unitPriceCurrencyDiffers
+    /// Same numeric value, different recorded spelling (for example 0.80 and 0.8000).
+    case unitPriceAmountTextDiffers
+    /// Different numeric value (for example 0.80 and 8.00), compared exactly.
+    case unitPriceAmountValueDiffers
+    /// Both regions are recorded text; an absent rate region is not a difference.
+    case rateRegionDiffersFromBuildObjective
+    /// The rate's own recorded validUntil is strictly earlier than its validFrom.
+    case rateValidityWindowInverted
+    /// The estimate's recorded estimatedAt is strictly outside the rate's recorded
+    /// window. No current clock is read; boundary inclusivity is not decided.
+    case estimatedAtBeforeRateValidFrom, estimatedAtAfterRateValidUntil
     case lineUnitPriceCurrencyDiffersFromEstimate, lineAmountCurrencyDiffersFromEstimate
 }
 
@@ -40,7 +51,7 @@ public struct RecordedCostRateSelection: Equatable, Sendable {
 /// One original estimate row, including duplicates and original ordering.
 /// Candidates are unique ID matches within the supplied inputs, not proof that
 /// a rate was applicable or produced the estimate. Nil never means free or zero.
-public struct RecordedCostRateLine: Sendable {
+public struct RecordedCostRateLine: Equatable, Sendable {
     public let position: Int
     public let line: CostEstimateLineItem
     public let candidateSelection: RecordedCostRateSelection?
@@ -54,8 +65,10 @@ public struct RecordedCostRateLine: Sendable {
 
 /// Local, read-only inspection of the rate references in a retained estimate.
 /// The existing typed readers own structural admission. This initializer never
-/// rejects or repairs a valid input record, selects a substitute rate, evaluates
-/// dates/regions, authenticates evidence, calculates costs or grants currentness.
+/// rejects or repairs a valid input record, selects a substitute rate, reads a
+/// clock, decides applicability or expiry, authenticates evidence, calculates
+/// costs or grants currentness. It only reports recorded region and
+/// validity-window differences among the supplied records.
 /// All originals may contain private text and have no public sharing projection.
 public struct RecordedCostRateProvenance: Sendable {
     public let build: BuildSnapshot
@@ -83,6 +96,7 @@ public struct RecordedCostRateProvenance: Sendable {
 
         // Frozen IDs are ASCII. Group rather than overwrite duplicates, and
         // build the indexes once so inspection is linear in the supplied rows.
+        let objectiveRegion = build.value.object!["objectives"]!.object!["region"]!.string!
         let selections = build.value.object!["selections"]!.array!.enumerated().map {
             RecordedCostRateSelection(position: $0.offset, value: $0.element)
         }
@@ -111,10 +125,27 @@ public struct RecordedCostRateProvenance: Sendable {
             if let rate {
                 if line.meter.rawValue != rate.meter.rawValue { issues.append(.meterDiffers) }
                 if !Self.sameText(line.unitPrice.currency, rate.unitPrice.currency) { issues.append(.unitPriceCurrencyDiffers) }
-                // ContractDecimal equality is numeric; this inspection instead
-                // reports different recorded text such as 0.80 versus 0.8000.
+                // Different spelling is reported even for equal values; a numeric
+                // difference (exact scaled-digit comparison, never Double) is a
+                // distinct code and is not also reported as spelling.
                 if !Self.sameText(line.unitPrice.amount, rate.unitPrice.amount.rawValue) {
-                    issues.append(.unitPriceAmountTextDiffers)
+                    if let recorded = try? ContractDecimal(line.unitPrice.amount),
+                       recorded != rate.unitPrice.amount {
+                        issues.append(.unitPriceAmountValueDiffers)
+                    } else {
+                        issues.append(.unitPriceAmountTextDiffers)
+                    }
+                }
+                if let region = rate.region, !Self.sameText(region, objectiveRegion) {
+                    issues.append(.rateRegionDiffersFromBuildObjective)
+                }
+                // Recorded declarations only: the estimate's own estimatedAt, not a clock.
+                let from = RecordedInstant(rate.validFrom)
+                let until = rate.validUntil.flatMap { RecordedInstant($0) }
+                if let from, let until, until < from { issues.append(.rateValidityWindowInverted) }
+                if let at = RecordedInstant(estimate.estimatedAt) {
+                    if let from, at < from { issues.append(.estimatedAtBeforeRateValidFrom) }
+                    if let until, until < at { issues.append(.estimatedAtAfterRateValidUntil) }
                 }
             }
             if !Self.sameText(line.unitPrice.currency, estimate.currency) {
@@ -133,5 +164,60 @@ public struct RecordedCostRateProvenance: Sendable {
 
     private static func sameText(_ left: String, _ right: String) -> Bool {
         left.utf8.elementsEqual(right.utf8)
+    }
+}
+
+/// An exact UTC instant from a frozen-v1 timestamp, using integer arithmetic only.
+/// Fraction digits are kept as text (trailing zeros trimmed) so no Double is used.
+private struct RecordedInstant: Comparable {
+    let seconds: Int
+    let fraction: [UInt8]
+
+    init?(_ text: String) {
+        let bytes = Array(text.utf8)
+        guard bytes.count >= 20 else { return nil }
+        func number(_ range: Range<Int>) -> Int? {
+            var value = 0
+            for index in range {
+                guard index < bytes.count, (48...57).contains(bytes[index]) else { return nil }
+                value = value * 10 + Int(bytes[index] - 48)
+            }
+            return value
+        }
+        guard let year = number(0..<4), let month = number(5..<7), let day = number(8..<10),
+              let hour = number(11..<13), let minute = number(14..<16), let second = number(17..<19),
+              (1...12).contains(month) else { return nil }
+        var index = 19
+        var digits: [UInt8] = []
+        if bytes[index] == 46 {
+            index += 1
+            while index < bytes.count, (48...57).contains(bytes[index]) {
+                digits.append(bytes[index]); index += 1
+            }
+            while digits.last == 48 { digits.removeLast() }
+        }
+        guard index < bytes.count else { return nil }
+        var offset = 0
+        if bytes[index] == 90 || bytes[index] == 122 {
+            guard index == bytes.count - 1 else { return nil }
+        } else if bytes[index] == 43 || bytes[index] == 45 {
+            guard index + 6 == bytes.count, let offsetHour = number((index + 1)..<(index + 3)),
+                  let offsetMinute = number((index + 4)..<(index + 6)) else { return nil }
+            offset = (offsetHour * 3600 + offsetMinute * 60) * (bytes[index] == 45 ? -1 : 1)
+        } else { return nil }
+        // Days from civil date (proleptic Gregorian), then UTC seconds.
+        let shiftedYear = month <= 2 ? year - 1 : year
+        let era = shiftedYear / 400
+        let yearOfEra = shiftedYear - era * 400
+        let dayOfYear = (153 * (month + (month > 2 ? -3 : 9)) + 2) / 5 + day - 1
+        let dayOfEra = yearOfEra * 365 + yearOfEra / 4 - yearOfEra / 100 + dayOfYear
+        let days = era * 146097 + dayOfEra - 719468
+        seconds = days * 86400 + hour * 3600 + minute * 60 + second - offset
+        fraction = digits
+    }
+
+    static func < (lhs: Self, rhs: Self) -> Bool {
+        if lhs.seconds != rhs.seconds { return lhs.seconds < rhs.seconds }
+        return lhs.fraction.lexicographicallyPrecedes(rhs.fraction)
     }
 }

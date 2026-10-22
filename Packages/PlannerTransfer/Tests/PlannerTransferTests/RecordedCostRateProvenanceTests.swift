@@ -244,6 +244,95 @@ final class RecordedCostRateProvenanceTests: XCTestCase {
         XCTAssertEqual(result.lines[0].candidateRate?.unitPrice.amount.rawValue, "0.8000")
     }
 
+    func testNumericUnitPriceDifferenceIsDistinctFromSpellingDifference() throws {
+        func issues(recorded: String? = nil, rate: String? = nil) throws -> [RecordedCostRateIssue] {
+            var estimateChanges: [Mutation] = [], bookChanges: [Mutation] = []
+            if let recorded { estimateChanges.append((["line_items", "0", "unit_price", "amount"], .string(recorded))) }
+            if let rate { bookChanges.append((["rates", "0", "unit_price", "amount"], .string(rate))) }
+            return try inspection(estimateChanges: estimateChanges, bookChanges: bookChanges).lines[0].issues
+        }
+        // Same value, different spelling: text code only.
+        XCTAssertEqual(try issues(rate: "0.8000"), [.unitPriceAmountTextDiffers])
+        XCTAssertEqual(try issues(rate: "0.800000000000"), [.unitPriceAmountTextDiffers])
+        XCTAssertEqual(try issues(recorded: "0.8000"), [.unitPriceAmountTextDiffers])
+        // Different value (10x, 1/10x, last fractional digit): numeric code only.
+        XCTAssertEqual(try issues(rate: "8.00"), [.unitPriceAmountValueDiffers])
+        XCTAssertEqual(try issues(rate: "0.08"), [.unitPriceAmountValueDiffers])
+        XCTAssertEqual(try issues(recorded: "8.00"), [.unitPriceAmountValueDiffers])
+        XCTAssertEqual(try issues(rate: "0.800000000001"), [.unitPriceAmountValueDiffers])
+        // Identical spelling reports neither.
+        XCTAssertEqual(try issues(recorded: "8.00", rate: "8.00"), [])
+        // Both records stay visible and no arithmetic is repaired.
+        let tenfold = try inspection(bookChanges: [(["rates", "0", "unit_price", "amount"], .string("8.00"))])
+        XCTAssertEqual(tenfold.lines[0].line.unitPrice.amount, "0.80")
+        XCTAssertEqual(tenfold.lines[0].candidateRate?.unitPrice.amount.rawValue, "8.00")
+        XCTAssertEqual(tenfold.lines[0].line.amount.amount, "576.00")
+    }
+
+    func testRecordedRegionDifferenceIsReportedAndAbsenceIsNotADifference() throws {
+        let rateDiffers = try inspection(bookChanges: [(["rates", "0", "region"], .string("eu-west-fixture"))])
+        XCTAssertEqual(rateDiffers.lines[0].issues, [.rateRegionDiffersFromBuildObjective])
+        XCTAssertEqual(rateDiffers.lines[1].issues, [])
+        XCTAssertEqual(rateDiffers.lines[0].candidateRate?.region, "eu-west-fixture")
+        let objectiveDiffers = try inspection(buildChanges: [(["objectives", "region"], .string("eu-west-fixture"))])
+        XCTAssertEqual(objectiveDiffers.lines.map(\.issues), [[.rateRegionDiffersFromBuildObjective],
+                                                             [.rateRegionDiffersFromBuildObjective]])
+        let absent = try inspection(bookChanges: [(["rates", "0", "region"], nil)])
+        XCTAssertEqual(absent.lines[0].issues, [])
+        XCTAssertNil(absent.lines[0].candidateRate?.region)
+        let caseDiffers = try inspection(bookChanges: [(["rates", "0", "region"], .string("US-EAST-FIXTURE"))])
+        XCTAssertEqual(caseDiffers.lines[0].issues, [.rateRegionDiffersFromBuildObjective])
+        let missingRate = try inspection(estimateChanges: [(["line_items", "0", "price_rate_id"], .string("rate.absent"))],
+            bookChanges: [(["rates", "0", "region"], .string("eu-west-fixture"))])
+        XCTAssertNil(missingRate.lines[0].candidateRate)
+        XCTAssertEqual(missingRate.lines[0].issues, [.rateNotFoundInSuppliedPricebook])
+    }
+
+    func testRecordedValidityWindowIsComparedExactlyWithoutAClock() throws {
+        func issues(from: String? = nil, until: String? = nil) throws -> [RecordedCostRateIssue] {
+            var changes: [Mutation] = []
+            if let from { changes.append((["rates", "0", "valid_from"], .string(from))) }
+            if let until { changes.append((["rates", "0", "valid_until"], .string(until))) }
+            return try inspection(bookChanges: changes).lines[0].issues
+        }
+        // The recorded estimate time is 2026-10-16T09:00:00Z.
+        XCTAssertEqual(try issues(from: "2026-10-16T09:00:01Z"), [.estimatedAtBeforeRateValidFrom])
+        XCTAssertEqual(try issues(until: "2026-10-16T08:59:59Z"), [.rateValidityWindowInverted, .estimatedAtAfterRateValidUntil])
+        // Boundaries are not decided; offsets and fractions are compared as exact instants.
+        XCTAssertEqual(try issues(until: "2026-10-16T09:00:00Z"), [])
+        XCTAssertEqual(try issues(from: "2026-10-16T11:00:00+02:00", until: "2026-10-16T04:00:00-05:00"), [])
+        XCTAssertEqual(try issues(from: "2026-10-16T10:00:00+02:00"), [])
+        XCTAssertEqual(try issues(from: "2026-10-16T09:00:00.000Z"), [])
+        XCTAssertEqual(try issues(from: "2026-10-16T09:00:00.000000001Z"), [.estimatedAtBeforeRateValidFrom])
+        XCTAssertEqual(try issues(until: "2026-10-16T08:59:59.999999999Z"), [.rateValidityWindowInverted, .estimatedAtAfterRateValidUntil])
+        XCTAssertEqual(try issues(from: "2026-10-16T12:00:00+02:00"), [.estimatedAtBeforeRateValidFrom])
+        XCTAssertEqual(try issues(from: "2026-10-16T10:00:00+00:59"), [.estimatedAtBeforeRateValidFrom])
+        XCTAssertEqual(try issues(from: "2026-10-16T09:30:00-00:30"), [.estimatedAtBeforeRateValidFrom])
+        // Leap-year and month-boundary day arithmetic.
+        XCTAssertEqual(try issues(until: "2024-02-29T23:59:59Z"), [.rateValidityWindowInverted, .estimatedAtAfterRateValidUntil])
+        XCTAssertEqual(try issues(from: "2026-03-01T00:00:00Z", until: "2026-02-28T23:59:59Z"),
+                       [.rateValidityWindowInverted, .estimatedAtAfterRateValidUntil])
+        // A reversed recorded window is reported without being repaired.
+        let inverted = try inspection(bookChanges: [
+            (["rates", "0", "valid_from"], .string("2026-10-17T00:00:00Z")),
+            (["rates", "0", "valid_until"], .string("2026-10-15T00:00:00Z")),
+        ])
+        XCTAssertEqual(inverted.lines[0].issues, [.rateValidityWindowInverted, .estimatedAtBeforeRateValidFrom,
+                                                  .estimatedAtAfterRateValidUntil])
+        XCTAssertEqual(inverted.lines[1].issues, [])
+        XCTAssertEqual(inverted.lines[0].candidateRate?.validFrom, "2026-10-17T00:00:00Z")
+        XCTAssertEqual(inverted.lines[0].candidateRate?.validUntil, "2026-10-15T00:00:00Z")
+        XCTAssertTrue(inverted.limitations.contains(.rateApplicabilityNotAssessed))
+    }
+
+    func testIssueAndLineValuesAreComparable() throws {
+        let first = try inspection(bookChanges: [(["rates", "0", "unit_price", "amount"], .string("8.00"))])
+        let second = try inspection(bookChanges: [(["rates", "0", "unit_price", "amount"], .string("8.00"))])
+        XCTAssertEqual(first.lines, second.lines)
+        XCTAssertNotEqual(first.lines[0], first.lines[1])
+        XCTAssertEqual(Set(first.lines[0].issues), [.unitPriceAmountValueDiffers])
+    }
+
     func testLargeMoneyTextStaysExactAndDoesNotRepairTotals() throws {
         let amount = String(repeating: "9", count: 200) + ".123456789012"
         let result = try inspection(estimateChanges: [(["line_items", "0", "unit_price", "amount"], .string(amount))],
@@ -278,7 +367,7 @@ final class RecordedCostRateProvenanceTests: XCTestCase {
         XCTAssertEqual(result.lines[0].line.amount.amount, "576.00")
     }
 
-    func testDatesRegionsAndSourceConditionsAreExactUnassessedDeclarations() throws {
+    func testRegionAndWindowAreReportedWhileSourceConditionsStayExactDeclarations() throws {
         let conditions: [JSONValue] = [.string("regional offer"), .string(""), .string("regional offer")]
         let result = try inspection(bookChanges: [
             (["rates", "0", "region"], .string("different-region-é")),
@@ -289,7 +378,8 @@ final class RecordedCostRateProvenanceTests: XCTestCase {
             (["rates", "0", "provenance", "verification_status"], .string("verified")),
         ])
         let rate = try XCTUnwrap(result.lines[0].candidateRate)
-        XCTAssertEqual(result.lines[0].issues, [])
+        XCTAssertEqual(result.lines[0].issues, [.rateRegionDiffersFromBuildObjective, .rateValidityWindowInverted,
+            .estimatedAtBeforeRateValidFrom, .estimatedAtAfterRateValidUntil])
         XCTAssertEqual(rate.region, "different-region-é")
         XCTAssertEqual(rate.validFrom, "2099-01-02T03:04:05+02:00")
         XCTAssertEqual(rate.validUntil, "2000-01-01T00:00:00Z")
