@@ -123,24 +123,26 @@ parity. Require both checks for the same commit. This is partial #32/#37/#104
 coverage for evaluation reports only, not all 29 catalog kinds or service parity.
 The decoder's documented number/depth/timestamp exclusions remain client limits.
 
-`evidence_vectors.py --contract-root "$CONTRACT_ROOT" --check` adds 37 shared
+`evidence_vectors.py --contract-root "$CONTRACT_ROOT" --check` adds 41 shared
 evidence inputs for the Core decoder and actual SwiftUI rendering tests. It
 uses the shared source-copy containment check, re-verifies the completed frozen
-manifest and copied bytes, checks 28 accepted and nine rejected cases with the
+manifest and copied bytes, checks 32 accepted and nine rejected cases with the
 canonical schema consumer, and requires exact matching
 bytes in both package resources. The [evidence state mapping](../../Packages/PlannerUI/EVIDENCE_RENDERING.md)
 records the presence, conflict, skipped-rule and claim-grade boundaries, the
 exact versions, and the separate native receiving gate. These synthetic inputs
 do not establish source verification or a compatibility policy.
 
-`qualify_evidence_rendering.py` qualifies the five selected native UI test methods
+`qualify_evidence_rendering.py` qualifies the six selected native UI test methods
 using the existing strict XCTest parser and the explicit `PlannerEvidenceUITests` module.
 The Core parser's default module and mutation criteria remain unchanged. The
 workflow first requires the actual `xcodebuild test` command to succeed, then
 rejects empty, skipped, duplicate, truncated or incorrectly named log receipts.
 The [isolated real-app host](../evidence-rendering/README.md) preserves the original
-failed direct-host native evidence and runs the five rendering methods through
+failed direct-host native evidence and runs the six rendering methods through
 public UI automation; it does not change production views or the shared bytes.
+The current copy-localization extension also rejects the earlier five-method
+date-only receipt; synthetic receipt fixtures cannot establish native execution.
 
 `swift_mutations.py --package Packages/PlannerCore --output-dir /tmp/swift-mutations`
 first runs the unmodified Swift suite, then changes required-field handling,
@@ -153,6 +155,16 @@ trigger that test's expected assertion, and complete with a matching failed
 XCTest suite summary. A class or method that only contains the expected name
 does not qualify. Duplicate results, unexpected failures, truncated output,
 compile errors, crashes, timeouts and changed anchors do not qualify.
+Each invocation keeps its configured deadline (`--timeout`, default 300 seconds).
+On POSIX hosts, it starts a new session and terminates only that invocation's
+process group after a wait timeout, then reaps the driver before propagating the
+failure. An interrupted wait applies the same cleanup while the driver remains
+unreaped; an already reaped PID is never reused for signaling. Compiler or test children that retain the group
+cannot continue writing after a timeout. A child that deliberately starts another
+session is outside this group boundary. Normal completions preserve their actual
+exit status and combined output; no retry is added. Non-POSIX hosts retain
+direct-child termination without a process-group claim. The implementation uses
+Python's documented [new-session process creation and wait semantics](https://docs.python.org/3.12/library/subprocess.html#subprocess.Popen).
 The source package is never changed. The selected package path must pass native
 directory lookup before normalization or output cleanup. A regular-file or
 missing prefix before `..`, including one inside a symlink target, cannot be
@@ -227,6 +239,51 @@ test models the changed resolution observation without claiming a concurrent
 filesystem reproduction. All prior 22 methods and the three mutation anchors
 remain intact. Actual current-source macOS qualification remains required.
 
-Supported historical migration, rollback, approved executable policy, actual
-service parity, simulator execution, device results and receiving acceptance are
-still unverified. Rejection of unsupported versions is not successful migration.
+The process-group correction was reproduced on accepted
+`677be39da2472a859c204f4e6db0507e30a38559` using an owned synthetic Swift driver
+that starts a compiler child. At each of the four invocation phases, the prior
+runner timed out and reaped the driver while the child kept its sole FIFO writer
+open. The corrected regression observes FIFO EOF, confirms driver reaping and
+preserves an unrelated running process. It also checks retained partial logs,
+absence of later-phase logs and the success receipt, and unchanged package bytes.
+Another actual subprocess control preserves exit codes 0 and 7, argument order,
+combined stdout/stderr and replacement decoding of invalid output bytes. These
+two added methods extend the existing 25-method suite; they execute only bounded
+Python fixtures and do not establish new Swift, macOS or simulator results.
+
+The original preparation results above do not establish historical migration,
+rollback, executable policy, actual service parity or device/receiving acceptance.
+Rejection of unsupported versions is not successful migration.
+
+## Shared wire consumers and Apple local migration receipts
+
+The [#37 bundle and criterion record](../../Packages/PlannerConformance/README.md)
+adds 223 identical golden wire payloads for actual Swift, canonical Python and
+the pinned website validator, plus six distinct Apple-local migration fixture
+descriptions. `cross_client.py --contract-root "$CONTRACT_ROOT" --check` verifies
+all derived bytes and canonical schema expectations, retaining all 98 placement
+and 37 original evidence inputs. The lock explicitly names this 37-case profile
+within the accepted complete 41-case Core/UI evidence source: it pins the full
+source file, all 41 IDs and their order, the exact selected 37 IDs, and the
+canonical original 37-case file hash. The four named explanation cases remain
+in the complete Core/UI resources and tests, outside this shared profile.
+Unknown, missing, duplicate, reordered or changed selected rows are rejected
+before adapter/reference consumption. The generated 223 case rows stay exact;
+only their containing bundle's evidence-source pin changes. The prior bundle
+and its actual executions remain separately identified in the linked record.
+This does not change the original frozen import or model
+boundaries. `web_consumer.mjs` executes a private verified copy of the original
+website/runtime closure; it does not modify or deploy the website.
+
+`consumer_receipts.py` requires all four wire methods/223 observations or all
+85 storage methods/20 observations (31 draft, 35 pending-write store, 15 dispatcher
+and four migration methods), with exact native module identity and complete
+failure-free XCTest scope. The explicitly selected Linux spelling remains
+labeled local evidence. The linked record specifies the neutral consumer
+interface, exact source/runtime pins, separate wire/local versions, actual local
+results and pending native/receiving gates. Its separate Android receiving
+section now records the actually executed and signed-main-delivered fixture
+consumer from Android #432, retaining the original `b0d2/c0143` execution and
+later `033ace/c4db` source preservation. Android's 34 private migration
+observations remain distinct from Apple's 20 SQLite observations; installed
+application and production evaluator behavior remain outside those receipts.

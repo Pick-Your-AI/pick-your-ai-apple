@@ -171,7 +171,7 @@ class RegularInputTests(unittest.TestCase):
 
     def replacement_probe(self, moment, operation):
         with tempfile.TemporaryDirectory() as directory:
-            target = Path(directory) / 'input'
+            target = Path(directory).resolve() / 'input'
             original = b'exact admitted bytes\x00\xff\n'
             target.write_bytes(original)
             try:

@@ -1,0 +1,22 @@
+{
+  "repository": "Pick-Your-AI/pick-your-ai-research",
+  "revision": "7acbefbf4e4e700231e88be272bc89e3a73dde15",
+  "contractVersion": "1.0.0",
+  "files": [
+    {
+      "source": "contracts/v1/schemas/deployment-manifest.schema.json",
+      "target": "Sources/PlannerTransfer/Resources/deployment-manifest.schema.json",
+      "sha256": "86bc716c906aca1299d9129eec08abec44378c26b5a97317d6310afe84d6b374"
+    },
+    {
+      "source": "contracts/v1/schemas/common.schema.json",
+      "target": "Sources/PlannerTransfer/Resources/common.schema.json",
+      "sha256": "0342ce2f1114e7276fc7f6a08ff5b86e8727caadd83ae4f443de9a7e1431c43c"
+    },
+    {
+      "source": "contracts/v1/examples/deployment-manifest.json",
+      "target": "Tests/PlannerTransferTests/Fixtures/deployment-manifest.json",
+      "sha256": "c05603388efc50a15274d1e6fa8e25dac3c205377a1989bfb5b3a3e64face8ab"
+    }
+  ]
+}

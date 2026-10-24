@@ -1,0 +1,77 @@
+{
+  "schema_version": "1.0.0",
+  "id": "build.fixture.maintenance.1",
+  "revision": 1,
+  "name": "FICTIONAL maintenance rehearsal",
+  "owner_ref": "team.fixture",
+  "lifecycle": "draft",
+  "created_at": "2026-10-16T09:00:00Z",
+  "updated_at": "2026-10-16T09:00:00Z",
+  "objectives": {
+    "region": "us-east-fixture",
+    "currency": "USD",
+    "monthly_budget_amount": "1000.00",
+    "requests_per_day": 200,
+    "avg_input_tokens": 700,
+    "avg_output_tokens": 400,
+    "max_concurrency": 2,
+    "data_classification": "internal",
+    "max_latency_ms": 6000
+  },
+  "locks": {
+    "catalog_snapshot_id": "catalog.fixture.maintenance.1",
+    "ruleset_id": "rules.fixture.1",
+    "ruleset_version": "1.0.0",
+    "dependency_graph_id": "dependencies.core.1",
+    "dependency_graph_revision": 1,
+    "pricebook_id": "prices.fixture.maintenance.1"
+  },
+  "selections": [
+    {
+      "id": "sel_workload",
+      "kind": "workload",
+      "catalog_item_id": "cat.workload.fixture",
+      "catalog_item_version": "2026.10-demo",
+      "role": "primary",
+      "enabled": true,
+      "settings": {
+        "concurrency": 2,
+        "requests_per_day": 200,
+        "avg_input_tokens": 700,
+        "avg_output_tokens": 400
+      }
+    },
+    {
+      "id": "sel_compute_profile",
+      "kind": "compute_profile",
+      "catalog_item_id": "cat.compute_profile.fixture",
+      "catalog_item_version": "2026.10-demo",
+      "role": "primary",
+      "enabled": true,
+      "settings": {
+        "instances": 1,
+        "region": "us-east-fixture",
+        "reserved_hours_per_month": 720
+      }
+    },
+    {
+      "id": "sel_storage",
+      "kind": "storage",
+      "catalog_item_id": "cat.storage.fixture",
+      "catalog_item_version": "2026.10-demo",
+      "role": "primary",
+      "enabled": true,
+      "settings": {
+        "provisioned_gb": 50,
+        "region": "us-east-fixture"
+      }
+    }
+  ],
+  "links": [],
+  "policy": {
+    "fail_on_unknown": true,
+    "require_evaluations_for_production": true,
+    "allow_unverified_catalog_items": true,
+    "min_resource_confidence": "estimated"
+  }
+}

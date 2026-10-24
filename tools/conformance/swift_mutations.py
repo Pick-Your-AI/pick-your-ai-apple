@@ -2,9 +2,11 @@
 """Prove existing Swift regressions detect semantic changes in disposable copies."""
 import argparse
 import json
+import os
 from pathlib import Path
 import re
 import shutil
+import signal
 import stat
 import subprocess
 import tempfile
@@ -132,11 +134,28 @@ def invoke(package, swift, arguments, log, timeout):
     # refuses an unexpected file or alias installed before this invocation.
     with log.open('x') as stream:
         try:
-            result = subprocess.run(command, stdout=stream, stderr=subprocess.STDOUT,
-                                    timeout=timeout, check=False)
+            # SwiftPM can leave compiler/test children behind if only its driver
+            # is killed. A POSIX session gives this invocation an owned group.
+            with subprocess.Popen(command, stdout=stream, stderr=subprocess.STDOUT,
+                                  start_new_session=(os.name == 'posix')) as process:
+                try:
+                    code = process.wait(timeout=timeout)
+                except BaseException:
+                    # An unreaped group leader retains its PID. Never signal a
+                    # reused group identity after wait has already reaped it.
+                    if process.returncode is None:
+                        try:
+                            if os.name == 'posix':
+                                os.killpg(process.pid, signal.SIGKILL)
+                            else:
+                                process.kill()
+                        except ProcessLookupError:
+                            pass
+                    process.wait()
+                    raise
         except subprocess.TimeoutExpired as error:
             raise ValueError(f'Swift test timed out; see {log}') from error
-    return result.returncode, log.read_text(errors='replace')
+    return code, log.read_text(errors='replace')
 
 
 def prepare_output(package, output):

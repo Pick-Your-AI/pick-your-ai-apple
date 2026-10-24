@@ -17,19 +17,36 @@ also contains the lowercase SHA-256 of the original artifact bytes.
 The cache requires a `@Sendable (Data) throws -> RulesetIdentity` validator at
 initialization. The validator must fully validate the **same original bytes**
 against the receiver's frozen Ruleset boundary and return their decoded identity.
-There is no permissive default, built-in schema substitute or dependency on the
-unmerged Transfer contribution. Request-field bounds alone are not contract
+There is no permissive default or built-in schema substitute in PlannerCatalog.
+Request-field bounds alone are not contract
 validation. In particular, they do not authorize a malformed ID, version or date.
 
-The proposed [#214 API](https://github.com/Pick-Your-AI/pick-your-ai-apple/blob/fbc7b043418688c514f9664789014753dc358be8/Packages/PlannerTransfer/Sources/PlannerTransfer/Ruleset.swift)
-supplies a concrete later adapter: `Ruleset.decode(data)` validates the whole
-artifact, after which its `id`, `version` and `publishedAt` can populate the
-identity. Successful decoding already requires schema version `1.0.0`.
+PlannerTransfer supplies the concrete
+[`FrozenRulesetCacheValidator.identity(for:)` adapter](../PlannerTransfer/Sources/PlannerTransfer/RulesetCacheValidator.swift).
+It calls the existing whole-artifact `Ruleset.decode(data)` boundary before
+returning the decoded `id`, string `version` and `publishedAt`. Successful
+decoding already requires schema version `1.0.0`. A plausible metadata header
+cannot bypass validation of the rules body, duplicate keys or whole-input bounds.
+Decoder errors propagate without becoming a cache identity or an unavailable
+record. Configure the cache explicitly in the receiving target:
+
+```swift
+import PlannerCatalog
+import PlannerTransfer
+
+let cache = try RulesetCache(directory: directory) {
+    try FrozenRulesetCacheValidator.identity(for: $0)
+}
+```
+
+PlannerCatalog remains independent of PlannerTransfer. The receiving Transfer
+target depends on Catalog alongside its existing Core dependency; the cache and
+selector implementations are unchanged. The adapter delegates to the reader
+delivered through [#359](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/359),
+preserving the original [#214 handoff](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/214#issuecomment-6258099318).
 The selected frozen grammar admits a literal numeric-triplet version with an
 optional prerelease; it does not admit arbitrary general-SemVer build metadata.
-The [current canonical owner handoff](https://github.com/Pick-Your-AI/pick-your-ai-apple/pull/214#issuecomment-6258099318)
-retains that implementation and its receiving decision. This storage donor does
-not transplant the decoder or claim that its adapter has been integrated.
+Accepted version and timestamp spellings are returned without normalization.
 
 Hashing uses the existing `CatalogCache.sha256` facility. Store/hash the received
 `Data`, never the decoder's normalized `encoded()` output. A digest proves byte
@@ -110,21 +127,32 @@ overlap and a controlled filesystem obstruction followed by recovery and retry.
 The filesystem fault moves the prior directory to an explicit backup before
 obstructing its original path; its preserved bytes are checked, then restored.
 
-The persistence fixtures are explicitly header-only synthetic bytes with a
+The existing Catalog persistence fixtures are explicitly header-only synthetic bytes with a
 controlled identity decoder. They test storage and mandatory callback behavior;
-they do not execute the proposed full Ruleset validator or establish policy,
+they do not execute the full Ruleset validator or establish policy,
 publisher or source-use acceptance. Unicode equality controls exercise public
 value semantics before contract admission, not admission of non-ASCII frozen IDs.
 
+PlannerTransfer's `RulesetCacheValidatorTests` separately use the complete frozen
+45-rule fixture through the real adapter. They cover whole-body rejection,
+original bytes and distinct version spellings after restart, failed retention
+with correction, exact-pin mismatch, corrupt older history when another or missing
+pin is requested, and explicit offline selection after failed/corrected rules
+preparation. Their pair-cache fixture validator is a closed test-only byte
+allowlist, not a general Catalog/Pricebook contract implementation.
+
 Run `swift test --package-path Packages/PlannerCatalog` and the storage regression
 and actual process-exit commands in [PlannerData's guide](../PlannerData/README.md#reproduce).
+Run the receiving adapter suite with
+`swift test --package-path Packages/PlannerTransfer --filter RulesetCacheValidatorTests`.
 Linux without CryptoKit explicitly skips hash-dependent persistence cases. A skip
 or successful compile is not a persistence pass. The existing macOS Catalog and
 unsigned iOS/SDK checks must execute the complete current source before delivery.
-No hashing fallback, new package dependency or workflow exception is introduced.
+The Transfer checks qualify the added receiver dependency and integration suite;
+no hashing fallback or workflow exception is introduced.
 
 This contribution advances #87's pinned rules-storage subtask. Its full offline
-cache/edit/restart acceptance still needs the selected validator adapter, coherent
-resource selection and actual application integration. [#88](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/88)
+cache/edit/restart acceptance still needs actual application integration and
+receiving evidence beyond these cache/decoder/selection APIs. [#88](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/88)
 still requires its real OS cancellation/background and complete-release evidence.
 Physical-device, rights, service, store and release outcomes remain distinct.

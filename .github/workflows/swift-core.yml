@@ -35,7 +35,8 @@ jobs:
           APPLE_CI_BASE: ${{ github.event.pull_request.base.sha }}
           APPLE_CI_BEFORE: ${{ github.event.before }}
         run: python3 tools/ci/native_scope.py
-  macos-core:
+  core_validation:
+    name: macos-core-validation
     needs: scope
     if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
     runs-on: macos-15
@@ -119,25 +120,6 @@ jobs:
             grep -E 'Test Case .*ContractDecimalTests.*testExactAdditionCarriesAcrossIntegerAndFraction.* passed' "simulator-$label-test.log"
             grep -E 'Executed [1-9][0-9]* tests?, with 0 failures' "simulator-$label-test.log"
           done < simulator-selection.tsv
-      - name: Render evidence views on the selected iPhone and iPad simulators
-        working-directory: .
-        run: |
-          set -euo pipefail
-          mkdir -p "$RUNNER_TEMP/evidence-rendering"
-          while IFS=$'\t' read -r label udid; do
-            xcodebuild test -project tools/evidence-rendering/EvidenceHarness.xcodeproj -scheme EvidenceHarness \
-              -only-testing:PlannerEvidenceUITests/EvidenceRenderingTests \
-              -destination "platform=iOS Simulator,id=$udid" \
-              -destination-timeout 120 \
-              -parallel-testing-enabled NO \
-              -derivedDataPath /tmp/planner-evidence-rendering-tests \
-              -resultBundlePath "$RUNNER_TEMP/evidence-rendering/evidence-$label.xcresult" \
-              CODE_SIGNING_ALLOWED=NO \
-              2>&1 | tee "$RUNNER_TEMP/evidence-rendering/evidence-$label-test.log"
-            # The strict existing parser requires actual unique XCTest starts,
-            # passes and summaries; compile-only, empty and skipped runs fail.
-            python3 tools/conformance/qualify_evidence_rendering.py "$RUNNER_TEMP/evidence-rendering/evidence-$label-test.log"
-          done < Packages/PlannerCore/simulator-selection.tsv
       - name: Prove a failing Swift test returns failure
         run: |
           set -euo pipefail
@@ -175,7 +157,219 @@ jobs:
             Packages/PlannerCore/simulator-inventory.json
             Packages/PlannerCore/simulator-selection.tsv
             Packages/PlannerCore/simulator-*.xcresult
-            ${{ runner.temp }}/evidence-rendering/
             swift-mutation-evidence/
           if-no-files-found: warn
           retention-days: 14
+
+  render_iphone:
+    name: macos-core-evidence-iphone
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
+    runs-on: macos-15
+    timeout-minutes: 40
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+      EVIDENCE_PLATFORM: iphone
+    defaults:
+      run:
+        working-directory: Packages/PlannerCore
+        shell: bash
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Require the selected toolchain and record runner identity
+        run: |
+          set -euo pipefail
+          test -d "$DEVELOPER_DIR"
+          xcodebuild -version | tee xcode-version.txt
+          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') xcode-version.txt
+          swift --version
+          sw_vers
+          echo "Runner image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+      - name: Select rendering-qualifier Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12.10'
+      - name: Inventory the exact iPhone renderer destination
+        run: |
+          set -euo pipefail
+          xcrun simctl list --json > simulator-inventory.json
+          xcodebuild -scheme PlannerCore -showdestinations > simulator-destinations.log 2>&1
+          python3 - <<'PYTHON'
+          import json
+          import os
+          from pathlib import Path
+          inventory = json.loads(Path("simulator-inventory.json").read_text())
+          runtime = "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
+          if not any(r["identifier"] == runtime and r.get("isAvailable") for r in inventory["runtimes"]):
+              raise SystemExit("Required installed iOS 18.5 runtime unavailable; do not substitute or download")
+          platform = os.environ.get("EVIDENCE_PLATFORM")
+          names = {"iphone": "iPhone SE (3rd generation)", "ipad": "iPad (10th generation)"}
+          if platform not in names:
+              raise SystemExit("Missing or unsupported evidence platform; no target may be omitted")
+          targets = [(platform, names[platform])]
+          destinations = []
+          for label, name in targets:
+              matches = [d for d in inventory["devices"].get(runtime, []) if d["name"] == name and d.get("isAvailable")]
+              if len(matches) != 1:
+                  raise SystemExit(f"Expected exactly one available {name} on iOS 18.5; found {len(matches)}")
+              destinations.append(f"{label}\t{matches[0]['udid']}")
+              print(f"{label}: {name}, iOS 18.5, {matches[0]['udid']}")
+          Path("simulator-selection.tsv").write_text("\n".join(destinations) + "\n")
+          PYTHON
+      - name: Render all evidence scenarios on the selected iPhone simulator
+        working-directory: .
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/evidence-rendering"
+          while IFS=$'\t' read -r label udid; do
+            xcodebuild test -project tools/evidence-rendering/EvidenceHarness.xcodeproj -scheme EvidenceHarness \
+              -only-testing:PlannerEvidenceUITests/EvidenceRenderingTests \
+              -destination "platform=iOS Simulator,id=$udid" \
+              -destination-timeout 120 \
+              -parallel-testing-enabled NO \
+              -derivedDataPath /tmp/planner-evidence-rendering-tests \
+              -resultBundlePath "$RUNNER_TEMP/evidence-rendering/evidence-$label.xcresult" \
+              CODE_SIGNING_ALLOWED=NO \
+              2>&1 | tee "$RUNNER_TEMP/evidence-rendering/evidence-$label-test.log"
+            # The strict existing parser requires actual unique XCTest starts,
+            # passes and summaries; compile-only, empty and skipped runs fail.
+            python3 tools/conformance/qualify_evidence_rendering.py "$RUNNER_TEMP/evidence-rendering/evidence-$label-test.log"
+          done < Packages/PlannerCore/simulator-selection.tsv
+      - name: Retain the iPhone rendering evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: swift-core-evidence-iphone
+          path: |
+            Packages/PlannerCore/*-version.txt
+            Packages/PlannerCore/simulator-inventory.json
+            Packages/PlannerCore/simulator-destinations.log
+            Packages/PlannerCore/simulator-selection.tsv
+            ${{ runner.temp }}/evidence-rendering/
+          if-no-files-found: warn
+          retention-days: 14
+
+  render_ipad:
+    name: macos-core-evidence-ipad
+    needs: scope
+    if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
+    runs-on: macos-15
+    timeout-minutes: 40
+    env:
+      DEVELOPER_DIR: /Applications/Xcode_16.4.app/Contents/Developer
+      EVIDENCE_PLATFORM: ipad
+    defaults:
+      run:
+        working-directory: Packages/PlannerCore
+        shell: bash
+    steps:
+      - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683 # v4.2.2
+        with:
+          persist-credentials: false
+      - name: Require the selected toolchain and record runner identity
+        run: |
+          set -euo pipefail
+          test -d "$DEVELOPER_DIR"
+          xcodebuild -version | tee xcode-version.txt
+          diff -u <(printf 'Xcode 16.4\nBuild version 16F6\n') xcode-version.txt
+          swift --version
+          sw_vers
+          echo "Runner image: ${ImageOS:-unknown} ${ImageVersion:-unknown}"
+      - name: Select rendering-qualifier Python
+        uses: actions/setup-python@a26af69be951a213d495a4c3e4e4022e16d87065 # v5.6.0
+        with:
+          python-version: '3.12.10'
+      - name: Inventory the exact iPad renderer destination
+        run: |
+          set -euo pipefail
+          xcrun simctl list --json > simulator-inventory.json
+          xcodebuild -scheme PlannerCore -showdestinations > simulator-destinations.log 2>&1
+          python3 - <<'PYTHON'
+          import json
+          import os
+          from pathlib import Path
+          inventory = json.loads(Path("simulator-inventory.json").read_text())
+          runtime = "com.apple.CoreSimulator.SimRuntime.iOS-18-5"
+          if not any(r["identifier"] == runtime and r.get("isAvailable") for r in inventory["runtimes"]):
+              raise SystemExit("Required installed iOS 18.5 runtime unavailable; do not substitute or download")
+          platform = os.environ.get("EVIDENCE_PLATFORM")
+          names = {"iphone": "iPhone SE (3rd generation)", "ipad": "iPad (10th generation)"}
+          if platform not in names:
+              raise SystemExit("Missing or unsupported evidence platform; no target may be omitted")
+          targets = [(platform, names[platform])]
+          destinations = []
+          for label, name in targets:
+              matches = [d for d in inventory["devices"].get(runtime, []) if d["name"] == name and d.get("isAvailable")]
+              if len(matches) != 1:
+                  raise SystemExit(f"Expected exactly one available {name} on iOS 18.5; found {len(matches)}")
+              destinations.append(f"{label}\t{matches[0]['udid']}")
+              print(f"{label}: {name}, iOS 18.5, {matches[0]['udid']}")
+          Path("simulator-selection.tsv").write_text("\n".join(destinations) + "\n")
+          PYTHON
+      - name: Render all evidence scenarios on the selected iPad simulator
+        working-directory: .
+        run: |
+          set -euo pipefail
+          mkdir -p "$RUNNER_TEMP/evidence-rendering"
+          while IFS=$'\t' read -r label udid; do
+            xcodebuild test -project tools/evidence-rendering/EvidenceHarness.xcodeproj -scheme EvidenceHarness \
+              -only-testing:PlannerEvidenceUITests/EvidenceRenderingTests \
+              -destination "platform=iOS Simulator,id=$udid" \
+              -destination-timeout 120 \
+              -parallel-testing-enabled NO \
+              -derivedDataPath /tmp/planner-evidence-rendering-tests \
+              -resultBundlePath "$RUNNER_TEMP/evidence-rendering/evidence-$label.xcresult" \
+              CODE_SIGNING_ALLOWED=NO \
+              2>&1 | tee "$RUNNER_TEMP/evidence-rendering/evidence-$label-test.log"
+            # The strict existing parser requires actual unique XCTest starts,
+            # passes and summaries; compile-only, empty and skipped runs fail.
+            python3 tools/conformance/qualify_evidence_rendering.py "$RUNNER_TEMP/evidence-rendering/evidence-$label-test.log"
+          done < Packages/PlannerCore/simulator-selection.tsv
+      - name: Retain the iPad rendering evidence
+        if: always()
+        uses: actions/upload-artifact@ea165f8d65b6e75b540449e92b4886f43607fa02 # v4.6.2
+        with:
+          name: swift-core-evidence-ipad
+          path: |
+            Packages/PlannerCore/*-version.txt
+            Packages/PlannerCore/simulator-inventory.json
+            Packages/PlannerCore/simulator-destinations.log
+            Packages/PlannerCore/simulator-selection.tsv
+            ${{ runner.temp }}/evidence-rendering/
+          if-no-files-found: warn
+          retention-days: 14
+
+  macos-core:
+    needs: [scope, core_validation, render_iphone, render_ipad]
+    if: ${{ always() }}
+    runs-on: ubuntu-latest
+    timeout-minutes: 5
+    steps:
+      - name: Require Core validation and both selected renderer platforms
+        env:
+          SCOPE_RESULT: ${{ needs.scope.result }}
+          NATIVE_REQUIRED: ${{ needs.scope.outputs.native_required }}
+          CORE_RESULT: ${{ needs.core_validation.result }}
+          IPHONE_RESULT: ${{ needs.render_iphone.result }}
+          IPAD_RESULT: ${{ needs.render_ipad.result }}
+        run: |
+          set -euo pipefail
+          test "$SCOPE_RESULT" = success
+          case "$NATIVE_REQUIRED" in
+            true)
+              test "$CORE_RESULT" = success
+              test "$IPHONE_RESULT" = success
+              test "$IPAD_RESULT" = success
+              ;;
+            false)
+              test "$CORE_RESULT" = skipped
+              test "$IPHONE_RESULT" = skipped
+              test "$IPAD_RESULT" = skipped
+              ;;
+            *)
+              echo "Missing or invalid native scope result" >&2
+              exit 1
+              ;;
+          esac

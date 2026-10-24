@@ -1,7 +1,10 @@
 """Runner qualification without requiring a Swift installation."""
 import importlib.util
+import json
 import os
 from pathlib import Path
+import select
+import signal
 import subprocess
 import sys
 import tempfile
@@ -539,12 +542,112 @@ class SwiftMutationTests(unittest.TestCase):
                 elif kind == 'symlink': log.symlink_to(source)
                 else: log.hardlink_to(source)
                 before = log.read_bytes()
-                with patch.object(runner.subprocess, 'run') as execute:
+                with patch.object(runner.subprocess, 'Popen') as execute:
                     with self.assertRaises(FileExistsError):
                         runner.invoke(root, 'swift', [], log, 10)
                     execute.assert_not_called()
                 self.assertEqual(log.read_bytes(), before)
                 self.assertEqual(source.read_text(), 'retained source')
+
+    def test_invoke_preserves_exit_status_arguments_and_combined_output(self):
+        for exit_code in (0, 7):
+            with self.subTest(exit_code=exit_code), tempfile.TemporaryDirectory() as tmp:
+                root = Path(tmp)
+                executable = root / 'synthetic-swift'
+                executable.write_text(
+                    f'#!{sys.executable}\nimport json, os, sys\n'
+                    'print(json.dumps(sys.argv[1:]), flush=True)\n'
+                    'os.write(1, b"synthetic stdout\\n")\n'
+                    'os.write(2, b"synthetic stderr \\xff\\n")\n'
+                    f'raise SystemExit({exit_code})\n', encoding='utf-8')
+                executable.chmod(0o755)
+                arguments = ['--filter', runner.MUTATIONS[0]['test']]
+                code, output = runner.invoke(root, str(executable), arguments, root / 'run.log', 5)
+                self.assertEqual(code, exit_code)
+                lines = output.splitlines()
+                self.assertEqual(json.loads(lines[0]), ['test', '--package-path', str(root), *arguments])
+                self.assertEqual(lines[1:], ['synthetic stdout', 'synthetic stderr \ufffd'])
+
+    @unittest.skipUnless(os.name == 'posix', 'Owned process groups require POSIX')
+    def test_timeout_at_each_phase_stops_owned_children_and_preserves_evidence(self):
+        transcripts = {'baseline': self.baseline(),
+                       **{mutation['test']: self.output(mutation) for mutation in runner.MUTATIONS}}
+        modes = list(transcripts)
+        logs = ['baseline.log', *(mutation['name'] + '.log' for mutation in runner.MUTATIONS)]
+        sentinel = subprocess.Popen([sys.executable, '-c', 'import time; time.sleep(30)'],
+                                    stdout=subprocess.DEVNULL, stderr=subprocess.DEVNULL,
+                                    start_new_session=True)
+        try:
+            for index, mode in enumerate(modes):
+                with self.subTest(mode=mode), tempfile.TemporaryDirectory() as tmp:
+                    root = Path(tmp)
+                    package = self.make_package(root)
+                    before = {path.relative_to(package): path.read_bytes()
+                              for path in package.rglob('*') if path.is_file()}
+                    identity = root / 'owned-processes.json'
+                    address = root / 'child.pipe'
+                    os.mkfifo(address)
+                    connection = os.fdopen(os.open(address, os.O_RDONLY | os.O_NONBLOCK), 'rb', buffering=0)
+                    self.addCleanup(connection.close)
+                    child_program = ('import os, time\n'
+                                     f'connection = os.open({str(address)!r}, os.O_WRONLY)\n'
+                                     'os.write(connection, b"ready")\n'
+                                     'time.sleep(10)\n')
+                    executable = root / 'synthetic-swift'
+                    executable.write_text(
+                        f'#!{sys.executable}\nimport json, os, subprocess, sys, time\n'
+                        'from pathlib import Path\n'
+                        "mode = sys.argv[-1] if '--filter' in sys.argv else 'baseline'\n"
+                        f'if mode == {mode!r}:\n'
+                        f'    child = subprocess.Popen([sys.executable, "-c", {child_program!r}])\n'
+                        f'    Path({str(identity)!r}).write_text(json.dumps({{"parent": os.getpid(), "child": child.pid, "group": os.getpgrp()}}))\n'
+                        '    print("synthetic driver and compiler started", flush=True)\n'
+                        '    time.sleep(10)\n'
+                        f'print({transcripts!r}[mode], end="", flush=True)\n'
+                        'raise SystemExit(0 if mode == "baseline" else 1)\n', encoding='utf-8')
+                    executable.chmod(0o755)
+                    output = root / 'evidence'
+                    child = None
+                    child_closed = False
+                    try:
+                        with self.assertRaisesRegex(ValueError, 'Swift test timed out'):
+                            runner.run(package, output, str(executable), 1)
+                        ids = json.loads(identity.read_text())
+                        child = ids['child']
+                        # Only the compiler child opens this pipe for writing. EOF
+                        # observes its descriptor closure without confusing an
+                        # unreaped zombie or host PID namespace with a live child.
+                        readable, _, _ = select.select([connection], [], [], 5)
+                        self.assertTrue(readable, 'Compiler child did not report its ready control')
+                        self.assertEqual(connection.read(5), b'ready')
+                        readable, _, _ = select.select([connection], [], [], 2)
+                        self.assertTrue(readable, 'Owned compiler child kept its pipe open after the deadline')
+                        self.assertEqual(connection.read(1), b'')
+                        child_closed = True
+                        self.assertEqual(ids['group'], ids['parent'])
+                        self.assertNotEqual(ids['group'], os.getpgrp())
+                        with self.assertRaises(ProcessLookupError):
+                            os.kill(ids['parent'], 0)
+                        self.assertIsNone(sentinel.poll(), 'Unrelated process must remain running')
+                        self.assertEqual((output / logs[index]).read_text(),
+                                         'synthetic driver and compiler started\n')
+                        self.assertTrue(all((output / name).is_file() for name in logs[:index + 1]))
+                        self.assertTrue(all(not (output / name).exists() for name in logs[index + 1:]))
+                        self.assertFalse((output / 'swift-mutations.json').exists())
+                        self.assertEqual({path.relative_to(package): path.read_bytes()
+                                          for path in package.rglob('*') if path.is_file()}, before)
+                    finally:
+                        connection.close()
+                        if child is None and identity.exists():
+                            child = json.loads(identity.read_text())['child']
+                        if child is not None and not child_closed:
+                            try:
+                                os.kill(child, signal.SIGKILL)
+                            except ProcessLookupError:
+                                pass
+        finally:
+            sentinel.kill()
+            sentinel.wait(timeout=5)
 
     def test_receipt_does_not_follow_an_alias_created_during_execution(self):
         with tempfile.TemporaryDirectory() as tmp:

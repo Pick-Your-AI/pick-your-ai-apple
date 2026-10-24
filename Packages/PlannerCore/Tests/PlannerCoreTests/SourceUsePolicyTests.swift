@@ -117,6 +117,48 @@ final class SourceUsePolicyTests: XCTestCase {
             guard case .authorized = permitted else { return XCTFail("Exact operation receipt should match") }
         }
     }
+    func testAuditReceiptReferencesRetainExactUnicodeIdentity() throws {
+        let composed = "receipt.caf\u{00e9}"
+        let decomposed = "receipt.cafe\u{0301}"
+        XCTAssertEqual(composed, decomposed, "Display text equality must not erase receipt identity")
+        XCTAssertFalse(composed.utf8.elementsEqual(decomposed.utf8))
+        let subject = try request()
+
+        func assess(conditions: String, promotion: String) throws -> SourceUseAssessment {
+            try SourceUsePolicy.assess(
+                subject,
+                rights: [decision(subject, conditions: .satisfied(receiptReference: conditions))],
+                promotions: [self.promotion(subject, reference: promotion)]
+            )
+        }
+
+        for (first, second) in [(composed, decomposed), (decomposed, composed)] {
+            for field in ["conditions", "promotion"] {
+                let original = try assess(conditions: first, promotion: first)
+                let changed = try assess(conditions: field == "conditions" ? second : first,
+                                         promotion: field == "promotion" ? second : first)
+                let exactCopy = try assess(
+                    conditions: String(decoding: Array(first.utf8), as: UTF8.self),
+                    promotion: String(decoding: Array(first.utf8), as: UTF8.self)
+                )
+                guard case .authorized(let originalAudit) = original,
+                      case .authorized(let changedAudit) = changed,
+                      case .authorized(let copiedAudit) = exactCopy else {
+                    return XCTFail("Each independently supplied synthetic receipt must produce an audit")
+                }
+                XCTAssertNotEqual(originalAudit, changedAudit, field)
+                XCTAssertNotEqual(original, changed, field)
+                XCTAssertEqual(originalAudit, copiedAudit, field)
+                XCTAssertEqual(original, exactCopy, field)
+                XCTAssertEqual(originalAudit.request, changedAudit.request, field)
+                XCTAssertEqual(originalAudit.rightsRow, changedAudit.rightsRow, field)
+                XCTAssertTrue(changedAudit.conditionsReceiptReference.utf8.elementsEqual(
+                    (field == "conditions" ? second : first).utf8), field)
+                XCTAssertTrue(changedAudit.promotionReceiptReference.utf8.elementsEqual(
+                    (field == "promotion" ? second : first).utf8), field)
+            }
+        }
+    }
     func testUnknownDeniedAndRevokedExcludeEvenWithPromotion() throws {
         let subject = try request()
         for (disposition, denial) in [(SourceRightsDisposition.unknown, SourceUseDenial.rightsUnknown), (.denied, .rightsDenied), (.revoked, .rightsRevoked)] {
