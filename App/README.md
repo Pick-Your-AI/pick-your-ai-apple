@@ -471,3 +471,54 @@ timeout followed by both owned cleanup attempts, and a failed deletion. All 43
 preceding method bodies remain unchanged. These controlled child processes
 demonstrate exception ordering; they do not assign a cause to any historical
 simulator failure or establish native recovery.
+
+
+## Required-command process ownership
+
+On POSIX hosts, each required smoke command starts in its own process session.
+If capture times out or is interrupted while the direct child is still unreaped,
+the runner sends `SIGKILL` to that command's process group. This includes
+descendants which retain capture pipes after their parent exits but before the
+runner has reaped it. Cleanup does not poll or wait away that ownership anchor
+before signalling. The runner closes its own capture pipes without draining
+them and allows a separate five-second budget to reap the direct child. Cleanup
+errors are reported without replacing the original failure or partial output.
+
+A completed success or nonzero exit preserves its output and status without a
+later group signal: a reaped numeric group identity may already have been reused.
+Descendants of such a completed command are outside this timeout cleanup path.
+The operation deadlines and single-attempt policy remain unchanged. The extra
+reaping budget is bounded cleanup time, not a retry or an operation extension.
+Non-POSIX hosts retain the existing subprocess runner. A descendant which
+deliberately leaves the command's session is outside this group boundary.
+
+The guarantee is narrow: when a required command exceeds its own deadline (or
+capture is interrupted inside the runner) while its direct child is unreaped,
+the runner sends one `SIGKILL` to that owned process group, with no `SIGTERM`
+grace period, and then bounds reaping at five seconds. If the reap does not
+complete, the direct child stays unreaped, the run continues and the condition
+appears only as a printed exception type name. This is forceful, bounded
+cleanup on the runner's own deadline path; it is not a graceful shutdown.
+
+`start_new_session=True` also means a required command no longer shares the
+runner's process group. A cancellation signal that the CI job delivers to the
+step's process group may therefore reach the runner but not a running `simctl`
+command or its descendants. If the job is cancelled while such a command is in
+flight, the runner can exit without its `finally` cleanup running, and that
+command, its descendants and an owned booted simulator can be left running on
+the host. The five-second reap, the group kill and the owned shutdown/delete
+attempts do not cover that path, and this change does not add a cancellation
+handler. This is a reasoned consequence of the process-group change, not an
+observed cancellation result. Any such leftover owned simulator on a host that
+outlives the job needs separate cleanup.
+
+Two bounded real-child regressions cover a pipe-holding descendant after an
+observed parent exit and a live parent with a descendant. Each checks that the
+descendant stops, only the owned group is signalled, an unrelated sentinel
+continues and a subsequent ordinary command succeeds. A completed nonzero
+control preserves the exact failure/output and verifies that no group signal
+occurs after reaping. Two additional controls preserve the original exception
+through cleanup failure and the non-POSIX command contract. All 47 preceding
+test method bodies remain unchanged. These synthetic process results do not
+establish a cause for an earlier simulator cancellation; changed-runner native
+qualification is separate.
