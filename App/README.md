@@ -20,13 +20,20 @@ The simulator qualification job uses the existing Xcode 26.3 / 17C529 and SDK 26
 pins described in the [toolchain continuation](#simulator-toolchain-continuation-2026-10-19).
 The Xcode 16.4 development pin and rendering/package baseline remain unchanged.
 
+The required `native-evidence-rendering` and `native-simulator` jobs each have a
+finite 40-minute parent budget. Every child command deadline remains unchanged.
+Extra parent time does not extend a child deadline or turn a failed native
+simulator run into a passing result. The dated 20-minute limits and native
+observations below retain their original source and run scope.
+
 The [launch-smoke runner](scripts/simulator-smoke.py) retains its existing selection:
 the newest available iOS runtime and the first available iPhone and iPad types in
 that runtime's inventory. Its inventory/create/boot/launch/terminate commands have
 60-second deadlines. Installation has a dedicated three-minute budget, and waiting
-for boot readiness has a separate five-minute deadline. Each command, deadline,
-exit code and captured output is printed into the workflow's retained `launch.txt`,
-including partial stdout/stderr after a timeout. Each operation is attempted once;
+for boot readiness has a separate five-minute deadline. Each command and deadline
+is printed before execution. Its known exit status or timeout is reported before
+captured stdout/stderr, including partial output after a timeout, in the workflow's
+retained `launch.txt`. Each operation is attempted once;
 a timed-out or failed installation or launch command still fails the smoke gate.
 
 Each destination is a newly created simulator with a newly installed app. The
