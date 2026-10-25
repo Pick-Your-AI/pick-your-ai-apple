@@ -29,10 +29,11 @@ def sha256(data):
 
 
 def checked_inputs(placement_root=None):
+    """Read hash-pinned regular files without waiting for a FIFO writer."""
     result = {}
     for name, entry in LOCK['inputs'].items():
         root = placement_root if placement_root is not None and name.startswith('placement') else ROOT
-        data = (root / entry['path']).read_bytes()
+        data = reference.read_regular_bytes(root / entry['path'])
         if sha256(data) != entry['sha256']:
             raise ValueError(f'Pinned cross-client input differs: {name}')
         result[name] = data
