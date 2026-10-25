@@ -287,3 +287,12 @@ consumer from Android #432, retaining the original `b0d2/c0143` execution and
 later `033ace/c4db` source preservation. Android's 34 private migration
 observations remain distinct from Apple's 20 SQLite observations; installed
 application and production evaluator behavior remain outside those receipts.
+
+Receipt-output preflight uses native directory lookup before resolving the
+selected parent, then checks that the resolved directory has the same identity.
+An invalid file or missing prefix followed by `..`, including one reached through
+a directory alias, is rejected before removing an existing receipt. Valid
+outside-directory aliases still support the ordinary stale-receipt cleanup and
+retry behavior. The CLI regressions use owned temporary paths and synthetic
+transcripts; they are not native execution receipts. The identity check detects
+inconsistent preflight observations, not every concurrent filesystem replacement.

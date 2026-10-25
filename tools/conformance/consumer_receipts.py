@@ -252,7 +252,16 @@ def qualify(kind, returncode, output, *, allow_bare_linux=False):
 
 
 def prepare_output(output, log):
-    output = output.parent.resolve(strict=True) / output.name
+    # Native lookup must reject invalid prefixes before resolve can erase '..'.
+    selected = output.parent.stat()
+    if not stat.S_ISDIR(selected.st_mode):
+        raise ValueError('Receipt output parent must be a directory')
+    parent = output.parent.resolve(strict=True)
+    resolved = parent.stat()
+    if (not stat.S_ISDIR(resolved.st_mode)
+            or (selected.st_dev, selected.st_ino) != (resolved.st_dev, resolved.st_ino)):
+        raise ValueError('Receipt output directory changed during preflight')
+    output = parent / output.name
     if output.is_relative_to(ROOT.resolve()) or output == log.resolve():
         raise ValueError('Receipt output must be outside source and must not overwrite its input log')
     try:

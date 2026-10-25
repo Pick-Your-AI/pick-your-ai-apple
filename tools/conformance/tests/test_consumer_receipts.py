@@ -3,6 +3,7 @@ from copy import deepcopy
 import json
 from pathlib import Path
 import re
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -285,6 +286,92 @@ class ConsumerReceiptTests(unittest.TestCase):
             self.assertTrue(link.is_symlink())
             self.assertEqual(hardlink.read_bytes(), b'original log')
             self.assertTrue(folder.is_dir())
+
+    def test_cli_rejects_invalid_output_parent_routes_before_removing_receipts(self):
+        for variant in ['file-dotdot', 'missing-dotdot', 'invalid-alias', 'alias-chain', 'file-parent']:
+            with self.subTest(variant=variant), tempfile.TemporaryDirectory() as directory:
+                root = Path(directory)
+                log = root / 'input.log'
+                log.write_text(synthetic('wire'), encoding='utf-8')
+                output = root / 'receipt.json'
+                original = b'{"priorReceipt":"preserve invalid destination"}\n'
+                output.write_bytes(original)
+                identity = output.stat()
+                blocker = root / 'not-a-directory'
+                blocker.write_bytes(b'preserve regular prefix\n')
+                if variant == 'file-dotdot':
+                    parent = blocker / '..'
+                elif variant == 'missing-dotdot':
+                    parent = root / 'absent' / '..'
+                elif variant in ['invalid-alias', 'alias-chain']:
+                    alias = root / 'invalid'
+                    alias.symlink_to(Path(blocker.name) / '..', target_is_directory=True)
+                    parent = alias
+                    if variant == 'alias-chain':
+                        parent = root / 'outer'
+                        parent.symlink_to(alias.name, target_is_directory=True)
+                else:
+                    parent = blocker
+                with self.assertRaises(OSError):
+                    (parent / output.name).stat()
+                result = subprocess.run(
+                    [sys.executable, str(receipts.HERE / 'consumer_receipts.py'), 'wire',
+                     '--log', str(log), '--exit-code', '0', '--output', str(parent / output.name)],
+                    capture_output=True, text=True, timeout=10)
+                self.assertEqual(result.returncode, 1)
+                self.assertEqual(result.stdout, '')
+                self.assertIn('Consumer receipt rejected:', result.stderr)
+                self.assertTrue(output.exists())
+                self.assertEqual(output.read_bytes(), original)
+                self.assertEqual((output.stat().st_dev, output.stat().st_ino),
+                                 (identity.st_dev, identity.st_ino))
+                self.assertEqual(log.read_text(encoding='utf-8'), synthetic('wire'))
+                self.assertEqual(blocker.read_bytes(), b'preserve regular prefix\n')
+
+    def test_cli_valid_directory_alias_preserves_failed_qualification_and_recovery(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            destination = root / 'outside'
+            destination.mkdir()
+            alias = root / 'alias'
+            alias.symlink_to(destination.name, target_is_directory=True)
+            log = root / 'input.log'
+            log.write_text(synthetic('wire'), encoding='utf-8')
+            output = destination / 'receipt.json'
+            output.write_text('{"staleSuccess":true}\n', encoding='utf-8')
+            command = [sys.executable, str(receipts.HERE / 'consumer_receipts.py'), 'wire',
+                       '--log', str(log), '--output', str(alias / output.name), '--exit-code']
+            rejected = subprocess.run(command + ['1'], capture_output=True, text=True, timeout=10)
+            self.assertEqual(rejected.returncode, 1)
+            self.assertEqual(rejected.stdout, '')
+            self.assertFalse(output.exists())
+            recovered = subprocess.run(command + ['0'], capture_output=True, text=True, timeout=10)
+            self.assertEqual(recovered.returncode, 0, recovered.stderr)
+            self.assertIn('PASS 4 exact XCTest methods and 223 wire observations', recovered.stdout)
+            self.assertEqual(len(json.loads(output.read_text())['observations']), 223)
+            self.assertTrue(alias.is_symlink())
+            self.assertEqual(log.read_text(encoding='utf-8'), synthetic('wire'))
+
+    def test_output_parent_identity_mismatch_preserves_both_directories(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            selected, substituted = root / 'selected', root / 'substituted'
+            selected.mkdir()
+            substituted.mkdir()
+            log = root / 'input.log'
+            log.write_bytes(b'original input')
+            for parent in [selected, substituted]:
+                (parent / 'receipt.json').write_bytes(b'prior receipt')
+            # Model an inconsistent lookup observation; not an actual concurrent replacement.
+            original_resolve = Path.resolve
+            def resolve(path, *args, **kwargs):
+                return substituted if path == selected else original_resolve(path, *args, **kwargs)
+            with patch.object(Path, 'resolve', autospec=True, side_effect=resolve):
+                with self.assertRaisesRegex(ValueError, 'directory changed'):
+                    receipts.prepare_output(selected / 'receipt.json', log)
+            for parent in [selected, substituted]:
+                self.assertEqual((parent / 'receipt.json').read_bytes(), b'prior receipt')
+            self.assertEqual(log.read_bytes(), b'original input')
 
     def test_atomic_publication_failure_leaves_no_success_or_temporary_file(self):
         with tempfile.TemporaryDirectory() as directory:
