@@ -419,6 +419,21 @@ class ProducerJSONQualificationTests(unittest.TestCase):
                     self.assertEqual(observed["retained"][phase + ".stdout.json"], observed["responses"][phase])
                     self.assertEqual(observed["retained"][phase + ".stderr.log"], observed["stderr"])
 
+        # These are raw producer tokens, not floats rounded by the test writer.
+        for mode in ("portable", "native"):
+            for token in (b"1.0", b"1e0", b"0.1e1", b"1.0000000000000000"):
+                with self.subTest(mode=mode, integral_token=token):
+                    def change(responses):
+                        for phase, raw in responses.items():
+                            raw = raw.replace(b'"format":1,', b'"format":' + token + b',', 1)
+                            responses[phase] = raw.replace(b'"revision":1,', b'"revision":' + token + b',')
+                    observed = self.exercise(mode, change)
+                    self.assertEqual(observed["exit"], 0)
+                    self.assertEqual(observed["receipt"]["status"], "passed")
+                    self.assertIs(observed["receipt"]["full_rehearsal_qualified"], mode == "native")
+                    for phase in DRIVER.PHASES:
+                        self.assertEqual(observed["retained"][phase + ".stdout.json"], observed["responses"][phase])
+
     def test_ordinary_failed_and_malformed_observations_remain_rejected(self):
         for mode in ("portable", "native"):
             for scenario in ("failed", "malformed", "second-document"):
@@ -434,6 +449,25 @@ class ProducerJSONQualificationTests(unittest.TestCase):
                     self.assertIs(observed["receipt"]["full_rehearsal_qualified"], False)
                     self.assertEqual(len(observed["calls"]), 3 if scenario == "failed" else 1)
                     self.assertEqual(observed["retained"]["seed.stdout.json"], observed["responses"]["seed"])
+
+        for mode in ("portable", "native"):
+            for phase in DRIVER.PHASES:
+                for token in (b"1.0000000000000001", b"0.99999999999999999", b"10000000000000001e-16"):
+                    with self.subTest(mode=mode, phase=phase, fractional_token=token):
+                        def change(responses):
+                            responses[phase] = responses[phase].replace(
+                                b'"format":1,', b'"format":' + token + b',', 1)
+                        stopped_at = "exact-target" if phase == "exact-target" else "reopen"
+                        reason = "exact-target original identity" if phase == "exact-target" else "actual phase/mode identity"
+                        self.rejected_at(self.exercise(mode, change), stopped_at, reason)
+
+            for token in (b"1.0000000000000001", b"0.99999999999999999"):
+                with self.subTest(mode=mode, fractional_revision=token):
+                    def change(responses):
+                        for phase in DRIVER.PHASES[:3]:
+                            responses[phase] = responses[phase].replace(
+                                b'"revision":1,', b'"revision":' + token + b',')
+                    self.rejected_at(self.exercise(mode, change), "reopen", "actual saved bytes and currentness")
 
     def test_output_budget_failed_exit_and_timeout_still_precede_json_admission(self):
         for scenario in ("budget", "exit", "timeout"):
