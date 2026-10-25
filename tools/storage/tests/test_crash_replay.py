@@ -57,6 +57,9 @@ if mode == options.get("tamper_at"):
                 connection.execute("PRAGMA user_version=2")
             elif options["tamper"] == "column":
                 connection.execute("ALTER TABLE revisions ADD COLUMN restored_from INTEGER")
+if len(modes) - 1 == options.get("legacy_mutation_index"):
+    with sqlite3.connect(database) as connection:
+        connection.executescript(options["legacy_statement"])
 if mode.startswith("crash-"):
     os._exit(73)
 '''
@@ -190,6 +193,36 @@ class CrashReplayChecks(unittest.TestCase):
                 result, modes = self.replay(optimized, tamper_at="crash-migration", tamper="column")
                 self.require_failure(result)
                 self.assertEqual(modes, MODES[:-1])
+
+    def test_legacy_record_loss_or_changes_prevent_recovery_verification(self):
+        statements = [
+            "DELETE FROM drafts;",
+            "DELETE FROM revisions;",
+            "UPDATE drafts SET revision=2;",
+            "UPDATE revisions SET revision=2;",
+            "UPDATE revisions SET title='Changed';",
+            "UPDATE revisions SET payload=X'6e756c6c';",
+            "INSERT INTO revisions SELECT draft_id,2,title,payload FROM revisions;",
+        ]
+        for optimized in (False, True):
+            for statement in statements:
+                with self.subTest(optimized=optimized, statement=statement):
+                    result, modes = self.replay(optimized, legacy_mutation_index=5,
+                                                legacy_statement=statement)
+                    self.require_failure(result)
+                    self.assertEqual(modes, MODES[:-1])
+                    self.assertIn("crash-migration: legacy records changed", result.stderr)
+
+    def test_recovery_verification_cannot_silently_rewrite_legacy_records(self):
+        for optimized in (False, True):
+            for statement in ("DELETE FROM revisions; DELETE FROM drafts;",
+                              "UPDATE revisions SET title='Changed',payload=X'6e756c6c';"):
+                with self.subTest(optimized=optimized, statement=statement):
+                    result, modes = self.replay(optimized, legacy_mutation_index=6,
+                                                legacy_statement=statement)
+                    self.require_failure(result)
+                    self.assertEqual(modes, MODES)
+                    self.assertIn("verify: legacy records changed", result.stderr)
 
 
 if __name__ == "__main__":
