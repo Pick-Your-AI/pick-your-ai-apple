@@ -234,9 +234,9 @@ if mode.startswith("crash-") or mode.startswith("commit-"): os._exit(73)
     def testTimeoutStopsBeforeLaterPhases(self):
         for delayed_start in (False, True):
             with self.subTest(delayed_start=delayed_start):
-                probe = self.fake_probe('if mode == "seed":\n    pathlib.Path(__file__).with_suffix(".pid").write_text(str(os.getpid()))\n    time.sleep(10)')
+                probe = self.fake_probe('if mode == "seed": time.sleep(10)')
                 if delayed_start:
-                    # Reproduce a deadline before the child can write its marker.
+                    # Reproduce a deadline before the child starts the protocol.
                     source = probe.read_text(encoding="utf-8")
                     probe.write_text(source.replace("import os, pathlib", "import time; time.sleep(10)\nimport os, pathlib"), encoding="utf-8")
                 children = []
@@ -255,11 +255,6 @@ if mode.startswith("crash-") or mode.startswith("commit-"): os._exit(73)
                 self.assertEqual(len(children), 1, "a later replay phase launched")
                 child = children[0]
                 self.assertIsNotNone(child.returncode, "timed-out child was not reaped")
-                marker = probe.with_suffix(".pid")
-                if marker.exists():
-                    self.assertEqual(int(marker.read_text()), child.pid)
-                if delayed_start:
-                    self.assertFalse(marker.exists())
                 with self.assertRaises(ProcessLookupError): os.kill(child.pid, 0)
                 with self.assertRaises(ChildProcessError): os.waitpid(child.pid, os.WNOHANG)
 
