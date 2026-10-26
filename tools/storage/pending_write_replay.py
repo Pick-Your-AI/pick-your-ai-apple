@@ -9,6 +9,7 @@ import subprocess
 import sys
 import tempfile
 import unittest
+from unittest.mock import patch
 import uuid
 
 
@@ -231,12 +232,36 @@ if mode.startswith("crash-") or mode.startswith("commit-"): os._exit(73)
                     replay(self.fake_probe(mutation), 5)
 
     def testTimeoutStopsBeforeLaterPhases(self):
-        probe = self.fake_probe('if mode == "seed":\n    pathlib.Path(__file__).with_suffix(".pid").write_text(str(os.getpid()))\n    time.sleep(10)')
-        with self.assertRaisesRegex(RuntimeError, "seed: probe exceeded"):
-            replay(probe, 0.1)
-        pid = int(probe.with_suffix(".pid").read_text())
-        with self.assertRaises(ProcessLookupError): os.kill(pid, 0)
-        with self.assertRaises(ChildProcessError): os.waitpid(pid, os.WNOHANG)
+        for delayed_start in (False, True):
+            with self.subTest(delayed_start=delayed_start):
+                probe = self.fake_probe('if mode == "seed":\n    pathlib.Path(__file__).with_suffix(".pid").write_text(str(os.getpid()))\n    time.sleep(10)')
+                if delayed_start:
+                    # Reproduce a deadline before the child can write its marker.
+                    source = probe.read_text(encoding="utf-8")
+                    probe.write_text(source.replace("import os, pathlib", "import time; time.sleep(10)\nimport os, pathlib"), encoding="utf-8")
+                children = []
+                launch = subprocess.Popen
+
+                def capture_child(*args, **kwargs):
+                    child = launch(*args, **kwargs)
+                    children.append(child)
+                    return child
+
+                # Observe the real child in the parent; run still owns timeout,
+                # kill and wait. Child startup is not guaranteed within 100 ms.
+                with patch.object(subprocess, "Popen", side_effect=capture_child):
+                    with self.assertRaisesRegex(RuntimeError, "seed: probe exceeded"):
+                        replay(probe, 0.1)
+                self.assertEqual(len(children), 1, "a later replay phase launched")
+                child = children[0]
+                self.assertIsNotNone(child.returncode, "timed-out child was not reaped")
+                marker = probe.with_suffix(".pid")
+                if marker.exists():
+                    self.assertEqual(int(marker.read_text()), child.pid)
+                if delayed_start:
+                    self.assertFalse(marker.exists())
+                with self.assertRaises(ProcessLookupError): os.kill(child.pid, 0)
+                with self.assertRaises(ChildProcessError): os.waitpid(child.pid, os.WNOHANG)
 
     def testInvalidDeadlineIsRejectedBeforeLaunching(self):
         for value in ["0", "-1", "inf", "nan", "text"]:
