@@ -72,14 +72,18 @@ final class CatalogCacheValidatorTests: XCTestCase, @unchecked Sendable {
     }
 
     private func cache(_ directory: URL) throws -> CatalogCache {
-        try CatalogCache(directory: directory) { kind, data in
+        try CatalogCache(directory: directory,
+                         isReplaceableRetainedFailure: FrozenCatalogCacheValidator.isReplaceableRetainedFailure) { kind, data in
             try FrozenCatalogCacheValidator.validate(kind, data)
         }
     }
 
-    private func pair(revision: Int, malformed: CatalogArtifact? = nil) throws -> ValidatorCachePair {
+    private func pair(revision: Int, malformed: CatalogArtifact? = nil,
+                      catalogFault: ((inout [String: Any]) throws -> Void)? = nil) throws -> ValidatorCachePair {
         let catalog = try modified(.catalog, revision: revision) { value in
-            if malformed == .catalog {
+            if malformed == .catalog, let catalogFault {
+                try catalogFault(&value)
+            } else if malformed == .catalog {
                 var items = try XCTUnwrap(value["items"] as? [[String: Any]])
                 items[items.count - 1]["kind"] = "unknown_cache_test_kind"
                 value["items"] = items
@@ -267,6 +271,392 @@ final class CatalogCacheValidatorTests: XCTestCase, @unchecked Sendable {
         XCTAssertEqual(rate.unitPrice.amount.rawValue, "0.8000")
     }
 
+    // Reference-policy fixtures. The unchanged catalog.json resolves every reference to
+    // exactly one item of the documented kind, so each fault below is a single edit.
+    private static func editItem(_ value: inout [String: Any], id: String,
+                                 _ change: (inout [String: Any]) -> Void) throws {
+        var items = try XCTUnwrap(value["items"] as? [[String: Any]])
+        let index = try XCTUnwrap(items.firstIndex { $0["id"] as? String == id })
+        change(&items[index])
+        value["items"] = items
+    }
+
+    private static func setSpec(_ item: inout [String: Any], _ field: String, _ replacement: Any) {
+        var spec = item["spec"] as? [String: Any] ?? [:]
+        spec[field] = replacement
+        item["spec"] = spec
+    }
+
+    private static func violation(
+        _ source: String, _ sourceKind: CatalogKind, _ field: String, index: Int? = nil,
+        target: String, expected: CatalogKind, _ reason: CatalogReferenceViolation.Reason
+    ) -> CatalogReferenceViolation {
+        CatalogReferenceViolation(sourceItemID: source, sourceKind: sourceKind, field: field,
+                                  elementIndex: index, targetID: target, expectedKind: expected, reason: reason)
+    }
+
+    private static func rejection(_ violations: CatalogReferenceViolation...) -> CatalogReferenceRejection {
+        CatalogReferenceRejection(violations: violations, omittedViolationCount: 0)
+    }
+
+    private static let wrongKindProvider = rejection(violation(
+        "cat.model.fixture", .model, "provider_ref", target: "cat.tool.fixture",
+        expected: .modelProvider, .wrongKind(actual: .tool)))
+
+    private static func wrongKindProviderFault(_ value: inout [String: Any]) throws {
+        try editItem(&value, id: "cat.model.fixture") { setSpec(&$0, "provider_ref", "cat.tool.fixture") }
+    }
+
+    // Duplicating the provider makes both of its referrers (document order) ambiguous.
+    private static let ambiguousProvider = rejection(
+        violation("cat.model.fixture", .model, "provider_ref", target: "cat.model_provider.fixture",
+                  expected: .modelProvider, .ambiguous(candidateKinds: [.modelProvider, .modelProvider])),
+        violation("cat.embedding_model.fixture", .embeddingModel, "provider_ref",
+                  target: "cat.model_provider.fixture", expected: .modelProvider,
+                  .ambiguous(candidateKinds: [.modelProvider, .modelProvider])))
+
+    private static func ambiguousProviderFault(_ value: inout [String: Any]) throws {
+        var items = try XCTUnwrap(value["items"] as? [[String: Any]])
+        var other = try XCTUnwrap(items.first { $0["id"] as? String == "cat.model_provider.fixture" })
+        other["version"] = "2026.11-demo"
+        items.append(other)
+        value["items"] = items
+    }
+
+    func testWrongKindReferencesRejectTheWholeCatalogWithSourceToFieldReport() throws {
+        let scalar = try modified(.catalog, Self.wrongKindProviderFault)
+        // Structural decoding alone still accepts it; the reference policy is the rejecting layer.
+        XCTAssertNoThrow(try CatalogSnapshot.decode(scalar))
+        XCTAssertThrowsError(try FrozenCatalogCacheValidator.validate(.catalog, scalar)) {
+            XCTAssertEqual($0 as? CatalogReferenceRejection, Self.wrongKindProvider)
+        }
+        // Each element of an array-valued reference is checked and located, so a valid
+        // first element does not hide a later wrong-kind target.
+        let array = try modified(.catalog) { value in
+            try Self.editItem(&value, id: "cat.hosting_platform.fixture") {
+                Self.setSpec(&$0, "accelerator_refs", ["cat.accelerator.fixture", "cat.storage.fixture"])
+            }
+        }
+        XCTAssertNoThrow(try CatalogSnapshot.decode(array))
+        XCTAssertThrowsError(try FrozenCatalogCacheValidator.validate(.catalog, array)) {
+            XCTAssertEqual($0 as? CatalogReferenceRejection, Self.rejection(Self.violation(
+                "cat.hosting_platform.fixture", .hostingPlatform, "accelerator_refs", index: 1,
+                target: "cat.storage.fixture", expected: .accelerator, .wrongKind(actual: .storage))))
+        }
+    }
+
+    func testAmbiguousReferenceTargetsRejectEvenWhenTheVersionOrContentsAgree() throws {
+        let differentVersion = try modified(.catalog, Self.ambiguousProviderFault)
+        let sameVersion = try modified(.catalog) { value in
+            var items = try XCTUnwrap(value["items"] as? [[String: Any]])
+            items.append(try XCTUnwrap(items.first { $0["id"] as? String == "cat.model_provider.fixture" }))
+            value["items"] = items
+        }
+        for data in [differentVersion, sameVersion] {
+            XCTAssertNoThrow(try CatalogSnapshot.decode(data))
+            XCTAssertThrowsError(try FrozenCatalogCacheValidator.validate(.catalog, data)) {
+                XCTAssertEqual($0 as? CatalogReferenceRejection, Self.ambiguousProvider)
+            }
+        }
+    }
+
+    func testAmbiguousTargetWhoseCandidatesAreAllWrongKindReportsTheirKinds() throws {
+        let data = try modified(.catalog) { value in
+            try Self.wrongKindProviderFault(&value)
+            var items = try XCTUnwrap(value["items"] as? [[String: Any]])
+            var other = try XCTUnwrap(items.first { $0["id"] as? String == "cat.tool.fixture" })
+            other["version"] = "2026.11-demo"
+            items.append(other)
+            value["items"] = items
+        }
+        XCTAssertThrowsError(try FrozenCatalogCacheValidator.validate(.catalog, data)) {
+            // Not masked as a plain ambiguity: the report shows no candidate is a model_provider.
+            // The duplicate tool also makes its two legitimate referrers ambiguous.
+            XCTAssertEqual($0 as? CatalogReferenceRejection, Self.rejection(
+                Self.violation("cat.model.fixture", .model, "provider_ref", target: "cat.tool.fixture",
+                               expected: .modelProvider, .ambiguous(candidateKinds: [.tool, .tool])),
+                Self.violation("cat.mcp_server.fixture", .mcpServer, "tool_refs", index: 0,
+                               target: "cat.tool.fixture", expected: .tool, .ambiguous(candidateKinds: [.tool, .tool])),
+                Self.violation("cat.integration.fixture", .integration, "associated_tool_refs", index: 0,
+                               target: "cat.tool.fixture", expected: .tool, .ambiguous(candidateKinds: [.tool, .tool]))))
+        }
+    }
+
+    func testUnresolvedReferencesAreAdmittedButListedByAnExplicitQuery() throws {
+        // Open policy decision: the cache boundary does not reject a reference whose target is
+        // absent from the snapshot (schema-valid maintenance-drill snapshots contain them). It
+        // is surfaced by `unresolvedReferences(in:)` rather than hidden or called verified.
+        let data = try modified(.catalog) { value in
+            try Self.editItem(&value, id: "cat.model.fixture") { Self.setSpec(&$0, "provider_ref", "cat.absent.fixture") }
+        }
+        XCTAssertNoThrow(try FrozenCatalogCacheValidator.validate(.catalog, data))
+        let snapshot = try CatalogSnapshot.decode(data)
+        XCTAssertEqual(CatalogReferenceIntegrity.unresolvedReferences(in: snapshot), [Self.violation(
+            "cat.model.fixture", .model, "provider_ref", target: "cat.absent.fixture",
+            expected: .modelProvider, .unresolved)])
+        let intact = try CatalogSnapshot.decode(fixture(.catalog))
+        XCTAssertEqual(CatalogReferenceIntegrity.unresolvedReferences(in: intact), [])
+        // A dangling reference elsewhere does not hide a wrong-kind violation, and is not in its report.
+        let both = try modified(.catalog) { value in
+            try Self.editItem(&value, id: "cat.model.fixture") { Self.setSpec(&$0, "provider_ref", "cat.absent.fixture") }
+            try Self.editItem(&value, id: "cat.storage.fixture") { Self.setSpec(&$0, "hosting_ref", "cat.tool.fixture") }
+        }
+        XCTAssertThrowsError(try FrozenCatalogCacheValidator.validate(.catalog, both)) {
+            XCTAssertEqual($0 as? CatalogReferenceRejection, Self.rejection(Self.violation(
+                "cat.storage.fixture", .storage, "hosting_ref", target: "cat.tool.fixture",
+                expected: .hostingPlatform, .wrongKind(actual: .tool))))
+        }
+    }
+
+    func testReportCollectsEveryViolationInItemFieldAndIndexOrderAndCapsTheList() throws {
+        // Index 2 is an unresolved target: admitted by policy, so it is not in the report.
+        let many = try modified(.catalog) { value in
+            try Self.wrongKindProviderFault(&value)
+            try Self.editItem(&value, id: "cat.hosting_platform.fixture") {
+                Self.setSpec(&$0, "accelerator_refs",
+                             ["cat.accelerator.fixture", "cat.storage.fixture", "cat.absent.fixture"])
+            }
+            try Self.editItem(&value, id: "cat.storage.fixture") { Self.setSpec(&$0, "hosting_ref", "cat.tool.fixture") }
+        }
+        XCTAssertThrowsError(try FrozenCatalogCacheValidator.validate(.catalog, many)) {
+            XCTAssertEqual($0 as? CatalogReferenceRejection, Self.rejection(
+                Self.violation("cat.model.fixture", .model, "provider_ref", target: "cat.tool.fixture",
+                               expected: .modelProvider, .wrongKind(actual: .tool)),
+                Self.violation("cat.hosting_platform.fixture", .hostingPlatform, "accelerator_refs", index: 1,
+                               target: "cat.storage.fixture", expected: .accelerator, .wrongKind(actual: .storage)),
+                Self.violation("cat.storage.fixture", .storage, "hosting_ref", target: "cat.tool.fixture",
+                               expected: .hostingPlatform, .wrongKind(actual: .tool))))
+        }
+        let limit = CatalogReferenceRejection.maximumReportedViolations
+        let extra = (0..<(limit + 6)).map { "cat.storage.extra\($0)" }
+        let overflow = try modified(.catalog) { value in
+            var items = try XCTUnwrap(value["items"] as? [[String: Any]])
+            let storage = try XCTUnwrap(items.first { $0["id"] as? String == "cat.storage.fixture" })
+            for id in extra {
+                var copy = storage
+                copy["id"] = id
+                items.append(copy)
+            }
+            value["items"] = items
+            try Self.editItem(&value, id: "cat.hosting_platform.fixture") { Self.setSpec(&$0, "accelerator_refs", extra) }
+        }
+        XCTAssertThrowsError(try FrozenCatalogCacheValidator.validate(.catalog, overflow)) {
+            let report = $0 as? CatalogReferenceRejection
+            XCTAssertEqual(report?.violations.count, limit)
+            XCTAssertEqual(report?.omittedViolationCount, 6)
+            XCTAssertEqual(report?.violations.first?.elementIndex, 0)
+            XCTAssertEqual(report?.violations.last?.elementIndex, limit - 1)
+            XCTAssertEqual(report?.violations.last?.targetID, extra[limit - 1])
+        }
+    }
+
+    func testUnreferencedDuplicateIdentitiesRemainAvailableToTheReceivingGraphPolicy() throws {
+        let unreferenced = try modified(.catalog) { value in
+            var items = try XCTUnwrap(value["items"] as? [[String: Any]])
+            var other = try XCTUnwrap(items.first { $0["id"] as? String == "cat.workload.fixture" })
+            other["version"] = "2026.11-demo"
+            items.append(other)
+            value["items"] = items
+        }
+        XCTAssertNoThrow(try FrozenCatalogCacheValidator.validate(.catalog, unreferenced))
+    }
+
+    func testWrongKindReferenceQuarantinesWholeCatalogAndRetainsLastValidCache() async throws {
+        try requireHashing()
+        try await assertRejectedPairPreservesHistoryAndRecovers(
+            .catalog, catalogFault: Self.wrongKindProviderFault, expectedRejection: Self.wrongKindProvider)
+    }
+
+    func testAmbiguousReferenceQuarantinesWholeCatalogAndRetainsLastValidCache() async throws {
+        try requireHashing()
+        try await assertRejectedPairPreservesHistoryAndRecovers(
+            .catalog, catalogFault: Self.ambiguousProviderFault, expectedRejection: Self.ambiguousProvider)
+    }
+
+    // Admits pairs with the earlier structural-only callback, as a cache written before the
+    // reference policy existed could have. Later entries become the active pair.
+    private func admitWithoutReferencePolicy(_ entries: [(ValidatorCachePair, Date)], into url: URL) async throws {
+        let earlier = try CatalogCache(directory: url) { kind, data in
+            switch kind {
+            case .catalog: _ = try CatalogSnapshot.decode(data)
+            case .pricebook: _ = try Pricebook.decode(data)
+            }
+        }
+        for (pair, date) in entries {
+            try await earlier.refresh(pair.manifest, mode: .syntheticPreview, now: date) { try pair.bytes($0) }
+        }
+    }
+
+    private func assertNotServed(_ error: Error, file: StaticString = #filePath, line: UInt = #line) {
+        XCTAssertEqual(error as? CatalogReferenceRejection, Self.wrongKindProvider, file: file, line: line)
+    }
+
+    func testValidActivePairLoadsBesideAnOlderPolicyViolatingRecordAndRefreshPrunesIt() async throws {
+        try requireHashing()
+        let legacy = try pair(revision: 1, malformed: .catalog, catalogFault: Self.wrongKindProviderFault)
+        let good = try pair(revision: 2)
+        let recovery = try pair(revision: 3)
+        let goodDate = Date(timeIntervalSince1970: 200)
+        let recoveryDate = Date(timeIntervalSince1970: 300)
+        let url = try directory()
+        try await admitWithoutReferencePolicy([(legacy, Date(timeIntervalSince1970: 100)), (good, goodDate)], into: url)
+        let stored = url.appendingPathComponent("active-preview-v1.json")
+        let before = try Data(contentsOf: stored)
+
+        let current = try cache(url)
+        // An offline device keeps its valid active pair; the violating record is never served.
+        try assertSnapshot(try await current.load(mode: .syntheticPreview), equals: good, at: goodDate)
+        try assertSnapshot(try await current.load(good.manifest, mode: .syntheticPreview), equals: good, at: goodDate)
+        do {
+            _ = try await current.load(legacy.manifest, mode: .syntheticPreview)
+            XCTFail("A policy-violating retained pair was served")
+        } catch { assertNotServed(error) }
+        XCTAssertEqual(try Data(contentsOf: stored), before, "Loads must not write")
+
+        // A failed refresh changes nothing; a good one prunes the violating record atomically.
+        struct Offline: Error {}
+        do {
+            try await current.refresh(recovery.manifest, mode: .syntheticPreview) { _ in throw Offline() }
+            XCTFail("Unexpected offline success")
+        } catch { XCTAssertTrue(error is Offline) }
+        XCTAssertEqual(try Data(contentsOf: stored), before)
+        try await current.refresh(recovery.manifest, mode: .syntheticPreview, now: recoveryDate) { try recovery.bytes($0) }
+        try assertSnapshot(try await current.load(mode: .syntheticPreview), equals: recovery, at: recoveryDate)
+        try assertSnapshot(try await current.load(good.manifest, mode: .syntheticPreview), equals: good, at: goodDate)
+        let pruned = try await current.load(legacy.manifest, mode: .syntheticPreview)
+        XCTAssertNil(pruned)
+    }
+
+    func testActivePairFailingTheReferencePolicyIsNeverServedButRefreshReplacesIt() async throws {
+        try requireHashing()
+        let good = try pair(revision: 1)
+        let legacy = try pair(revision: 2, malformed: .catalog, catalogFault: Self.wrongKindProviderFault)
+        let recovery = try pair(revision: 3)
+        let goodDate = Date(timeIntervalSince1970: 100)
+        let recoveryDate = Date(timeIntervalSince1970: 300)
+        let url = try directory()
+        try await admitWithoutReferencePolicy([(good, goodDate), (legacy, Date(timeIntervalSince1970: 200))], into: url)
+        let stored = url.appendingPathComponent("active-preview-v1.json")
+        let before = try Data(contentsOf: stored)
+
+        let current = try cache(url)
+        do {
+            _ = try await current.load(mode: .syntheticPreview)
+            XCTFail("An active pair failing the reference policy was served")
+        } catch { assertNotServed(error) }
+        do {
+            _ = try await current.load(legacy.manifest, mode: .syntheticPreview)
+            XCTFail("A policy-violating retained pair was served")
+        } catch { assertNotServed(error) }
+        // The older valid pair stays readable.
+        try assertSnapshot(try await current.load(good.manifest, mode: .syntheticPreview), equals: good, at: goodDate)
+        XCTAssertEqual(try Data(contentsOf: stored), before)
+
+        try await current.refresh(recovery.manifest, mode: .syntheticPreview, now: recoveryDate) { try recovery.bytes($0) }
+        try assertSnapshot(try await current.load(mode: .syntheticPreview), equals: recovery, at: recoveryDate)
+        try assertSnapshot(try await current.load(good.manifest, mode: .syntheticPreview), equals: good, at: goodDate)
+        let pruned = try await current.load(legacy.manifest, mode: .syntheticPreview)
+        XCTAssertNil(pruned)
+        // The pruned version stays immutable: different bytes for its pin are still refused.
+        let conflicting = ArtifactPin(kind: .catalog, identity: legacy.manifest.pins[0].identity,
+                                      sha256: String(repeating: "0", count: 64))
+        let conflict = CacheManifest(pins: [conflicting] + legacy.manifest.pins.dropFirst())
+        do {
+            _ = try await current.load(conflict, mode: .syntheticPreview)
+            XCTFail("A conflicting pin for a pruned version was treated as a clean miss")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .immutableVersionConflict) }
+    }
+
+    // A replaceable policy failure in one artifact must not hide a non-replaceable failure
+    // in another artifact of the same retained pair. The legacy catalog (wrong-kind reference,
+    // replaceable) is validated first; the tampered artifact is then still reached.
+    private func assertCombinedFaultBlocksLoadAndRefresh(tampering kind: CatalogArtifact) async throws {
+        try requireHashing()
+        let legacy = try pair(revision: 1, malformed: .catalog, catalogFault: Self.wrongKindProviderFault)
+        let good = try pair(revision: 2)
+        let recovery = try pair(revision: 3)
+        let goodDate = Date(timeIntervalSince1970: 200)
+        let url = try directory()
+        try await admitWithoutReferencePolicy([(legacy, Date(timeIntervalSince1970: 100)), (good, goodDate)], into: url)
+        let stored = url.appendingPathComponent("active-preview-v1.json")
+        let before = try Data(contentsOf: stored)
+
+        // Control: with only the replaceable fault the good active pair is served.
+        let control = try cache(url)
+        try assertSnapshot(try await control.load(mode: .syntheticPreview), equals: good, at: goodDate)
+
+        // Corrupt ONLY the legacy pair's bytes for `kind`, leaving its recorded digest unchanged.
+        var envelope = try object(before)
+        var records = try XCTUnwrap(envelope["records"] as? [[String: Any]])
+        var artifacts = try XCTUnwrap(records[0]["artifacts"] as? [String: String])
+        let original = try XCTUnwrap(Data(base64Encoded: XCTUnwrap(artifacts[kind.rawValue])))
+        XCTAssertEqual(original, try legacy.bytes(kind))
+        artifacts[kind.rawValue] = (original + Data(" ".utf8)).base64EncodedString()
+        records[0]["artifacts"] = artifacts
+        envelope["records"] = records
+        let corrupt = try encoded(envelope)
+        XCTAssertNotEqual(corrupt, before)
+        try corrupt.write(to: stored, options: .atomic)
+
+        let current = try cache(url)
+        do {
+            _ = try await current.load(mode: .syntheticPreview)
+            XCTFail("Load served a pair beside a retained pair with a digest failure")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .digestMismatch) }
+        for requested in [good.manifest, legacy.manifest] {
+            do {
+                _ = try await current.load(requested, mode: .syntheticPreview)
+                XCTFail("Exact load bypassed a retained digest failure")
+            } catch { XCTAssertEqual(error as? CatalogCacheError, .digestMismatch) }
+        }
+        let recorder = ValidatorDownloadRecorder(recovery)
+        do {
+            try await current.refresh(recovery.manifest, mode: .syntheticPreview) { try await recorder.read($0) }
+            XCTFail("Refresh pruned a pair that has a digest failure")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .digestMismatch) }
+        let downloaded = await recorder.kinds
+        XCTAssertEqual(downloaded, [], "A blocked refresh must not download")
+        XCTAssertEqual(try Data(contentsOf: stored), corrupt, "Failing bytes must be preserved")
+    }
+
+    func testReplaceablePolicyFaultDoesNotHideALaterPricebookDigestFailureOfTheSamePair() async throws {
+        try await assertCombinedFaultBlocksLoadAndRefresh(tampering: .pricebook)
+    }
+
+    // A digest failure in the catalog itself precedes the policy check (the digest is
+    // verified first), so it also blocks; this pins that same-artifact order unchanged.
+    func testCatalogDigestFailureBlocksBeforeItsReferencePolicyCanExcludeThePair() async throws {
+        try await assertCombinedFaultBlocksLoadAndRefresh(tampering: .catalog)
+    }
+
+    func testPruningDoesNotHideAnActiveManifestThatNamesNoStoredRecord()async throws {
+        try requireHashing()
+        let good = try pair(revision: 1)
+        let legacy = try pair(revision: 2, malformed: .catalog, catalogFault: Self.wrongKindProviderFault)
+        let unknown = try pair(revision: 5)
+        let recovery = try pair(revision: 3)
+        let url = try directory()
+        try await admitWithoutReferencePolicy([(good, Date(timeIntervalSince1970: 100)),
+                                               (legacy, Date(timeIntervalSince1970: 200))], into: url)
+        let stored = url.appendingPathComponent("active-preview-v1.json")
+        var envelope = try object(Data(contentsOf: stored))
+        envelope["activeManifest"] = try object(JSONEncoder().encode(unknown.manifest))
+        let corrupt = try encoded(envelope)
+        try corrupt.write(to: stored, options: .atomic)
+
+        // One record is prunable, but the corrupt active manifest must still be reported.
+        let current = try cache(url)
+        do {
+            _ = try await current.load(mode: .syntheticPreview)
+            XCTFail("A corrupt active manifest was served")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .corruptCache) }
+        do {
+            try await current.refresh(recovery.manifest, mode: .syntheticPreview) { try recovery.bytes($0) }
+            XCTFail("Refresh proceeded over a corrupt envelope")
+        } catch { XCTAssertEqual(error as? CatalogCacheError, .corruptCache) }
+        XCTAssertEqual(try Data(contentsOf: stored), corrupt)
+    }
+
     func testValidatedPairPersistsOriginalBytesAndReopensWithoutPromotion() async throws {
         try requireHashing()
         let pair = try ValidatorCachePair(catalog: Data(" \n".utf8) + fixture(.catalog),
@@ -306,10 +696,13 @@ final class CatalogCacheValidatorTests: XCTestCase, @unchecked Sendable {
         try await assertRejectedPairPreservesHistoryAndRecovers(.pricebook)
     }
 
-    private func assertRejectedPairPreservesHistoryAndRecovers(_ kind: CatalogArtifact) async throws {
+    private func assertRejectedPairPreservesHistoryAndRecovers(
+        _ kind: CatalogArtifact, catalogFault: ((inout [String: Any]) throws -> Void)? = nil,
+        expectedRejection: CatalogReferenceRejection? = nil
+    ) async throws {
         let first = try pair(revision: 1)
         let active = try pair(revision: 2)
-        let malformed = try pair(revision: 3, malformed: kind)
+        let malformed = try pair(revision: 3, malformed: kind, catalogFault: catalogFault)
         let recovery = try pair(revision: 4)
         let firstDate = Date(timeIntervalSince1970: 100)
         let activeDate = Date(timeIntervalSince1970: 200)
@@ -331,7 +724,8 @@ final class CatalogCacheValidatorTests: XCTestCase, @unchecked Sendable {
             try await store.refresh(malformed.manifest, mode: .syntheticPreview) { try await recorder.read($0) }
             XCTFail("Hash-valid malformed artifact replaced a retained pair")
         } catch {
-            if kind == .catalog { XCTAssertEqual(error as? TransferError, .schemaViolation) }
+            if let expectedRejection { XCTAssertEqual(error as? CatalogReferenceRejection, expectedRejection) }
+            else if kind == .catalog { XCTAssertEqual(error as? TransferError, .schemaViolation) }
             else { XCTAssertTrue(error is DecodingError) }
         }
         let downloaded = await recorder.kinds
