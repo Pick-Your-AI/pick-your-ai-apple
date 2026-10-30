@@ -146,7 +146,7 @@ The workflow now runs two separately required jobs from the same event checkout:
 | `native-evidence-rendering` | Exact Xcode verification, fresh-cache checks, actual toolchain recording, all six real macOS rendering methods and the unchanged strict rendering qualifier; `native-evidence-rendering` retains the log and result bundle. |
 | `native-simulator` | Xcode-pin, smoke-runner and SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
 
-Each native job uses its own fresh standard `macos-15-intel` host and retains the
+In that split trial, each native job used its own fresh standard `macos-15-intel` host and retained the
 same 20-minute job limit. The rendering command, source and qualifier are moved
 unchanged. The simulator runner, every individual command deadline, single-attempt
 behavior, device/runtime selection, explicit termination and owned cleanup are
@@ -471,3 +471,27 @@ timeout followed by both owned cleanup attempts, and a failed deletion. All 43
 preceding method bodies remain unchanged. These controlled child processes
 demonstrate exception ordering; they do not assign a cause to any historical
 simulator failure or establish native recovery.
+
+## Standard ARM simulator runner trial (2026-10-30)
+
+The simulator job now selects the standard `macos-15` ARM runner; rendering
+remains on `macos-15-intel`. This changes one runner pin and the simulator host
+architecture. Xcode 26.3 / 17C529, SDK 26.2, fresh caches, the newest available
+runtime and first iPhone/iPad device selection, every guard, single launch
+attempt, command deadlines and the 20-minute job limit remain unchanged.
+
+At source `b258f6859e7f4e74f8dad7306b033469a6d686de`, the three Intel attempts
+in [run 41133558633](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/41133558633)
+did not qualify simulator execution: the first timed out during launch, the
+second during boot readiness, and the third exceeded the job limit during
+launch. Their retained logs and artifacts remain failure evidence. High host
+load was observed, but it does not establish the cause.
+
+The separate submission-SDK [run 41133558749](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/41133558749)
+successfully used this ARM image with the same Xcode/SDK; it did not qualify
+simulator boot or launch. This new trial still requires its own successful
+native checks and evidence. It executes arm64 simulator slices only and does
+not qualify x86_64 simulator execution; Intel macOS rendering supplies no such
+coverage. Earlier ARM and Intel failures remain historical evidence. A later
+success cannot isolate their cause, qualify those prior runs, or establish
+physical-device, minimum-OS, signing, store or production acceptance.
