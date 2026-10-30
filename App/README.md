@@ -484,7 +484,8 @@ At source `b258f6859e7f4e74f8dad7306b033469a6d686de`, the three Intel attempts
 in [run 41133558633](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/41133558633)
 did not qualify simulator execution: the first timed out during launch, the
 second during boot readiness, and the third exceeded the job limit during
-launch. Their retained logs and artifacts remain failure evidence. High host
+iPad installation in the launch-sequence step. Their retained logs and artifacts
+remain failure evidence. High host
 load was observed, but it does not establish the cause.
 
 The separate submission-SDK [run 41133558749](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/41133558749)
