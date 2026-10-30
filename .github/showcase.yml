@@ -1,0 +1,5 @@
+for: Pick-Your-AI/pick-your-ai-apple
+icon: assets/icon.png
+chips:
+  key: ["Swift 6"]
+  attrs: ["iOS 17", "SwiftUI", "Unsigned preview"]
