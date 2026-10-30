@@ -4,11 +4,13 @@ import json
 import os
 import re
 import shlex
+import signal
 import subprocess
 import sys
 import uuid
 
 COMMAND_TIMEOUT_SECONDS = 60
+COMMAND_REAP_TIMEOUT_SECONDS = 5
 INSTALL_TIMEOUT_SECONDS = 3 * 60
 BOOT_TIMEOUT_SECONDS = 5 * 60
 CLEANUP_TIMEOUT_SECONDS = 60
@@ -132,14 +134,68 @@ def emit_output(stdout, stderr):
             report(value, end="" if value.endswith("\n") else "\n", file=stream, flush=True)
 
 
+def close_command_pipes(process):
+    for pipe in (process.stdout, process.stderr):
+        if pipe is not None:
+            try:
+                pipe.close()
+            except Exception as error:
+                report(f"Owned command pipe close failed: {type(error).__name__}",
+                       file=sys.stderr, flush=True)
+
+
+def stop_owned_command(process):
+    # A completed wait releases the PID. Never signal a numeric group identity
+    # after reaping, because it can then belong to an unrelated new process.
+    if process.returncode is not None:
+        return
+    # start_new_session gives this command its own process group. The group can
+    # still contain a child holding our capture pipes after its parent exits.
+    try:
+        os.killpg(process.pid, signal.SIGKILL)
+    except ProcessLookupError:
+        pass
+    except Exception as error:
+        report(f"Owned command group cleanup failed: {type(error).__name__}",
+               file=sys.stderr, flush=True)
+        try:
+            process.kill()
+        except ProcessLookupError:
+            pass
+        except Exception as error:
+            report(f"Owned command child cleanup failed: {type(error).__name__}",
+                   file=sys.stderr, flush=True)
+    # Do not drain pipes which another process might still hold. Reaping the
+    # direct child has a separate finite budget and cannot replace its failure.
+    close_command_pipes(process)
+    try:
+        process.wait(timeout=COMMAND_REAP_TIMEOUT_SECONDS)
+    except Exception as error:
+        report(f"Owned command reap did not complete: {type(error).__name__}",
+               file=sys.stderr, flush=True)
+
+
 def run(*args, timeout=COMMAND_TIMEOUT_SECONDS):
     command = shlex.join(args)
     report(f"Smoke command (deadline {timeout}s): {command}", flush=True)
     try:
         # Invalid diagnostic text must not erase the process result before
         # ownership and cleanup can use it. UUID/inventory parsers still apply.
-        result = subprocess.run(args, capture_output=True, text=True, errors="replace",
-                                check=False, timeout=timeout)
+        if os.name == "posix":
+            process = subprocess.Popen(args, stdout=subprocess.PIPE, stderr=subprocess.PIPE,
+                                       text=True, errors="replace", start_new_session=True)
+            succeeded = False
+            try:
+                stdout, stderr = process.communicate(timeout=timeout)
+                result = subprocess.CompletedProcess(args, process.returncode, stdout, stderr)
+                succeeded = result.returncode == 0
+            finally:
+                if not succeeded:
+                    stop_owned_command(process)
+                close_command_pipes(process)
+        else:
+            result = subprocess.run(args, capture_output=True, text=True, errors="replace",
+                                    check=False, timeout=timeout)
     except subprocess.TimeoutExpired as error:
         emit_output(error.stdout, error.stderr)
         report(f"Smoke command timed out after {timeout}s: {command}", file=sys.stderr, flush=True)
