@@ -201,7 +201,7 @@ complete retrieved wheel was never installed or executed.
 
 | Reviewed input | Exact bound |
 | --- | --- |
-| Transfer installer | 1,969 bytes; SHA-256 `49d2158183e44a47f0f66fd7ce6cb146ca52281015cfcd2e9dd2670724eb0344`. An [inert test fixture](../../tools/security/tests/fixtures/pinned-transfer-requirements.fixture) preserves the proposed installer bytes without adding its active manifest or feature to main. |
+| Transfer installer | 2,139 bytes; SHA-256 `fcbc3401debf58500ce2c5f7a6a298e445d1c6161e21ab3de571bf0f9a64e777`. This is the same installer plus the two regular CPython 3.15 macOS `rpds-py==2026.9.1` wheels admitted on 2026-10-30. The previous bound was 1,969 bytes, SHA-256 `49d2158183e44a47f0f66fd7ce6cb146ca52281015cfcd2e9dd2670724eb0344`. An [inert test fixture](../../tools/security/tests/fixtures/pinned-transfer-requirements.fixture) preserves these installer bytes. |
 | Immutable wheel | `typing_extensions-4.16.0-py3-none-any.whl`, 45,571 bytes; SHA-256 `481caa481374e813c1b176ada14e97f1f67a4539ce9cfeb3f350d78d6370c2e8`. The guard uses one fixed HTTPS artifact URL from that release. |
 | Wheel metadata | `Name: typing_extensions`, `Version: 4.16.0`, `License-Expression: PSF-2.0`; 3,310 bytes with SHA-256 `b05084ca1d50879865178d9fff9fabeab61bdfb1f361bfbde95421ffc8f9be46`. |
 | Embedded and upstream license | Both 13,936 bytes; SHA-256 `3b2f81fe21d181c499c59a256c8e1968455d6689d269aa85373bfb6af41da3bf`. |

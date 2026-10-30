@@ -64,8 +64,10 @@ questions; keep all three fields in every compatibility receipt.
 The two Python installer inputs have distinct exact identities at this baseline:
 preparation lock blob `e5d907c2a4b7ef8318ba0958763f8235c415ba4b`, SHA-256
 `39f16918d39968c6e26183c2d09399b49cc071bf751a7c3beff4577dd3717c23`;
-Transfer requirements blob `938c69ecb43b8eda36bee6066e1802f103190ece`, SHA-256
-`49d2158183e44a47f0f66fd7ce6cb146ca52281015cfcd2e9dd2670724eb0344`.
+Transfer requirements at that baseline were blob `938c69ecb43b8eda36bee6066e1802f103190ece`, SHA-256
+`49d2158183e44a47f0f66fd7ce6cb146ca52281015cfcd2e9dd2670724eb0344` (1,969 bytes, CPython 3.11–3.14 macOS wheels).
+The current Transfer requirements file is 2,139 bytes, SHA-256
+`fcbc3401debf58500ce2c5f7a6a298e445d1c6161e21ab3de571bf0f9a64e777`, after admitting the two regular CPython 3.15 macOS `rpds-py==2026.9.1` wheels.
 Install into a newly allocated environment with the documented isolated,
 hash-required, binary-only commands and dependency consistency check. An already
 installed matching version does not prove its wheel matches the lock. Keep the

@@ -3,14 +3,14 @@
   "inspected_on": "2026-10-18",
   "base_commit": "8ca109963bfca3a707b1af8b80aabcd9dd28fd8a",
   "scope": "Python reference validator dependencies; no native runtime or release inventory claim.",
-  "requirements_sha256": "49d2158183e44a47f0f66fd7ce6cb146ca52281015cfcd2e9dd2670724eb0344",
+  "requirements_sha256": "fcbc3401debf58500ce2c5f7a6a298e445d1c6161e21ab3de571bf0f9a64e777",
   "format_providers": {
     "date-time": "rfc3339-validator==0.1.4",
     "uri": "rfc3986-validator==0.1.1"
   },
   "jsonschema_format_source_sha256": "96bb3553b892076657f59d846a5b113987909b577d91e7f0d822e8d3c1bc3f8b",
   "allowed_wheel_targets": [
-    "CPython 3.11-3.14 macOS arm64/x86_64",
+    "CPython 3.11-3.15 macOS arm64/x86_64",
     "CPython 3.12 manylinux2014 x86_64"
   ],
   "packages": [
@@ -222,6 +222,18 @@
           "sha256": "3f0e9ac28fc067d4d34b88ae43c48e9489455c97fee9633d851f7eeed5a05d35",
           "bytes": 341878,
           "url": "https://files.pythonhosted.org/packages/04/37/b751de2b59b0197a1d92a5dd491de88e8a5e928c2e6562581974f1e85263/rpds_py-2026.9.1-cp314-cp314-macosx_11_0_arm64.whl"
+        },
+        {
+          "filename": "rpds_py-2026.9.1-cp315-cp315-macosx_10_12_x86_64.whl",
+          "sha256": "1d77b649e6f7cdf12ca5c2a98dad0ad37f9ea9b6f960408a92f0cb12bb3d04d9",
+          "bytes": 347463,
+          "url": "https://files.pythonhosted.org/packages/f6/b7/a662f367d4896dd0a10cef2fc91f10b7f08af1c10858e287e019563f338d/rpds_py-2026.9.1-cp315-cp315-macosx_10_12_x86_64.whl"
+        },
+        {
+          "filename": "rpds_py-2026.9.1-cp315-cp315-macosx_11_0_arm64.whl",
+          "sha256": "00ba2d8c7dd4ee537978ddf4b3fbd712bef2d8751603f7f3146b3f4287768e25",
+          "bytes": 342051,
+          "url": "https://files.pythonhosted.org/packages/ae/3f/ad45d03df4f84ebae5439577ee81f3999d182711e82235c8037b6528890e/rpds_py-2026.9.1-cp315-cp315-macosx_11_0_arm64.whl"
         }
       ]
     },

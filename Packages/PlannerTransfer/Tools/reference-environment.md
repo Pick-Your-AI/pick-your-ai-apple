@@ -61,11 +61,19 @@ referencing 0.37.0, rpds-py 2026.9.1, rfc3339-validator 0.1.4 and six 1.17.0 on
 CPython 3.14/macOS arm64. These observed versions are preserved. The separate
 preparation harness's jsonschema 4.25.1/rpds-py 0.30.0 declarations remain unchanged.
 
-All 17 allowed wheel files were fetched from the versioned primary metadata URLs
+The original 17 wheel files were fetched from the versioned primary metadata URLs
 on 2026-10-18 and independently matched to their recorded byte counts and SHA-256s.
-The lock permits regular CPython 3.11–3.14 on macOS arm64/x86_64, plus CPython 3.12
-on manylinux2014 x86_64 for the local check host. These are allowed artifact
-targets, not execution receipts for every listed interpreter or architecture.
+On 2026-10-30 the `macos-15` runner's `python3` was CPython 3.15.2. Pip then
+selected `rpds_py-2026.9.1-cp315-cp315-macosx_11_0_arm64.whl`, which this lock
+did not allow, and [Swift build transfer run 41135708815](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/41135708815)
+failed at `b812b006745d`. The same release already published regular CPython 3.15
+macOS wheels. Both were downloaded from the primary file URLs, hashed, and
+checked for `License-Expression: MIT` without importing the package. Free-threaded
+`cp315t` wheels and non-macOS 3.15 wheels stay excluded. The lock now permits
+regular CPython 3.11–3.15 on macOS arm64/x86_64, plus CPython 3.12 on
+manylinux2014 x86_64 for the local check host: 19 wheels. These are allowed
+artifact targets, not execution receipts for every listed interpreter or
+architecture.
 Other wheels, source distributions and build-time resolution are excluded.
 
 The requirements file enables [pip hash-checking mode and binary-only installation](https://pip.pypa.io/en/stable/topics/secure-installs/)
