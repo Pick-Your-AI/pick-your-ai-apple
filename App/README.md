@@ -147,10 +147,10 @@ The workflow now runs two separately required jobs from the same event checkout:
 | `native-simulator` | Xcode-pin, smoke-runner and SDK guards; exact Xcode 26.3 / SDK 26.2 verification, fresh-cache checks, actual toolchain recording, all 25 current model methods, unsigned Simulator build and product-metadata verification, and both phone/tablet launch sequences; the existing `native-local-drafts-evidence` artifact retains their outputs. |
 
 In that split trial, each native job used its own fresh standard `macos-15-intel` host and retained the
-same 20-minute job limit. The rendering command, source and qualifier are moved
+same 20-minute job limit. The rendering command, source and qualifier were moved
 unchanged. The simulator runner, every individual command deadline, single-attempt
-behavior, device/runtime selection, explicit termination and owned cleanup are
-unchanged. No app or cache is transferred between jobs. Each always-run artifact
+behavior, device/runtime selection, explicit termination and owned cleanup were
+unchanged in that trial. No app or cache is transferred between jobs. Each always-run artifact
 step retains its own actual inputs and failures for 14 days.
 
 The existing `native-ui` check is a short completion gate with no source checkout,
@@ -472,6 +472,57 @@ preceding method bodies remain unchanged. These controlled child processes
 demonstrate exception ordering; they do not assign a cause to any historical
 simulator failure or establish native recovery.
 
+
+## Required-command process ownership
+
+On POSIX hosts, each required smoke command starts in its own process session.
+If capture times out or is interrupted while the direct child is still unreaped,
+the runner sends `SIGKILL` to that command's process group. This includes
+descendants which retain capture pipes after their parent exits but before the
+runner has reaped it. Cleanup does not poll or wait away that ownership anchor
+before signalling. The runner closes its own capture pipes without draining
+them and allows a separate five-second budget to reap the direct child. Cleanup
+errors are reported without replacing the original failure or partial output.
+
+A completed success or nonzero exit preserves its output and status without a
+later group signal: a reaped numeric group identity may already have been reused.
+Descendants of such a completed command are outside this timeout cleanup path.
+The operation deadlines and single-attempt policy remain unchanged. The extra
+reaping budget is bounded cleanup time, not a retry or an operation extension.
+Non-POSIX hosts retain the existing subprocess runner. A descendant which
+deliberately leaves the command's session is outside this group boundary.
+
+The guarantee is narrow: when a required command exceeds its own deadline (or
+capture is interrupted inside the runner) while its direct child is unreaped,
+the runner sends one `SIGKILL` to that owned process group, with no `SIGTERM`
+grace period, and then bounds reaping at five seconds. If the reap does not
+complete, the direct child stays unreaped, the run continues and the condition
+appears only as a printed exception type name. This is forceful, bounded
+cleanup on the runner's own deadline path; it is not a graceful shutdown.
+
+`start_new_session=True` also means a required command no longer shares the
+runner's process group. A cancellation signal that the CI job delivers to the
+step's process group may therefore reach the runner but not a running `simctl`
+command or its descendants. If the job is cancelled while such a command is in
+flight, the runner can exit without its `finally` cleanup running, and that
+command, its descendants and an owned booted simulator can be left running on
+the host. The five-second reap, the group kill and the owned shutdown/delete
+attempts do not cover that path, and this change does not add a cancellation
+handler. This is a reasoned consequence of the process-group change, not an
+observed cancellation result. Any such leftover owned simulator on a host that
+outlives the job needs separate cleanup.
+
+Two bounded real-child regressions cover a pipe-holding descendant after an
+observed parent exit and a live parent with a descendant. Each checks that the
+descendant stops, only the owned group is signalled, an unrelated sentinel
+continues and a subsequent ordinary command succeeds. A completed nonzero
+control preserves the exact failure/output and verifies that no group signal
+occurs after reaping. Two additional controls preserve the original exception
+through cleanup failure and the non-POSIX command contract. All 47 preceding
+test method bodies remain unchanged. These synthetic process results do not
+establish a cause for an earlier simulator cancellation; changed-runner native
+qualification is separate.
+
 ## Standard ARM simulator runner trial (2026-10-30)
 
 The simulator job now selects the standard `macos-15` ARM runner; rendering
@@ -485,11 +536,10 @@ in [run 41133558633](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/
 did not qualify simulator execution: the first timed out during launch, the
 second during boot readiness, and the third exceeded the job limit during
 iPad installation in the launch-sequence step. Their retained logs and artifacts
-remain failure evidence. High host
-load was observed, but it does not establish the cause.
+remain failure evidence. High host load was observed, but it does not establish the cause.
 
 The separate submission-SDK [run 41133558749](https://github.com/Pick-Your-AI/pick-your-ai-apple/actions/runs/41133558749)
-successfully used this ARM image with the same Xcode/SDK; it did not qualify
+successfully used the standard `macos-15` ARM runner label with the same Xcode/SDK; it did not qualify
 simulator boot or launch. This new trial still requires its own successful
 native checks and evidence. It executes arm64 simulator slices only and does
 not qualify x86_64 simulator execution; Intel macOS rendering supplies no such
