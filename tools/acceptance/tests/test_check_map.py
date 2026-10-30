@@ -52,13 +52,13 @@ class CheckMapCLITests(unittest.TestCase):
         self.helper.write_bytes(self.helper_bytes)
         self.map_path.write_bytes(self.map_bytes)
 
-    def run_check(self, rows=None):
+    def run_check(self, rows=None, *, source_text=None):
         command = [sys.executable, '-I']
         if sys.flags.optimize:
             command.append('-O')
         command.append(str(self.helper))
-        if rows is not None:
-            self.source.write_text(json.dumps(rows, ensure_ascii=False) + '\n')
+        if rows is not None or source_text is not None:
+            self.source.write_text(source_text if source_text is not None else json.dumps(rows, ensure_ascii=False) + '\n')
             source_before = self.source.read_bytes()
             command.extend(['--source', str(self.source)])
         map_before = self.map_path.read_bytes()
@@ -68,7 +68,7 @@ class CheckMapCLITests(unittest.TestCase):
         )
         self.assertEqual(self.map_path.read_bytes(), map_before)
         self.assertEqual(self.helper.read_bytes(), self.helper_bytes)
-        if rows is not None:
+        if rows is not None or source_text is not None:
             self.assertEqual(self.source.read_bytes(), source_before)
         return result
 
@@ -283,6 +283,71 @@ class CheckMapCLITests(unittest.TestCase):
                     self.assert_rejected(
                         self.run_check(rows if compare_source else None), '#1: parsed criteria differ',
                     )
+
+    def test_source_duplicate_members_cannot_shadow_changed_metadata(self):
+        original = '"title": ' + json.dumps(self.rows[0]['title'])
+        changed = '"title": "Synthetic changed observation"'
+        for replacement in (changed + ', ' + original, original + ', ' + changed,
+                            original + ', ' + original):
+            with self.subTest(replacement=replacement):
+                raw = json.dumps(self.rows).replace(original, replacement, 1)
+                self.assert_rejected(self.run_check(source_text=raw),
+                                     "Source export: duplicate JSON object member 'title'")
+        self.assert_pass(self.run_check(self.rows))
+
+    def test_map_duplicate_members_cannot_shadow_checkbox_states(self):
+        for replacement in ('"source_checked": true, "source_checked": false',
+                            '"source_checked": false, "source_checked": true',
+                            '"source_checked": false, "source_checked": false'):
+            for compare_source in (False, True):
+                with self.subTest(replacement=replacement, source=compare_source):
+                    raw = self.map_bytes.decode().replace('"source_checked": false', replacement, 1)
+                    self.assertNotEqual(raw, self.map_bytes.decode())
+                    self.map_path.write_text(raw)
+                    self.assert_rejected(self.run_check(self.rows if compare_source else None),
+                                         "Captured map: duplicate JSON object member 'source_checked'")
+        self.map_path.write_bytes(self.map_bytes)
+        self.assert_pass(self.run_check(), source=False)
+        self.assert_pass(self.run_check(self.rows))
+
+    def test_nested_source_members_are_checked_before_filtering_pr_rows(self):
+        # Ambiguous JSON is rejected even if the containing row is not an issue.
+        raw = '[{"pull_request": {}, "metadata": {"state": "old", "state": "new"}},' + json.dumps(self.rows)[1:]
+        self.assert_rejected(self.run_check(source_text=raw),
+                             "Source export: duplicate JSON object member 'state'")
+        self.assert_pass(self.run_check([{'pull_request': {}, 'metadata': {'state': 'new'}}] + self.rows))
+
+    def test_escaped_member_names_collide_after_json_decoding(self):
+        title = json.dumps(self.rows[0]['title'])
+        raw = json.dumps(self.rows).replace('"title": ' + title,
+                                           '"title": ' + title + ', "ti\\u0074le": ' + title, 1)
+        self.assert_rejected(self.run_check(source_text=raw),
+                             "Source export: duplicate JSON object member 'title'")
+        raw = self.map_bytes.decode().replace('"source_checked": false',
+            '"source_checked": false, "source_chec\\u006bed": false', 1)
+        self.map_path.write_text(raw)
+        self.assert_rejected(self.run_check(),
+                             "Captured map: duplicate JSON object member 'source_checked'")
+
+    def test_distinct_member_names_and_same_names_in_separate_objects_remain_valid(self):
+        rows = copy.deepcopy(self.rows)
+        for row in rows:
+            row['Title'] = 'Distinct from title'
+            row['metadata'] = {'title': 'Different object, same allowed member name'}
+        self.assert_pass(self.run_check(rows))
+
+    def test_malformed_json_has_input_specific_diagnostic(self):
+        result = self.run_check(source_text='[')
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stdout, '')
+        self.assertTrue(result.stderr.startswith('Source export: invalid JSON: '), result.stderr)
+        self.assertNotIn('Traceback', result.stderr)
+        self.map_path.write_text('{')
+        result = self.run_check()
+        self.assertEqual(result.returncode, 1)
+        self.assertEqual(result.stdout, '')
+        self.assertTrue(result.stderr.startswith('Captured map: invalid JSON: '), result.stderr)
+        self.assertNotIn('Traceback', result.stderr)
 
 
 if __name__ == '__main__':
