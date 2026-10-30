@@ -22,6 +22,8 @@ public struct BuildSnapshot: Sendable, Equatable {
 public struct ImportPreview: Sendable {
     public let snapshot: BuildSnapshot
     public let usesSyntheticData: Bool?
+    /// Untrusted envelope metadata, retained only to preserve fixture labeling on re-export.
+    public let sourceRevision: String?
     /// Always returns a newly identified draft; source identity never becomes an update target.
     /// Owner is supplied by the local identity boundary, never trusted from the import.
     public func fork(localOwner: String, timestamp: String) throws -> BuildSnapshot {
@@ -55,6 +57,7 @@ public enum BuildTransfer {
         let root = try parser.parse()
         var candidate = root
         var synthetic: Bool?
+        var sourceRevision: String?
         if let envelope = root.object, envelope["format"] != nil {
             guard Set(envelope.keys) == Set(["format", "formatVersion", "exportedAt", "contract", "dataMode", "build"]),
                   envelope["format"] == .string("pickyour.ai/build-export"), envelope["formatVersion"] == .number(1),
@@ -65,11 +68,11 @@ public enum BuildTransfer {
                   let date = envelope["exportedAt"]?.string, FrozenValidator.timestamp(date),
                   let mode = envelope["dataMode"]?.string, ["fixture", "http"].contains(mode),
                   let build = envelope["build"] else { throw TransferError.unsupportedVersion }
-            candidate = build; synthetic = mode == "fixture"
+            candidate = build; synthetic = mode == "fixture"; sourceRevision = sha
         }
         try rejectSensitive(candidate)
         try FrozenValidator().validateBuild(candidate)
-        return ImportPreview(snapshot: BuildSnapshot(candidate), usesSyntheticData: synthetic)
+        return ImportPreview(snapshot: BuildSnapshot(candidate), usesSyntheticData: synthetic, sourceRevision: sourceRevision)
     }
     /// Minimal bare-snapshot projection readable by the web consumer. Private owner/notes/extensions
     /// are removed; a caller-supplied public alias is required because frozen v1 requires owner_ref.
