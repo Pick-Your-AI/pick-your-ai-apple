@@ -63,6 +63,16 @@ class UnavailableOutput(io.StringIO):
         return super().flush()
 
 
+class RecordedOutput(io.StringIO):
+    def __init__(self, transcript):
+        super().__init__()
+        self.transcript = transcript
+
+    def write(self, value):
+        self.transcript.write(value)
+        return super().write(value)
+
+
 class SimulatorSmokeTests(unittest.TestCase):
     def setUp(self):
         self.inventory = inventory()
@@ -118,6 +128,9 @@ class SimulatorSmokeTests(unittest.TestCase):
             self.assertIn(f"Owned simulator created by this run: {udid}", self.stdout.getvalue())
 
     def test_timeout_retains_partial_stdout_stderr_command_and_deadline(self):
+        transcript = io.StringIO()
+        self.stdout = RecordedOutput(transcript)
+        self.stderr = RecordedOutput(transcript)
         error = subprocess.TimeoutExpired(("synthetic-command", "argument"), 60,
                                           output=b"partial output\n", stderr=b"partial error\n")
         with self.commands(error) as mocked:
@@ -128,6 +141,9 @@ class SimulatorSmokeTests(unittest.TestCase):
         self.assertIn("partial output", self.stdout.getvalue())
         self.assertIn("partial error", self.stderr.getvalue())
         self.assertIn("timed out after 60s: synthetic-command argument", self.stderr.getvalue())
+        status = transcript.getvalue().index("Smoke command timed out")
+        for partial in ("partial output", "partial error"):
+            self.assertLess(status, transcript.getvalue().index(partial))
 
     def test_real_child_deadline_retains_output_and_returns_without_its_full_sleep(self):
         started = time.monotonic()
@@ -146,7 +162,9 @@ class SimulatorSmokeTests(unittest.TestCase):
     def test_real_child_invalid_text_preserves_success_and_nonzero_exit(self):
         for exit_code in (0, 23):
             with self.subTest(exit_code=exit_code):
-                self.stdout, self.stderr = io.StringIO(), io.StringIO()
+                transcript = io.StringIO()
+                self.stdout = RecordedOutput(transcript)
+                self.stderr = RecordedOutput(transcript)
                 program = ("import os, sys\n"
                            "os.write(1, b'child output \\xff\\n')\n"
                            "os.write(2, b'child error \\xfe\\n')\n"
@@ -164,6 +182,9 @@ class SimulatorSmokeTests(unittest.TestCase):
                 self.assertIn("child output \ufffd\n", self.stdout.getvalue())
                 self.assertIn("child error \ufffd\n", self.stderr.getvalue())
                 self.assertIn(f"Smoke command exited {exit_code}:", self.stdout.getvalue())
+                status = transcript.getvalue().index(f"Smoke command exited {exit_code}:")
+                for partial in ("child output \ufffd", "child error \ufffd"):
+                    self.assertLess(status, transcript.getvalue().index(partial))
 
     def test_real_child_invalid_create_diagnostic_preserves_owned_ids_and_commands(self):
         real_run = subprocess.run
