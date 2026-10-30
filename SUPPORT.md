@@ -106,3 +106,17 @@ unavailable until a real destination and responsible receiving role are verified
 Apple [#23](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/23) and the
 existing canonical shared-service owners retain service activation and ongoing
 operations; this public intake creates no new backend.
+
+## Unresolved decisions
+
+Use [the routing procedure](CONTRIBUTING.md#routing-decisions) for a decision that
+needs another responsible role. Keep the original issue and accepted owner;
+summarize the decision, prior disposition and next recipient without copying private
+rosters or raw API data. Central routing depends on the organization governance
+change merging and a successful private refresh; it does not promise a response
+time or assign an unaccepted owner.
+
+Keep credentials, account details, personal/customer data and confidential reports
+out of public issues. Follow [Security and private information](#security-and-private-information):
+no private destination is verified for this preview. This routing guidance adds
+no private reporting destination.

@@ -91,7 +91,7 @@ jobs:
     name: native-simulator
     needs: scope
     if: ${{ !cancelled() && (needs.scope.result != 'success' || needs.scope.outputs.native_required != 'false') }}
-    runs-on: macos-15-intel
+    runs-on: macos-15
     timeout-minutes: 20
     steps:
       - uses: actions/checkout@11bd71901bbe5b1630ceea73d27597364c9af683
