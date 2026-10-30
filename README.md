@@ -1,4 +1,32 @@
+<!-- showcase:banner:start -->
+<p align="center">
+  <img src="docs/images/banner.png" alt="pick-your-ai-apple by Pick Your AI" width="100%">
+</p>
+<!-- showcase:banner:end -->
+
+<!-- showcase:nav:start -->
+**Pick Your AI** · [All repositories](https://github.com/Pick-Your-AI) · [Docs](docs/) · [Contributing](CONTRIBUTING.md) · [Security](https://github.com/Pick-Your-AI/.github/blob/main/SECURITY.md)
+<!-- showcase:nav:end -->
+
+<div align="center">
+
 # Pick Your AI — Apple/iOS
+
+<!-- showcase:badges:start -->
+![Language Swift](https://img.shields.io/badge/language-Swift-115E59)
+![Type Mobile app](https://img.shields.io/badge/type-Mobile%20app-0F766E)
+![License MIT](https://img.shields.io/badge/license-MIT-64748B)
+<!-- showcase:badges:end -->
+
+<!-- showcase:tagline:start -->
+**Apple/iOS planning client for Pick Your AI; delivery tracked in Project 5.**
+<!-- showcase:tagline:end -->
+
+</div>
+
+---
+
+## About
 
 The Apple/iOS planning client for discovering, configuring, checking, costing, comparing and sharing AI stacks. The mobile device is not automatically the inference target.
 
@@ -11,13 +39,19 @@ Review the [current foundation disposition](docs/decisions/foundation-dispositio
 - Shared-service decision: [Pick-Your-AI/pick-your-ai-apple#23](https://github.com/Pick-Your-AI/pick-your-ai-apple/issues/23); reuse canonical services rather than create a competing backend.
 - [Repository scope](docs/REPOSITORY_SCOPE.md), [contributing](CONTRIBUTING.md), [agent instructions](AGENTS.md), [MIT license](LICENSE).
 
-## Maintainer execution guidance
+## Notes
+
+### Maintainer execution guidance
 
 Use the [platform program prompt](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/d0a1f8b05b90e7e7087fb2f06890265ab5d42606/prompts/mobile/APPLE.md), [shared rules](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/d0a1f8b05b90e7e7087fb2f06890265ab5d42606/prompts/mobile/SHARED.md), [launch instructions](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/d0a1f8b05b90e7e7087fb2f06890265ab5d42606/prompts/mobile/README.md), and [issue/acceptance/handoff index](https://github.com/Pick-Your-AI/pick-your-ai-research/blob/d0a1f8b05b90e7e7087fb2f06890265ab5d42606/prompts/mobile/INDEX.md). The migration guidance was published through [research PR #111](https://github.com/Pick-Your-AI/pick-your-ai-research/pull/111), merged on 2026-10-18 as `da3c6045f84260506bd326bb24ddfa8a7e6a23e8`. The pinned Apple and shared prompt contents are unchanged at that merge; these links preserve their immutable source revision.
 
 Planning issues now live in `Pick-Your-AI/pick-your-ai-apple`. Refresh live assignees, native parents, prerequisites, Project fields, active work and linked PRs before execution. Do not create duplicate tracking or controllers. Repository creation does not launch a campaign or satisfy a delivery acceptance criterion.
 
 The issue migration preserves the original history and native relationships. Android acceptance records follow the scoped placement ADRs in its [repository scope record](https://github.com/Pick-Your-AI/pick-your-ai-android/blob/146413ff168583f4c2b0df87ab41d36e57f8ea85/docs/REPOSITORY_SCOPE.md); each ADR changes only its named records, while all other record locations retain their current authority. Preserve Apple's accepted ADR and issue-linked artifact paths.
+
+## License
+
+Code and documentation are licensed under the MIT License; see `LICENSE`.
 
 ## Contributor routing
 
