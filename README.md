@@ -18,3 +18,8 @@ Use the [platform program prompt](https://github.com/Pick-Your-AI/pick-your-ai-r
 Planning issues now live in `Pick-Your-AI/pick-your-ai-apple`. Refresh live assignees, native parents, prerequisites, Project fields, active work and linked PRs before execution. Do not create duplicate tracking or controllers. Repository creation does not launch a campaign or satisfy a delivery acceptance criterion.
 
 The issue migration preserves the original history and native relationships. Android acceptance records follow the scoped placement ADRs in its [repository scope record](https://github.com/Pick-Your-AI/pick-your-ai-android/blob/146413ff168583f4c2b0df87ab41d36e57f8ea85/docs/REPOSITORY_SCOPE.md); each ADR changes only its named records, while all other record locations retain their current authority. Preserve Apple's accepted ADR and issue-linked artifact paths.
+
+## Contributor routing
+
+For a blocked decision, use [the repository routing procedure](CONTRIBUTING.md#routing-decisions).
+Start with the existing issue and its accepted owner; preserve its scope and evidence requirements.
