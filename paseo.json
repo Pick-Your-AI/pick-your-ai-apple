@@ -1,0 +1,24 @@
+{
+  "worktree": {
+    "setup": [
+      "python3.12 -m venv .venv",
+      ".venv/bin/python -m pip install -r tools/conformance/requirements.txt",
+      "swift package --package-path Packages/PlannerCatalog resolve",
+      "swift package --package-path Packages/PlannerConformance resolve",
+      "swift package --package-path Packages/PlannerCore resolve",
+      "swift package --package-path Packages/PlannerData resolve",
+      "swift package --package-path Packages/PlannerTransfer resolve",
+      "swift package --package-path Packages/PlannerUI resolve",
+      "swift package --package-path tools/catalog-maintenance resolve"
+    ],
+    "teardown": "echo \"Setup starts no persistent services; Paseo handles worktree removal.\""
+  },
+  "scripts": {
+    "diff-check": {
+      "command": "git diff --check"
+    },
+    "test": {
+      "command": "swift test --package-path Packages/PlannerCore"
+    }
+  }
+}
