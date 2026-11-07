@@ -72,6 +72,16 @@ mock fixture preflight and all producer responses; neither specimen mode is a
 Swift or native run. Existing valid-number/Boolean comparisons are unchanged;
 valid JSON exponent overflow is outside this correction's scope.
 
+Decimal and exponent tokens in producer observations now retain their exact
+numeric value during identity checks. A fractional value such as
+`1.0000000000000001` cannot round to the required format or revision `1`.
+Integral spellings such as `1.0` and `1e0` remain numerically equivalent to `1`;
+Boolean identity remains separate. Raw producer bytes are retained unchanged,
+and the final receipt contains the existing qualification fields rather than
+reserializing the parsed observations. The existing producer tests exercise
+fractional rejection, integral recovery and successful receipt serialization
+in both specimen modes; no Swift or native execution is inferred from them.
+
 The workflow always uploads the actual checkout/toolchain records, source and
 canonical-input archives, copied executable, build/dependency/test logs and any
 original phase outputs and final receipt. A failure before the driver may have
