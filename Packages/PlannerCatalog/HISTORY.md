@@ -133,3 +133,30 @@ acceptance remain open. Tests use synthetic header-only artifacts for cache
 mechanics and controlled filesystem/download faults; they do not establish
 canonical full-shape fixture conformance, physical power-loss durability,
 full-disk behavior, background OS scheduling, production rights or release readiness.
+
+## 2026-10-20: isolate the storage-version rejection control
+
+The existing malformed-version method retains its original four portable cases
+and now also supplies a complete version-2 envelope. Previously those cases
+omitted `activeManifest` and `records`, so a decoder that incorrectly admitted
+version 3 would still reject the missing fields with the expected `corruptCache`.
+The added cases change only the complete envelope's raw top-level version token
+to `3`, `null`, `"2"` or `true`. Active lookup, exact historical lookup and refresh
+must reject each case before downloading and preserve every stored byte. Explicit
+restoration of the original version-2 bytes repeats the admission control.
+
+The complete fixture contains two literal synthetic identity headers with fixed
+SHA-256 pins. It exercises this private cache format with the existing required
+test validator; it is not a full frozen-contract or production catalog. On Apple
+platforms, the valid control must return the exact artifacts and cached date.
+Without CryptoKit, the valid control must reach `unsupportedHashPlatform`; that
+is only a decoder/admission-depth observation, never successful hashing, cache
+validation or recovery. The unsupported-version cases themselves still execute
+before hashing, and the original portable controls remain intact.
+
+This extends the same method identity, leaving the other eighteen history methods,
+their helpers and all production source unchanged. Local Swift execution was
+unavailable when this amendment was prepared. No guard-removal mutation, native
+CryptoKit pass or near-integer decoding defect is claimed. The exact amended
+source still requires independent review and its configured hosted checks; the
+earlier nineteen-method results retain their original source identity.
