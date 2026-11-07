@@ -5,11 +5,13 @@ import math
 import os
 import pathlib
 import sqlite3
+import stat
 import subprocess
 import sys
 import tempfile
 import unittest
 import uuid
+from unittest.mock import patch
 
 
 APPLICATION_ID = 0x50595131
@@ -41,6 +43,15 @@ def positive_seconds(value):
     if not math.isfinite(number) or number <= 0:
         raise argparse.ArgumentTypeError("deadline must be finite and positive")
     return number
+
+
+def resolve_probe(probe):
+    """Validate native lookup before resolving a caller's executable path."""
+    observed = probe.stat()
+    require(stat.S_ISREG(observed.st_mode), "probe must be a regular file")
+    resolved = probe.resolve(strict=True)
+    require(os.path.samestat(observed, resolved.stat()), "probe identity changed during preflight")
+    return resolved
 
 
 def run(probe, mode, path, timeout, expected=0):
@@ -245,6 +256,46 @@ if mode.startswith("crash-") or mode.startswith("commit-"): os._exit(73)
             with self.assertRaisesRegex(RuntimeError, "deadline"):
                 replay(pathlib.Path("must-not-launch"), value)
 
+    def testInvalidProbeTraversalIsRejectedBeforeLaunching(self):
+        probe = self.fake_probe('pathlib.Path(__file__).with_suffix(".started").touch()')
+        marker = probe.with_suffix(".started")
+        invalid = [probe / ".." / probe.name,
+                   probe.parent / "missing" / ".." / probe.name]
+        for index, target in enumerate(tuple(invalid)):
+            alias = probe.parent / f"invalid-alias-{index}"
+            alias.symlink_to(target)
+            invalid.append(alias)
+        for optimized in (False, True):
+            for selected in invalid:
+                with self.subTest(optimized=optimized, selected=selected):
+                    marker.unlink(missing_ok=True)
+                    result = subprocess.run(
+                        [sys.executable, *(["-O"] if optimized else []), __file__, str(selected)],
+                        capture_output=True, text=True, timeout=15)
+                    self.assertNotEqual(result.returncode, 0, result.stdout)
+                    self.assertNotIn("PASS:", result.stdout)
+                    self.assertFalse(marker.exists(), "invalid selector launched the probe")
+
+    def testValidProbeAliasStillExecutesAllSixCuts(self):
+        probe = self.fake_probe()
+        alias = probe.parent / "valid-alias"
+        alias.symlink_to(probe)
+        for optimized in (False, True):
+            with self.subTest(optimized=optimized):
+                result = subprocess.run(
+                    [sys.executable, *(["-O"] if optimized else []), __file__, str(alias)],
+                    capture_output=True, text=True, timeout=15)
+                self.assertEqual(result.returncode, 0, result.stderr)
+                self.assertIn("PASS: 6 actual queue exit cuts", result.stdout)
+
+    def testChangedProbeIdentityRejectsBeforeReplay(self):
+        probe, other = self.fake_probe(), self.fake_probe()
+        with patch.object(pathlib.Path, "resolve", return_value=other), \
+                patch(__name__ + ".replay") as execute, \
+                patch.object(sys, "argv", [__file__, str(probe)]):
+            self.assertEqual(main(), 1)
+            execute.assert_not_called()
+
     def testOptimizedPythonRetainsAllAcceptanceChecks(self):
         for mutation in ['if mode == "crash-enqueue": sys.exit(0)',
                          'if mode == "commit-enqueue":\n    with sqlite3.connect(path) as db: db.execute("UPDATE queue_writes SET body=X\'00\' WHERE sequence=2")']:
@@ -266,7 +317,7 @@ def main():
         return 0 if unittest.TextTestRunner(verbosity=2).run(suite).wasSuccessful() else 1
     if args.probe is None: parser.error("a built Swift probe is required")
     try:
-        count = replay(args.probe.resolve(), args.timeout_seconds)
+        count = replay(resolve_probe(args.probe), args.timeout_seconds)
     except (RuntimeError, sqlite3.Error, OSError) as error:
         print(str(error), file=sys.stderr)
         return 1
