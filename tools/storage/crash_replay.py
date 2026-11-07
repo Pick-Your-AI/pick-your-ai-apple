@@ -40,6 +40,10 @@ def run(mode, path, expected=0):
             f"{mode}: expected exit {expected}, observed {result.returncode}; "
             f"stdout={result.stdout!r}; stderr={result.stderr!r}")
 
+def legacy_records(db):
+    return (db.execute("SELECT id,revision FROM drafts ORDER BY id").fetchall(),
+            db.execute("SELECT draft_id,revision,title,payload FROM revisions ORDER BY draft_id,revision").fetchall())
+
 with tempfile.TemporaryDirectory() as root:
     path = pathlib.Path(root) / "drafts.sqlite"
     run("seed", path)
@@ -59,11 +63,17 @@ with tempfile.TemporaryDirectory() as root:
             INSERT INTO revisions VALUES('00000000-0000-0000-0000-000000000001',1,'Legacy',X'7b7d');
             PRAGMA user_version=1;
         """)
+        original_legacy = legacy_records(db)
     run("crash-migration", legacy, 73)
     with sqlite3.connect(legacy) as db:
         require(db.execute("PRAGMA user_version").fetchone() == (1,),
                 "crash-migration: schema version changed before commit")
         require("restored_from" not in [r[1] for r in db.execute("PRAGMA table_info(revisions)")],
                 "crash-migration: restoration column survived interrupted migration")
+        require(legacy_records(db) == original_legacy,
+                "crash-migration: legacy records changed before commit")
     run("verify", legacy)
+    with sqlite3.connect(legacy) as db:
+        require(legacy_records(db) == original_legacy,
+                "verify: legacy records changed during recovery")
 print("PASS: abrupt exits after history write, before commit and during migration preserve durable revision")
