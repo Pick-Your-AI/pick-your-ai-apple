@@ -20,14 +20,17 @@ PACKAGE_ROOTS = frozenset(f"Packages/Planner{name}" for name in
                           ("Core", "Data", "Transfer", "Catalog", "UI"))
 # Include all commands in each job, not just the primary package's imports.
 # Core and UI jobs run EvidenceHarness, which links UI, Core and transitive
-# Data. Transfer tests additionally link Core, Catalog and Data.
+# Data, Catalog and Transfer (PlannerUI links all four sibling packages).
+# Transfer tests additionally link Core, Catalog and Data.
 JOB_INPUTS = {
-    "macos-core": {"Packages/PlannerCore", "Packages/PlannerUI", "Packages/PlannerData"},
+    "macos-core": {"Packages/PlannerCore", "Packages/PlannerUI", "Packages/PlannerData",
+                   "Packages/PlannerCatalog", "Packages/PlannerTransfer"},
     "macos-storage": {"Packages/PlannerData"},
     "macos-transfer": {"Packages/PlannerTransfer", "Packages/PlannerData",
                        "Packages/PlannerCore", "Packages/PlannerCatalog"},
     "macos-catalog-cache": {"Packages/PlannerCatalog"},
-    "native-ui": {"Packages/PlannerUI", "Packages/PlannerData", "Packages/PlannerCore"},
+    "native-ui": {"Packages/PlannerUI", "Packages/PlannerData", "Packages/PlannerCore",
+                 "Packages/PlannerCatalog", "Packages/PlannerTransfer"},
 }
 DEPENDENCIES = {f"{root}/Package.swift" for root in PACKAGE_ROOTS} | {
     "App/Planner.xcodeproj/project.pbxproj",

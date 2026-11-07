@@ -4,6 +4,7 @@ import importlib.util
 import json
 import os
 from pathlib import Path
+import re
 import subprocess
 import sys
 import tempfile
@@ -157,6 +158,38 @@ class NativeScopeTests(unittest.TestCase):
         self.assertEqual(output.read_text(), "native_required=false\n")
 
 
+class RealManifestClosureTests(unittest.TestCase):
+    """Job inputs must cover every sibling package the checked-in manifests link."""
+    root = Path(__file__).resolve().parents[3]
+    path_dependency = re.compile(r'\.package\(\s*path:\s*"\.\./(Planner[A-Za-z]+)"')
+
+    def manifest_dependencies(self, package):
+        manifest = (self.root / "Packages" / package / "Package.swift").read_text(encoding="utf-8")
+        return set(self.path_dependency.findall(manifest))
+
+    def test_every_job_includes_the_transitive_path_dependencies_of_its_packages(self):
+        self.assertIn("PlannerCatalog", self.manifest_dependencies("PlannerUI"))
+        self.assertIn("PlannerTransfer", self.manifest_dependencies("PlannerUI"))
+        for job, paths in scope.JOB_INPUTS.items():
+            pending = [path.removeprefix("Packages/") for path in paths]
+            seen = set()
+            while pending:
+                package = pending.pop()
+                if package in seen:
+                    continue
+                seen.add(package)
+                pending.extend(self.manifest_dependencies(package))
+            with self.subTest(job=job):
+                self.assertEqual({"Packages/" + package for package in seen} - set(paths), set(),
+                                 "native job inputs omit a linked sibling package")
+
+    def test_ui_jobs_name_the_ui_manifest_dependencies_directly(self):
+        required = {"Packages/" + name for name in self.manifest_dependencies("PlannerUI")}
+        for job in ("macos-core", "native-ui"):
+            with self.subTest(job=job):
+                self.assertLessEqual(required | {"Packages/PlannerUI"}, scope.JOB_INPUTS[job])
+
+
 class AuditedPackageScopeTests(unittest.TestCase):
     command = NativeScopeTests.command
     write = NativeScopeTests.write
@@ -167,8 +200,9 @@ class AuditedPackageScopeTests(unittest.TestCase):
     affected = {
         "PlannerCore": {"macos-core", "macos-transfer", "native-ui"},
         "PlannerData": {"macos-core", "macos-storage", "macos-transfer", "native-ui"},
-        "PlannerTransfer": {"macos-transfer"},
-        "PlannerCatalog": {"macos-catalog-cache", "macos-transfer"},
+        # PlannerUI links Catalog and Transfer, so both UI jobs depend on them.
+        "PlannerTransfer": {"macos-transfer", "macos-core", "native-ui"},
+        "PlannerCatalog": {"macos-catalog-cache", "macos-transfer", "macos-core", "native-ui"},
         "PlannerUI": {"macos-core", "native-ui"},
     }
 
@@ -265,7 +299,7 @@ class AuditedPackageScopeTests(unittest.TestCase):
                     self.assertTrue(self.decide("macos-transfer").native_required)
                     self.assertFalse(self.decide("macos-storage").native_required)
                     self.assertEqual(self.decide("native-ui").native_required,
-                                     package == "PlannerCore")
+                                     package in ("PlannerCore", "PlannerCatalog"))
 
     def test_legacy_rendering_closures_with_refreshed_pins_are_rejected(self):
         # Current workflows render the UI through EvidenceHarness. Refreshing
