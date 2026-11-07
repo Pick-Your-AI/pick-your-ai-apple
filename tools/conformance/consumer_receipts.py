@@ -8,6 +8,7 @@ identity supply that separate provenance. Synthetic guard tests are not runs.
 import argparse
 import hashlib
 import json
+import os
 from pathlib import Path
 import re
 import stat
@@ -252,7 +253,13 @@ def qualify(kind, returncode, output, *, allow_bare_linux=False):
 
 
 def prepare_output(output, log):
-    output = output.parent.resolve(strict=True) / output.name
+    parent_stat = output.parent.stat()
+    if not stat.S_ISDIR(parent_stat.st_mode):
+        raise ValueError('Receipt output parent must be an existing directory')
+    parent = output.parent.resolve(strict=True)
+    if not os.path.samestat(parent_stat, parent.stat()):
+        raise ValueError('Receipt output directory changed during preflight')
+    output = parent / output.name
     if output.is_relative_to(ROOT.resolve()) or output == log.resolve():
         raise ValueError('Receipt output must be outside source and must not overwrite its input log')
     try:

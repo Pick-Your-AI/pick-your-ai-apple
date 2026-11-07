@@ -3,6 +3,7 @@ from copy import deepcopy
 import json
 from pathlib import Path
 import re
+import subprocess
 import sys
 import tempfile
 import unittest
@@ -285,6 +286,71 @@ class ConsumerReceiptTests(unittest.TestCase):
             self.assertTrue(link.is_symlink())
             self.assertEqual(hardlink.read_bytes(), b'original log')
             self.assertTrue(folder.is_dir())
+
+    def test_invalid_output_parent_preserves_receipt_before_cli_qualification(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            log, output = root / 'input.log', root / 'receipt.json'
+            log.write_text('not a successful test log')
+            file_prefix = root / 'file'
+            file_prefix.write_bytes(b'original file')
+            direct = [file_prefix / '..', root / 'missing' / '..']
+            selectors = list(direct)
+            for index, target in enumerate(direct):
+                alias = root / f'alias-{index}'
+                alias.symlink_to(target, target_is_directory=True)
+                selectors.append(alias)
+            for parent in selectors:
+                with self.subTest(parent=parent):
+                    output.write_bytes(b'prior receipt')
+                    command = [sys.executable, str(receipts.HERE / 'consumer_receipts.py'),
+                               'wire', '--log', str(log), '--exit-code', '1',
+                               '--output', str(parent / output.name)]
+                    result = subprocess.run(command, capture_output=True, text=True, timeout=10)
+                    self.assertNotEqual(result.returncode, 0, result.stdout)
+                    self.assertIn('Consumer receipt rejected:', result.stderr)
+                    self.assertTrue(output.exists(), 'invalid selector removed prior receipt')
+                    self.assertEqual(output.read_bytes(), b'prior receipt')
+                    self.assertEqual(file_prefix.read_bytes(), b'original file')
+                    self.assertEqual(log.read_text(), 'not a successful test log')
+
+    def test_output_parent_alias_supports_failure_cleanup_and_recovery(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            destination = root / 'destination'
+            destination.mkdir()
+            alias = root / 'alias'
+            alias.symlink_to(destination, target_is_directory=True)
+            log, output = root / 'input.log', destination / 'receipt.json'
+            log.write_text(synthetic('wire'))
+            command = [sys.executable, str(receipts.HERE / 'consumer_receipts.py'),
+                       'wire', '--log', str(log), '--exit-code', '1',
+                       '--output', str(alias / output.name)]
+            output.write_bytes(b'prior receipt')
+            failed = subprocess.run(command, capture_output=True, text=True, timeout=10)
+            self.assertNotEqual(failed.returncode, 0)
+            self.assertFalse(output.exists())
+            command[command.index('--exit-code') + 1] = '0'
+            recovered = subprocess.run(command, capture_output=True, text=True, timeout=10)
+            self.assertEqual(recovered.returncode, 0, recovered.stderr)
+            self.assertEqual(len(json.loads(output.read_text())['observations']), 223)
+            self.assertEqual(sorted(path.name for path in destination.iterdir()), [output.name])
+
+    def test_changed_output_parent_identity_preserves_existing_receipt(self):
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            other = root / 'other'
+            other.mkdir()
+            output, log = root / 'receipt.json', root / 'input.log'
+            output.write_bytes(b'prior receipt')
+            original_stat = Path.stat
+
+            with patch.object(Path, 'resolve', return_value=root), \
+                    patch.object(Path, 'stat', side_effect=None, autospec=True) as mocked:
+                mocked.side_effect = [original_stat(root), original_stat(other)]
+                with self.assertRaisesRegex(ValueError, 'directory changed'):
+                    receipts.prepare_output(output, log)
+            self.assertEqual(output.read_bytes(), b'prior receipt')
 
     def test_atomic_publication_failure_leaves_no_success_or_temporary_file(self):
         with tempfile.TemporaryDirectory() as directory:
