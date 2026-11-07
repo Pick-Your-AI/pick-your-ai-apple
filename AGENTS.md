@@ -20,5 +20,4 @@ and the [canonical escalation guide](https://github.com/Pick-Your-AI/.github/blo
 Refresh private routing evidence before choosing a recipient. Report unresolved
 roles and failed or stale lookups explicitly; do not infer accepted ownership from
 membership or access. Preserve the existing assignee, local gates and private-reporting
-boundaries. Central links depend on the governance change merging; no automatic
-routing, permission change or recurring job is enabled by these instructions.
+boundaries. The [organization governance PR #23](https://github.com/Pick-Your-AI/.github/pull/23) is merged. Refresh the live policy and private routing evidence; these instructions do not enable automatic routing, permission changes or recurring jobs.
