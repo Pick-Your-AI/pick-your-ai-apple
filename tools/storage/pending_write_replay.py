@@ -255,7 +255,7 @@ if mode.startswith("crash-") or mode.startswith("commit-"): os._exit(73)
                 self.assertEqual(len(children), 1, "a later replay phase launched")
                 child = children[0]
                 self.assertIsNotNone(child.returncode, "timed-out child was not reaped")
-                with self.assertRaises(ProcessLookupError): os.kill(child.pid, 0)
+                # A reaped PID can already belong to another process.
                 with self.assertRaises(ChildProcessError): os.waitpid(child.pid, os.WNOHANG)
 
     def testInvalidDeadlineIsRejectedBeforeLaunching(self):
