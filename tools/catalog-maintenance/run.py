@@ -4,6 +4,7 @@ from __future__ import annotations
 
 import argparse
 import base64
+from decimal import Decimal
 import hashlib
 import importlib.metadata
 import json
@@ -108,7 +109,8 @@ def parse_producer_observation(raw):
     def reject_constant(_constant):
         raise QualificationError("nonstandard producer JSON constant")
 
-    return json.loads(raw, object_pairs_hook=unique_members, parse_constant=reject_constant)
+    return json.loads(raw, object_pairs_hook=unique_members,
+                      parse_constant=reject_constant, parse_float=Decimal)
 
 
 def qualify_history(mode, results, inputs):
