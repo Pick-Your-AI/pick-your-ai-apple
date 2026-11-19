@@ -16,12 +16,29 @@ def check(condition, message):
         raise SystemExit(message)
 
 
+def read_json(path, label):
+    def unique_object(pairs):
+        result = {}
+        for key, value in pairs:
+            if key in result:
+                raise ValueError(f'duplicate JSON object member {key!r}')
+            result[key] = value
+        return result
+
+    try:
+        return json.loads(path.read_text(), object_pairs_hook=unique_object)
+    except json.JSONDecodeError as exc:
+        raise SystemExit(f'{label}: invalid JSON: {exc}') from exc
+    except ValueError as exc:
+        raise SystemExit(f'{label}: {exc}') from exc
+
+
 def main():
     parser = argparse.ArgumentParser(description=__doc__)
     parser.add_argument('--source', type=Path, help='JSON array of full REST issue objects, all pages')
     args = parser.parse_args()
     root = Path(__file__).resolve().parents[2]
-    data = json.loads((root / 'docs/acceptance/issues.json').read_text())
+    data = read_json(root / 'docs/acceptance/issues.json', 'Captured map')
     records = data['issues']
     numbers = [r['number'] for r in records]
     check(all(type(n) is int and n > 0 for n in numbers), 'Captured issue numbers must be positive integers')
@@ -40,7 +57,7 @@ def main():
         count += len(exact)
     if args.source:
         source = {}
-        for original in json.loads(args.source.read_text()):
+        for original in read_json(args.source, 'Source export'):
             if 'pull_request' in original:
                 continue
             n = original['number']

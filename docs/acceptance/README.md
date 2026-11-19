@@ -16,6 +16,14 @@ The source export must contain exactly one non-PR row for each issue. Pull-reque
 
 Captured `source_checked` values must be literal JSON booleans matching the source Markdown checkbox. Numeric aliases such as `0`, `0.0`, `1` and `1.0` reject in both validation modes. Literal `false` matches an unchecked box; literal `true` matches either `[x]` or `[X]`. The checker leaves both inputs unchanged on rejection and successful recovery.
 
+Both JSON inputs must have unique member names within every object, including
+nested metadata and source rows later filtered as pull requests. Repeated members
+reject even when their values match; escaped spellings that decode to the same
+name also reject. Otherwise a later value could hide an earlier conflicting
+source observation or checkbox state before comparison. Distinct names and the
+same name in separate objects remain valid. Invalid JSON and duplicate members
+produce input-specific diagnostics without a success message; no input is rewritten.
+
 Run the synthetic CLI regression tests with `python -m unittest discover -s tools/acceptance/tests -v` and `python -O -m unittest discover -s tools/acceptance/tests -v`. They reconstruct REST-shaped inputs from the historical map; they do not recapture live GitHub issues or establish application acceptance.
 
 | Issue | Reviewed evidence and disposition | Remaining action or maintenance | External evidence needed for named acceptance stage |
