@@ -287,3 +287,16 @@ consumer from Android #432, retaining the original `b0d2/c0143` execution and
 later `033ace/c4db` source preservation. Android's 34 private migration
 observations remain distinct from Apple's 20 SQLite observations; installed
 application and production evaluator behavior remain outside those receipts.
+
+The consumer receipt CLI validates the selected output parent with native
+directory lookup before resolving aliases or invalidating an existing receipt.
+A regular-file or missing prefix before `..`, including in a directory symlink
+target, rejects without removing that receipt. The resolved parent must retain
+the observed directory identity. A valid outside directory alias remains
+supported: a later qualification failure clears its prior receipt, and a valid
+retry atomically publishes the replacement. Three portable regression methods
+exercise rejected CLI selectors, actual failure/recovery through a safe alias,
+and a modeled identity mismatch. These are Python guard tests, not new Swift,
+macOS, migration or device execution evidence. Parent-directory replacement
+during execution remains unsupported; the preflight observations are not an
+atomic filesystem guarantee.
