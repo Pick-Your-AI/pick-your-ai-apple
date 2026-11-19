@@ -23,6 +23,8 @@ jobs:
           fetch-depth: 0
       - name: Test conservative scope selection
         run: python3 -m unittest discover -s tools/ci/tests -p 'test_native_scope.py' -v
+      - name: Test complete XCTest execution evidence
+        run: python3 -m unittest discover -s tools/ci/tests -p 'test_swift_test_results.py' -v
       - name: Inspect complete exact Git comparison
         id: scope
         env:
@@ -124,10 +126,11 @@ jobs:
           sw_vers | tee .build/native-evidence/macos.txt
           swift --version | tee .build/native-evidence/swift.txt
           xcrun simctl list runtimes | tee .build/native-evidence/runtimes.txt
-      - name: Test native editor model
+      - name: Test native editor and comparison models
         run: |
-          set -o pipefail
+          set -euo pipefail
           swift test --package-path Packages/PlannerUI --cache-path "$PWD/.build/native-package-cache" --scratch-path "$PWD/.build/native-swift-tests" 2>&1 | tee .build/native-evidence/model-tests.txt
+          python3 tools/ci/require_swift_test_results.py component-comparison-failclosed-ui .build/native-evidence/model-tests.txt
       - name: Build unsigned simulator app
         run: |
           set -o pipefail

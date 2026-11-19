@@ -59,19 +59,26 @@ objects for the following dependency closure, including test targets:
 
 | Native job | Complete package trees that must match at both endpoints |
 | --- | --- |
-| `macos-core` | `PlannerCore`, `PlannerUI`, `PlannerData` |
+| `macos-core` | `PlannerCore`, `PlannerUI`, `PlannerData`, `PlannerCatalog`, `PlannerTransfer` |
 | `macos-storage` | `PlannerData` |
 | `macos-transfer` | `PlannerTransfer`, `PlannerData`, `PlannerCore`, `PlannerCatalog` |
 | `macos-catalog-cache` | `PlannerCatalog` |
-| `native-ui` | `PlannerUI`, `PlannerData`, `PlannerCore` |
+| `native-ui` | `PlannerUI`, `PlannerData`, `PlannerCore`, `PlannerCatalog`, `PlannerTransfer` |
 
 These are entire package trees, including sources, tests, fixtures, resources,
 tools and metadata. Transfer's durable boundary test imports PlannerData, and
 its synthetic fixture admission tests import Core and Catalog. Its library target
 links Core and Catalog; its test target additionally links Data. PlannerUI depends
-on PlannerData and PlannerCore.
+on PlannerData, PlannerCore, PlannerCatalog and PlannerTransfer.
 The Core and UI jobs both execute EvidenceHarness, which explicitly links
-PlannerUI and PlannerCore and includes PlannerUI's transitive Data dependency.
+PlannerUI and PlannerCore and therefore includes all five package trees.
+This widens the module graph relative to the [platform ADR](../decisions/issue-22-platform.md),
+which states that App depends on Core and Data and Data depends on Core: PlannerUI
+now also links the transfer and schema layer (UI to Transfer to Core and Catalog) so
+its comparison model can consume validated catalog items. This note records the
+dependency for CI allocation only; the ADR is not amended and no new product
+layering decision is made here.
+The UI job's App build also links PlannerUI and its complete dependency closure.
 The Core package itself and Catalog declare no sibling package dependencies. A future
 test that reads another package's fixture without changing `Package.swift` still
 changes its own package tree, so that job remains allocated until explicitly
@@ -423,9 +430,11 @@ mutation controls, intentional failing Swift case and semantic mutation command
 are retained unchanged. The final `macos-core` name therefore cannot succeed
 only because the Core package suites passed while rendering was incomplete.
 
-The logical `macos-core` scope still includes the complete PlannerCore, PlannerUI
-and PlannerData trees. Its selector, 36 regression methods, existing audit pins
-and conservative fallback are unchanged. This is not an input-pin refresh or a
+The logical `macos-core` scope includes the complete PlannerCore, PlannerUI,
+PlannerData, PlannerCatalog and PlannerTransfer trees (the five-tree closure in the
+table above; this refresh widened the original three-tree set). Its selector now
+has 38 regression methods, the original 36 plus the two added with the widened
+closure; the original audit-pin mechanism and conservative fallback are unchanged. This is not an input-pin refresh or a
 new skip permission. The workflow change itself is outside the audited package
 roots and requires native work. The retained surrounding-input audit pins an
 older Core workflow; package-only comparisons therefore remain conservative
@@ -463,7 +472,7 @@ executed Swift test, SDK build or device journey. No required-check setting or
 repository protection is changed. Future branch-protection setup must include
 meaningful preparation/scope checks and retain the final native check names.
 
-The [36 real-Git regressions](../../tools/ci/tests/test_native_scope.py) cover exact
+The [38 real-Git regression methods](../../tools/ci/tests/test_native_scope.py) cover exact
 PR test merges and main comparisons, a 3,006-file mixed change, source deletion and
 rename, unknown Markdown/fixtures, executable files, indirect symlink/submodule
 inputs, newline paths, invalid identities, divergent history, empty changes and the
@@ -503,7 +512,7 @@ with `--no-detach`, and zero detach regions. Fresh hosted scope results remain
 required for delivery.
 
 That 15-method lifetime receipt belongs to the linked editor checkpoint. The
-selector's current 36-method suite shares the same corrected setup across its original
+selector's current 38-method suite shares the same corrected setup across its original
 and audited-package classes; no assertion or cleanup error is suppressed.
 
 This change schedules future runs. It neither cancels existing main/current-head
