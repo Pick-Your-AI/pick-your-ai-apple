@@ -59,17 +59,17 @@ objects for the following dependency closure, including test targets:
 
 | Native job | Complete package trees that must match at both endpoints |
 | --- | --- |
-| `macos-core` | `PlannerCore`, `PlannerUI`, `PlannerData` |
+| `macos-core` | `PlannerCore`, `PlannerUI`, `PlannerData`, `PlannerCatalog`, `PlannerTransfer` |
 | `macos-storage` | `PlannerData` |
 | `macos-transfer` | `PlannerTransfer`, `PlannerData`, `PlannerCore`, `PlannerCatalog` |
 | `macos-catalog-cache` | `PlannerCatalog` |
-| `native-ui` | `PlannerUI`, `PlannerData`, `PlannerCore` |
+| `native-ui` | `PlannerUI`, `PlannerData`, `PlannerCore`, `PlannerCatalog`, `PlannerTransfer` |
 
 These are entire package trees, including sources, tests, fixtures, resources,
 tools and metadata. Transfer's durable boundary test imports PlannerData, and
 its synthetic fixture admission tests import Core and Catalog. Its library target
 links Core and Catalog; its test target additionally links Data. PlannerUI depends
-on PlannerData and PlannerCore.
+on PlannerData, PlannerCore, PlannerCatalog and PlannerTransfer.
 The Core and UI jobs both execute EvidenceHarness, which explicitly links
 PlannerUI and PlannerCore and includes PlannerUI's transitive Data dependency.
 The Core package itself and Catalog declare no sibling package dependencies. A future
@@ -510,3 +510,16 @@ This change schedules future runs. It neither cancels existing main/current-head
 runs nor changes [obsolete-run maintenance](obsolete-pr-checks.md). #30's broader
 negative native checks, secret isolation, required-check enforcement, device and
 release acceptance remain separate, and no complete issue closure is claimed.
+
+### UI closure expansion for Catalog and Transfer
+
+`Packages/PlannerUI/Package.swift` now links `PlannerCatalog` and `PlannerTransfer`
+in addition to Data and Core, and both EvidenceHarness-running jobs (`macos-core`
+and `native-ui`) build PlannerUI. Their input closures therefore also include those
+two complete package trees; otherwise a Catalog- or Transfer-only change could skip
+the UI gate. The audit adds the same Catalog and Transfer tree objects already pinned
+for `macos-transfer`, exactly like the rendering correction above: this expands the
+closure and is **not** a pin refresh and grants no new skip. A manifest-parsing
+regression (`RealManifestClosureTests`) fails if any job's inputs omit a sibling
+package reachable through checked-in `.package(path:)` dependencies. This change to
+the selector and audit allocates every native job.
