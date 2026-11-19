@@ -129,6 +129,89 @@ class CrossClientVectorTests(unittest.TestCase):
                     path.write_bytes(inputs[name])
                 self.assertEqual(exporter.checked_inputs(), inputs)
 
+    def test_each_pinned_input_fifo_rejects_before_consumption_and_recovers(self):
+        probe = textwrap.dedent(r'''
+            import json, sys
+            from pathlib import Path
+            from unittest.mock import patch
+            sys.path.insert(0, sys.argv[1])
+            import cross_client as exporter
+            exporter.ROOT = Path(sys.argv[2])
+            with patch.object(exporter, 'load_placement_adapter') as adapter, \
+                    patch.object(exporter.reference, 'schema_results') as consume:
+                try:
+                    exporter.bundle(Path(sys.argv[3]))
+                except ValueError as error:
+                    if 'Conformance input must be a regular file:' not in str(error):
+                        raise
+                else:
+                    raise AssertionError('Pinned FIFO was accepted')
+                adapter.assert_not_called()
+                consume.assert_not_called()
+            print(json.dumps({'rejectedBeforeConsumption': True}), flush=True)
+        ''')
+        inputs = exporter.checked_inputs(self.placement)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            for name, entry in exporter.LOCK['inputs'].items():
+                path = root / entry['path']
+                path.parent.mkdir(parents=True, exist_ok=True)
+                path.write_bytes(inputs[name])
+            for name, entry in exporter.LOCK['inputs'].items():
+                with self.subTest(input=name):
+                    path = root / entry['path']
+                    path.unlink()
+                    os.mkfifo(path, 0o600)
+                    before = path.stat()
+                    result = None
+                    try:
+                        try:
+                            result = subprocess.run(
+                                [sys.executable, '-B', '-u', '-c', probe,
+                                 str(exporter.HERE), str(root), str(self.contract)],
+                                capture_output=True, text=True, timeout=10)
+                        except subprocess.TimeoutExpired:
+                            pass  # subprocess.run killed and reaped this owned child.
+                        after = path.stat()
+                        self.assertTrue(stat.S_ISFIFO(after.st_mode))
+                        self.assertEqual((after.st_dev, after.st_ino, after.st_mode),
+                                         (before.st_dev, before.st_ino, before.st_mode))
+                    finally:
+                        path.unlink()
+                        path.write_bytes(inputs[name])
+                    with patch.object(exporter, 'ROOT', root):
+                        self.assertEqual(exporter.checked_inputs(), inputs)
+                    self.assertIsNotNone(result, 'Pinned input read blocked on FIFO: ' + name)
+                    self.assertEqual(result.returncode, 0, result.stdout + result.stderr)
+                    self.assertEqual(json.loads(result.stdout), {'rejectedBeforeConsumption': True})
+            with patch.object(exporter, 'ROOT', root):
+                self.assertEqual(exporter.encoded_bundle(exporter.bundle(self.contract)),
+                                 exporter.OUTPUT.read_bytes())
+
+    def test_regular_input_aliases_keep_exact_bytes_and_pin_rejection(self):
+        inputs = exporter.checked_inputs(self.placement)
+        with tempfile.TemporaryDirectory() as directory:
+            root = Path(directory)
+            aliases = {}
+            for name, entry in exporter.LOCK['inputs'].items():
+                path = root / entry['path']
+                path.parent.mkdir(parents=True, exist_ok=True)
+                target = path.with_name(path.name + '.regular')
+                target.write_bytes(inputs[name])
+                path.symlink_to(target)
+                aliases[name] = target
+            with patch.object(exporter, 'ROOT', root):
+                self.assertEqual(exporter.checked_inputs(), inputs)
+                for name, target in aliases.items():
+                    with self.subTest(input=name):
+                        target.write_bytes(inputs[name] + b' ')
+                        try:
+                            with self.assertRaisesRegex(ValueError, 'Pinned cross-client input differs: ' + name):
+                                exporter.checked_inputs()
+                        finally:
+                            target.write_bytes(inputs[name])
+                self.assertEqual(exporter.checked_inputs(), inputs)
+
     def test_a_falsely_accepted_future_payload_fails_the_actual_reference(self):
         original = exporter.cases
 
